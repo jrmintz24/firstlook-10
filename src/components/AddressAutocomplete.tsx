@@ -29,10 +29,21 @@ const AddressAutocomplete = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load Google Places API
   useEffect(() => {
     const loadGoogleMapsAPI = () => {
+      const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+      
+      console.log('API Key check:', apiKey ? 'Present' : 'Missing');
+      
+      if (!apiKey) {
+        setLoadError('Google Places API key is missing');
+        console.error('VITE_GOOGLE_PLACES_API_KEY environment variable is not set');
+        return;
+      }
+
       if (window.google && window.google.maps) {
         initializeAutocomplete();
         return;
@@ -47,9 +58,14 @@ const AddressAutocomplete = ({
 
       // Create and load the script
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_PLACES_API_KEY}&libraries=places&callback=initAutocomplete`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initAutocomplete`;
       script.async = true;
       script.defer = true;
+      
+      script.onerror = () => {
+        setLoadError('Failed to load Google Places API');
+        console.error('Failed to load Google Places API script');
+      };
       
       window.initAutocomplete = initializeAutocomplete;
       
@@ -77,8 +93,11 @@ const AddressAutocomplete = ({
         });
 
         setIsLoaded(true);
+        setLoadError(null);
+        console.log('Google Places Autocomplete initialized successfully');
       } catch (error) {
         console.error('Error initializing Google Places Autocomplete:', error);
+        setLoadError('Error initializing address search');
       }
     };
 
@@ -103,10 +122,21 @@ const AddressAutocomplete = ({
         id={id}
         value={value}
         onChange={handleInputChange}
-        placeholder={isLoaded ? placeholder : "Loading address search..."}
+        placeholder={
+          loadError 
+            ? "Enter address manually..." 
+            : isLoaded 
+              ? placeholder 
+              : "Loading address search..."
+        }
         autoComplete="off"
       />
-      {!isLoaded && (
+      {loadError && (
+        <p className="text-xs text-red-500 mt-1">
+          {loadError} - You can still enter addresses manually
+        </p>
+      )}
+      {!isLoaded && !loadError && (
         <p className="text-xs text-gray-500 mt-1">
           Loading Google Places API for address suggestions...
         </p>

@@ -11,6 +11,7 @@ import { Calendar, Clock, MapPin, DollarSign, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyRequestFormProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user, signUp } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -56,12 +58,6 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     setStep(step + 1);
   };
 
-  const generatePassword = () => {
-    // Generate a simple password based on first name + random numbers
-    const randomNum = Math.floor(Math.random() * 9999);
-    return `${formData.firstName}${randomNum}`;
-  };
-
   const submitShowingRequest = async (userId: string | null = null) => {
     const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
     const preferredDate = formData.preferredDate1;
@@ -73,7 +69,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
       preferred_date: preferredDate || null,
       preferred_time: preferredTime || null,
       message: formData.notes || null,
-      status: 'pending' // Changed from 'pending_verification' to 'pending'
+      status: 'pending'
     };
 
     // If no user_id, add user info to the message for later processing
@@ -94,10 +90,19 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.email || !formData.phone) {
+    if (!formData.firstName || !formData.email || !formData.phone || !formData.password) {
       toast({
         title: "Required Fields Missing",
-        description: "Please fill in your name, email, and phone number",
+        description: "Please fill in all required fields including password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
         variant: "destructive"
       });
       return;
@@ -110,8 +115,6 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
       
       // If user is not logged in, create account and submit request
       if (!currentUser) {
-        const password = generatePassword();
-        
         const metadata = {
           first_name: formData.firstName,
           last_name: '', // We're only collecting first name for simplicity
@@ -121,7 +124,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
 
         console.log('Creating account with:', { email: formData.email, metadata });
 
-        const { error: signUpError } = await signUp(formData.email, password, metadata);
+        const { error: signUpError } = await signUp(formData.email, formData.password, metadata);
         
         if (signUpError) {
           console.error('Signup error:', signUpError);
@@ -150,10 +153,14 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
           await submitShowingRequest(null); // Submit without user_id for now
 
           toast({
-            title: "Request Submitted! 🎉",
-            description: `Your account has been created! When an agent accepts your showing, you'll receive an email to verify your account. Your temporary password is: ${password}`,
-            duration: 15000,
+            title: "Account Created! 🎉",
+            description: "Your account has been created and showing request submitted! Redirecting to your dashboard...",
           });
+
+          // Redirect to buyer dashboard after successful account creation
+          setTimeout(() => {
+            navigate('/buyer-dashboard');
+          }, 2000);
         }
         
       } else {
@@ -164,6 +171,11 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
           title: "Request Submitted! 🎉",
           description: "We'll match you with a showing partner and send confirmation within 24 hours.",
         });
+
+        // Redirect to buyer dashboard
+        setTimeout(() => {
+          navigate('/buyer-dashboard');
+        }, 1500);
       }
       
       onClose();
@@ -410,11 +422,24 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
                     placeholder="(555) 123-4567"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    required
+                    placeholder="Choose a secure password"
+                    minLength={6}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
+                </div>
                 
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h4 className="font-medium text-green-900 mb-2">🎉 Almost there!</h4>
                   <p className="text-sm text-green-700">
-                    We'll create your account and you'll verify it when an agent accepts your showing request.
+                    We'll create your account and redirect you to your dashboard where you can track your showing request.
                   </p>
                 </div>
 
@@ -433,7 +458,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
                     className="flex-1 bg-blue-600 hover:bg-blue-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating Account & Submitting..." : "Submit Request"}
+                    {isLoading ? "Creating Account & Submitting..." : "Create Account & Submit"}
                   </Button>
                 </div>
               </form>

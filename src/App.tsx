@@ -6,9 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
-import FAQ from "./pages/FAQ";
 import DCBuyers from "./pages/DCBuyers";
+import FAQ from "./pages/FAQ";
 import AgentLanding from "./pages/AgentLanding";
+import BuyerDashboard from "./pages/BuyerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,10 +23,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/dc-buyers" element={<DCBuyers />} />
             <Route path="/faq" element={<FAQ />} />
-            <Route path="/dc-home-buyers" element={<DCBuyers />} />
             <Route path="/agents" element={<AgentLanding />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

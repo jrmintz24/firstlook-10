@@ -1,8 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, ChevronRight, Sparkles, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ChevronRight, Sparkles } from "lucide-react";
 
 interface HeroSectionProps {
   onRequestShowing: () => void;
@@ -41,16 +40,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
-            <Link to="/properties">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
-              >
-                <Search className="mr-3 h-6 w-6" />
-                Search DC Properties Now
-                <ChevronRight className="ml-3 h-6 w-6" />
-              </Button>
-            </Link>
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300"

@@ -3,12 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Home, Star, Users, Shield, ChevronRight, MapPin, Sparkles } from "lucide-react";
+import { Clock, Star, Users, Shield, ChevronRight, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
-import OpenHouseCard from "@/components/OpenHouseCard";
 import HowItWorks from "@/components/HowItWorks";
 import UserDashboard from "@/components/UserDashboard";
 import { Link } from "react-router-dom";
@@ -46,43 +45,6 @@ const Index = () => {
   if (user) {
     return <UserDashboard />;
   }
-
-  // Mock data for open houses
-  const openHouses = [
-    {
-      id: 1,
-      address: "123 Capitol Hill Dr, Washington, DC",
-      price: "$750,000",
-      beds: 3,
-      baths: 2,
-      sqft: "1,850",
-      date: "2025-06-01",
-      time: "2:00 PM - 4:00 PM",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      address: "456 Dupont Circle NW, Washington, DC",
-      price: "$950,000",
-      beds: 2,
-      baths: 2,
-      sqft: "1,200",
-      date: "2025-06-01",
-      time: "1:00 PM - 3:00 PM",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 3,
-      address: "789 Georgetown Ave, Washington, DC",
-      price: "$1,200,000",
-      beds: 4,
-      baths: 3,
-      sqft: "2,100",
-      date: "2025-06-02",
-      time: "11:00 AM - 1:00 PM",
-      image: "/placeholder.svg"
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
@@ -170,35 +132,6 @@ const Index = () => {
 
       {/* How It Works */}
       <HowItWorks />
-
-      <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              Upcoming Open Houses in D.C.
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover open houses happening this weekend. RSVP with one click and add them to your calendar.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {openHouses.map((house) => (
-              <OpenHouseCard key={house.id} house={house} />
-            ))}
-          </div>
-          
-          <div className="text-center mt-8">
-            <Button 
-              variant="outline" 
-              className="border-2 border-purple-200 text-purple-700 hover:bg-purple-50 px-6 py-3"
-            >
-              View All Open Houses
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
 
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4">

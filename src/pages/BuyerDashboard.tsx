@@ -1,82 +1,144 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Home, MapPin, Phone, Mail, User, Plus, CheckCircle, AlertCircle, Star, ArrowRight } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, User, Plus, CheckCircle, AlertCircle, Star, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  user_type: string;
+}
+
+interface ShowingRequest {
+  id: string;
+  property_address: string;
+  preferred_date: string;
+  preferred_time: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
 
 const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
 
-  // Mock data
-  const upcomingShowings = [
-    {
-      id: 1,
-      address: "123 Capitol Hill Dr, Washington, DC",
-      date: "2025-06-02",
-      time: "2:00 PM",
-      agent: "Sarah Johnson",
-      agentPhone: "(202) 555-0123",
-      status: "confirmed",
-      notes: "First floor unit, bring ID"
-    },
-    {
-      id: 2,
-      address: "456 Dupont Circle NW, Washington, DC",
-      date: "2025-06-03",
-      time: "11:00 AM",
-      agent: "Mike Chen",
-      agentPhone: "(202) 555-0456",
-      status: "pending",
-      notes: "Parking available on street"
+  useEffect(() => {
+    if (user) {
+      fetchUserData();
     }
-  ];
+  }, [user]);
 
-  const showingHistory = [
-    {
-      id: 3,
-      address: "789 Georgetown Ave, Washington, DC",
-      date: "2025-05-28",
-      time: "3:00 PM",
-      agent: "Lisa Rodriguez",
-      status: "completed",
-      rating: 5,
-      feedback: "Great property! Loved the kitchen and natural light."
-    },
-    {
-      id: 4,
-      address: "321 Adams Morgan St, Washington, DC",
-      date: "2025-05-25",
-      time: "1:00 PM",
-      agent: "David Kim",
-      status: "completed",
-      rating: 4,
-      feedback: "Nice layout but a bit small for our needs."
+  const fetchUserData = async () => {
+    try {
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Profile error:', profileError);
+      } else {
+        setProfile(profileData);
+      }
+
+      // Fetch showing requests
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (requestsError) {
+        console.error('Requests error:', requestsError);
+      } else {
+        setShowingRequests(requestsData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const handleRequestShowing = () => {
     setShowPropertyForm(true);
   };
 
-  const handleCancelShowing = (showingId: number) => {
-    toast({
-      title: "Showing Cancelled",
-      description: "We've notified your showing partner. You can reschedule anytime.",
-    });
+  const handleCancelShowing = async (showingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('showing_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', showingId);
+
+      if (error) {
+        console.error('Error cancelling showing:', error);
+        toast({
+          title: "Error",
+          description: "Failed to cancel showing. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Showing Cancelled",
+          description: "Your showing has been cancelled successfully.",
+        });
+        fetchUserData(); // Refresh data
+      }
+    } catch (error) {
+      console.error('Error cancelling showing:', error);
+    }
   };
 
-  const handleRescheduleShowing = (showingId: number) => {
+  const handleRescheduleShowing = (showingId: string) => {
     toast({
       title: "Reschedule Request Sent",
       description: "Your showing partner will contact you with new available times.",
     });
   };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const upcomingShowings = showingRequests.filter(req => 
+    req.status === 'pending' || req.status === 'confirmed'
+  );
+  
+  const completedShowings = showingRequests.filter(req => 
+    req.status === 'completed'
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="text-lg">Loading your dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -100,7 +162,7 @@ const BuyerDashboard = () => {
               </Button>
               <div className="flex items-center gap-2 text-gray-600">
                 <User className="h-5 w-5" />
-                <span>Welcome, John!</span>
+                <span>Welcome, {profile?.first_name || 'User'}!</span>
               </div>
             </div>
           </div>
@@ -112,20 +174,20 @@ const BuyerDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">2</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{upcomingShowings.length}</div>
               <div className="text-gray-600">Upcoming Showings</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">4</div>
-              <div className="text-gray-600">Total Showings</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">{showingRequests.length}</div>
+              <div className="text-gray-600">Total Requests</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">4.5</div>
-              <div className="text-gray-600">Avg Rating</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">{completedShowings.length}</div>
+              <div className="text-gray-600">Completed</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-0 shadow-lg">
@@ -141,7 +203,7 @@ const BuyerDashboard = () => {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upcoming">Upcoming Showings</TabsTrigger>
             <TabsTrigger value="history">Showing History</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsTrigger value="preferences">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-6">
@@ -181,44 +243,43 @@ const BuyerDashboard = () => {
                           <div className="flex items-center gap-3 mb-2">
                             <Badge 
                               variant={showing.status === 'confirmed' ? 'default' : 'secondary'}
-                              className={showing.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+                              className={getStatusColor(showing.status)}
                             >
                               {showing.status === 'confirmed' ? (
                                 <CheckCircle className="h-3 w-3 mr-1" />
                               ) : (
                                 <AlertCircle className="h-3 w-3 mr-1" />
                               )}
-                              {showing.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                              {showing.status}
                             </Badge>
                           </div>
                           <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-purple-500" />
-                            {showing.address}
+                            {showing.property_address}
                           </h3>
-                          <div className="flex items-center gap-6 text-gray-600 mb-3">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{new Date(showing.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{showing.time}</span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                            <div className="text-sm font-medium text-gray-800 mb-1">Showing Partner</div>
-                            <div className="text-gray-600">{showing.agent}</div>
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Phone className="h-3 w-3" />
-                              {showing.agentPhone}
-                            </div>
-                          </div>
-                          {showing.notes && (
-                            <div className="bg-blue-50 p-3 rounded-lg">
-                              <div className="text-sm font-medium text-blue-800 mb-1">Notes</div>
-                              <div className="text-blue-600 text-sm">{showing.notes}</div>
+                          {showing.preferred_date && (
+                            <div className="flex items-center gap-6 text-gray-600 mb-3">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date(showing.preferred_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                              </div>
+                              {showing.preferred_time && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{showing.preferred_time}</span>
+                                </div>
+                              )}
                             </div>
                           )}
+                          {showing.message && (
+                            <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                              <div className="text-sm font-medium text-blue-800 mb-1">Notes</div>
+                              <div className="text-blue-600 text-sm">{showing.message}</div>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-400">
+                            Requested on {new Date(showing.created_at).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex gap-3">
@@ -237,10 +298,6 @@ const BuyerDashboard = () => {
                         >
                           Cancel
                         </Button>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          <Phone className="h-3 w-3 mr-1" />
-                          Contact Agent
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -252,170 +309,135 @@ const BuyerDashboard = () => {
           <TabsContent value="history" className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Showing History</h2>
             
-            <div className="grid gap-6">
-              {showingHistory.map((showing) => (
-                <Card key={showing.id} className="shadow-lg border-0">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-purple-500" />
-                          {showing.address}
-                        </h3>
-                        <div className="flex items-center gap-6 text-gray-600 mb-3">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(showing.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{showing.time}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span className="text-green-600 font-medium">Completed</span>
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                          <div className="text-sm font-medium text-gray-800 mb-1">Showing Partner</div>
-                          <div className="text-gray-600">{showing.agent}</div>
-                        </div>
-                        {showing.rating && (
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-sm font-medium text-gray-700">Your Rating:</span>
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`h-4 w-4 ${i < showing.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                />
-                              ))}
+            {completedShowings.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No completed showings yet</h3>
+                  <p className="text-gray-500 mb-6">Your showing history will appear here once you complete your first showing.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6">
+                {completedShowings.map((showing) => (
+                  <Card key={showing.id} className="shadow-lg border-0">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-purple-500" />
+                            {showing.property_address}
+                          </h3>
+                          {showing.preferred_date && (
+                            <div className="flex items-center gap-6 text-gray-600 mb-3">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date(showing.preferred_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                              </div>
+                              {showing.preferred_time && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{showing.preferred_time}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span className="text-green-600 font-medium">Completed</span>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        {showing.feedback && (
-                          <div className="bg-blue-50 p-3 rounded-lg">
-                            <div className="text-sm font-medium text-blue-800 mb-1">Your Feedback</div>
-                            <div className="text-blue-600 text-sm">{showing.feedback}</div>
-                          </div>
-                        )}
+                          )}
+                          {showing.message && (
+                            <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                              <div className="text-sm font-medium text-blue-800 mb-1">Notes</div>
+                              <div className="text-blue-600 text-sm">{showing.message}</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button 
-                        onClick={handleRequestShowing}
-                        size="sm" 
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Book Another Showing
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        View Property Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <div className="flex gap-3">
+                        <Button 
+                          onClick={handleRequestShowing}
+                          size="sm" 
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Book Another Showing
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Your Preferences</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Your Profile</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact Preferences</CardTitle>
-                  <CardDescription>How would you like us to contact you?</CardDescription>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Your account details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <div className="font-medium">Email</div>
-                      <div className="text-sm text-gray-500">john.doe@email.com</div>
+                  {profile ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Name</label>
+                        <p className="text-lg">{profile.first_name} {profile.last_name}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Phone</label>
+                        <p className="text-lg">{profile.phone || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Account Type</label>
+                        <p className="text-lg capitalize">{profile.user_type || 'Buyer'}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-green-500" />
-                    <div>
-                      <div className="font-medium">Phone</div>
-                      <div className="text-sm text-gray-500">(202) 555-0199</div>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    Update Contact Info
-                  </Button>
+                  ) : (
+                    <p className="text-gray-500">No profile information available.</p>
+                  )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Search Preferences</CardTitle>
-                  <CardDescription>Tell us what you're looking for</CardDescription>
+                  <CardTitle>FirstLook Benefits</CardTitle>
+                  <CardDescription>Your current membership status</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Preferred Areas</div>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">Capitol Hill</Badge>
-                      <Badge variant="secondary">Dupont Circle</Badge>
-                      <Badge variant="secondary">Georgetown</Badge>
+                <CardContent>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-green-800">Free Tier</h3>
+                        <p className="text-green-600 text-sm">1 free showing remaining</p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800">Active</Badge>
                     </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>First showing completely free</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Licensed, vetted showing partners</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>No pressure, no commitment</span>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                      Learn About Additional Services
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="font-medium">Price Range</div>
-                      <div className="text-gray-500">$600K - $1M</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Bedrooms</div>
-                      <div className="text-gray-500">2-3 beds</div>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    Update Preferences
-                  </Button>
                 </CardContent>
               </Card>
             </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>FirstLook Benefits</CardTitle>
-                <CardDescription>Your current membership status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-green-800">Free Tier</h3>
-                      <p className="text-green-600 text-sm">1 free showing remaining</p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">Active</Badge>
-                  </div>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-green-700">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>First showing completely free</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-green-700">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>Licensed, vetted showing partners</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-green-700">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>No pressure, no commitment</span>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                    Learn About Additional Services
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>

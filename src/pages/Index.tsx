@@ -10,6 +10,7 @@ import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import UserDashboard from "@/components/UserDashboard";
 import TrustIndicators from "@/components/TrustIndicators";
+import ProblemSolutionSection from "@/components/ProblemSolutionSection";
 import FAQSection from "@/components/FAQSection";
 import { Link } from "react-router-dom";
 
@@ -157,6 +158,7 @@ const Index = () => {
       {/* How It Works */}
       <HowItWorks />
 
+      {/* Why Choose FirstLook */}
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -214,9 +216,13 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Problem-Solution Section */}
+      <ProblemSolutionSection />
+
       {/* FAQ Section */}
       <FAQSection />
 
+      {/* Final CTA */}
       <div className="bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700 py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,15 +27,6 @@ const Index = () => {
   };
 
   const handleRequestShowing = () => {
-    if (!user) {
-      setAuthType('buyer');
-      setShowAuthModal(true);
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to request a showing",
-      });
-      return;
-    }
     setShowPropertyForm(true);
   };
 

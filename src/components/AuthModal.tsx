@@ -32,6 +32,12 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
   const { toast } = useToast();
   const { signUp, signIn } = useAuth();
 
+  const generatePassword = () => {
+    // Generate a simple password based on first name + random numbers
+    const randomNum = Math.floor(Math.random() * 9999);
+    return `${formData.firstName}${randomNum}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -53,24 +59,18 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
           onClose();
         }
       } else {
-        if (formData.password !== formData.confirmPassword) {
-          toast({
-            title: "Error",
-            description: "Passwords don't match",
-            variant: "destructive"
-          });
-          return;
-        }
+        // For sign up, generate a password automatically
+        const password = generatePassword();
 
         const metadata = {
           first_name: formData.firstName,
-          last_name: formData.lastName,
+          last_name: '', // Empty since we're not collecting it
           phone: formData.phone,
           user_type: userType,
           ...(userType === 'agent' && { license_number: formData.licenseNumber })
         };
 
-        const { error } = await signUp(formData.email, formData.password, metadata);
+        const { error } = await signUp(formData.email, password, metadata);
         if (error) {
           toast({
             title: "Error",
@@ -80,7 +80,8 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
         } else {
           toast({
             title: "Success!",
-            description: "Account created! Please check your email to verify your account.",
+            description: `Account created! Your temporary password is: ${password}. Please check your email to verify your account.`,
+            duration: 15000,
           });
           onClose();
         }
@@ -193,29 +194,16 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName" className="text-gray-700 font-medium">First Name</Label>
-                      <Input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        required
-                        disabled={isLoading}
-                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName" className="text-gray-700 font-medium">Last Name</Label>
-                      <Input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        required
-                        disabled={isLoading}
-                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="firstName" className="text-gray-700 font-medium">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
@@ -255,30 +243,6 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       />
                     </div>
                   )}
-                  <div>
-                    <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      required
-                      disabled={isLoading}
-                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      required
-                      disabled={isLoading}
-                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                    />
-                  </div>
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 shadow-lg transform hover:scale-105 transition-all duration-300"

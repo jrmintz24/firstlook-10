@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,36 +83,16 @@ const Index = () => {
             ViewFree empowers homebuyers to request private showings on-demand, without requiring upfront buyer agreements. Your first showing is completely free. 🏠✨
           </p>
           
-          {/* Unique highlighted CTA section */}
-          <div className="relative mb-12">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
-            <Card className="relative bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500"></div>
-              <CardContent className="p-8">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mr-4">
-                    <Home className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Your First Showing is FREE</h3>
-                    <p className="text-gray-600">No commitment. No pressure. Just explore.</p>
-                  </div>
-                </div>
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
-                  onClick={handleRequestShowing}
-                >
-                  <Sparkles className="mr-2 h-6 w-6" />
-                  Request Free Showing Now
-                  <ChevronRight className="ml-2 h-6 w-6" />
-                </Button>
-                <p className="text-sm text-gray-500 mt-4">✅ No buyer agreement required • ✅ Licensed professionals • ✅ 24hr response</p>
-              </CardContent>
-            </Card>
-          </div>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              onClick={handleRequestShowing}
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              Request Free Showing
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
             <Button 
               variant="outline" 
               size="lg" 

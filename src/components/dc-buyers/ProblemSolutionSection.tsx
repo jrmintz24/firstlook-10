@@ -2,16 +2,16 @@
 const ProblemSolutionSection = () => {
   const problemPoints = [
     {
-      problem: "Traditional agents require lengthy buyer agreements before showing any homes",
-      solution: "FirstLook lets you tour homes immediately without any commitments"
+      problem: "Agents require binding buyer agreements before you can see any homes, forcing commitment before you know if you want to work with them",
+      solution: "FirstLook provides transparent access to homes without any upfront commitments or contracts"
     },
     {
-      problem: "Open houses are crowded and only available on weekends",
-      solution: "Get private showings 7 days a week at times that work for you"
+      problem: "Hidden fees, unclear compensation structures, and surprise costs that only surface after you're already committed",
+      solution: "Complete pricing transparency - your first showing is free, additional services have clear flat-rate pricing"
     },
     {
-      problem: "Agents pressure you to make quick decisions",
-      solution: "Take your time, see multiple properties, make informed decisions"
+      problem: "Agents control your access to properties and may limit what you see based on their interests, not yours",
+      solution: "You choose which homes to see, when to see them, and decide your own timeline without external pressure"
     }
   ];
 
@@ -21,10 +21,10 @@ const ProblemSolutionSection = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              House Hunting in DC Shouldn't Be This Hard
+              House Hunting in DC Shouldn't Require Blind Commitment
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The traditional real estate process is broken. We're fixing it, one showing at a time.
+              The traditional system forces you to commit before you have the information you need. We believe in transparency first, commitment when you're ready.
             </p>
           </div>
           

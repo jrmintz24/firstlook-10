@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Grid, List, Loader2, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyCard from "@/components/PropertyCard";
@@ -27,8 +26,10 @@ const Properties = () => {
     queryFn: async () => {
       let query = supabase
         .from('properties')
-        .select('*')
-        .eq('status', 'active');
+        .select('*');
+
+      // Apply status filter to only show active properties
+      query = query.eq('status', 'active');
 
       // Apply filters
       if (filters.search) {
@@ -76,26 +77,21 @@ const Properties = () => {
 
   const syncProperties = async () => {
     try {
-      const response = await fetch('/functions/v1/sync-properties', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1Z2NoZWd1a2NjY3VxcGNzcWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MTU4NzQsImV4cCI6MjA2NDI5MTg3NH0.4r_GivJvzSZGgFizHGKoGdGnxa7hbZJr2FhgnAUeGdE`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const { data, error } = await supabase.functions.invoke('sync-properties');
       
-      const result = await response.json();
+      if (error) throw error;
       
-      if (result.success) {
+      if (data?.success) {
         toast({
           title: "Data Updated!",
-          description: `Successfully synced ${result.records_processed} properties`,
+          description: `Successfully synced ${data.records_processed || 0} properties`,
         });
         refetch();
       } else {
-        throw new Error(result.error);
+        throw new Error(data?.error || 'Unknown error');
       }
     } catch (error) {
+      console.error('Sync error:', error);
       toast({
         title: "Sync Failed",
         description: "Failed to update property data. Please try again.",
@@ -314,7 +310,7 @@ const Properties = () => {
                       baths: property.baths,
                       sqft: property.sqft?.toString() || '',
                       propertyType: property.property_type || 'Property',
-                      image: property.images?.[0] || '/placeholder.svg'
+                      image: (property.images as string[])?.[0] || '/placeholder.svg'
                     }}
                   />
                 ))}

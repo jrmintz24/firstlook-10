@@ -159,6 +159,84 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          address: string
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          description: string | null
+          id: string
+          images: Json | null
+          latitude: number | null
+          listing_agent_email: string | null
+          listing_agent_name: string | null
+          listing_agent_phone: string | null
+          longitude: number | null
+          lot_size: string | null
+          mls_id: string | null
+          price: number
+          property_type: string | null
+          sqft: number | null
+          state: string
+          status: string | null
+          updated_at: string
+          year_built: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          baths: number
+          beds: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          price: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          price?: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       showing_requests: {
         Row: {
           created_at: string

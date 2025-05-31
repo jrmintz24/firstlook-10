@@ -10,8 +10,22 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 py-20">
-      <div className="container mx-auto px-4">
+    <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 py-20 relative overflow-hidden">
+      {/* Background Images */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 right-10 w-32 h-32 bg-gradient-to-br from-slate-400 to-slate-600 rounded-full"></div>
+        <div className="absolute bottom-20 left-10 w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
+        {/* Washington Monument silhouette */}
+        <div className="absolute bottom-0 right-1/4 w-2 h-40 bg-gradient-to-t from-slate-400 to-slate-600 opacity-20"></div>
+        {/* Capitol dome silhouette */}
+        <div className="absolute top-1/3 right-1/3 w-20 h-10 bg-gradient-to-b from-slate-400 to-slate-600 rounded-t-full opacity-20"></div>
+        {/* Abstract building shapes */}
+        <div className="absolute bottom-0 left-1/3 w-8 h-24 bg-gradient-to-t from-purple-400 to-purple-600 opacity-20"></div>
+        <div className="absolute bottom-0 left-1/2 w-6 h-32 bg-gradient-to-t from-blue-400 to-blue-600 opacity-20"></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
             🏛️ Now Serving Washington DC Metro Area

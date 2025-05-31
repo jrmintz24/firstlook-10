@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -47,16 +46,6 @@ const Navigation = () => {
             >
               <Home className="w-4 h-4" />
               Home
-            </Link>
-            <Link 
-              to="/dc-buyers" 
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
-                isActive('/dc-buyers') 
-                  ? 'text-purple-600 bg-purple-50' 
-                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              🏛️ DC Buyers
             </Link>
             <Link 
               to="/agents" 

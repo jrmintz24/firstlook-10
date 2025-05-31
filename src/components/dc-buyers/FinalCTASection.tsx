@@ -9,7 +9,7 @@ interface FinalCTASectionProps {
 
 const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) => {
   return (
-    <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 py-20 relative overflow-hidden">
+    <div className="bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700 py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-black/10"></div>
       <div className="container mx-auto px-4 text-center relative z-10">
         <h2 className="text-5xl font-bold text-white mb-6">

@@ -13,10 +13,10 @@ const NeighborhoodsSection = () => {
   ];
 
   return (
-    <div className="py-20 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
+    <div className="py-20 bg-gradient-to-r from-slate-50 via-purple-50 to-blue-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 to-purple-700 bg-clip-text text-transparent mb-6">
             Discover Your Perfect DC Neighborhood
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -30,11 +30,11 @@ const NeighborhoodsSection = () => {
             return (
               <Card key={index} className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:transform hover:scale-105">
                 <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
                     <IconComponent className="h-8 w-8 text-purple-600" />
                   </div>
                   <CardTitle className="text-2xl text-gray-900">{neighborhood.name}</CardTitle>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{neighborhood.avgPrice}</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-purple-600 bg-clip-text text-transparent">{neighborhood.avgPrice}</div>
                   <div className="text-sm text-gray-500">Average Home Price</div>
                 </CardHeader>
                 <CardContent className="text-center">

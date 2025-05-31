@@ -5,19 +5,19 @@ const HowItWorksSection = () => {
       number: 1,
       title: "Request a Showing",
       description: "Tell us which DC property you want to see. No registration required for your first tour.",
-      gradient: "from-purple-500 to-pink-600"
+      gradient: "from-purple-600 to-purple-700"
     },
     {
       number: 2,
       title: "Get Matched",
       description: "We connect you with a licensed showing partner who knows your target neighborhood.",
-      gradient: "from-green-500 to-emerald-600"
+      gradient: "from-blue-600 to-blue-700"
     },
     {
       number: 3,
       title: "Tour Your Home",
       description: "Visit the property at your convenience. No pressure, no commitments, just expertise.",
-      gradient: "from-pink-500 to-orange-500"
+      gradient: "from-slate-600 to-slate-700"
     }
   ];
 
@@ -25,7 +25,7 @@ const HowItWorksSection = () => {
     <div className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent mb-6">
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
             How FirstLook Works in DC
           </h2>
           <p className="text-xl text-gray-600">

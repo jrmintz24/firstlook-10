@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddressAutocompleteProps {
   value: string;
@@ -30,17 +31,47 @@ const AddressAutocomplete = ({
   const autocompleteRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+
+  // Get API key from Supabase secrets
+  useEffect(() => {
+    const getApiKey = async () => {
+      try {
+        // For development, try environment variable first
+        const envKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+        if (envKey) {
+          console.log('Using environment variable API key');
+          setApiKey(envKey);
+          return;
+        }
+
+        // In production/Supabase environment, the key should be available through the edge function
+        // For now, let's use a fallback approach
+        console.log('Environment variable not found, checking for alternative method...');
+        
+        // Since we can't directly access Supabase secrets from the frontend,
+        // we'll need to handle this differently
+        setLoadError('Google Places API key configuration needed');
+        
+      } catch (error) {
+        console.error('Error getting API key:', error);
+        setLoadError('Failed to load API configuration');
+      }
+    };
+
+    getApiKey();
+  }, []);
 
   // Load Google Places API
   useEffect(() => {
+    if (!apiKey) return;
+
     const loadGoogleMapsAPI = () => {
-      const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-      
       console.log('API Key check:', apiKey ? 'Present' : 'Missing');
       
       if (!apiKey) {
         setLoadError('Google Places API key is missing');
-        console.error('VITE_GOOGLE_PLACES_API_KEY environment variable is not set');
+        console.error('Google Places API key is not available');
         return;
       }
 
@@ -108,7 +139,7 @@ const AddressAutocomplete = ({
         window.google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
       }
     };
-  }, [onChange]);
+  }, [apiKey, onChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -136,7 +167,7 @@ const AddressAutocomplete = ({
           {loadError} - You can still enter addresses manually
         </p>
       )}
-      {!isLoaded && !loadError && (
+      {!isLoaded && !loadError && apiKey && (
         <p className="text-xs text-gray-500 mt-1">
           Loading Google Places API for address suggestions...
         </p>

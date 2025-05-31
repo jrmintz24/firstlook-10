@@ -38,7 +38,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user, signUp, signIn } = useAuth();
+  const { user, signUp } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -60,6 +60,28 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     // Generate a simple password based on first name + random numbers
     const randomNum = Math.floor(Math.random() * 9999);
     return `${formData.firstName}${randomNum}`;
+  };
+
+  const submitShowingRequest = async (userId: string) => {
+    const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
+    const preferredDate = formData.preferredDate1;
+    const preferredTime = formData.preferredTime1;
+
+    const { error } = await supabase
+      .from('showing_requests')
+      .insert({
+        user_id: userId,
+        property_address: propertyAddress,
+        preferred_date: preferredDate || null,
+        preferred_time: preferredTime || null,
+        message: formData.notes || null,
+        status: 'pending'
+      });
+
+    if (error) {
+      console.error('Error submitting showing request:', error);
+      throw new Error('Failed to submit showing request');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,30 +112,53 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
           user_type: 'buyer'
         };
 
+        console.log('Attempting to create account with:', { email: formData.email, metadata });
+
         const { error: signUpError } = await signUp(formData.email, password, metadata);
         
         if (signUpError) {
+          console.error('Signup error:', signUpError);
+          
           // If user already exists, try to sign them in
-          if (signUpError.message?.includes('User already registered')) {
+          if (signUpError.message?.includes('User already registered') || 
+              signUpError.message?.includes('already been registered')) {
             toast({
-              title: "Account exists!",
-              description: "We found your account. Please check your email for your password or use the sign-in option.",
+              title: "Account Already Exists",
+              description: "An account with this email already exists. Please sign in instead.",
               variant: "destructive"
             });
             return;
           } else {
             toast({
               title: "Account Creation Failed",
-              description: signUpError.message,
+              description: signUpError.message || "Failed to create account. Please try again.",
               variant: "destructive"
             });
             return;
           }
         }
 
+        // Wait a moment for the auth state to update
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         // Get the current user after signup
         const { data: { user: newUser } } = await supabase.auth.getUser();
         currentUser = newUser;
+        
+        if (!currentUser) {
+          // Try to get session instead
+          const { data: { session } } = await supabase.auth.getSession();
+          currentUser = session?.user || null;
+        }
+
+        if (!currentUser) {
+          toast({
+            title: "Account Created But Not Signed In",
+            description: "Your account was created successfully, but please check your email to verify it, then sign in.",
+            variant: "destructive"
+          });
+          return;
+        }
         
         // Show password to user
         toast({
@@ -126,59 +171,40 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
       if (!currentUser) {
         toast({
           title: "Authentication Error",
-          description: "Unable to authenticate. Please try again.",
+          description: "Unable to authenticate. Please try signing in manually.",
           variant: "destructive"
         });
         return;
       }
 
       // Submit the showing request
-      const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
-      const preferredDate = formData.preferredDate1;
-      const preferredTime = formData.preferredTime1;
+      await submitShowingRequest(currentUser.id);
 
-      const { error } = await supabase
-        .from('showing_requests')
-        .insert({
-          user_id: currentUser.id,
-          property_address: propertyAddress,
-          preferred_date: preferredDate || null,
-          preferred_time: preferredTime || null,
-          message: formData.notes || null,
-          status: 'pending'
-        });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to submit showing request. Please try again.",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Request Submitted! 🎉",
-          description: "We'll match you with a showing partner and send confirmation within 24 hours.",
-        });
-        onClose();
-        setStep(1);
-        setFormData({
-          propertyAddress: '',
-          mlsId: '',
-          preferredDate1: '',
-          preferredTime1: '',
-          preferredDate2: '',
-          preferredTime2: '',
-          preferredDate3: '',
-          preferredTime3: '',
-          notes: '',
-          contactMethod: 'email',
-          firstName: '',
-          email: '',
-          phone: '',
-          password: ''
-        });
-      }
+      toast({
+        title: "Request Submitted! 🎉",
+        description: "We'll match you with a showing partner and send confirmation within 24 hours.",
+      });
+      
+      onClose();
+      setStep(1);
+      setFormData({
+        propertyAddress: '',
+        mlsId: '',
+        preferredDate1: '',
+        preferredTime1: '',
+        preferredDate2: '',
+        preferredTime2: '',
+        preferredDate3: '',
+        preferredTime3: '',
+        notes: '',
+        contactMethod: 'email',
+        firstName: '',
+        email: '',
+        phone: '',
+        password: ''
+      });
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",

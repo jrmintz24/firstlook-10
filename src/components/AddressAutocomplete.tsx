@@ -12,14 +12,6 @@ interface AddressAutocompleteProps {
   id?: string;
 }
 
-// Declare Google Maps types
-declare global {
-  interface Window {
-    google: any;
-    initAutocomplete: () => void;
-  }
-}
-
 const AddressAutocomplete = ({ 
   value, 
   onChange, 
@@ -27,150 +19,113 @@ const AddressAutocomplete = ({
   label = "Property Address",
   id = "address-autocomplete"
 }: AddressAutocompleteProps) => {
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
 
-  // Get API key from Supabase secrets
   useEffect(() => {
-    const getApiKey = async () => {
-      try {
-        // For development, try environment variable first
-        const envKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-        if (envKey) {
-          console.log('Using environment variable API key');
-          setApiKey(envKey);
-          return;
-        }
-
-        // In production/Supabase environment, the key should be available through the edge function
-        // For now, let's use a fallback approach
-        console.log('Environment variable not found, checking for alternative method...');
-        
-        // Since we can't directly access Supabase secrets from the frontend,
-        // we'll need to handle this differently
-        setLoadError('Google Places API key configuration needed');
-        
-      } catch (error) {
-        console.error('Error getting API key:', error);
-        setLoadError('Failed to load API configuration');
+    const timeoutId = setTimeout(async () => {
+      if (value.length > 2) {
+        await fetchSuggestions(value);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
       }
-    };
+    }, 300);
 
-    getApiKey();
-  }, []);
+    return () => clearTimeout(timeoutId);
+  }, [value]);
 
-  // Load Google Places API
-  useEffect(() => {
-    if (!apiKey) return;
-
-    const loadGoogleMapsAPI = () => {
-      console.log('API Key check:', apiKey ? 'Present' : 'Missing');
+  const fetchSuggestions = async (input: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Fetching suggestions for:', input);
       
-      if (!apiKey) {
-        setLoadError('Google Places API key is missing');
-        console.error('Google Places API key is not available');
+      const { data, error } = await supabase.functions.invoke('google-places', {
+        body: { input }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        setError('Failed to fetch address suggestions');
+        setSuggestions([]);
         return;
       }
 
-      if (window.google && window.google.maps) {
-        initializeAutocomplete();
-        return;
+      if (data && data.predictions) {
+        console.log('Received suggestions:', data.predictions);
+        setSuggestions(data.predictions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
       }
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
+      setError('Failed to fetch address suggestions');
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      // Check if script is already loading
-      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-        // Wait for it to load
-        window.initAutocomplete = initializeAutocomplete;
-        return;
-      }
-
-      // Create and load the script
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initAutocomplete`;
-      script.async = true;
-      script.defer = true;
-      
-      script.onerror = () => {
-        setLoadError('Failed to load Google Places API');
-        console.error('Failed to load Google Places API script');
-      };
-      
-      window.initAutocomplete = initializeAutocomplete;
-      
-      document.head.appendChild(script);
-    };
-
-    const initializeAutocomplete = () => {
-      if (!inputRef.current || !window.google) return;
-
-      try {
-        autocompleteRef.current = new window.google.maps.places.Autocomplete(
-          inputRef.current,
-          {
-            types: ['address'],
-            componentRestrictions: { country: 'us' },
-            fields: ['formatted_address', 'geometry', 'place_id']
-          }
-        );
-
-        autocompleteRef.current.addListener('place_changed', () => {
-          const place = autocompleteRef.current.getPlace();
-          if (place.formatted_address) {
-            onChange(place.formatted_address);
-          }
-        });
-
-        setIsLoaded(true);
-        setLoadError(null);
-        console.log('Google Places Autocomplete initialized successfully');
-      } catch (error) {
-        console.error('Error initializing Google Places Autocomplete:', error);
-        setLoadError('Error initializing address search');
-      }
-    };
-
-    loadGoogleMapsAPI();
-
-    return () => {
-      if (autocompleteRef.current) {
-        window.google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
-      }
-    };
-  }, [apiKey, onChange]);
+  const handleSuggestionClick = (suggestion: any) => {
+    onChange(suggestion.description);
+    setShowSuggestions(false);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
 
+  const handleInputFocus = () => {
+    if (suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 150);
+  };
+
   return (
-    <div>
+    <div className="relative">
       {label && <Label htmlFor={id}>{label}</Label>}
       <Input
         ref={inputRef}
         id={id}
         value={value}
         onChange={handleInputChange}
-        placeholder={
-          loadError 
-            ? "Enter address manually..." 
-            : isLoaded 
-              ? placeholder 
-              : "Loading address search..."
-        }
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        placeholder={isLoading ? "Loading suggestions..." : placeholder}
         autoComplete="off"
       />
-      {loadError && (
+      
+      {error && (
         <p className="text-xs text-red-500 mt-1">
-          {loadError} - You can still enter addresses manually
+          {error} - You can still enter addresses manually
         </p>
       )}
-      {!isLoaded && !loadError && apiKey && (
-        <p className="text-xs text-gray-500 mt-1">
-          Loading Google Places API for address suggestions...
-        </p>
+
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={suggestion.place_id || index}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+              onClick={() => handleSuggestionClick(suggestion)}
+            >
+              <div className="text-sm font-medium">{suggestion.structured_formatting?.main_text}</div>
+              <div className="text-xs text-gray-500">{suggestion.structured_formatting?.secondary_text}</div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

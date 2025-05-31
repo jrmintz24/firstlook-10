@@ -84,7 +84,7 @@ const Index = () => {
             FirstLook empowers homebuyers to request private showings on-demand, without requiring upfront buyer agreements. Your first showing is completely free. 🏠✨
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -102,6 +102,18 @@ const Index = () => {
             >
               Join as Showing Partner
             </Button>
+          </div>
+
+          {/* DC-specific link */}
+          <div className="mb-12">
+            <Link to="/dc-home-buyers">
+              <Button 
+                variant="ghost" 
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 underline font-medium"
+              >
+                🏛️ Looking for homes specifically in Washington DC? →
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
+import { Calendar, Clock, MapPin, DollarSign, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,11 +29,16 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     preferredDate3: '',
     preferredTime3: '',
     notes: '',
-    contactMethod: 'email'
+    contactMethod: 'email',
+    // Account creation fields
+    firstName: '',
+    email: '',
+    phone: '',
+    password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, signUp, signIn } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -51,13 +56,19 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     setStep(step + 1);
   };
 
+  const generatePassword = () => {
+    // Generate a simple password based on first name + random numbers
+    const randomNum = Math.floor(Math.random() * 9999);
+    return `${formData.firstName}${randomNum}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
+    if (!formData.firstName || !formData.email || !formData.phone) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to submit a showing request",
+        title: "Required Fields Missing",
+        description: "Please fill in your name, email, and phone number",
         variant: "destructive"
       });
       return;
@@ -66,6 +77,62 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     setIsLoading(true);
 
     try {
+      let currentUser = user;
+      
+      // If user is not logged in, create account
+      if (!currentUser) {
+        const password = generatePassword();
+        
+        const metadata = {
+          first_name: formData.firstName,
+          last_name: '', // We're only collecting first name for simplicity
+          phone: formData.phone,
+          user_type: 'buyer'
+        };
+
+        const { error: signUpError } = await signUp(formData.email, password, metadata);
+        
+        if (signUpError) {
+          // If user already exists, try to sign them in
+          if (signUpError.message?.includes('User already registered')) {
+            toast({
+              title: "Account exists!",
+              description: "We found your account. Please check your email for your password or use the sign-in option.",
+              variant: "destructive"
+            });
+            return;
+          } else {
+            toast({
+              title: "Account Creation Failed",
+              description: signUpError.message,
+              variant: "destructive"
+            });
+            return;
+          }
+        }
+
+        // Get the current user after signup
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        currentUser = newUser;
+        
+        // Show password to user
+        toast({
+          title: "Account Created! 🎉",
+          description: `Your account password is: ${password} (save this!)`,
+          duration: 10000,
+        });
+      }
+
+      if (!currentUser) {
+        toast({
+          title: "Authentication Error",
+          description: "Unable to authenticate. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Submit the showing request
       const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
       const preferredDate = formData.preferredDate1;
       const preferredTime = formData.preferredTime1;
@@ -73,7 +140,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
       const { error } = await supabase
         .from('showing_requests')
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           property_address: propertyAddress,
           preferred_date: preferredDate || null,
           preferred_time: preferredTime || null,
@@ -104,7 +171,11 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
           preferredDate3: '',
           preferredTime3: '',
           notes: '',
-          contactMethod: 'email'
+          contactMethod: 'email',
+          firstName: '',
+          email: '',
+          phone: '',
+          password: ''
         });
       }
     } catch (error) {
@@ -131,7 +202,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
             🏠 Request Your Free Showing
           </DialogTitle>
           <DialogDescription>
-            Step {step} of 3 - Let's get you scheduled for your first free private showing
+            Step {step} of {user ? 3 : 4} - Let's get you scheduled for your first free private showing
           </DialogDescription>
         </DialogHeader>
 
@@ -243,34 +314,108 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
                 Any special requests or notes for your showing partner?
               </CardDescription>
             </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Any specific areas you'd like to focus on, accessibility needs, or questions about the property..."
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">What happens next?</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• We'll match you with a licensed showing partner</li>
+                  <li>• You'll receive confirmation within 24 hours</li>
+                  <li>• Your showing partner will coordinate access</li>
+                  <li>• Enjoy your free, no-pressure viewing!</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setStep(2)} 
+                  className="flex-1"
+                  disabled={isLoading}
+                >
+                  Back
+                </Button>
+                <Button 
+                  onClick={user ? handleSubmit : handleNext}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  {user ? (isLoading ? "Submitting..." : "Submit Request") : "Continue"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === 4 && !user && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-blue-600" />
+                Create Your Account
+              </CardTitle>
+              <CardDescription>
+                Almost done! Just need a few details to submit your request
+              </CardDescription>
+            </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Any specific areas you'd like to focus on, accessibility needs, or questions about the property..."
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                    rows={3}
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    required
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    required
+                    placeholder="john@example.com"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    required
+                    placeholder="(555) 123-4567"
                   />
                 </div>
                 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">What happens next?</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• We'll match you with a licensed showing partner</li>
-                    <li>• You'll receive confirmation within 24 hours</li>
-                    <li>• Your showing partner will coordinate access</li>
-                    <li>• Enjoy your free, no-pressure viewing!</li>
-                  </ul>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-green-900 mb-2">🎉 Almost there!</h4>
+                  <p className="text-sm text-green-700">
+                    We'll create your account automatically and email you the login details.
+                  </p>
                 </div>
 
                 <div className="flex gap-2">
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setStep(2)} 
+                    onClick={() => setStep(3)} 
                     className="flex-1"
                     disabled={isLoading}
                   >
@@ -281,7 +426,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
                     className="flex-1 bg-blue-600 hover:bg-blue-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Submitting..." : "Submit Request"}
+                    {isLoading ? "Creating Account & Submitting..." : "Submit Request"}
                   </Button>
                 </div>
               </form>

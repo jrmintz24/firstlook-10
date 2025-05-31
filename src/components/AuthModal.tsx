@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { Sparkles } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -95,13 +96,13 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 border border-purple-200">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent">
             {userType === 'buyer' ? '🏠' : '🏢'} 
             {userType === 'buyer' ? 'Homebuyer' : 'Showing Partner'} Account
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-lg text-gray-600">
             {userType === 'buyer' 
               ? 'Join to request your free showing and discover open houses'
               : 'Join our network of licensed showing partners'
@@ -110,27 +111,35 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
         </DialogHeader>
 
         <Tabs value={isLogin ? "login" : "signup"} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login" onClick={() => setIsLogin(true)}>
+          <TabsList className="grid w-full grid-cols-2 bg-white/60 backdrop-blur-sm">
+            <TabsTrigger 
+              value="login" 
+              onClick={() => setIsLogin(true)}
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            >
               Sign In
             </TabsTrigger>
-            <TabsTrigger value="signup" onClick={() => setIsLogin(false)}>
+            <TabsTrigger 
+              value="signup" 
+              onClick={() => setIsLogin(false)}
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            >
               Sign Up
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
-            <Card>
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Welcome back</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-xl text-gray-800">Welcome back</CardTitle>
+                <CardDescription className="text-gray-600">
                   Sign in to your FirstLook account
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -138,10 +147,11 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                     <Input
                       id="password"
                       type="password"
@@ -149,11 +159,12 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 shadow-lg transform hover:scale-105 transition-all duration-300"
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing In..." : "Sign In"}
@@ -164,17 +175,18 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
           </TabsContent>
 
           <TabsContent value="signup">
-            <Card>
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Create your account</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-xl text-gray-800">Create your account</CardTitle>
+                <CardDescription className="text-gray-600">
                   {userType === 'buyer' 
                     ? 'Start discovering homes with your free showing'
                     : 'Join our network and start earning'
                   }
                 </CardDescription>
                 {userType === 'agent' && (
-                  <Badge variant="secondary" className="w-fit">
+                  <Badge variant="secondary" className="w-fit bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200">
+                    <Sparkles className="h-3 w-3 mr-1" />
                     License verification required
                   </Badge>
                 )}
@@ -183,28 +195,30 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">First Name</Label>
+                      <Label htmlFor="firstName" className="text-gray-700 font-medium">First Name</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
                         required
                         disabled={isLoading}
+                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
+                      <Label htmlFor="lastName" className="text-gray-700 font-medium">Last Name</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
                         onChange={(e) => handleInputChange('lastName', e.target.value)}
                         required
                         disabled={isLoading}
+                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -212,10 +226,11 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -223,11 +238,12 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   {userType === 'agent' && (
                     <div>
-                      <Label htmlFor="licenseNumber">Real Estate License Number</Label>
+                      <Label htmlFor="licenseNumber" className="text-gray-700 font-medium">Real Estate License Number</Label>
                       <Input
                         id="licenseNumber"
                         value={formData.licenseNumber}
@@ -235,11 +251,12 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                         required
                         placeholder="License # (will be verified)"
                         disabled={isLoading}
+                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                   )}
                   <div>
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                     <Input
                       id="password"
                       type="password"
@@ -247,10 +264,11 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -258,13 +276,15 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       required
                       disabled={isLoading}
+                      className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 shadow-lg transform hover:scale-105 transition-all duration-300"
                     disabled={isLoading}
                   >
+                    <Sparkles className="mr-2 h-4 w-4" />
                     {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>

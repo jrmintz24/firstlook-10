@@ -62,21 +62,28 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     return `${formData.firstName}${randomNum}`;
   };
 
-  const submitShowingRequest = async (userId: string) => {
+  const submitShowingRequest = async (userId: string | null = null) => {
     const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
     const preferredDate = formData.preferredDate1;
     const preferredTime = formData.preferredTime1;
 
+    const requestData = {
+      user_id: userId,
+      property_address: propertyAddress,
+      preferred_date: preferredDate || null,
+      preferred_time: preferredTime || null,
+      message: formData.notes || null,
+      status: userId ? 'pending' : 'pending_verification'
+    };
+
+    // If no user_id, add user info to the message for later processing
+    if (!userId) {
+      requestData.message = `PENDING VERIFICATION - Name: ${formData.firstName}, Email: ${formData.email}, Phone: ${formData.phone}. Notes: ${formData.notes || 'None'}`;
+    }
+
     const { error } = await supabase
       .from('showing_requests')
-      .insert({
-        user_id: userId,
-        property_address: propertyAddress,
-        preferred_date: preferredDate || null,
-        preferred_time: preferredTime || null,
-        message: formData.notes || null,
-        status: 'pending'
-      });
+      .insert(requestData);
 
     if (error) {
       console.error('Error submitting showing request:', error);
@@ -101,7 +108,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     try {
       let currentUser = user;
       
-      // If user is not logged in, create account
+      // If user is not logged in, create account and submit request
       if (!currentUser) {
         const password = generatePassword();
         
@@ -119,56 +126,17 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
         if (signUpError) {
           console.error('Signup error:', signUpError);
           
-          // If user already exists, that's actually fine - we'll just submit without auth
+          // If user already exists, submit as unverified request
           if (signUpError.message?.includes('User already registered') || 
               signUpError.message?.includes('already been registered')) {
             
-            // Try to create an unverified showing request using just the email
-            const { error: insertError } = await supabase
-              .from('showing_requests')
-              .insert({
-                user_id: null, // We'll handle this when they verify later
-                property_address: formData.propertyAddress || `MLS ID: ${formData.mlsId}`,
-                preferred_date: formData.preferredDate1 || null,
-                preferred_time: formData.preferredTime1 || null,
-                message: `UNVERIFIED REQUEST - Name: ${formData.firstName}, Email: ${formData.email}, Phone: ${formData.phone}. Notes: ${formData.notes || 'None'}`,
-                status: 'pending_verification'
-              });
-
-            if (insertError) {
-              console.error('Error creating unverified request:', insertError);
-              toast({
-                title: "Request Failed",
-                description: "Unable to submit your request. Please try again.",
-                variant: "destructive"
-              });
-              return;
-            }
+            await submitShowingRequest(null); // Submit without user_id
 
             toast({
               title: "Request Submitted! 📧",
-              description: "Since you already have an account, we've submitted your request. Please check your email for verification when an agent contacts you.",
+              description: "Since you already have an account, we've submitted your request. An agent will contact you to proceed with verification.",
             });
             
-            onClose();
-            setStep(1);
-            setFormData({
-              propertyAddress: '',
-              mlsId: '',
-              preferredDate1: '',
-              preferredTime1: '',
-              preferredDate2: '',
-              preferredTime2: '',
-              preferredDate3: '',
-              preferredTime3: '',
-              notes: '',
-              contactMethod: 'email',
-              firstName: '',
-              email: '',
-              phone: '',
-              password: ''
-            });
-            return;
           } else {
             toast({
               title: "Account Creation Failed",
@@ -177,36 +145,16 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
             });
             return;
           }
-        }
+        } else {
+          // Account created successfully, submit as unverified request
+          await submitShowingRequest(null); // Submit without user_id for now
 
-        // Account was created successfully, but user needs to verify email
-        // Let's submit the request anyway and handle verification later
-        const { error: insertError } = await supabase
-          .from('showing_requests')
-          .insert({
-            user_id: null, // Will be linked when they verify
-            property_address: formData.propertyAddress || `MLS ID: ${formData.mlsId}`,
-            preferred_date: formData.preferredDate1 || null,
-            preferred_time: formData.preferredTime1 || null,
-            message: `PENDING VERIFICATION - Name: ${formData.firstName}, Email: ${formData.email}, Phone: ${formData.phone}. Password: ${password}. Notes: ${formData.notes || 'None'}`,
-            status: 'pending_verification'
-          });
-
-        if (insertError) {
-          console.error('Error creating pending request:', insertError);
           toast({
-            title: "Request Failed",
-            description: "Unable to submit your request. Please try again.",
-            variant: "destructive"
+            title: "Request Submitted! 🎉",
+            description: `Your account has been created! When an agent accepts your showing, you'll receive an email to verify your account. Your temporary password is: ${password}`,
+            duration: 15000,
           });
-          return;
         }
-
-        toast({
-          title: "Request Submitted! 🎉",
-          description: `Your account has been created! When an agent accepts your showing, you'll receive an email to verify your account. Your temporary password is: ${password}`,
-          duration: 15000,
-        });
         
       } else {
         // User is already logged in, submit normally

@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, Heart, Plus, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Star, Heart, Bell, User, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 

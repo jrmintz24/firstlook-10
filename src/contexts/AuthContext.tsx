@@ -51,8 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/buyer-dashboard`,
-        data: metadata,
-        emailConfirmation: false
+        data: metadata
       }
     });
     

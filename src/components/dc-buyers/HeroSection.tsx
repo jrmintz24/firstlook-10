@@ -23,7 +23,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </h1>
           
           <p className="text-2xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Stop dealing with pushy agents and restrictive buyer agreements. FirstLook gives you instant access to home showings across Washington DC - from Capitol Hill to Georgetown - with zero commitment required.
+            Stop dealing with pushy agents and restrictive buyer agreements. FirstLook gives you instant access to home showings across Washington DC - from Capitol Hill to Georgetown - with <strong>zero commitment</strong> required.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">

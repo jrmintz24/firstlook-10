@@ -43,7 +43,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto text-white">
           <div className="flex items-center justify-center space-x-2">
             <Phone className="h-5 w-5" />
-            <span>Available 7 Days a Week</span>
+            <span>See homes 7 days a week</span>
           </div>
           <div className="flex items-center justify-center space-x-2">
             <CheckCircle className="h-5 w-5" />

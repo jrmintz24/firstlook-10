@@ -22,9 +22,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     firstName: '',
-    lastName: '',
     phone: '',
     licenseNumber: ''
   });
@@ -64,7 +62,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
 
         const metadata = {
           first_name: formData.firstName,
-          last_name: '', // Empty since we're not collecting it
+          last_name: '',
           phone: formData.phone,
           user_type: userType,
           ...(userType === 'agent' && { license_number: formData.licenseNumber })
@@ -78,12 +76,21 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
             variant: "destructive"
           });
         } else {
-          toast({
-            title: "Success!",
-            description: `Account created! Your temporary password is: ${password}. Please check your email to verify your account.`,
-            duration: 15000,
-          });
-          onClose();
+          // Automatically sign in after successful sign up
+          const { error: signInError } = await signIn(formData.email, password);
+          if (signInError) {
+            toast({
+              title: "Account created but sign in failed",
+              description: `Your account was created successfully. Your password is: ${password}. Please sign in manually.`,
+              duration: 15000,
+            });
+          } else {
+            toast({
+              title: "Success!",
+              description: "Account created and you're now signed in!",
+            });
+            onClose();
+          }
         }
       }
     } finally {

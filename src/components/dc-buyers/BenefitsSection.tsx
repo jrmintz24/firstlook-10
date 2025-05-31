@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Sparkles } from "lucide-react";
 
@@ -9,7 +8,7 @@ interface BenefitsSectionProps {
 const BenefitsSection = ({ onSignUp }: BenefitsSectionProps) => {
   const benefits = [
     "No upfront buyer agreements required",
-    "Save commission without long-term commitment",
+    "Available 7 days a week",
     "Licensed DC real estate professionals",
     "Complete neighborhood expertise",
     "Free first showing guaranteed",

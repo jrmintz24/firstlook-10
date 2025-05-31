@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,7 @@ const Properties = () => {
   const { data: properties, isLoading, error, refetch } = useQuery({
     queryKey: ['properties', filters],
     queryFn: async () => {
+      console.log('Fetching properties with filters:', filters);
       let query = supabase
         .from('properties')
         .select('*');
@@ -68,18 +70,26 @@ const Properties = () => {
       const { data, error } = await query;
       
       if (error) {
+        console.error('Database error:', error);
         throw new Error(error.message);
       }
       
+      console.log('Fetched properties:', data?.length || 0);
       return data as Property[];
     }
   });
 
   const syncProperties = async () => {
     try {
+      console.log('Starting property sync...');
       const { data, error } = await supabase.functions.invoke('sync-properties');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Sync function error:', error);
+        throw error;
+      }
+      
+      console.log('Sync response:', data);
       
       if (data?.success) {
         toast({
@@ -88,7 +98,7 @@ const Properties = () => {
         });
         refetch();
       } else {
-        throw new Error(data?.error || 'Unknown error');
+        throw new Error(data?.error || 'Unknown error during sync');
       }
     } catch (error) {
       console.error('Sync error:', error);
@@ -110,6 +120,7 @@ const Properties = () => {
   };
 
   const updateFilter = (key: keyof PropertyFilters, value: any) => {
+    console.log('Updating filter:', key, value);
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -128,57 +139,78 @@ const Properties = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
+      {/* Header with Prominent Search */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Property Search</h1>
-              <p className="text-gray-600 mt-1">
-                {properties ? `${properties.length} properties available` : 'Loading...'}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-              </Button>
-              
-              <div className="flex items-center border rounded-lg bg-white">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-r-none"
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="rounded-none"
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('map')}
-                  className="rounded-l-none"
-                >
-                  <Map className="h-4 w-4" />
-                </Button>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Property Search</h1>
+                <p className="text-gray-600 mt-1">
+                  {properties ? `${properties.length} properties available` : 'Loading...'}
+                </p>
               </div>
               
-              <Button onClick={syncProperties} className="bg-gradient-to-r from-blue-600 to-green-600">
-                Refresh Data
-              </Button>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  Advanced Filters
+                </Button>
+                
+                <div className="flex items-center border rounded-lg bg-white">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-r-none"
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'map' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('map')}
+                    className="rounded-l-none"
+                  >
+                    <Map className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <Button onClick={syncProperties} className="bg-gradient-to-r from-blue-600 to-green-600">
+                  Refresh Data
+                </Button>
+              </div>
+            </div>
+
+            {/* Prominent Search Bar */}
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg border">
+              <div className="max-w-2xl mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search by address, neighborhood, or city..."
+                    value={filters.search || ''}
+                    onChange={(e) => updateFilter('search', e.target.value)}
+                    className="pl-12 pr-4 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg bg-white shadow-sm"
+                  />
+                </div>
+                <p className="text-sm text-gray-600 mt-2 text-center">
+                  Try searching for "Washington", "Georgetown", or a specific address
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -192,22 +224,11 @@ const Properties = () => {
               <Card className="sticky top-4">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Search className="h-5 w-5" />
-                    Search & Filter
+                    <Filter className="h-5 w-5" />
+                    Advanced Filters
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Search */}
-                  <div>
-                    <Label htmlFor="search">Location Search</Label>
-                    <Input
-                      id="search"
-                      placeholder="Search by address or neighborhood..."
-                      value={filters.search || ''}
-                      onChange={(e) => updateFilter('search', e.target.value)}
-                    />
-                  </div>
-
                   {/* Price Range */}
                   <div>
                     <Label>Price Range</Label>
@@ -332,8 +353,8 @@ const Properties = () => {
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No Properties Found</h3>
                   <p className="text-gray-500 mb-4">
                     {filters.search || filters.minPrice || filters.maxPrice 
-                      ? "Try adjusting your search filters" 
-                      : "No properties are currently available"}
+                      ? "Try adjusting your search filters or click 'Refresh Data' to load new properties" 
+                      : "No properties are currently available. Click 'Refresh Data' to load properties."}
                   </p>
                   <Button onClick={syncProperties} variant="outline">
                     Refresh Data

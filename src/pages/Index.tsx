@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import OpenHouseCard from "@/components/OpenHouseCard";
 import HowItWorks from "@/components/HowItWorks";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -216,7 +216,7 @@ const Index = () => {
           <p className="text-purple-100 mb-8 max-w-2xl mx-auto text-lg">
             Join thousands of buyers discovering their dream homes with ViewFree. Your first private showing is on us. ✨
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button 
               size="lg" 
               variant="secondary"
@@ -234,6 +234,14 @@ const Index = () => {
             >
               Sign Up Now
             </Button>
+          </div>
+          
+          <div className="text-center">
+            <Link to="/faq">
+              <Button variant="ghost" className="text-white hover:bg-white/10 underline">
+                Questions about the NAR settlement? Read our FAQ →
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

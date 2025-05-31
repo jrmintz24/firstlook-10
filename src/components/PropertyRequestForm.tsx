@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface PropertyRequestFormProps {
   isOpen: boolean;
@@ -237,15 +237,13 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="propertyAddress">Property Address</Label>
-                <Input
-                  id="propertyAddress"
-                  placeholder="123 Main St, Washington, DC 20001"
-                  value={formData.propertyAddress}
-                  onChange={(e) => handleInputChange('propertyAddress', e.target.value)}
-                />
-              </div>
+              <AddressAutocomplete
+                value={formData.propertyAddress}
+                onChange={(value) => handleInputChange('propertyAddress', value)}
+                placeholder="123 Main St, Washington, DC 20001"
+                label="Property Address"
+                id="propertyAddress"
+              />
               <div className="text-center text-gray-500">— OR —</div>
               <div>
                 <Label htmlFor="mlsId">MLS ID</Label>

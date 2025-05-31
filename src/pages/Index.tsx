@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,8 +70,8 @@ const Index = () => {
             </Badge>
             
             <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-8 leading-tight">
-              See the home you want,
-              <span className="block">when you want</span>,
+              See the home you want,{" "}
+              <span className="block">when you want,</span>
               <span className="block">without the <strong>commitment</strong></span>
             </h1>
             

@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HeroSection from "@/components/dc-buyers/HeroSection";
 import TrustIndicators from "@/components/dc-buyers/TrustIndicators";
@@ -14,7 +13,6 @@ import LocalSEOSection from "@/components/dc-buyers/LocalSEOSection";
 import FinalCTASection from "@/components/dc-buyers/FinalCTASection";
 
 const DCBuyers = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPropertyForm, setShowPropertyForm] = useState(false);
 
   const handleRequestShowing = () => {
@@ -22,7 +20,7 @@ const DCBuyers = () => {
   };
 
   const handleSignUp = () => {
-    setShowAuthModal(true);
+    setShowPropertyForm(true);
   };
 
   return (
@@ -45,13 +43,7 @@ const DCBuyers = () => {
       <LocalSEOSection />
       <FinalCTASection onRequestShowing={handleRequestShowing} onSignUp={handleSignUp} />
 
-      {/* Modals */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        userType="buyer"
-      />
-      
+      {/* Property Request Form Modal */}
       <PropertyRequestForm 
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}

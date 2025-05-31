@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Star, Users, Shield, ChevronRight, Sparkles, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import UserDashboard from "@/components/UserDashboard";
@@ -15,16 +15,9 @@ import FAQSection from "@/components/FAQSection";
 import { Link } from "react-router-dom";
 
 const Index = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authType, setAuthType] = useState<'buyer' | 'agent'>('buyer');
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { toast } = useToast();
   const { user, loading } = useAuth();
-
-  const handleGetStarted = (userType: 'buyer' | 'agent') => {
-    setAuthType(userType);
-    setShowAuthModal(true);
-  };
 
   const handleRequestShowing = () => {
     setShowPropertyForm(true);
@@ -236,7 +229,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
-              onClick={() => handleGetStarted('buyer')}
+              onClick={handleRequestShowing}
             >
               Sign Up & Start Browsing
             </Button>
@@ -252,13 +245,7 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Modals */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        userType={authType}
-      />
-      
+      {/* Property Request Form Modal */}
       <PropertyRequestForm 
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}

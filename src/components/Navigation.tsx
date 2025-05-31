@@ -3,18 +3,16 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthModal from "@/components/AuthModal";
+import PropertyRequestForm from "@/components/PropertyRequestForm";
 import { User, LogOut, Home, HelpCircle, Building } from "lucide-react";
 
 const Navigation = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authType, setAuthType] = useState<'buyer' | 'agent'>('buyer');
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
 
-  const handleAuthClick = (userType: 'buyer' | 'agent') => {
-    setAuthType(userType);
-    setShowAuthModal(true);
+  const handleAuthClick = () => {
+    setShowPropertyForm(true);
   };
 
   const handleSignOut = async () => {
@@ -110,13 +108,13 @@ const Navigation = () => {
               <div className="flex items-center space-x-2">
                 <Button 
                   variant="ghost" 
-                  onClick={() => handleAuthClick('buyer')}
+                  onClick={handleAuthClick}
                   className="text-purple-600 hover:bg-purple-50"
                 >
                   Sign In
                 </Button>
                 <Button 
-                  onClick={() => handleAuthClick('buyer')}
+                  onClick={handleAuthClick}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                 >
                   Get Started
@@ -127,11 +125,10 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        userType={authType}
+      {/* Property Request Form Modal */}
+      <PropertyRequestForm 
+        isOpen={showPropertyForm}
+        onClose={() => setShowPropertyForm(false)}
       />
     </nav>
   );

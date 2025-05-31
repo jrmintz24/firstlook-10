@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,45 +33,81 @@ const BuyerDashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user, signOut } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
+    console.log('BuyerDashboard useEffect triggered, user:', user);
+    
+    const fetchData = async () => {
+      if (!user) {
+        console.log('No user found, ending loading');
+        setLoading(false);
+        setError('No user authenticated');
+        return;
+      }
+
+      try {
+        console.log('Fetching data for user:', user.id);
+        await fetchUserData();
+      } catch (err) {
+        console.error('Error in fetchData:', err);
+        setError('Failed to load dashboard data');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [user]);
 
   const fetchUserData = async () => {
+    if (!user) {
+      console.log('No user available for fetchUserData');
+      return;
+    }
+
     try {
+      console.log('Starting to fetch user data for:', user.id);
+      
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
+
+      console.log('Profile fetch result:', { profileData, profileError });
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Profile error:', profileError);
+        setError(`Profile error: ${profileError.message}`);
       } else {
         setProfile(profileData);
+        console.log('Profile set:', profileData);
       }
 
       // Fetch showing requests
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      console.log('Requests fetch result:', { requestsData, requestsError });
 
       if (requestsError) {
         console.error('Requests error:', requestsError);
+        setError(`Requests error: ${requestsError.message}`);
       } else {
         setShowingRequests(requestsData || []);
+        console.log('Requests set:', requestsData);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setError(`Unexpected error: ${error}`);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -135,7 +170,37 @@ const BuyerDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
-        <div className="text-lg">Loading your dashboard...</div>
+        <div className="text-center">
+          <div className="text-lg mb-4">Loading your dashboard...</div>
+          <div className="text-sm text-gray-600">
+            User: {user ? 'Authenticated' : 'Not authenticated'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg text-red-600 mb-4">Error loading dashboard</div>
+          <div className="text-sm text-gray-600 mb-4">{error}</div>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg mb-4">Please sign in to view your dashboard</div>
+          <Link to="/">
+            <Button>Go to Home</Button>
+          </Link>
+        </div>
       </div>
     );
   }

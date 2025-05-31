@@ -73,7 +73,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
       preferred_date: preferredDate || null,
       preferred_time: preferredTime || null,
       message: formData.notes || null,
-      status: userId ? 'pending' : 'pending_verification'
+      status: 'pending' // Changed from 'pending_verification' to 'pending'
     };
 
     // If no user_id, add user info to the message for later processing

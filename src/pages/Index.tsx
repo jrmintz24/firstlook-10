@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Home, Star, Users, Shield, ChevronRight, MapPin, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import OpenHouseCard from "@/components/OpenHouseCard";
 import HowItWorks from "@/components/HowItWorks";
+import UserDashboard from "@/components/UserDashboard";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -16,6 +18,7 @@ const Index = () => {
   const [authType, setAuthType] = useState<'buyer' | 'agent'>('buyer');
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { toast } = useToast();
+  const { user, loading } = useAuth();
 
   const handleGetStarted = (userType: 'buyer' | 'agent') => {
     setAuthType(userType);
@@ -23,8 +26,26 @@ const Index = () => {
   };
 
   const handleRequestShowing = () => {
+    if (!user) {
+      setAuthType('buyer');
+      setShowAuthModal(true);
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to request a showing",
+      });
+      return;
+    }
     setShowPropertyForm(true);
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  // If user is authenticated, show dashboard
+  if (user) {
+    return <UserDashboard />;
+  }
 
   // Mock data for open houses
   const openHouses = [
@@ -116,7 +137,6 @@ const Index = () => {
             </Link>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-purple-100">
               <div className="text-4xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">100%</div>
@@ -137,7 +157,6 @@ const Index = () => {
       {/* How It Works */}
       <HowItWorks />
 
-      {/* Open Houses Section */}
       <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -164,7 +183,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Benefits Section */}
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -219,7 +237,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* CTA Section */}
       <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">

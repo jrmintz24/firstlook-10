@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyRequestFormProps {
   isOpen: boolean;
@@ -29,7 +31,9 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     notes: '',
     contactMethod: 'email'
   });
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -47,26 +51,71 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     setStep(step + 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Request Submitted! 🎉",
-      description: "We'll match you with a showing partner and send confirmation within 24 hours.",
-    });
-    onClose();
-    setStep(1);
-    setFormData({
-      propertyAddress: '',
-      mlsId: '',
-      preferredDate1: '',
-      preferredTime1: '',
-      preferredDate2: '',
-      preferredTime2: '',
-      preferredDate3: '',
-      preferredTime3: '',
-      notes: '',
-      contactMethod: 'email'
-    });
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to submit a showing request",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
+      const preferredDate = formData.preferredDate1;
+      const preferredTime = formData.preferredTime1;
+
+      const { error } = await supabase
+        .from('showing_requests')
+        .insert({
+          user_id: user.id,
+          property_address: propertyAddress,
+          preferred_date: preferredDate || null,
+          preferred_time: preferredTime || null,
+          message: formData.notes || null,
+          status: 'pending'
+        });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to submit showing request. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Request Submitted! 🎉",
+          description: "We'll match you with a showing partner and send confirmation within 24 hours.",
+        });
+        onClose();
+        setStep(1);
+        setFormData({
+          propertyAddress: '',
+          mlsId: '',
+          preferredDate1: '',
+          preferredTime1: '',
+          preferredDate2: '',
+          preferredTime2: '',
+          preferredDate3: '',
+          preferredTime3: '',
+          notes: '',
+          contactMethod: 'email'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const timeSlots = [
@@ -218,11 +267,21 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setStep(2)} 
+                    className="flex-1"
+                    disabled={isLoading}
+                  >
                     Back
                   </Button>
-                  <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                    Submit Request
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Submitting..." : "Submit Request"}
                   </Button>
                 </div>
               </form>

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,24 +27,66 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
     phone: '',
     licenseNumber: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { signUp, signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords don't match",
-        variant: "destructive"
-      });
-      return;
-    }
+    setIsLoading(true);
 
-    toast({
-      title: "Success!",
-      description: isLogin ? "Welcome back!" : "Account created successfully!",
-    });
-    onClose();
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Success!",
+            description: "Welcome back!",
+          });
+          onClose();
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords don't match",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const metadata = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          user_type: userType,
+          ...(userType === 'agent' && { license_number: formData.licenseNumber })
+        };
+
+        const { error } = await signUp(formData.email, formData.password, metadata);
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Success!",
+            description: "Account created! Please check your email to verify your account.",
+          });
+          onClose();
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -94,6 +137,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -104,10 +148,15 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                    Sign In
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
               </CardContent>
@@ -140,6 +189,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                         value={formData.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
                         required
+                        disabled={isLoading}
                       />
                     </div>
                     <div>
@@ -149,6 +199,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                         value={formData.lastName}
                         onChange={(e) => handleInputChange('lastName', e.target.value)}
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -160,6 +211,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -170,6 +222,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   {userType === 'agent' && (
@@ -181,6 +234,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                         onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
                         required
                         placeholder="License # (will be verified)"
+                        disabled={isLoading}
                       />
                     </div>
                   )}
@@ -192,6 +246,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -202,10 +257,15 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
               </CardContent>

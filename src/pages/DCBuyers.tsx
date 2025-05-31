@@ -9,6 +9,7 @@ import BenefitsSection from "@/components/dc-buyers/BenefitsSection";
 import NeighborhoodsSection from "@/components/dc-buyers/NeighborhoodsSection";
 import TestimonialsSection from "@/components/dc-buyers/TestimonialsSection";
 import HowItWorksSection from "@/components/dc-buyers/HowItWorksSection";
+import FAQSection from "@/components/dc-buyers/FAQSection";
 import LocalSEOSection from "@/components/dc-buyers/LocalSEOSection";
 import FinalCTASection from "@/components/dc-buyers/FinalCTASection";
 
@@ -37,9 +38,10 @@ const DCBuyers = () => {
       {/* Main Content Sections */}
       <ProblemSolutionSection />
       <BenefitsSection onSignUp={handleSignUp} />
+      <HowItWorksSection />
       <NeighborhoodsSection />
       <TestimonialsSection />
-      <HowItWorksSection />
+      <FAQSection />
       <LocalSEOSection />
       <FinalCTASection onRequestShowing={handleRequestShowing} onSignUp={handleSignUp} />
 

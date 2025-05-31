@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,14 +124,15 @@ const Index = () => {
                 Get Your FREE Home Tour
                 <ChevronRight className="ml-3 h-6 w-6" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="px-10 py-6 text-xl border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                onClick={() => handleGetStarted('agent')}
-              >
-                Join as Showing Partner
-              </Button>
+              <Link to="/agents">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="px-10 py-6 text-xl border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                >
+                  Join as Showing Partner
+                </Button>
+              </Link>
             </div>
 
             {/* DC-specific link */}

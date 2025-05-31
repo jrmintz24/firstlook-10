@@ -9,6 +9,123 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_sync_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          records_processed: number | null
+          started_at: string
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number | null
+          started_at?: string
+          status: string
+          sync_type?: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number | null
+          started_at?: string
+          status?: string
+          sync_type?: string
+        }
+        Relationships: []
+      }
+      open_houses: {
+        Row: {
+          address: string
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          description: string | null
+          id: string
+          images: Json | null
+          latitude: number | null
+          listing_agent_email: string | null
+          listing_agent_name: string | null
+          listing_agent_phone: string | null
+          longitude: number | null
+          lot_size: string | null
+          mls_id: string | null
+          open_house_date: string
+          open_house_end_time: string
+          open_house_start_time: string
+          price: number
+          property_type: string | null
+          sqft: number | null
+          state: string
+          status: string | null
+          updated_at: string
+          year_built: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          baths: number
+          beds: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          open_house_date: string
+          open_house_end_time: string
+          open_house_start_time: string
+          price: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          open_house_date?: string
+          open_house_end_time?: string
+          open_house_start_time?: string
+          price?: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

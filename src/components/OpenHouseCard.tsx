@@ -70,7 +70,9 @@ const OpenHouseCard = ({ house }: OpenHouseCardProps) => {
               <span className="font-medium">{house.beds} beds</span>
             </div>
             <div className="bg-green-50 px-3 py-1 rounded-full font-medium text-green-700">{house.baths} baths</div>
-            <div className="bg-orange-50 px-3 py-1 rounded-full font-medium text-orange-700">{house.sqft} sqft</div>
+            {house.sqft && (
+              <div className="bg-orange-50 px-3 py-1 rounded-full font-medium text-orange-700">{house.sqft} sqft</div>
+            )}
           </div>
           
           <div className="flex items-center gap-4 text-sm">

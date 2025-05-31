@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,7 +81,7 @@ const Index = () => {
             without the commitment
           </h1>
           <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-            ViewFree empowers homebuyers to request private showings on-demand, without requiring upfront buyer agreements. Your first showing is completely free. 🏠✨
+            FirstLook empowers homebuyers to request private showings on-demand, without requiring upfront buyer agreements. Your first showing is completely free. 🏠✨
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -156,7 +157,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-500 bg-clip-text text-transparent mb-4">
-              Why Choose ViewFree?
+              Why Choose FirstLook?
             </h2>
           </div>
           
@@ -214,7 +215,7 @@ const Index = () => {
             Ready to Start House Hunting?
           </h2>
           <p className="text-purple-100 mb-8 max-w-2xl mx-auto text-lg">
-            Join thousands of buyers discovering their dream homes with ViewFree. Your first private showing is on us. ✨
+            Join thousands of buyers discovering their dream homes with FirstLook. Your first private showing is on us. ✨
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button 

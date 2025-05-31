@@ -81,7 +81,7 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
               <CardHeader>
                 <CardTitle>Welcome back</CardTitle>
                 <CardDescription>
-                  Sign in to your ViewFree account
+                  Sign in to your FirstLook account
                 </CardDescription>
               </CardHeader>
               <CardContent>

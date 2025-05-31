@@ -1,12 +1,8 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Property } from '@/types/property';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { MapPin } from 'lucide-react';
 
 interface PropertyMapProps {
   properties: Property[];
@@ -15,13 +11,11 @@ interface PropertyMapProps {
 const PropertyMap = ({ properties }: PropertyMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
 
-  const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
+  useEffect(() => {
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
+    mapboxgl.accessToken = 'pk.eyJ1IjoianJtaW50ejI0IiwiYSI6ImNtYmNueGV4dzFicXYya3BvbHJreXZyMXUifQ.G5vHNjwd-nR2FEGngkBzWg';
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -94,48 +88,10 @@ const PropertyMap = ({ properties }: PropertyMapProps) => {
       }
     });
 
-    setShowTokenInput(false);
-  };
-
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      initializeMap();
-    }
-  };
-
-  useEffect(() => {
     return () => {
       map.current?.remove();
     };
-  }, []);
-
-  if (showTokenInput) {
-    return (
-      <div className="bg-white rounded-lg border p-6 text-center">
-        <MapPin className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Map Configuration Required</h3>
-        <p className="text-gray-600 mb-4">
-          Enter your Mapbox public token to display the property map. 
-          Get your token at <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">mapbox.com</a>
-        </p>
-        <div className="max-w-md mx-auto space-y-3">
-          <div>
-            <Label htmlFor="mapbox-token">Mapbox Public Token</Label>
-            <Input
-              id="mapbox-token"
-              type="text"
-              placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiaWF0IjoxNjA..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-            />
-          </div>
-          <Button onClick={handleTokenSubmit} disabled={!mapboxToken.trim()}>
-            Initialize Map
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  }, [properties]);
 
   return (
     <div className="bg-white rounded-lg border overflow-hidden">

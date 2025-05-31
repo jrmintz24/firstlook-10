@@ -31,8 +31,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           </Button>
           <Button 
             size="lg" 
-            variant="outline" 
-            className="border-3 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
+            className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
             onClick={onSignUp}
           >
             Sign Up & Start Browsing

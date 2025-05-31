@@ -9,13 +9,13 @@ interface FinalCTASectionProps {
 
 const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) => {
   return (
-    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 py-20 relative overflow-hidden">
+    <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-black/10"></div>
       <div className="container mx-auto px-4 text-center relative z-10">
         <h2 className="text-5xl font-bold text-white mb-6">
           Your Perfect DC Home Awaits
         </h2>
-        <p className="text-blue-100 mb-12 max-w-3xl mx-auto text-xl leading-relaxed">
+        <p className="text-purple-100 mb-12 max-w-3xl mx-auto text-xl leading-relaxed">
           Stop waiting for the perfect open house or dealing with pushy agents. Get instant access to any property in Washington DC with FirstLook. Your first private showing is completely free - no strings attached.
         </p>
         
@@ -23,7 +23,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           <Button 
             size="lg" 
             variant="secondary"
-            className="bg-white text-blue-600 hover:bg-gray-100 px-12 py-6 font-bold text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="bg-white text-purple-600 hover:bg-gray-100 px-12 py-6 font-bold text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
             onClick={onRequestShowing}
           >
             <Sparkles className="mr-3 h-6 w-6" />
@@ -32,7 +32,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           <Button 
             size="lg" 
             variant="outline" 
-            className="border-3 border-white text-white hover:bg-white hover:text-blue-600 px-12 py-6 font-bold text-xl transition-all duration-300"
+            className="border-3 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
             onClick={onSignUp}
           >
             Sign Up & Start Browsing

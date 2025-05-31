@@ -28,7 +28,7 @@ const DCBuyers = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section with Trust Indicators */}
       <HeroSection onRequestShowing={handleRequestShowing} />
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-20">
+      <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 pb-20">
         <div className="container mx-auto px-4">
           <TrustIndicators />
         </div>

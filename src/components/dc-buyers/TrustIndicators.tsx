@@ -1,10 +1,10 @@
 
 const TrustIndicators = () => {
   const indicators = [
-    { value: "200+", label: "Trusted Agents", color: "blue" },
-    { value: "12min", label: "Average Response", color: "green" },
-    { value: "100%", label: "Free First Tour", color: "purple" },
-    { value: "Licensed", label: "DC Professionals", color: "orange" }
+    { value: "200+", label: "Trusted Agents", gradient: "from-purple-500 to-pink-600" },
+    { value: "12min", label: "Average Response", gradient: "from-green-500 to-emerald-600" },
+    { value: "100%", label: "Free First Tour", gradient: "from-blue-500 to-cyan-600" },
+    { value: "Licensed", label: "DC Professionals", gradient: "from-pink-500 to-orange-500" }
   ];
 
   return (
@@ -12,9 +12,9 @@ const TrustIndicators = () => {
       {indicators.map((indicator, index) => (
         <div 
           key={index}
-          className={`bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-${indicator.color}-100 shadow-lg`}
+          className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-purple-100 shadow-lg"
         >
-          <div className={`text-4xl font-bold text-${indicator.color}-600`}>
+          <div className={`text-4xl font-bold bg-gradient-to-r ${indicator.gradient} bg-clip-text text-transparent`}>
             {indicator.value}
           </div>
           <div className="text-gray-600 font-medium">{indicator.label}</div>

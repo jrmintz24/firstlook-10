@@ -16,11 +16,11 @@ const ProblemSolutionSection = () => {
   ];
 
   return (
-    <div className="py-20 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <div className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent mb-6">
               House Hunting in DC Shouldn't Be This Hard
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">

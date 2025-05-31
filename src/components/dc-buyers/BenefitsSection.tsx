@@ -9,7 +9,7 @@ interface BenefitsSectionProps {
 const BenefitsSection = ({ onSignUp }: BenefitsSectionProps) => {
   const benefits = [
     "No upfront buyer agreements required",
-    "Same-day showing availability",
+    "Save commission without long-term commitment",
     "Licensed DC real estate professionals",
     "Complete neighborhood expertise",
     "Free first showing guaranteed",

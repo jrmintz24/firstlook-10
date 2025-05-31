@@ -7,19 +7,19 @@ const TestimonialsSection = () => {
     {
       name: "Sarah Chen",
       neighborhood: "Capitol Hill",
-      quote: "FirstLook made house hunting so much easier. I saw 8 homes in one weekend without any pressure to sign with an agent. Found my dream rowhouse!",
+      quote: "FirstLook connected me with Maria, who was incredible! She showed me 8 homes without any pressure. I loved working with her so much that I ended up hiring her as my agent, and she helped me find my perfect rowhouse!",
       rating: 5
     },
     {
       name: "Marcus Johnson",
       neighborhood: "Dupont Circle",
-      quote: "The flexibility was amazing. I could schedule showings around my work schedule, and the showing partner knew everything about the neighborhood.",
+      quote: "The showing partner was so knowledgeable about the neighborhood history and market trends. After touring several properties with him, I knew I wanted him on my team. He's now helping me close on my dream condo!",
       rating: 5
     },
     {
       name: "Emily Rodriguez",
       neighborhood: "Georgetown",
-      quote: "No pushy sales tactics, just great service. The showing partner answered all my questions and never made me feel rushed to make a decision.",
+      quote: "What started as a simple showing turned into finding both my home and my trusted agent. The FirstLook partner was so professional and insightful that I immediately asked her to represent me. Couldn't be happier!",
       rating: 5
     }
   ];
@@ -32,7 +32,7 @@ const TestimonialsSection = () => {
             What DC Homebuyers Are Saying
           </h2>
           <p className="text-xl text-gray-600">
-            Real stories from real people who found their dream homes with FirstLook.
+            Real stories from real people who found their dream homes and trusted agents with FirstLook.
           </p>
         </div>
         

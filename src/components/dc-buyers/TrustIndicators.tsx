@@ -1,8 +1,8 @@
 
 const TrustIndicators = () => {
   const indicators = [
-    { value: "500+", label: "Available Properties", color: "blue" },
-    { value: "2hrs", label: "Average Response", color: "green" },
+    { value: "200+", label: "Trusted Agents", color: "blue" },
+    { value: "12min", label: "Average Response", color: "green" },
     { value: "100%", label: "Free First Tour", color: "purple" },
     { value: "Licensed", label: "DC Professionals", color: "orange" }
   ];

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Grid, List, Loader2, Home, Map } from "lucide-react";
+import { Search, Filter, Grid, List, Loader2, Home, Map, AlertCircle, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyMap from "@/components/PropertyMap";
@@ -20,6 +20,7 @@ const Properties = () => {
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [syncInProgress, setSyncInProgress] = useState(false);
   const { toast } = useToast();
 
   const { data: properties, isLoading, error, refetch } = useQuery({
@@ -80,8 +81,16 @@ const Properties = () => {
   });
 
   const syncProperties = async () => {
+    if (syncInProgress) return;
+    
+    setSyncInProgress(true);
     try {
       console.log('Starting property sync...');
+      toast({
+        title: "Syncing Properties",
+        description: "Fetching latest property data from RentCast API...",
+      });
+
       const { data, error } = await supabase.functions.invoke('sync-properties');
       
       if (error) {
@@ -96,7 +105,7 @@ const Properties = () => {
           title: "Data Updated!",
           description: `Successfully synced ${data.records_processed || 0} properties`,
         });
-        refetch();
+        await refetch();
       } else {
         throw new Error(data?.error || 'Unknown error during sync');
       }
@@ -104,9 +113,11 @@ const Properties = () => {
       console.error('Sync error:', error);
       toast({
         title: "Sync Failed",
-        description: "Failed to update property data. Please try again.",
+        description: "Failed to update property data. Please check your RentCast API key and try again.",
         variant: "destructive"
       });
+    } finally {
+      setSyncInProgress(false);
     }
   };
 
@@ -127,10 +138,25 @@ const Properties = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
-        <Card className="p-6 text-center">
+        <Card className="p-6 text-center max-w-md">
           <CardContent>
-            <p className="text-red-600 mb-4">Failed to load properties: {error.message}</p>
-            <Button onClick={() => refetch()}>Try Again</Button>
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Failed to Load Properties</h3>
+            <p className="text-red-600 mb-4">{error.message}</p>
+            <div className="space-y-2">
+              <Button onClick={() => refetch()} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+              <Button onClick={syncProperties} variant="outline" className="w-full" disabled={syncInProgress}>
+                {syncInProgress ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Sync New Data
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -188,8 +214,22 @@ const Properties = () => {
                   </Button>
                 </div>
                 
-                <Button onClick={syncProperties} className="bg-gradient-to-r from-blue-600 to-green-600">
-                  Refresh Data
+                <Button 
+                  onClick={syncProperties} 
+                  className="bg-gradient-to-r from-blue-600 to-green-600"
+                  disabled={syncInProgress}
+                >
+                  {syncInProgress ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Data
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -212,6 +252,18 @@ const Properties = () => {
                 </p>
               </div>
             </div>
+
+            {/* Database Status Alert */}
+            {!isLoading && (!properties || properties.length === 0) && (
+              <Alert className="bg-yellow-50 border-yellow-200">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertTitle className="text-yellow-800">No Properties Found</AlertTitle>
+                <AlertDescription className="text-yellow-700">
+                  The database appears to be empty. Click "Refresh Data" to sync properties from RentCast API.
+                  Make sure your RentCast API key is configured in the Supabase settings.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </div>
       </div>
@@ -354,10 +406,24 @@ const Properties = () => {
                   <p className="text-gray-500 mb-4">
                     {filters.search || filters.minPrice || filters.maxPrice 
                       ? "Try adjusting your search filters or click 'Refresh Data' to load new properties" 
-                      : "No properties are currently available. Click 'Refresh Data' to load properties."}
+                      : "No properties are currently available. Click 'Refresh Data' to load properties from RentCast API."}
                   </p>
-                  <Button onClick={syncProperties} variant="outline">
-                    Refresh Data
+                  <Button 
+                    onClick={syncProperties} 
+                    variant="outline"
+                    disabled={syncInProgress}
+                  >
+                    {syncInProgress ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Syncing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh Data
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>

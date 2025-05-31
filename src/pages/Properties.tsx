@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Grid, List, Loader2, Home } from "lucide-react";
+import { Search, Filter, Grid, List, Loader2, Home, Map } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyCard from "@/components/PropertyCard";
+import PropertyMap from "@/components/PropertyMap";
 import { Property, PropertyFilters } from "@/types/property";
 
 const Properties = () => {
@@ -17,7 +17,7 @@ const Properties = () => {
     sortBy: 'newest',
     sortOrder: 'desc'
   });
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
 
@@ -162,9 +162,17 @@ const Properties = () => {
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="rounded-l-none"
+                  className="rounded-none"
                 >
                   <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('map')}
+                  className="rounded-l-none"
+                >
+                  <Map className="h-4 w-4" />
                 </Button>
               </div>
               
@@ -179,7 +187,7 @@ const Properties = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Filters Sidebar */}
-          {showFilters && (
+          {showFilters && viewMode !== 'map' && (
             <div className="w-80 flex-shrink-0">
               <Card className="sticky top-4">
                 <CardHeader>
@@ -297,6 +305,8 @@ const Properties = () => {
                 <Loader2 className="h-8 w-8 animate-spin" />
                 <span className="ml-2">Loading properties...</span>
               </div>
+            ) : viewMode === 'map' ? (
+              <PropertyMap properties={properties || []} />
             ) : properties && properties.length > 0 ? (
               <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
                 {properties.map((property) => (

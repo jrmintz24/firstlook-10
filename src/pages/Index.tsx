@@ -2,13 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Star, Users, Shield, ChevronRight, Sparkles } from "lucide-react";
+import { Clock, Star, Users, Shield, ChevronRight, Sparkles, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import UserDashboard from "@/components/UserDashboard";
+import TrustIndicators from "@/components/TrustIndicators";
+import FAQSection from "@/components/FAQSection";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -49,8 +51,20 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
       {/* Hero Section */}
       <div className="py-20 relative overflow-hidden">
-        {/* Background Images - DC landmarks */}
+        {/* Enhanced Background Images */}
+        <div className="absolute inset-0 opacity-5">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=1200&q=80')"
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-purple-50/70 to-blue-50/80" />
+        </div>
+
+        {/* Decorative elements */}
         <div className="absolute inset-0 opacity-10">
+          {/* Background Images - DC landmarks */}
           <div className="absolute top-10 right-10 w-32 h-32 bg-gradient-to-br from-slate-400 to-slate-600 rounded-full"></div>
           <div className="absolute bottom-20 left-10 w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full"></div>
           <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
@@ -66,7 +80,8 @@ const Index = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
-              🏛️ Now Serving Washington DC Metro Area
+              <MapPin className="w-4 h-4 mr-2" />
+              🏛️ Now Serving Washington DC Metro Area & Beyond
             </Badge>
             
             <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-8 leading-tight">
@@ -75,9 +90,27 @@ const Index = () => {
               <span className="block">without the <strong>commitment</strong></span>
             </h1>
             
-            <p className="text-2xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed">
               FirstLook empowers homebuyers to request private showings on-demand, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is completely <strong>free</strong>. 🏠✨
             </p>
+
+            {/* Enhanced value proposition */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-10 border border-purple-100 shadow-lg max-w-2xl mx-auto">
+              <div className="flex items-center justify-center gap-6 text-sm font-medium text-gray-700">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" />
+                  <span>No Contracts Required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  <span>Available 7 Days a Week</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <span>100% Free First Tour</span>
+                </div>
+              </div>
+            </div>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Button 
@@ -111,23 +144,15 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
-              <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-purple-100 shadow-md hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">100%</div>
-                <div className="text-gray-600 font-medium">Free First Showing</div>
-              </div>
-              <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-pink-100 shadow-md hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-cyan-600 bg-clip-text text-transparent">24hrs</div>
-                <div className="text-gray-600 font-medium">Average Response Time</div>
-              </div>
-              <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-orange-100 shadow-md hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text text-transparent">Licensed</div>
-                <div className="text-gray-600 font-medium">Vetted Partners</div>
-              </div>
-            </div>
+            <p className="text-sm text-gray-600 max-w-lg mx-auto">
+              <strong>What happens next?</strong> We'll match you with a licensed real estate professional in your area who can show you the home within 24-48 hours. No strings attached.
+            </p>
           </div>
         </div>
       </div>
+
+      {/* Trust Indicators */}
+      <TrustIndicators />
 
       {/* How It Works */}
       <HowItWorks />
@@ -188,6 +213,9 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       <div className="bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700 py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

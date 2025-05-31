@@ -35,16 +35,22 @@ const BuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
 
   useEffect(() => {
     console.log('BuyerDashboard useEffect triggered, user:', user);
+    console.log('Auth loading:', authLoading);
+    
+    // Wait for auth to finish loading before proceeding
+    if (authLoading) {
+      console.log('Auth still loading, waiting...');
+      return;
+    }
     
     const fetchData = async () => {
       if (!user) {
-        console.log('No user found, ending loading');
+        console.log('No user found after auth loaded, ending loading');
         setLoading(false);
-        setError('No user authenticated');
         return;
       }
 
@@ -59,7 +65,7 @@ const BuyerDashboard = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchUserData = async () => {
     if (!user) {
@@ -167,13 +173,14 @@ const BuyerDashboard = () => {
     req.status === 'completed'
   );
 
-  if (loading) {
+  // Show loading while auth is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Loading your dashboard...</div>
           <div className="text-sm text-gray-600">
-            User: {user ? 'Authenticated' : 'Not authenticated'}
+            Auth loading: {authLoading ? 'Yes' : 'No'}, Data loading: {loading ? 'Yes' : 'No'}
           </div>
         </div>
       </div>

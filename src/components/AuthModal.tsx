@@ -55,6 +55,10 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
             description: "Welcome back!",
           });
           onClose();
+          // Redirect to buyer dashboard after successful login
+          if (userType === 'buyer') {
+            window.location.href = '/buyer-dashboard';
+          }
         }
       } else {
         // For sign up, generate a password automatically
@@ -76,21 +80,21 @@ const AuthModal = ({ isOpen, onClose, userType }: AuthModalProps) => {
             variant: "destructive"
           });
         } else {
-          // Automatically sign in after successful sign up
-          const { error: signInError } = await signIn(formData.email, password);
-          if (signInError) {
-            toast({
-              title: "Account created but sign in failed",
-              description: `Your account was created successfully. Your password is: ${password}. Please sign in manually.`,
-              duration: 15000,
-            });
-          } else {
-            toast({
-              title: "Success!",
-              description: "Account created and you're now signed in!",
-            });
-            onClose();
-          }
+          toast({
+            title: "Success!",
+            description: "Account created! You can now sign in.",
+            duration: 5000,
+          });
+          
+          // Switch to login tab and pre-fill email
+          setIsLogin(true);
+          setFormData(prev => ({ ...prev, password }));
+          
+          toast({
+            title: "Your password",
+            description: `Your password is: ${password}. Please sign in now.`,
+            duration: 10000,
+          });
         }
       }
     } finally {

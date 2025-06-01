@@ -49,7 +49,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </h1>
           
           <p className="text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed">
-            Stop dealing with pushy agents and restrictive buyer agreements. FirstLook gives you instant access to home showings across Washington DC - from Capitol Hill to Georgetown - with <strong>zero upfront commitment</strong>.
+            Stop dealing with pushy agents and restrictive buyer agreements. <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> gives you instant access to home showings across Washington DC - from Capitol Hill to Georgetown - with <strong>zero upfront commitment</strong>.
           </p>
 
           {/* Enhanced value proposition */}

@@ -21,7 +21,7 @@ const BenefitsSection = ({ onSignUp }: BenefitsSectionProps) => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-            What You Get With FirstLook
+            What You Get With <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span>
           </h2>
           <p className="text-xl text-gray-600 mb-12">
             Everything you need to find your perfect DC home, without the traditional hassles.

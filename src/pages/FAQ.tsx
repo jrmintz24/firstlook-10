@@ -79,7 +79,7 @@ const FAQ = () => {
               Frequently Asked Questions
             </h1>
             <p className="text-gray-600 text-lg">
-              Everything you need to know about FirstLook and commitment-free home touring.
+              Everything you need to know about <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> and commitment-free home touring.
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ const FAQ = () => {
             <Home className="h-12 w-12 mx-auto mb-4 opacity-90" />
             <h3 className="text-2xl font-bold mb-4">Ready to Start Your Home Search?</h3>
             <p className="mb-6 text-purple-100">
-              Get your first private showing completely free with FirstLook. No commitments, no pressure.
+              Get your first private showing completely free with <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span>. No commitments, no pressure.
             </p>
             <Link to="/">
               <Button size="lg" variant="secondary" className="bg-white text-purple-600 hover:bg-gray-100">

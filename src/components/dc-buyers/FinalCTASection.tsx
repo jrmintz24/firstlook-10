@@ -16,7 +16,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           Your Perfect DC Home Awaits
         </h2>
         <p className="text-purple-100 mb-12 max-w-3xl mx-auto text-xl leading-relaxed">
-          Stop waiting for the perfect open house or dealing with pushy agents. Get instant access to any property in Washington DC with FirstLook. Your first private showing is completely free - no strings attached.
+          Stop waiting for the perfect open house or dealing with pushy agents. Get instant access to any property in Washington DC with <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span>. Your first private showing is completely free - no strings attached.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">

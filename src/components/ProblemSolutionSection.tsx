@@ -21,10 +21,13 @@ const ProblemSolutionSection = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              House Hunting Shouldn't Require Blind Commitment
+              House Hunting Shouldn't Require <span className="relative inline-block">
+                Blind Commitment
+                <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-red-400 to-orange-400 rounded-full opacity-60"></span>
+              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The traditional system forces you to commit before you have the information you need. We believe in transparency first, commitment when you're ready.
+              The traditional system forces you to commit <span className="font-semibold text-gray-800 bg-gray-100 px-2 py-1 rounded-md">before</span> you have the information you need. We believe in <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">transparency first</span>, commitment when you're ready.
             </p>
           </div>
           

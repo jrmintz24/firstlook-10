@@ -40,10 +40,13 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            How FirstLook Works
+            How <span className="relative inline-block">
+              FirstLook Works
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full opacity-50"></span>
+            </span>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Getting your first private showing is simple, fast, and completely free. Here's how it works:
+            Getting your first <span className="font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">private showing</span> is simple, fast, and completely free. Here's how it works:
           </p>
         </div>
         
@@ -85,7 +88,10 @@ const HowItWorks = () => {
         <div className="text-center mt-12">
           <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 px-8 py-4 rounded-full border-2 border-green-200 shadow-lg">
             <span className="text-3xl">🎉</span>
-            <span className="font-semibold text-lg">Your first showing is completely FREE</span>
+            <span className="font-semibold text-lg">Your first showing is <span className="font-black text-green-700 relative">
+              completely FREE
+              <span className="absolute -bottom-1 left-0 w-full h-2 bg-green-200 rounded-full opacity-60 -z-10"></span>
+            </span></span>
           </div>
         </div>
       </div>

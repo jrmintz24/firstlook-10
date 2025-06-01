@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,10 +165,13 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              Why Choose FirstLook?
+              Why Choose <span className="relative inline-block">
+                FirstLook?
+                <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
+              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to find your perfect home, without the traditional hassles.
+              Everything you need to find your <span className="font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">perfect home</span>, without the traditional hassles.
             </p>
           </div>
           
@@ -181,7 +185,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 text-lg">
-                  Explore homes without sales pressure or commitment requirements. Your first showing is completely free.
+                  Explore homes without <span className="font-semibold text-gray-800">sales pressure</span> or commitment requirements. Your first showing is <span className="font-semibold text-green-600">completely free</span>.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -195,7 +199,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 text-lg">
-                  Request showings when it's convenient for you. See homes 7 days a week at times that work for you.
+                  Request showings when it's <span className="font-semibold text-blue-600">convenient for you</span>. See homes 7 days a week at times that work for you.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -209,7 +213,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 text-lg">
-                  All our showing partners are licensed, verified professionals committed to great service.
+                  All our showing partners are <span className="font-semibold text-purple-600">licensed, verified professionals</span> committed to great service.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -228,10 +232,13 @@ const Index = () => {
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-5xl font-bold text-white mb-6">
-            Ready to Start House Hunting?
+            Ready to Start <span className="relative inline-block">
+              House Hunting?
+              <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-white/40 rounded-full"></span>
+            </span>
           </h2>
           <p className="text-purple-100 mb-12 max-w-3xl mx-auto text-xl leading-relaxed">
-            Join thousands of buyers discovering their dream homes with FirstLook. Your first private showing is on us - <strong className="text-yellow-300">zero commitment</strong> required. ✨
+            Join thousands of buyers discovering their <span className="font-semibold text-white bg-white/10 px-3 py-1 rounded-lg">dream homes</span> with FirstLook. Your first private showing is on us - <strong className="text-yellow-300">zero commitment</strong> required. ✨
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
             <Button 

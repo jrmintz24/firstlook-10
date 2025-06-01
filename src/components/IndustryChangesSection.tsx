@@ -16,31 +16,37 @@ const IndustryChangesSection = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-            {/* Zillow Issues */}
+            {/* Zillow Issues - Updated Section */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-red-200 shadow-lg">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <Home className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-2">Why Zillow Can't Show You Homes</h3>
-                  <p className="text-gray-600 text-lg">The platform you browse on isn't the one that opens doors</p>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">Why Zillow Leaves You at the Door</h3>
+                  <p className="text-gray-600 text-lg">The site you browse on isn't the one that gets you inside.</p>
                 </div>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">Zillow shows listings but requires you to contact separate agents for showings</p>
+                  <span className="text-xl mt-0.5">🚪</span>
+                  <p className="text-gray-700">Zillow stops at the listing—you're left chasing agents just to see a home.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">Those agents often require buyer agreements before any home visits</p>
+                  <span className="text-xl mt-0.5">🚫</span>
+                  <p className="text-gray-700">Agents may demand commitments or paperwork before you can even tour.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">No transparency on who you'll work with or what it will cost</p>
+                  <span className="text-xl mt-0.5">❓</span>
+                  <p className="text-gray-700">You never know who you'll meet, what it will cost, or when you'll get in.</p>
                 </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <p className="text-purple-800 font-medium">
+                  FirstLook gives you instant, on-demand access to the homes you want—no agent commitments, no pressure, no surprises.
+                </p>
               </div>
             </div>
 

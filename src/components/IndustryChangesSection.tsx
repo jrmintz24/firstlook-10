@@ -50,31 +50,46 @@ const IndustryChangesSection = () => {
               </div>
             </div>
 
-            {/* NAR Settlement */}
+            {/* NAR Settlement - Updated Section */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-blue-200 shadow-lg">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                   <Scale className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-2">NAR Settlement Changes Everything</h3>
-                  <p className="text-gray-600 text-lg">New rules mean buyers need more control and transparency</p>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">The NAR Settlement Puts Buyers in the Driver's Seat</h3>
+                  <p className="text-gray-600 text-lg">New rules just flipped the script—now you get more control, more options, and total transparency.</p>
                 </div>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">Buyer agent compensation is no longer automatically included in listings</p>
+                  <div>
+                    <p className="text-gray-800 font-medium">No more hidden agent fees:</p>
+                    <p className="text-gray-700">Buyer agent compensation isn't baked into listings anymore—you get to decide if, when, and how you want help.</p>
+                  </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">You deserve to know exactly what services cost before committing</p>
+                  <div>
+                    <p className="text-gray-800 font-medium">Clarity before you commit:</p>
+                    <p className="text-gray-700">Know exactly what you're paying for—and what you're not—before you ever sign anything.</p>
+                  </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">Buyers now have more power to choose how and when to work with agents</p>
+                  <div>
+                    <p className="text-gray-800 font-medium">Real power of choice:</p>
+                    <p className="text-gray-700">Pick the services you need, skip the ones you don't, and decide when and how you want to work with an agent—if at all.</p>
+                  </div>
                 </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-blue-800 font-medium">
+                  FirstLook was built for this new era. You're in control, every step of the way.
+                </p>
               </div>
             </div>
           </div>

@@ -20,14 +20,14 @@ const ProblemSolutionSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              House Hunting Shouldn't Require <span className="relative inline-block">
+            <h2 className="text-5xl font-bold text-slate-800 mb-6">
+              House Hunting Shouldn't Require <span className="relative inline-block text-red-600">
                 Blind Commitment
                 <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-red-400 to-orange-400 rounded-full opacity-60"></span>
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The traditional system forces you to commit <span className="font-semibold text-gray-800 bg-gray-100 px-2 py-1 rounded-md">before</span> you have the information you need. We believe in <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">transparency first</span>, commitment when you're ready.
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              The traditional system forces you to commit <span className="font-semibold text-gray-900 bg-gray-200 px-2 py-1 rounded-md">before</span> you have the information you need. We believe in <span className="font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-md">transparency first</span>, commitment when you're ready.
             </p>
           </div>
           
@@ -36,13 +36,13 @@ const ProblemSolutionSection = () => {
               <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
                   <div className="bg-white border border-slate-200 p-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
-                    <h3 className="text-2xl font-bold text-slate-700 mb-4 flex items-center">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-4 flex items-center">
                       <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">
                         ⚠
                       </div>
                       The Problem
                     </h3>
-                    <p className="text-slate-600 text-lg leading-relaxed">{point.problem}</p>
+                    <p className="text-slate-700 text-lg leading-relaxed">{point.problem}</p>
                   </div>
                 </div>
                 <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>

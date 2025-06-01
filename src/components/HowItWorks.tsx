@@ -39,14 +39,14 @@ const HowItWorks = () => {
     <div className="py-16 bg-white relative">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            How <span className="relative inline-block">
+          <h2 className="text-4xl font-bold text-slate-800 mb-4">
+            How <span className="relative inline-block text-purple-700">
               FirstLook Works
               <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full opacity-50"></span>
             </span>
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Getting your first <span className="font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">private showing</span> is simple, fast, and completely free. Here's how it works:
+          <p className="text-gray-700 max-w-2xl mx-auto text-lg">
+            Getting your first <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showing</span> is simple, fast, and completely free. Here's how it works:
           </p>
         </div>
         
@@ -64,10 +64,10 @@ const HowItWorks = () => {
                     <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${step.gradient} rounded-2xl flex items-center justify-center shadow-lg`}>
                       <IconComponent className="h-8 w-8 text-white" />
                     </div>
-                    <CardTitle className="text-xl text-gray-800">{step.title}</CardTitle>
+                    <CardTitle className="text-xl text-gray-900">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-gray-600 leading-relaxed">
+                    <CardDescription className="text-gray-700 leading-relaxed">
                       {step.description}
                     </CardDescription>
                   </CardContent>

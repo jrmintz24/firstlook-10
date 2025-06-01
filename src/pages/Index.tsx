@@ -88,8 +88,8 @@ const Index = () => {
               </span>
             </h1>
             
-            <p className="text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed">
-              FirstLook empowers homebuyers to request <span className="font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">private showings on-demand</span>, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is <span className="relative inline-block font-black text-green-600">
+            <p className="text-2xl text-gray-800 mb-6 max-w-3xl mx-auto leading-relaxed">
+              FirstLook empowers homebuyers to request <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showings on-demand</span>, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is <span className="relative inline-block font-black text-green-700">
                 completely FREE
                 <span className="absolute -bottom-1 left-0 w-full h-2 bg-green-200 rounded-full -z-10"></span>
               </span>. 🏠✨
@@ -97,7 +97,7 @@ const Index = () => {
 
             {/* Enhanced value proposition */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-10 border border-purple-100 shadow-lg max-w-2xl mx-auto">
-              <div className="flex items-center justify-center gap-6 text-sm font-medium text-gray-700">
+              <div className="flex items-center justify-center gap-6 text-sm font-medium text-gray-800">
                 <div className="flex items-center gap-2 group">
                   <Shield className="w-5 h-5 text-green-600 group-hover:scale-110 transition-transform duration-200" />
                   <span className="group-hover:text-green-600 transition-colors duration-200">No Contracts Required</span>
@@ -164,14 +164,14 @@ const Index = () => {
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              Why Choose <span className="relative inline-block">
+            <h2 className="text-5xl font-bold text-slate-800 mb-6">
+              Why Choose <span className="relative inline-block text-purple-700">
                 FirstLook?
                 <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to find your <span className="font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">perfect home</span>, without the traditional hassles.
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Everything you need to find your <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">perfect home</span>, without the traditional hassles.
             </p>
           </div>
           
@@ -181,11 +181,11 @@ const Index = () => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-slate-500 to-purple-600 rounded-2xl flex items-center justify-center">
                   <Shield className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-gray-800">No Pressure</CardTitle>
+                <CardTitle className="text-xl text-gray-900">No Pressure</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-600 text-lg">
-                  Explore homes without <span className="font-semibold text-gray-800">sales pressure</span> or commitment requirements. Your first showing is <span className="font-semibold text-green-600">completely free</span>.
+                <CardDescription className="text-gray-700 text-lg">
+                  Explore homes without <span className="font-semibold text-gray-900">sales pressure</span> or commitment requirements. Your first showing is <span className="font-semibold text-green-700">completely free</span>.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -195,11 +195,11 @@ const Index = () => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center">
                   <Clock className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-gray-800">On-Demand</CardTitle>
+                <CardTitle className="text-xl text-gray-900">On-Demand</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-600 text-lg">
-                  Request showings when it's <span className="font-semibold text-blue-600">convenient for you</span>. See homes 7 days a week at times that work for you.
+                <CardDescription className="text-gray-700 text-lg">
+                  Request showings when it's <span className="font-semibold text-blue-700">convenient for you</span>. See homes 7 days a week at times that work for you.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -209,11 +209,11 @@ const Index = () => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                   <Users className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl text-gray-800">Vetted Partners</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Vetted Partners</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-600 text-lg">
-                  All our showing partners are <span className="font-semibold text-purple-600">licensed, verified professionals</span> committed to great service.
+                <CardDescription className="text-gray-700 text-lg">
+                  All our showing partners are <span className="font-semibold text-purple-700">licensed, verified professionals</span> committed to great service.
                 </CardDescription>
               </CardContent>
             </Card>

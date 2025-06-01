@@ -37,14 +37,14 @@ const TrustIndicators = () => {
     <div className="py-16 bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-4">
-            Trusted by <span className="relative inline-block">
+          <h2 className="text-4xl font-bold text-slate-800 mb-4">
+            Trusted by <span className="relative inline-block text-purple-700">
               Homebuyers Nationwide
               <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full opacity-50"></span>
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Join <span className="font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md">thousands</span> who've discovered a better way to tour homes
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+            Join <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">thousands</span> who've discovered a better way to tour homes
           </p>
         </div>
         
@@ -75,18 +75,18 @@ const TrustIndicators = () => {
         <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto border border-purple-100">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              What makes <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> different?
+              What makes <span className="text-purple-700">FirstLook</span> different?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center justify-center gap-3 text-gray-700">
+              <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                 <span className="text-lg"><strong className="text-green-700">Transparent pricing</strong> from day one</span>
               </div>
-              <div className="flex items-center justify-center gap-3 text-gray-700">
+              <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                 <span className="text-lg"><strong className="text-blue-700">No binding agreements</strong> required</span>
               </div>
-              <div className="flex items-center justify-center gap-3 text-gray-700">
+              <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                 <span className="text-lg"><strong className="text-purple-700">You control</strong> the entire process</span>
               </div>

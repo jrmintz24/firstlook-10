@@ -4,11 +4,11 @@ import { Shield, Users, Clock, Award } from "lucide-react";
 const TrustIndicators = () => {
   const indicators = [
     { 
-      value: "Licensed", 
+      value: "Top Rated", 
       label: "DC Real Estate Professionals", 
       gradient: "from-purple-600 to-purple-700",
       icon: Shield,
-      detail: "All partners verified & licensed"
+      detail: "Highly rated & verified partners"
     },
     { 
       value: "500+", 

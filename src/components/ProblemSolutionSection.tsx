@@ -31,29 +31,49 @@ const ProblemSolutionSection = () => {
             </p>
           </div>
           
-          <div className="space-y-12">
+          <div className="space-y-16">
             {problemPoints.map((point, index) => (
-              <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
-                  <div className="bg-white border border-slate-200 p-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
-                    <h3 className="text-2xl font-bold text-slate-800 mb-4 flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">
+              <div key={index} className="relative">
+                {/* Problem Card - Always on top */}
+                <div className="mb-8">
+                  <div className="bg-white border border-red-200 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 max-w-4xl mx-auto">
+                    <div className="flex items-start gap-6">
+                      <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                         ⚠
                       </div>
-                      The Problem
-                    </h3>
-                    <p className="text-slate-700 text-lg leading-relaxed">{point.problem}</p>
+                      <div>
+                        <h3 className="text-2xl font-bold text-slate-800 mb-4">
+                          The Problem
+                        </h3>
+                        <p className="text-slate-700 text-lg leading-relaxed">{point.problem}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-white">
-                    <h3 className="text-2xl font-bold mb-4 flex items-center">
-                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
+
+                {/* Arrow pointing down */}
+                <div className="flex justify-center mb-8">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Solution Card - Always on bottom */}
+                <div>
+                  <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-white max-w-4xl mx-auto">
+                    <div className="flex items-start gap-6">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0">
                         ✨
                       </div>
-                      FirstLook Solution
-                    </h3>
-                    <p className="text-purple-100 text-lg leading-relaxed">{point.solution}</p>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-4">
+                          FirstLook Solution
+                        </h3>
+                        <p className="text-purple-100 text-lg leading-relaxed">{point.solution}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

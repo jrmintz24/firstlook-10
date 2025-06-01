@@ -261,7 +261,7 @@ const Index = () => {
           <div className="text-center">
             <Link to="/faq">
               <Button variant="ghost" className="text-white hover:bg-white/10 underline">
-                Questions about the NAR settlement? Read our FAQ →
+                Have questions about FirstLook? Check our FAQ →
               </Button>
             </Link>
           </div>

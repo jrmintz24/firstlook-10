@@ -4,7 +4,7 @@ import { Shield, Users, Clock, Award, Star, CheckCircle } from "lucide-react";
 const TrustIndicators = () => {
   const indicators = [
     { 
-      value: "500+", 
+      value: "1000+", 
       label: "Successful Home Tours", 
       gradient: "from-blue-600 to-blue-700",
       icon: Users,

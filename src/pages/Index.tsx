@@ -72,14 +72,14 @@ const Index = () => {
               <span className="bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent">
                 See the home you want,
               </span>{" "}
-              <span className="block bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent">
+              <span className="block text-slate-800">
                 <span className="relative inline-block">
                   when you want,
                   <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
                 </span>
               </span>
               <span className="block mt-2">
-                <span className="bg-gradient-to-r from-slate-800 to-purple-700 bg-clip-text text-transparent">without the </span>
+                <span className="text-slate-800">without the </span>
                 <span className="relative inline-block bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent font-black transform hover:scale-110 transition-transform duration-300">
                   commitment
                   <span className="absolute -top-1 -right-2 text-2xl">✋</span>

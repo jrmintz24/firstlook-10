@@ -20,23 +20,19 @@ const ProblemSolutionSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-slate-800 mb-6">
-              House Hunting Shouldn't Require <span className="relative inline-block text-red-600">
-                Blind Commitment
-                <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-red-400 to-orange-400 rounded-full opacity-60"></span>
-              </span>
+            <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
+              House Hunting Shouldn't Require Blind Commitment
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              The traditional system forces you to commit <span className="font-semibold text-gray-900 bg-gray-200 px-2 py-1 rounded-md">before</span> you have the information you need. We believe in <span className="font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-md">transparency first</span>, commitment when you're ready.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              The traditional system forces you to commit before you have the information you need. We believe in transparency first, commitment when you're ready.
             </p>
           </div>
           
-          <div className="space-y-16">
+          <div className="space-y-12">
             {problemPoints.map((point, index) => (
-              <div key={index} className="relative">
-                {/* Problem Card - Always on top */}
-                <div className="mb-8">
-                  <div className="bg-white border border-red-200 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 max-w-4xl mx-auto">
+              <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                  <div className="bg-white/80 backdrop-blur-sm border border-red-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                     <div className="flex items-start gap-6">
                       <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                         ⚠
@@ -50,26 +46,15 @@ const ProblemSolutionSection = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Arrow pointing down */}
-                <div className="flex justify-center mb-8">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Solution Card - Always on bottom */}
-                <div>
-                  <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-white max-w-4xl mx-auto">
+                <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                  <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-white">
                     <div className="flex items-start gap-6">
                       <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0">
                         ✨
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold mb-4">
-                          FirstLook Solution
+                          <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span> Solution
                         </h3>
                         <p className="text-purple-100 text-lg leading-relaxed">{point.solution}</p>
                       </div>

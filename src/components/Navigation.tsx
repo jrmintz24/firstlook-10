@@ -1,14 +1,14 @@
+
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
-import { User, LogOut, Home, HelpCircle, Building } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
 const Navigation = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { user, signOut } = useAuth();
-  const location = useLocation();
 
   const handleAuthClick = () => {
     setShowPropertyForm(true);
@@ -17,8 +17,6 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
   };
-
-  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="bg-white/90 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-50">
@@ -33,43 +31,6 @@ const Navigation = () => {
               FirstLook
             </span>
           </Link>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/" 
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
-                isActive('/') 
-                  ? 'text-purple-600 bg-purple-50' 
-                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              Home
-            </Link>
-            <Link 
-              to="/agents" 
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
-                isActive('/agents') 
-                  ? 'text-purple-600 bg-purple-50' 
-                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              <Building className="w-4 h-4" />
-              Agents
-            </Link>
-            <Link 
-              to="/faq" 
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
-                isActive('/faq') 
-                  ? 'text-purple-600 bg-purple-50' 
-                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              <HelpCircle className="w-4 h-4" />
-              FAQ
-            </Link>
-          </div>
 
           {/* Auth Section */}
           <div className="flex items-center space-x-3">

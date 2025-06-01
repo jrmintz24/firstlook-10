@@ -164,8 +164,8 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-bold text-slate-800 mb-6">
-              Why Choose <span className="relative inline-block text-purple-700">
-                FirstLook?
+              Why Choose <span className="relative inline-block">
+                <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span>?
                 <span className="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
               </span>
             </h2>

@@ -11,7 +11,7 @@ const TrustIndicators = () => {
       detail: "Happy homebuyers served nationwide"
     },
     { 
-      value: "24hrs", 
+      value: "12min", 
       label: "Average Response Time", 
       gradient: "from-slate-600 to-slate-700",
       icon: Clock,

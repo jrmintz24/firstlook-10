@@ -3,15 +3,22 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import PropertyRequestForm from "@/components/PropertyRequestForm";
+import AuthModal from "@/components/AuthModal";
 import { User, LogOut } from "lucide-react";
 
 const Navigation = () => {
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authUserType, setAuthUserType] = useState<'buyer' | 'agent'>('buyer');
   const { user, signOut } = useAuth();
 
-  const handleAuthClick = () => {
-    setShowPropertyForm(true);
+  const handleSignInClick = () => {
+    setAuthUserType('buyer');
+    setShowAuthModal(true);
+  };
+
+  const handleGetStartedClick = () => {
+    setAuthUserType('buyer');
+    setShowAuthModal(true);
   };
 
   const handleSignOut = async () => {
@@ -58,13 +65,13 @@ const Navigation = () => {
               <div className="flex items-center space-x-2">
                 <Button 
                   variant="ghost" 
-                  onClick={handleAuthClick}
+                  onClick={handleSignInClick}
                   className="text-purple-600 hover:bg-purple-50"
                 >
                   Sign In
                 </Button>
                 <Button 
-                  onClick={handleAuthClick}
+                  onClick={handleGetStartedClick}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                 >
                   Get Started
@@ -75,10 +82,11 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Property Request Form Modal */}
-      <PropertyRequestForm 
-        isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        userType={authUserType}
       />
     </nav>
   );

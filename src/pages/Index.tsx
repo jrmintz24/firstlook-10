@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,7 +147,7 @@ const Index = () => {
             </div>
 
             <p className="text-sm text-gray-600 max-w-lg mx-auto">
-              <strong>What happens next?</strong> We'll match you with a <span className="text-purple-600 font-medium">verified, licensed real estate professional from your Washington DC community</span> who can show you the home within <span className="font-bold text-blue-600">24-48 hours</span>. <span className="text-green-600 font-bold">No strings attached.</span>
+              <strong>What happens next?</strong> We'll match you with a <span className="text-purple-600 font-medium">verified, licensed real estate professional</span> who will <span className="font-bold text-blue-600">confirm your requested time</span>. <span className="text-green-600 font-bold">No strings attached.</span>
             </p>
           </div>
         </div>

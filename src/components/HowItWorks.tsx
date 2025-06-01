@@ -40,8 +40,8 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-slate-800 mb-4">
-            How <span className="relative inline-block text-purple-700">
-              FirstLook Works
+            How <span className="relative inline-block">
+              <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> Works
               <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full opacity-50"></span>
             </span>
           </h2>

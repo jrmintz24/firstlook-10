@@ -8,7 +8,7 @@ const TrustIndicators = () => {
       label: "Successful Home Tours", 
       gradient: "from-blue-600 to-blue-700",
       icon: Users,
-      detail: "Happy homebuyers served nationwide"
+      detail: "Happy DC homebuyers served"
     },
     { 
       value: "12min", 
@@ -19,10 +19,10 @@ const TrustIndicators = () => {
     },
     { 
       value: "Licensed", 
-      label: "Vetted Partners", 
+      label: "DC Professionals", 
       gradient: "from-purple-600 to-purple-700",
       icon: Shield,
-      detail: "All partners verified & licensed"
+      detail: "All partners verified & DC-licensed"
     },
     { 
       value: "100%", 
@@ -39,12 +39,12 @@ const TrustIndicators = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-slate-800 mb-4">
             Trusted by <span className="relative inline-block text-purple-700">
-              Homebuyers Nationwide
+              DC Homebuyers
               <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full opacity-50"></span>
             </span>
           </h2>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            Join <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">thousands</span> who've discovered a better way to tour homes
+            Join <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">thousands</span> who've discovered a better way to tour Washington DC homes
           </p>
         </div>
         
@@ -75,7 +75,7 @@ const TrustIndicators = () => {
         <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto border border-purple-100">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              What makes <span className="text-purple-700">FirstLook</span> different?
+              What makes <span className="text-purple-700">FirstLook</span> different in Washington DC?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center justify-center gap-3 text-gray-800">
@@ -88,7 +88,7 @@ const TrustIndicators = () => {
               </div>
               <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <span className="text-lg"><strong className="text-purple-700">You control</strong> the entire process</span>
+                <span className="text-lg"><strong className="text-purple-700">Local DC experts</strong> only</span>
               </div>
             </div>
           </div>

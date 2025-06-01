@@ -88,7 +88,7 @@ const Index = () => {
             </h1>
             
             <p className="text-2xl text-gray-800 mb-6 max-w-3xl mx-auto leading-relaxed">
-              <strong>FirstLook</strong> empowers Washington DC homebuyers to request <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showings on-demand</span>, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is <span className="relative inline-block font-black text-green-700">
+              <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> empowers Washington DC homebuyers to request <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showings on-demand</span>, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is <span className="relative inline-block font-black text-green-700">
                 completely FREE
                 <span className="absolute -bottom-1 left-0 w-full h-2 bg-green-200 rounded-full -z-10"></span>
               </span>. 🏠✨

@@ -10,6 +10,7 @@ import HowItWorks from "@/components/HowItWorks";
 import UserDashboard from "@/components/UserDashboard";
 import TrustIndicators from "@/components/TrustIndicators";
 import ProblemSolutionSection from "@/components/ProblemSolutionSection";
+import IndustryChangesSection from "@/components/IndustryChangesSection";
 import FAQSection from "@/components/FAQSection";
 import { Link } from "react-router-dom";
 
@@ -152,6 +153,9 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Industry Changes Section */}
+      <IndustryChangesSection />
 
       {/* Trust Indicators */}
       <TrustIndicators />

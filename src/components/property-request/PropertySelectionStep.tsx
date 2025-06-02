@@ -22,6 +22,10 @@ const PropertySelectionStep = ({
   onRemoveProperty,
   onNext
 }: PropertySelectionStepProps) => {
+  const hasProperties = formData.selectedProperties.length > 0;
+  const hasSingleProperty = formData.propertyAddress || formData.mlsId;
+  const canProceed = hasProperties || hasSingleProperty;
+
   return (
     <Card>
       <CardHeader>
@@ -30,7 +34,7 @@ const PropertySelectionStep = ({
           Select Properties for Your Tour
         </CardTitle>
         <CardDescription>
-          Add up to 3 homes to your tour session (save time and money!)
+          Add 1-3 homes to your tour session (save time and money with multiple properties!)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -72,34 +76,39 @@ const PropertySelectionStep = ({
         </div>
 
         <div className="flex gap-2">
-          {formData.selectedProperties.length < 3 && (
+          {formData.selectedProperties.length < 3 && (formData.propertyAddress || formData.mlsId) && (
             <Button 
               onClick={onAddProperty} 
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={!formData.propertyAddress && !formData.mlsId}
             >
               Add Property ({formData.selectedProperties.length}/3)
             </Button>
           )}
-          {formData.selectedProperties.length > 0 && (
+          {canProceed && (
             <Button onClick={onNext} className="flex-1 bg-blue-600 hover:bg-blue-700">
               Continue to Scheduling
             </Button>
           )}
         </div>
 
-        {formData.selectedProperties.length === 0 && (formData.propertyAddress || formData.mlsId) && (
-          <Button onClick={onNext} className="w-full bg-blue-600 hover:bg-blue-700">
-            Continue with Single Property
-          </Button>
+        {formData.selectedProperties.length > 0 && (
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">💡 Tour Session Ready</h4>
+            <p className="text-sm text-blue-700">
+              You can add more properties or continue with your current selection. 
+              {formData.selectedProperties.length < 3 && " Adding more homes to one session saves money!"}
+            </p>
+          </div>
         )}
 
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Pro Tip</h4>
-          <p className="text-sm text-blue-700">
-            Add multiple homes to one session to save money! A 3-home session costs less than 3 individual tours.
-          </p>
-        </div>
+        {!hasProperties && hasSingleProperty && (
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">💡 Pro Tip</h4>
+            <p className="text-sm text-blue-700">
+              Add multiple homes to one session to save money! A multi-home session costs less than individual tours.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -162,7 +162,7 @@ const Subscriptions = () => {
                   <p className="text-gray-600 mb-4">See one home without membership</p>
                   <Button 
                     variant="outline" 
-                    className="w-full border-2 border-purple-200 text-purple-600 hover:bg-purple-50"
+                    className="w-full border-2 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
                     onClick={handleGetVIPAccess}
                   >
                     Book Single Home Tour
@@ -179,7 +179,7 @@ const Subscriptions = () => {
                   <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
                   <Button 
                     variant="outline" 
-                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                     onClick={handleGetVIPAccess}
                   >
                     Book Tour Session

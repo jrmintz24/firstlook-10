@@ -22,18 +22,39 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, signInWithProvider } = useAuth();
 
   const generatePassword = () => {
     const randomNum = Math.floor(Math.random() * 9999);
     return `${formData.firstName}${randomNum}`;
   };
 
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    toast({
-      title: "Coming Soon",
-      description: `${provider === 'google' ? 'Google' : 'Facebook'} sign-in will be available soon!`,
-    });
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setIsLoading(true);
+    try {
+      const { error } = await signInWithProvider(provider, userType);
+      if (error) {
+        toast({
+          title: "Social Login Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`,
+        });
+        onSuccess();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong with social login",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {

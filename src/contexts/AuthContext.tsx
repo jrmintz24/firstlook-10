@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   signUp: (email: string, password: string, metadata: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithProvider: (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
 }
@@ -67,6 +68,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
+  const signInWithProvider = async (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/buyer-dashboard`,
+        data: {
+          user_type: userType
+        }
+      }
+    });
+    
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -77,6 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       session,
       signUp,
       signIn,
+      signInWithProvider,
       signOut,
       loading
     }}>

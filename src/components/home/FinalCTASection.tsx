@@ -36,7 +36,7 @@ const FinalCTASection = ({ onRequestShowing }: FinalCTASectionProps) => {
               className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
             >
               <DollarSign className="mr-3 h-6 w-6" />
-              View VIP Membership
+              See Your Options
             </Button>
           </Link>
         </div>

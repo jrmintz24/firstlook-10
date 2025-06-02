@@ -44,7 +44,7 @@ const Navigation = () => {
             <Link to="/subscriptions">
               <Button 
                 variant="ghost" 
-                className="text-green-600 hover:bg-green-50 font-medium"
+                className="text-purple-600 hover:bg-purple-50 font-medium"
               >
                 <DollarSign className="w-4 h-4 mr-2" />
                 Pricing

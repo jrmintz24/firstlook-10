@@ -100,14 +100,13 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
               <span className="relative z-10">Get Your FREE DC Home Tour</span>
               <ChevronRight className="ml-3 h-6 w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
-            <Link to="/subscriptions">
+            <Link to="/faq">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="px-10 py-6 text-xl border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:scale-105 transition-all duration-300"
+                className="px-10 py-6 text-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
               >
-                <DollarSign className="mr-3 h-6 w-6" />
-                View VIP Membership - $69.95/mo
+                How It Works
               </Button>
             </Link>
           </div>
@@ -126,7 +125,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
                 variant="ghost" 
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 underline font-medium hover:scale-105 transition-all duration-200"
               >
-                💎 See All Pricing Options →
+                💎 See Subscription Options →
               </Button>
             </Link>
           </div>

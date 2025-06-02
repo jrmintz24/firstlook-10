@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,8 @@ const Subscriptions = () => {
   const membershipFeatures = [
     "Unlimited access to the FirstLook platform",
     "VIP scheduling for showings—get priority booking, every time",
-    "Up to 3 home tours per session (see multiple homes back-to-back)",
+    "Access to same day viewings when available",
+    "One tour session included with subscription (up to 3 homes per session)",
     "15-minute monthly live support call with a FirstLook expert",
     "Keep your contact info private until you choose to share"
   ];
@@ -258,7 +260,7 @@ const Subscriptions = () => {
                 <CardTitle className="text-2xl text-blue-700">Ready to Make an Offer?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 text-lg mb-4">FirstLook can help—get Offer Write Support for <span className="font-bold text-blue-600">$499 per offer</span>, or let us manage all paperwork and coordination for an additional <span className="font-bold text-blue-600">$249</span> after your accepted offer.</p>
+                <p className="text-gray-700 text-lg mb-4">FirstLook can help—get Offer Write Support for <span className="font-bold text-blue-600">$499</span>, or Full Contract Management for <span className="font-bold text-blue-600">$799</span>.</p>
               </CardContent>
             </Card>
 
@@ -294,7 +296,7 @@ const Subscriptions = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 text-gray-700">
-                  <p>• Professional offer construction based on a comprehensive questionnaire</p>
+                  <p>• Professional offer construction based on comprehensive questionnaire</p>
                   <p>• Tailored to your specific needs and market conditions</p>
                   <p>• Includes negotiation of up to 2 counter offers</p>
                   <p>• Additional documents: $99 each after initial offer</p>
@@ -306,7 +308,7 @@ const Subscriptions = () => {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">+$249</span>
+                    <span className="text-white font-bold text-xl">$799</span>
                   </div>
                   <CardTitle className="text-xl">Full Contract Management</CardTitle>
                 </div>

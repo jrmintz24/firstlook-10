@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -161,8 +160,7 @@ const Subscriptions = () => {
                   <div className="text-4xl font-bold text-purple-600 mb-2">$59</div>
                   <p className="text-gray-600 mb-4">See one home without membership</p>
                   <Button 
-                    variant="outline" 
-                    className="w-full border-2 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                    className="w-full bg-purple-600 text-white hover:bg-purple-700 border-0"
                     onClick={handleGetVIPAccess}
                   >
                     Book Single Home Tour
@@ -178,8 +176,7 @@ const Subscriptions = () => {
                   <div className="text-4xl font-bold text-blue-600 mb-2">$149</div>
                   <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
                   <Button 
-                    variant="outline" 
-                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    className="w-full bg-blue-600 text-white hover:bg-blue-700 border-0"
                     onClick={handleGetVIPAccess}
                   >
                     Book Tour Session
@@ -260,7 +257,7 @@ const Subscriptions = () => {
                 <CardTitle className="text-2xl text-blue-700">Ready to Make an Offer?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 text-lg mb-4">FirstLook can help—get Offer Write Support for <span className="font-bold text-blue-600">$499</span>, or Full Contract Management for <span className="font-bold text-blue-600">$799</span>.</p>
+                <p className="text-gray-700 text-lg mb-4">FirstLook can help—get Offer Write Support for <span className="font-bold text-blue-600">$499</span> per offer, or let us manage all paperwork and coordination for <span className="font-bold text-blue-600">$799</span> after your accepted offer.</p>
               </CardContent>
             </Card>
 
@@ -375,15 +372,13 @@ const Subscriptions = () => {
               <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
-                  variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-6 py-3"
+                  className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3 border-0"
                   onClick={handleGetVIPAccess}
                 >
                   Single Home Tour - $59
                 </Button>
                 <Button 
-                  variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-6 py-3"
+                  className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 border-0"
                   onClick={handleGetVIPAccess}
                 >
                   Tour Session - $149

@@ -14,7 +14,7 @@ interface QuickSignInModalProps {
 }
 
 const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false); // Changed from true to false to default to sign-up
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -106,9 +106,12 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Sign In to Continue</DialogTitle>
+          <DialogTitle>{isLogin ? "Sign In to Continue" : "Create Your Account"}</DialogTitle>
           <DialogDescription>
-            Quick sign-in to secure your tour session and choose your plan
+            {isLogin 
+              ? "Sign in to secure your tour session and choose your plan"
+              : "Create your account to secure your tour session and choose your plan"
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -185,7 +188,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                 required
-                placeholder="Choose a secure password"
+                placeholder={isLogin ? "Enter your password" : "Choose a secure password"}
                 minLength={6}
                 disabled={isLoading}
               />

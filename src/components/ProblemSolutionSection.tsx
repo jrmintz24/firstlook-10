@@ -2,16 +2,20 @@
 const ProblemSolutionSection = () => {
   const problemPoints = [
     {
-      problem: "Traditional agents require binding buyer agreements before you can see any homes, forcing commitment before you know if you want to work with them",
-      solution: "FirstLook provides transparent access to homes without any upfront commitments or contracts"
+      problem: "Traditional agents pressure you into exclusive buyer agreements before showing a single home, trapping you with someone you may not want to work with",
+      solution: "Tour homes with vetted professionals without any contracts or commitments - decide if you want representation after experiencing the service firsthand"
     },
     {
-      problem: "Hidden fees, unclear compensation structures, and surprise costs that only surface after you're already committed",
-      solution: "Complete pricing transparency - your first showing is free, additional services have clear flat-rate pricing"
+      problem: "You're stuck with weekend-only open houses on the seller's schedule, fighting crowds and getting rushed through properties you're serious about",
+      solution: "Schedule private showings 7 days a week at times that work for YOUR schedule - evenings, mornings, or weekends with undivided attention"
     },
     {
-      problem: "Agents control your access to properties and may limit what you see based on their interests, not yours",
-      solution: "You choose which homes to see, when to see them, and decide your own timeline without external pressure"
+      problem: "Agents often show you homes that benefit their commission rather than your needs, and you have no way to know their true motivations",
+      solution: "Your showing partner has no hidden agenda - they're paid fairly regardless of which home you choose, so their focus is entirely on helping you find the right fit"
+    },
+    {
+      problem: "The new NAR rules create confusion about who pays what and when, leaving buyers uncertain about costs until it's too late to back out",
+      solution: "Complete transparency from day one: first showing is free, additional services have clear flat-rate pricing with no surprise fees or commission splits"
     }
   ];
 
@@ -21,10 +25,10 @@ const ProblemSolutionSection = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-              House Hunting Shouldn't Require Blind Commitment
+              House Hunting Shouldn't Require Blind Faith
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The traditional system forces you to commit before you have the information you need. We believe in transparency first, commitment when you're ready.
+              The traditional real estate system forces you to commit to an agent before you know if they're right for you. We believe you should experience the service before making any commitments.
             </p>
           </div>
           
@@ -32,14 +36,14 @@ const ProblemSolutionSection = () => {
             {problemPoints.map((point, index) => (
               <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
-                  <div className="bg-white/80 backdrop-blur-sm border border-red-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="bg-white/90 backdrop-blur-sm border border-red-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                     <div className="flex items-start gap-6">
-                      <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                        ⚠
+                      <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                        ❌
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                          The Problem
+                          What's Broken
                         </h3>
                         <p className="text-slate-700 text-lg leading-relaxed">{point.problem}</p>
                       </div>
@@ -50,11 +54,11 @@ const ProblemSolutionSection = () => {
                   <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-white">
                     <div className="flex items-start gap-6">
                       <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0">
-                        ✨
+                        ✅
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold mb-4">
-                          <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span> Solution
+                          <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span> Difference
                         </h3>
                         <p className="text-purple-100 text-lg leading-relaxed">{point.solution}</p>
                       </div>
@@ -63,6 +67,26 @@ const ProblemSolutionSection = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Added a compelling call-to-action section */}
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-slate-100 to-purple-100 rounded-2xl p-8 max-w-3xl mx-auto border border-purple-200">
+              <h3 className="text-3xl font-bold text-slate-800 mb-4">
+                Ready to Experience the Difference?
+              </h3>
+              <p className="text-slate-700 text-lg mb-6">
+                Join thousands of smart buyers who've taken control of their home search. Your first private showing is completely free - no contracts, no commitments, no catch.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                  Get Your Free Home Tour
+                </button>
+                <button className="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg border-2 border-purple-200 hover:bg-purple-50 transition-all duration-300">
+                  See How It Works
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

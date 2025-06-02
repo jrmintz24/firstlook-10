@@ -7,33 +7,33 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "How is FirstLook different from traditional real estate agents?",
-      answer: "FirstLook provides transparent, commitment-free home showings. Unlike traditional agents who often require buyer agreements upfront, we let you explore homes without pressure or long-term commitments. Your first showing is completely free.",
+      question: "Why should I trust FirstLook instead of just working with a traditional agent?",
+      answer: "Traditional agents often require you to sign exclusive buyer agreements before showing you a single home, creating pressure and limiting your options. FirstLook gives you the freedom to explore homes with licensed professionals without any upfront commitments. You can evaluate the service and the agent before making any decisions about representation.",
       icon: Shield
     },
     {
-      question: "What happens after the NAR settlement changes?",
-      answer: "The NAR settlement requires greater transparency in buyer agent compensation. FirstLook embraces this change by providing clear, upfront pricing for our services. You'll know exactly what you're paying for, when you're paying it.",
+      question: "What's the catch? How can the first showing really be free?",
+      answer: "No catch. We believe in proving our value upfront. Your first showing is completely free because we want you to experience the quality of our service. If you love it, you can book additional showings starting at $50 each, or work with your showing partner for offers and negotiations. Many traditional agents spend thousands on marketing - we'd rather invest in your experience.",
       icon: DollarSign
     },
     {
-      question: "How quickly can I schedule a showing?",
-      answer: "We typically match you with a showing partner within 24 hours. Once matched, you can usually schedule your showing within 2-3 days, depending on property availability and your schedule preferences.",
+      question: "How is this different from just going to open houses?",
+      answer: "Open houses happen on the seller's schedule, often inconvenient weekends, with crowds and pressure. FirstLook gives you private, one-on-one tours scheduled around YOUR availability - evenings, early mornings, or weekends. You get undivided attention, can ask detailed questions, and truly evaluate if the home fits your lifestyle.",
       icon: Clock
     },
     {
-      question: "Are your showing partners really licensed professionals?",
-      answer: "Yes! All our showing partners are licensed real estate professionals in their respective markets. We verify credentials, check references, and ensure they meet our standards for professionalism and market knowledge.",
+      question: "Are your showing partners actually qualified real estate professionals?",
+      answer: "Absolutely. Every FirstLook partner is a licensed real estate agent in their market, fully insured, and thoroughly vetted. They have local expertise and can provide insights about neighborhoods, pricing, and market conditions. The difference is they're focused on serving you, not pressuring you into a binding agreement.",
       icon: CheckCircle
     },
     {
-      question: "What if I want to make an offer on a home I tour?",
-      answer: "Great! Your showing partner can help facilitate the offer process. At that point, you can choose to work with them as your buyer's agent (with transparent pricing) or we can connect you with other qualified agents if you prefer.",
+      question: "What if I want to make an offer after seeing a home I love?",
+      answer: "Perfect! Your showing partner can absolutely help you with offers, negotiations, and the entire buying process. At that point, you can choose to work with them as your buyer's agent with clear, transparent pricing, or we can connect you with other qualified professionals. You're always in control of the next steps.",
       icon: Home
     },
     {
-      question: "How much does FirstLook cost?",
-      answer: "Your first showing is completely free. After that, we offer transparent, per-showing rates or package deals. No hidden fees, no surprise charges - you'll know exactly what you're paying before you commit to anything.",
+      question: "How does this work with the recent changes in real estate?",
+      answer: "The NAR settlement requires greater transparency in buyer representation and compensation. FirstLook was built with this transparency in mind from day one. You know exactly what you're paying (if anything) and when. No surprise commission structures or hidden agreements - just clear, honest service focused on your needs.",
       icon: Users
     }
   ];
@@ -43,10 +43,10 @@ const FAQSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-            Frequently Asked Questions
+            Is FirstLook Right For You?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to know about FirstLook and the changing real estate landscape
+            The honest answers to the questions every smart homebuyer is asking about this new approach
           </p>
         </div>
         
@@ -96,23 +96,23 @@ const FAQSection = () => {
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 max-w-2xl mx-auto border border-purple-100">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Still have questions?
+              Ready to experience the difference?
             </h3>
             <p className="text-gray-600 mb-6">
-              We're here to help you understand how FirstLook works and how it can benefit your home search.
+              Join thousands of smart homebuyers who are taking control of their home search with FirstLook's transparent, commitment-free approach.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
                 href="mailto:support@firstlook.com" 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300"
               >
-                Contact Support
+                Get Your Free Showing
               </a>
               <a 
                 href="/faq" 
                 className="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold border-2 border-purple-200 hover:bg-purple-50 transition-all duration-300"
               >
-                View Full FAQ
+                Read All FAQs
               </a>
             </div>
           </div>

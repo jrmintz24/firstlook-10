@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Subscriptions = () => {
@@ -78,14 +77,30 @@ const Subscriptions = () => {
             <h2 className="text-4xl font-bold text-slate-800 mb-4">Membership at a Glance</h2>
           </div>
           
-          <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Membership Card */}
-            <Card className="border-2 border-purple-200 shadow-xl relative overflow-hidden">
+            <Card className="border-2 border-purple-200 shadow-xl relative overflow-hidden lg:col-span-2">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-blue-600"></div>
+              
+              {/* Special Offer Banner */}
+              <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold transform rotate-12 shadow-lg">
+                <Zap className="w-4 h-4 inline mr-1" />
+                LIMITED TIME!
+              </div>
+
               <CardHeader className="text-center pb-4">
                 <Badge className="w-fit mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">Most Popular</Badge>
                 <CardTitle className="text-3xl text-slate-800">FirstLook Membership</CardTitle>
-                <div className="text-5xl font-bold text-purple-600">$69.95<span className="text-lg text-gray-600">/month</span></div>
+                
+                {/* Special Pricing Display */}
+                <div className="mb-4">
+                  <div className="text-6xl font-bold text-green-600">$29<span className="text-lg text-gray-600">/first month</span></div>
+                  <div className="text-xl text-gray-500 line-through">$69.95</div>
+                  <div className="text-2xl font-semibold text-purple-600">Then $69.95/month</div>
+                  <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-300">
+                    Save $40.95 Your First Month!
+                  </Badge>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-8">
@@ -101,7 +116,7 @@ const Subscriptions = () => {
                   onClick={handleGetVIPAccess}
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
-                  Get VIP Access – $69.95/month
+                  Start for $29 First Month
                 </Button>
                 <p className="text-center text-sm text-gray-600 mt-4">Cancel anytime. No long-term contracts.</p>
               </CardContent>
@@ -117,26 +132,59 @@ const Subscriptions = () => {
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-semibold text-slate-800">Additional tour sessions</span>
-                    <span className="text-2xl font-bold text-blue-600">$74.95</span>
+                    <span className="text-2xl font-bold text-blue-600">$69</span>
                   </div>
                   <p className="text-gray-600 text-sm">Each additional session beyond your monthly membership</p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-semibold text-slate-800">Single home showing</span>
-                    <span className="text-2xl font-bold text-green-600">$49</span>
+                    <span className="text-2xl font-bold text-green-600">$39</span>
                   </div>
-                  <p className="text-gray-600 text-sm">Perfect for one-time tours without membership</p>
+                  <p className="text-gray-600 text-sm">Perfect for one-time tours as a member</p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  className="w-full border-2 border-purple-200 text-purple-600 hover:bg-purple-50 py-4"
-                  onClick={handleGetVIPAccess}
-                >
-                  Book Single Home Tour - $49
-                </Button>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Non-Member Options */}
+          <div className="max-w-4xl mx-auto mt-12">
+            <h3 className="text-2xl font-bold text-slate-800 text-center mb-8">Not Ready for Membership? No Problem!</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="border border-gray-200 shadow-lg">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-slate-800">Single Home Tour</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="text-4xl font-bold text-purple-600 mb-2">$59</div>
+                  <p className="text-gray-600 mb-4">See one home without membership</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-2 border-purple-200 text-purple-600 hover:bg-purple-50"
+                    onClick={handleGetVIPAccess}
+                  >
+                    Book Single Home Tour
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-gray-200 shadow-lg">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-slate-800">Tour Session</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">$149</div>
+                  <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+                    onClick={handleGetVIPAccess}
+                  >
+                    Book Tour Session
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -226,6 +274,56 @@ const Subscriptions = () => {
         </div>
       </div>
 
+      {/* Offer Support Details */}
+      <div className="py-16 bg-gradient-to-br from-slate-50 to-purple-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">Need Help Making an Offer?</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">FirstLook offers professional offer support to help you navigate the buying process with confidence.</p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">$499</span>
+                  </div>
+                  <CardTitle className="text-xl">Offer Write Support</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-gray-700">
+                  <p>• Professional offer construction based on a comprehensive questionnaire</p>
+                  <p>• Tailored to your specific needs and market conditions</p>
+                  <p>• Includes negotiation of up to 2 counter offers</p>
+                  <p>• Additional documents: $99 each after initial offer</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">+$249</span>
+                  </div>
+                  <CardTitle className="text-xl">Full Contract Management</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-gray-700">
+                  <p>• Complete contract addendum facilitation</p>
+                  <p>• Coordination with all parties involved</p>
+                  <p>• Document management from offer to closing</p>
+                  <p>• Peace of mind with professional oversight</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
       {/* Why Go FirstLook */}
       <div className="py-16 bg-gradient-to-br from-slate-50 to-purple-50">
         <div className="container mx-auto px-4">
@@ -267,19 +365,28 @@ const Subscriptions = () => {
               onClick={handleGetVIPAccess}
             >
               <Sparkles className="mr-3 h-6 w-6" />
-              Get VIP Access – $69.95/month
+              Start for $29 First Month
             </Button>
-            <p className="text-purple-100 text-lg">Cancel anytime. No long-term contracts.</p>
+            <p className="text-purple-100 text-lg">Then $69.95/month. Cancel anytime. No long-term contracts.</p>
             
             <div className="border-t border-white/20 pt-6 mt-8">
               <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
-              <Button 
-                variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-3"
-                onClick={handleGetVIPAccess}
-              >
-                Book Single Home Tour - $49
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  variant="outline" 
+                  className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-6 py-3"
+                  onClick={handleGetVIPAccess}
+                >
+                  Single Home Tour - $59
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-6 py-3"
+                  onClick={handleGetVIPAccess}
+                >
+                  Tour Session - $149
+                </Button>
+              </div>
             </div>
           </div>
           

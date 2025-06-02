@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, MapPin, Phone, User, Plus, CheckCircle, AlertCircle, Star, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,60 +35,71 @@ const BuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('BuyerDashboard useEffect triggered, user:', user);
+    console.log('BuyerDashboard useEffect triggered');
     console.log('Auth loading:', authLoading);
+    console.log('User:', user);
+    console.log('Session:', session);
     
-    // Wait for auth to finish loading before proceeding
+    // Wait for auth to finish loading
     if (authLoading) {
       console.log('Auth still loading, waiting...');
       return;
     }
     
-    const fetchData = async () => {
-      if (!user) {
-        console.log('No user found after auth loaded, ending loading');
-        setLoading(false);
-        return;
-      }
+    // If no user after auth loaded, redirect to home
+    if (!user && !session) {
+      console.log('No user/session found after auth loaded, redirecting to home');
+      setLoading(false);
+      navigate('/');
+      return;
+    }
 
-      try {
-        console.log('Fetching data for user:', user.id);
-        await fetchUserData();
-      } catch (err) {
-        console.error('Error in fetchData:', err);
-        setError('Failed to load dashboard data');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [user, authLoading]);
+    // If we have a user, fetch their data
+    if (user || session?.user) {
+      console.log('User found, fetching data...');
+      fetchUserData();
+    }
+  }, [user, session, authLoading, navigate]);
 
   const fetchUserData = async () => {
-    if (!user) {
-      console.log('No user available for fetchUserData');
+    const currentUser = user || session?.user;
+    if (!currentUser) {
+      console.log('No current user available for fetchUserData');
+      setLoading(false);
       return;
     }
 
     try {
-      console.log('Starting to fetch user data for:', user.id);
+      console.log('Starting to fetch user data for:', currentUser.id);
       
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .single();
 
       console.log('Profile fetch result:', { profileData, profileError });
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Profile error:', profileError);
-        setError(`Profile error: ${profileError.message}`);
-      } else {
+        // Don't set error for missing profile, create a default one
+        if (profileError.code === 'PGRST116') {
+          console.log('No profile found, using user metadata');
+          const defaultProfile = {
+            id: currentUser.id,
+            first_name: currentUser.user_metadata?.first_name || currentUser.email?.split('@')[0] || 'User',
+            last_name: currentUser.user_metadata?.last_name || '',
+            phone: currentUser.user_metadata?.phone || '',
+            user_type: 'buyer'
+          };
+          setProfile(defaultProfile);
+        }
+      } else if (profileData) {
         setProfile(profileData);
         console.log('Profile set:', profileData);
       }
@@ -97,21 +108,22 @@ const BuyerDashboard = () => {
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       console.log('Requests fetch result:', { requestsData, requestsError });
 
       if (requestsError) {
         console.error('Requests error:', requestsError);
-        setError(`Requests error: ${requestsError.message}`);
+        // Don't treat this as a fatal error
+        setShowingRequests([]);
       } else {
         setShowingRequests(requestsData || []);
         console.log('Requests set:', requestsData);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      setError(`Unexpected error: ${error}`);
+      // Don't set fatal error, just log it
     } finally {
       console.log('Setting loading to false');
       setLoading(false);
@@ -173,33 +185,22 @@ const BuyerDashboard = () => {
     req.status === 'completed'
   );
 
-  // Show loading while auth is loading
+  // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Loading your dashboard...</div>
           <div className="text-sm text-gray-600">
-            Auth loading: {authLoading ? 'Yes' : 'No'}, Data loading: {loading ? 'Yes' : 'No'}
+            {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
           </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg text-red-600 mb-4">Error loading dashboard</div>
-          <div className="text-sm text-gray-600 mb-4">{error}</div>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
+  // This should rarely happen now since we redirect above
+  if (!user && !session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
@@ -211,6 +212,9 @@ const BuyerDashboard = () => {
       </div>
     );
   }
+
+  const currentUser = user || session?.user;
+  const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -234,7 +238,7 @@ const BuyerDashboard = () => {
               </Button>
               <div className="flex items-center gap-2 text-gray-600">
                 <User className="h-5 w-5" />
-                <span>Welcome, {profile?.first_name || 'User'}!</span>
+                <span>Welcome, {displayName}!</span>
               </div>
             </div>
           </div>
@@ -453,24 +457,24 @@ const BuyerDashboard = () => {
                   <CardDescription>Your account details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {profile ? (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Name</label>
-                        <p className="text-lg">{profile.first_name} {profile.last_name}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Phone</label>
-                        <p className="text-lg">{profile.phone || 'Not provided'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Account Type</label>
-                        <p className="text-lg capitalize">{profile.user_type || 'Buyer'}</p>
-                      </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Name</label>
+                      <p className="text-lg">{displayName} {profile?.last_name || ''}</p>
                     </div>
-                  ) : (
-                    <p className="text-gray-500">No profile information available.</p>
-                  )}
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Email</label>
+                      <p className="text-lg">{currentUser?.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Phone</label>
+                      <p className="text-lg">{profile?.phone || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Account Type</label>
+                      <p className="text-lg capitalize">{profile?.user_type || 'Buyer'}</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 

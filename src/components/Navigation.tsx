@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
-import { User, LogOut, DollarSign } from "lucide-react";
+import { User, LogOut, Calendar } from "lucide-react";
 
 const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -39,17 +39,19 @@ const Navigation = () => {
             </span>
           </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/subscriptions">
-              <Button 
-                variant="ghost" 
-                className="text-purple-600 hover:bg-purple-50 font-medium"
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                Pricing
-              </Button>
-            </Link>
+          {/* Center Navigation Links */}
+          <div className="flex-1 flex justify-center">
+            <div className="hidden md:flex items-center">
+              <Link to="/subscriptions">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-6 py-2 transition-colors"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Plans
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Auth Section */}

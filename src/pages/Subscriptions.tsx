@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
+import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles, Zap, Home } from "lucide-react";
 import { Link } from "react-router-dom";
+import PropertyRequestForm from "@/components/PropertyRequestForm";
 
 const Subscriptions = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
 
   const membershipFeatures = [
     "Unlimited access to the FirstLook platform",
@@ -44,6 +46,10 @@ const Subscriptions = () => {
     setShowAuthModal(true);
   };
 
+  const handleRequestShowing = () => {
+    setShowPropertyForm(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
       {/* Hero Section */}
@@ -68,6 +74,22 @@ const Subscriptions = () => {
               Get <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">VIP Access</span> to Tours, Real Support, and Total Control—All for One Simple Monthly Fee.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* CTA Button Below Hero */}
+      <div className="py-8 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 text-center">
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-12 py-6 text-xl font-bold shadow-xl transform hover:scale-105 transition-all duration-300"
+            onClick={handleRequestShowing}
+          >
+            <Home className="mr-3 h-6 w-6" />
+            See Your First Home FREE
+            <ArrowRight className="ml-3 h-6 w-6" />
+          </Button>
+          <p className="text-gray-600 mt-3 text-sm">Start with a completely free showing - no membership required</p>
         </div>
       </div>
 
@@ -372,14 +394,14 @@ const Subscriptions = () => {
               <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
-                  className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3 border-0"
-                  onClick={handleGetVIPAccess}
+                  className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3"
+                  onClick={handleRequestShowing}
                 >
                   Single Home Tour - $59
                 </Button>
                 <Button 
-                  className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 border-0"
-                  onClick={handleGetVIPAccess}
+                  className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3"
+                  onClick={handleRequestShowing}
                 >
                   Tour Session - $149
                 </Button>
@@ -397,6 +419,11 @@ const Subscriptions = () => {
           </div>
         </div>
       </div>
+
+      <PropertyRequestForm 
+        isOpen={showPropertyForm} 
+        onClose={() => setShowPropertyForm(false)} 
+      />
     </div>
   );
 };

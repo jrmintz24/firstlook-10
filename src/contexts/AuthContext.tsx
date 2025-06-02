@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       provider,
       options: {
         redirectTo: `${window.location.origin}/buyer-dashboard`,
-        data: {
+        queryParams: {
           user_type: userType
         }
       }

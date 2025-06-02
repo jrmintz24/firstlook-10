@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Shield, ChevronRight, Sparkles, MapPin } from "lucide-react";
+import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
@@ -89,7 +89,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
@@ -100,13 +100,33 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
               <span className="relative z-10">Get Your FREE DC Home Tour</span>
               <ChevronRight className="ml-3 h-6 w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
-            <Link to="/agents">
+            <Link to="/subscriptions">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="px-10 py-6 text-xl border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 hover:scale-105 transition-all duration-300"
+                className="px-10 py-6 text-xl border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:scale-105 transition-all duration-300"
               >
-                Join as DC Showing Partner
+                <DollarSign className="mr-3 h-6 w-6" />
+                View VIP Membership - $69.95/mo
+              </Button>
+            </Link>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Link to="/agents">
+              <Button 
+                variant="ghost" 
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 underline font-medium hover:scale-105 transition-all duration-200"
+              >
+                Join as DC Showing Partner →
+              </Button>
+            </Link>
+            <Link to="/subscriptions">
+              <Button 
+                variant="ghost" 
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 underline font-medium hover:scale-105 transition-all duration-200"
+              >
+                💎 See All Pricing Options →
               </Button>
             </Link>
           </div>

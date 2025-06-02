@@ -11,6 +11,7 @@ import DCBuyers from "./pages/DCBuyers";
 import FAQ from "./pages/FAQ";
 import AgentLanding from "./pages/AgentLanding";
 import BuyerDashboard from "./pages/BuyerDashboard";
+import Subscriptions from "./pages/Subscriptions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/agents" element={<AgentLanding />} />
               <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

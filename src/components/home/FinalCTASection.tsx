@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface FinalCTASectionProps {
@@ -30,21 +30,30 @@ const FinalCTASection = ({ onRequestShowing }: FinalCTASectionProps) => {
             <Sparkles className="mr-3 h-6 w-6" />
             Get Your Free DC Showing
           </Button>
-          <Button 
-            size="lg" 
-            className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
-            onClick={onRequestShowing}
-          >
-            Sign Up & Start Browsing DC
-          </Button>
+          <Link to="/subscriptions">
+            <Button 
+              size="lg" 
+              className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"
+            >
+              <DollarSign className="mr-3 h-6 w-6" />
+              View VIP Membership
+            </Button>
+          </Link>
         </div>
         
         <div className="text-center">
-          <Link to="/faq">
-            <Button variant="ghost" className="text-white hover:bg-white/10 underline">
-              Have questions about FirstLook? Check our FAQ →
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/faq">
+              <Button variant="ghost" className="text-white hover:bg-white/10 underline">
+                Have questions about FirstLook? Check our FAQ →
+              </Button>
+            </Link>
+            <Link to="/subscriptions">
+              <Button variant="ghost" className="text-white hover:bg-white/10 underline">
+                💎 See All Pricing & Plans →
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

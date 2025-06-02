@@ -3,26 +3,27 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthModal from "@/components/AuthModal";
+import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import { User, LogOut, Calendar } from "lucide-react";
 
 const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authUserType, setAuthUserType] = useState<'buyer' | 'agent'>('buyer');
   const { user, signOut } = useAuth();
 
   const handleSignInClick = () => {
-    setAuthUserType('buyer');
     setShowAuthModal(true);
   };
 
   const handleGetStartedClick = () => {
-    setAuthUserType('buyer');
     setShowAuthModal(true);
   };
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
   };
 
   return (
@@ -97,11 +98,11 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal 
+      {/* Quick Sign-In Modal */}
+      <QuickSignInModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        userType={authUserType}
+        onSuccess={handleAuthSuccess}
       />
     </nav>
   );

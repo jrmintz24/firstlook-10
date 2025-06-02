@@ -41,13 +41,19 @@ export const usePropertyRequest = () => {
   };
 
   const handleNext = () => {
-    if (step === 1 && !formData.propertyAddress && !formData.mlsId) {
-      toast({
-        title: "Property Required",
-        description: "Please provide either a property address or MLS ID",
-        variant: "destructive"
-      });
-      return;
+    if (step === 1) {
+      // Check if user has either selected properties OR has entered a single property
+      const hasSelectedProperties = formData.selectedProperties.length > 0;
+      const hasSingleProperty = formData.propertyAddress || formData.mlsId;
+      
+      if (!hasSelectedProperties && !hasSingleProperty) {
+        toast({
+          title: "Property Required",
+          description: "Please provide either a property address or MLS ID",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     setStep(step + 1);
   };

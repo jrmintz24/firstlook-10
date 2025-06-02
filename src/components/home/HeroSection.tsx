@@ -130,18 +130,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             </Link>
           </div>
 
-          {/* DC-specific link */}
-          <div className="mb-12">
-            <Link to="/dc-home-buyers">
-              <Button 
-                variant="ghost" 
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 underline font-medium hover:scale-105 transition-all duration-200"
-              >
-                🏛️ Looking for homes specifically in Washington DC? →
-              </Button>
-            </Link>
-          </div>
-
           <p className="text-sm text-gray-600 max-w-lg mx-auto">
             <strong>What happens next?</strong> We'll match you with a <span className="text-purple-600 font-medium">verified, licensed real estate professional</span> who will <span className="font-bold text-blue-600">confirm your requested time</span>. <span className="text-green-600 font-bold">No strings attached.</span>
           </p>

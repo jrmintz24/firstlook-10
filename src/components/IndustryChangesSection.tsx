@@ -24,28 +24,28 @@ const IndustryChangesSection = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-slate-800 mb-2">Why Zillow Leaves You at the Door</h3>
-                  <p className="text-gray-600 text-lg">The site you browse on isn't the one that gets you inside.</p>
+                  <p className="text-gray-600 text-lg">The site you browse isn't the one that gets you inside.</p>
                 </div>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-xl mt-0.5">🚪</span>
-                  <p className="text-gray-700">Zillow stops at the listing—you're left chasing agents just to see a home.</p>
+                  <span className="text-xl mt-0.5">🚫</span>
+                  <p className="text-gray-700">Browsing is easy—but to actually tour a home, you're forced to chase down agents.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-xl mt-0.5">🚫</span>
-                  <p className="text-gray-700">Agents may demand commitments or paperwork before you can even tour.</p>
+                  <p className="text-gray-700">Agents often pressure you to sign buyer agreements or commitments before you ever step inside.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-xl mt-0.5">❓</span>
-                  <p className="text-gray-700">You never know who you'll meet, what it will cost, or when you'll get in.</p>
+                  <span className="text-xl mt-0.5">🚫</span>
+                  <p className="text-gray-700">You're left in the dark on who you'll meet, what it'll cost, or when you'll get access.</p>
                 </div>
               </div>
               
               <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <p className="text-purple-800 font-medium">
-                  FirstLook gives you instant, on-demand access to the homes you want—no agent commitments, no pressure, no surprises.
+                  With FirstLook, you control when and how you tour—no pressure, no surprise commitments, just homes on your terms.
                 </p>
               </div>
             </div>
@@ -57,38 +57,29 @@ const IndustryChangesSection = () => {
                   <Scale className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-2">The NAR Settlement Puts Buyers in the Driver's Seat</h3>
-                  <p className="text-gray-600 text-lg">New rules just flipped the script—now you get more control, more options, and total transparency.</p>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">The NAR Settlement Flipped the Script</h3>
+                  <p className="text-gray-600 text-lg">New rules give buyers real power and real choices for the first time.</p>
                 </div>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">No more hidden agent fees:</p>
-                    <p className="text-gray-700">Buyer agent compensation isn't baked into listings anymore—you get to decide if, when, and how you want help.</p>
-                  </div>
+                  <span className="text-xl mt-0.5">✅</span>
+                  <p className="text-gray-700">Agent fees are no longer automatic—you decide if, when, and how you work with a pro.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">Clarity before you commit:</p>
-                    <p className="text-gray-700">Know exactly what you're paying for—and what you're not—before you ever sign anything.</p>
-                  </div>
+                  <span className="text-xl mt-0.5">✅</span>
+                  <p className="text-gray-700">You deserve to know exactly what you're paying for before you ever commit.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Scale className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">Real power of choice:</p>
-                    <p className="text-gray-700">Pick the services you need, skip the ones you don't, and decide when and how you want to work with an agent—if at all.</p>
-                  </div>
+                  <span className="text-xl mt-0.5">✅</span>
+                  <p className="text-gray-700">You control how, when, and whether to involve an agent—full transparency, your choice every step of the way.</p>
                 </div>
               </div>
               
               <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-blue-800 font-medium">
-                  FirstLook was built for this new era. You're in control, every step of the way.
+                  FirstLook is the only platform built for this new era—giving you full transparency and freedom to shop the way you want.
                 </p>
               </div>
             </div>
@@ -96,18 +87,20 @@ const IndustryChangesSection = () => {
 
           {/* Solution Bridge */}
           <div className="text-center bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white">
-            <h3 className="text-3xl font-bold mb-4">FirstLook Bridges The Gap</h3>
+            <h3 className="text-3xl font-bold mb-4">FirstLook: See Homes on Your Terms—No Surprises, No Pressure</h3>
             <p className="text-purple-100 text-lg mb-6 max-w-3xl mx-auto">
-              We connect you directly with verified showing professionals who can tour homes on your schedule, 
-              with complete pricing transparency and zero upfront commitments.
+              We connect you directly with trusted, verified showing professionals. Tour homes when you want, keep your info private, and get total pricing transparency—no upfront commitments, ever.
             </p>
-            <div className="flex items-center justify-center gap-4 text-sm font-medium">
+            <div className="flex items-center justify-center gap-4 text-sm font-medium mb-6">
               <span className="bg-white/20 px-4 py-2 rounded-full">Browse Properties</span>
               <ArrowRight className="w-4 h-4" />
-              <span className="bg-white/20 px-4 py-2 rounded-full">Request Showing</span>
+              <span className="bg-white/20 px-4 py-2 rounded-full">Request a Showing</span>
               <ArrowRight className="w-4 h-4" />
-              <span className="bg-white/20 px-4 py-2 rounded-full">Tour With Professional</span>
+              <span className="bg-white/20 px-4 py-2 rounded-full">Tour On Your Schedule</span>
             </div>
+            <p className="text-white font-medium">
+              Ready to shop like a pro, without agent headaches? Get started free.
+            </p>
           </div>
         </div>
       </div>

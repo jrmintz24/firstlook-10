@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
+  const navigate = useNavigate();
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setIsLoading(true);
@@ -40,7 +42,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`,
         });
         onClose();
-        onSuccess();
+        navigate('/buyer-dashboard');
       }
     } catch (error) {
       toast({
@@ -69,10 +71,10 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         } else {
           toast({
             title: "Welcome back!",
-            description: "Redirecting to plans...",
+            description: "Redirecting to dashboard...",
           });
           onClose();
-          onSuccess();
+          navigate('/buyer-dashboard');
         }
       } else {
         const metadata = {
@@ -91,10 +93,10 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         } else {
           toast({
             title: "Account Created!",
-            description: "Redirecting to plans...",
+            description: "Redirecting to dashboard...",
           });
           onClose();
-          onSuccess();
+          navigate('/buyer-dashboard');
         }
       }
     } finally {

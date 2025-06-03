@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, Clock, Shield, Star, TrendingUp, CheckCircle, Phone, ArrowRight, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthModal from "@/components/AuthModal";
+import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 
 const AgentLanding = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -15,6 +15,15 @@ const AgentLanding = () => {
 
   const handleJoinNow = () => {
     setShowAuthModal(true);
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    // Could redirect to agent dashboard when implemented
+    toast({
+      title: "Welcome!",
+      description: "Successfully signed in as an agent.",
+    });
   };
 
   if (loading) {
@@ -145,7 +154,6 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* How It Works */}
       <div id="how-it-works" className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -203,7 +211,6 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* Benefits Section */}
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -273,7 +280,6 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* Earnings Potential */}
       <div className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -346,7 +352,6 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* Final CTA */}
       <div className="bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700 py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -392,11 +397,11 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal 
+      {/* QuickSignInModal instead of AuthModal */}
+      <QuickSignInModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        userType="agent"
+        onSuccess={handleAuthSuccess}
       />
     </div>
   );

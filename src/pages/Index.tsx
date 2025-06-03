@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
-import UserDashboard from "@/components/UserDashboard";
 import TrustIndicators from "@/components/TrustIndicators";
 import ProblemSolutionSection from "@/components/ProblemSolutionSection";
 import IndustryChangesSection from "@/components/IndustryChangesSection";
@@ -17,18 +17,26 @@ const Index = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { toast } = useToast();
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleRequestShowing = () => {
-    setShowPropertyForm(true);
+    if (user) {
+      // If user is authenticated, go directly to dashboard
+      navigate('/buyer-dashboard');
+    } else {
+      // If not authenticated, show property form which will lead to sign up
+      setShowPropertyForm(true);
+    }
   };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // If user is authenticated, show dashboard
+  // If user is authenticated, redirect to dashboard
   if (user) {
-    return <UserDashboard />;
+    navigate('/buyer-dashboard');
+    return null;
   }
 
   return (

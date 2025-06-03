@@ -17,6 +17,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     formData,
     showAuthModal,
     setShowAuthModal,
+    isSubmitting,
     handleInputChange,
     handleNext,
     handleBack,
@@ -53,6 +54,7 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
             onInputChange={handleInputChange}
             onContinueToSubscriptions={handleContinueToSubscriptions}
             onBack={handleBack}
+            isSubmitting={isSubmitting}
           />
         );
       default:

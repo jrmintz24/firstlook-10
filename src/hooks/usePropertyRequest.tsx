@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PropertyRequestFormData {
   propertyAddress: string;
@@ -32,6 +33,7 @@ export const usePropertyRequest = () => {
     selectedProperties: [],
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -85,26 +87,82 @@ export const usePropertyRequest = () => {
     }));
   };
 
-  const handleContinueToSubscriptions = () => {
+  const submitShowingRequests = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to submit your showing request",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Get all properties to submit
+      const propertiesToSubmit = formData.selectedProperties.length > 0 
+        ? formData.selectedProperties 
+        : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
+
+      // Get the primary preferred date/time
+      const preferredDate = formData.preferredDate1;
+      const preferredTime = formData.preferredTime1;
+
+      // Create showing requests for each property
+      const requests = propertiesToSubmit.map(property => ({
+        user_id: user.id,
+        property_address: property,
+        preferred_date: preferredDate || null,
+        preferred_time: preferredTime || null,
+        message: formData.notes || null,
+        status: 'pending'
+      }));
+
+      const { error } = await supabase
+        .from('showing_requests')
+        .insert(requests);
+
+      if (error) {
+        console.error('Error creating showing requests:', error);
+        toast({
+          title: "Error",
+          description: "Failed to submit showing request. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Clear any pending tour data
+      localStorage.removeItem('pendingTourRequest');
+      
+      toast({
+        title: "Success!",
+        description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted successfully!`,
+      });
+
+      // Navigate to dashboard
+      navigate('/buyer-dashboard');
+      
+    } catch (error) {
+      console.error('Error submitting showing requests:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleContinueToSubscriptions = async () => {
     if (!user) {
       setShowAuthModal(true);
       return;
     }
     
-    // Store tour data in localStorage to persist across navigation
-    const tourData = {
-      properties: formData.selectedProperties,
-      preferredDates: [
-        { date: formData.preferredDate1, time: formData.preferredTime1 },
-        { date: formData.preferredDate2, time: formData.preferredTime2 },
-        { date: formData.preferredDate3, time: formData.preferredTime3 },
-      ].filter(slot => slot.date && slot.time),
-      notes: formData.notes,
-      timestamp: new Date().toISOString()
-    };
-    
-    localStorage.setItem('pendingTourRequest', JSON.stringify(tourData));
-    navigate('/subscriptions');
+    // Submit the showing requests directly instead of going to subscriptions
+    await submitShowingRequests();
   };
 
   return {
@@ -112,11 +170,13 @@ export const usePropertyRequest = () => {
     formData,
     showAuthModal,
     setShowAuthModal,
+    isSubmitting,
     handleInputChange,
     handleNext,
     handleBack,
     handleAddProperty,
     handleRemoveProperty,
     handleContinueToSubscriptions,
+    submitShowingRequests,
   };
 };

@@ -33,7 +33,6 @@ const BuyerDashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -62,8 +61,60 @@ const BuyerDashboard = () => {
     if (user || session?.user) {
       console.log('User found, fetching data...');
       fetchUserData();
+      handlePendingTourRequest();
     }
   }, [user, session, authLoading, navigate]);
+
+  const handlePendingTourRequest = async () => {
+    const pendingRequest = localStorage.getItem('pendingTourRequest');
+    if (!pendingRequest) return;
+
+    try {
+      const tourData = JSON.parse(pendingRequest);
+      const currentUser = user || session?.user;
+      
+      if (!currentUser || !tourData.properties?.length) {
+        localStorage.removeItem('pendingTourRequest');
+        return;
+      }
+
+      console.log('Processing pending tour request:', tourData);
+
+      // Create showing requests for each property
+      const requests = tourData.properties.map((property: string) => ({
+        user_id: currentUser.id,
+        property_address: property,
+        preferred_date: tourData.preferredDates?.[0]?.date || null,
+        preferred_time: tourData.preferredDates?.[0]?.time || null,
+        message: tourData.notes || null,
+        status: 'pending'
+      }));
+
+      const { error } = await supabase
+        .from('showing_requests')
+        .insert(requests);
+
+      if (error) {
+        console.error('Error creating pending showing requests:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process your pending tour request.",
+          variant: "destructive"
+        });
+      } else {
+        localStorage.removeItem('pendingTourRequest');
+        toast({
+          title: "Tour Request Submitted!",
+          description: `Your tour request for ${requests.length} property${requests.length > 1 ? 'ies' : ''} has been submitted successfully!`,
+        });
+        // Refresh the data to show the new requests
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error('Error processing pending tour request:', error);
+      localStorage.removeItem('pendingTourRequest');
+    }
+  };
 
   const fetchUserData = async () => {
     const currentUser = user || session?.user;

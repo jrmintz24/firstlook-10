@@ -26,7 +26,7 @@ interface ShowingRequest {
   preferred_date: string | null;
   preferred_time: string | null;
   message: string | null;
-  status: ShowingStatus;
+  status: string; // Keep as string since Supabase returns string
   created_at: string;
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
@@ -225,9 +225,9 @@ const BuyerDashboard = () => {
     });
   };
 
-  // Organize requests by type
-  const pendingRequests = showingRequests.filter(req => isPendingRequest(req.status));
-  const activeShowings = showingRequests.filter(req => isActiveShowing(req.status));
+  // Organize requests by type - cast status to ShowingStatus for utility functions
+  const pendingRequests = showingRequests.filter(req => isPendingRequest(req.status as ShowingStatus));
+  const activeShowings = showingRequests.filter(req => isActiveShowing(req.status as ShowingStatus));
   const completedShowings = showingRequests.filter(req => req.status === 'completed');
 
   // Show loading while auth is loading or data is loading

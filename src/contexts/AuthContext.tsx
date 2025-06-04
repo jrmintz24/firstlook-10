@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,11 +46,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, metadata: any) => {
+    const redirectUrl = metadata.user_type === 'agent' 
+      ? `${window.location.origin}/agent-dashboard`
+      : `${window.location.origin}/buyer-dashboard`;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/buyer-dashboard`,
+        emailRedirectTo: redirectUrl,
         data: metadata
       }
     });
@@ -69,10 +72,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInWithProvider = async (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => {
+    const redirectUrl = userType === 'agent'
+      ? `${window.location.origin}/agent-dashboard`
+      : `${window.location.origin}/buyer-dashboard`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/buyer-dashboard`,
+        redirectTo: redirectUrl,
         queryParams: {
           user_type: userType
         }

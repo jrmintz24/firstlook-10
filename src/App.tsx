@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import DCBuyers from "./pages/DCBuyers";
 import FAQ from "./pages/FAQ";
 import AgentLanding from "./pages/AgentLanding";
+import AgentDashboard from "./pages/AgentDashboard";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import Subscriptions from "./pages/Subscriptions";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/dc-buyers" element={<DCBuyers />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/agents" element={<AgentLanding />} />
+              <Route path="/agent-dashboard" element={<AgentDashboard />} />
               <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="*" element={<NotFound />} />

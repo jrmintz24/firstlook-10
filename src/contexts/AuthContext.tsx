@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -42,14 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const redirectUserByType = (userType: string | null) => {
-    if (userType === 'agent') {
-      window.location.href = '/agent-dashboard';
-    } else if (userType === 'buyer') {
-      window.location.href = '/buyer-dashboard';
-    }
-  };
-
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -60,17 +54,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Fetch user type when user signs in
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          // Use setTimeout to defer the async operation
           setTimeout(async () => {
             const profileUserType = await fetchUserProfile(session.user.id);
             setUserType(profileUserType);
-            
-            // Auto-redirect on sign in
-            if (event === 'SIGNED_IN' && profileUserType) {
-              redirectUserByType(profileUserType);
-            }
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUserType(null);
+          setHasRedirected(false);
         }
         
         // Only set loading to false after we've processed the auth state
@@ -153,6 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
         setUser(null);
         setUserType(null);
+        setHasRedirected(false);
         // Force redirect to home page
         window.location.href = '/';
       }

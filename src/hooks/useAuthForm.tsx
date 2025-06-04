@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface AuthFormData {
   email: string;
@@ -23,6 +24,7 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
+  const navigate = useNavigate();
 
   const generatePassword = () => {
     const randomNum = Math.floor(Math.random() * 9999);
@@ -45,6 +47,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
           description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`,
         });
         onSuccess();
+        // Navigate to appropriate dashboard
+        const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+        navigate(dashboardPath);
       }
     } catch (error) {
       toast({
@@ -80,7 +85,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
             description: "Welcome back!",
           });
           onSuccess();
-          // Auth context will handle the redirect based on user type
+          // Navigate to appropriate dashboard
+          const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+          navigate(dashboardPath);
         }
       } else {
         // For signup, use the password from form data or generate one for buyers
@@ -121,7 +128,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
               description: "Account created and you're now signed in!",
             });
             onSuccess();
-            // Auth context will handle the redirect based on user type
+            // Navigate to appropriate dashboard
+            const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+            navigate(dashboardPath);
           }
         }
       }

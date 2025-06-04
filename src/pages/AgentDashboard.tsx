@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +28,7 @@ interface ShowingRequest {
   message: string | null;
   status: string;
   created_at: string;
+  assigned_agent_id?: string | null;
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;

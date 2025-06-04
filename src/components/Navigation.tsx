@@ -8,7 +8,7 @@ import { User, LogOut, Calendar } from "lucide-react";
 
 const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, userType, signOut } = useAuth();
 
   const handleSignInClick = () => {
     setShowAuthModal(true);
@@ -24,6 +24,15 @@ const Navigation = () => {
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
+  };
+
+  const getDashboardLink = () => {
+    if (userType === 'agent') {
+      return '/agent-dashboard';
+    } else if (userType === 'buyer') {
+      return '/buyer-dashboard';
+    }
+    return '/buyer-dashboard'; // Default fallback
   };
 
   return (
@@ -59,7 +68,7 @@ const Navigation = () => {
           <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-3">
-                <Link to="/buyer-dashboard">
+                <Link to={getDashboardLink()}>
                   <Button 
                     variant="ghost" 
                     className="flex items-center gap-2 text-purple-600 hover:bg-purple-50"

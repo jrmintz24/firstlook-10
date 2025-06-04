@@ -80,9 +80,7 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
             description: "Welcome back!",
           });
           onSuccess();
-          if (userType === 'buyer') {
-            window.location.href = '/buyer-dashboard';
-          }
+          // Auth context will handle the redirect based on user type
         }
       } else {
         // For signup, use the password from form data or generate one for buyers
@@ -123,9 +121,7 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
               description: "Account created and you're now signed in!",
             });
             onSuccess();
-            if (userType === 'buyer') {
-              window.location.href = '/buyer-dashboard';
-            }
+            // Auth context will handle the redirect based on user type
           }
         }
       }

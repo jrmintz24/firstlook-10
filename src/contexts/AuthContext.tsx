@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  userType: string | null;
   signUp: (email: string, password: string, metadata: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signInWithProvider: (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => Promise<{ error: any }>;
@@ -17,7 +19,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      return profile?.user_type || null;
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return null;
+    }
+  };
+
+  const redirectUserByType = (userType: string | null) => {
+    if (userType === 'agent') {
+      window.location.href = '/agent-dashboard';
+    } else if (userType === 'buyer') {
+      window.location.href = '/buyer-dashboard';
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener first
@@ -27,6 +58,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Fetch user type when user signs in
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          setTimeout(async () => {
+            const profileUserType = await fetchUserProfile(session.user.id);
+            setUserType(profileUserType);
+            
+            // Auto-redirect on sign in
+            if (event === 'SIGNED_IN' && profileUserType) {
+              redirectUserByType(profileUserType);
+            }
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          setUserType(null);
+        }
+        
         // Only set loading to false after we've processed the auth state
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
           setLoading(false);
@@ -35,10 +81,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // Then get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Initial session:', session);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const profileUserType = await fetchUserProfile(session.user.id);
+        setUserType(profileUserType);
+      }
+      
       setLoading(false);
     });
 
@@ -100,6 +152,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Clear state immediately
         setSession(null);
         setUser(null);
+        setUserType(null);
         // Force redirect to home page
         window.location.href = '/';
       }
@@ -112,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       session,
+      userType,
       signUp,
       signIn,
       signInWithProvider,

@@ -112,14 +112,14 @@ export const usePropertyRequest = () => {
       const estimatedDate = new Date();
       estimatedDate.setDate(estimatedDate.getDate() + 2);
 
-      // Create showing requests for each property with new status system
+      // Create showing requests for each property with correct status
       const requests = propertiesToSubmit.map(property => ({
         user_id: user.id,
         property_address: property,
         preferred_date: preferredDate || null,
         preferred_time: preferredTime || null,
         message: formData.notes || null,
-        status: 'submitted', // Use new status instead of 'pending'
+        status: 'pending', // Use 'pending' instead of 'submitted'
         estimated_confirmation_date: estimatedDate.toISOString().split('T')[0] // YYYY-MM-DD format
       }));
 

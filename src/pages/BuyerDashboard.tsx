@@ -184,6 +184,11 @@ const BuyerDashboard = () => {
     setShowPropertyForm(true);
   };
 
+  const handleFormSuccess = () => {
+    // Refresh the data when form is successfully submitted
+    fetchUserData();
+  };
+
   const handleCancelShowing = async (showingId: string) => {
     try {
       const { error } = await supabase
@@ -313,6 +318,7 @@ const BuyerDashboard = () => {
       <PropertyRequestForm 
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
+        onSuccess={handleFormSuccess}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -146,7 +147,7 @@ const AgentDashboard = () => {
           assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
           assigned_agent_phone: profile.phone,
           assigned_agent_email: currentUser.email,
-          status: 'agent_assigned'
+          status: 'under_review'
         })
         .eq('id', requestId);
 

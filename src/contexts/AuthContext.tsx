@@ -135,21 +135,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       console.log('Starting sign out process...');
+      
+      // Clear state immediately to prevent UI issues
+      setSession(null);
+      setUser(null);
+      setUserType(null);
+      setHasRedirected(false);
+      
+      // Attempt to sign out, but don't worry if it fails (session might already be expired)
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Sign out error:', error);
+        console.log('Sign out warning (expected if session expired):', error.message);
       } else {
         console.log('Sign out successful');
-        // Clear state immediately
-        setSession(null);
-        setUser(null);
-        setUserType(null);
-        setHasRedirected(false);
-        // Force redirect to home page
-        window.location.href = '/';
       }
+      
+      // Always redirect to home regardless of sign out success/failure
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if there's an error, clear state and redirect
+      setSession(null);
+      setUser(null);
+      setUserType(null);
+      setHasRedirected(false);
+      window.location.href = '/';
     }
   };
 

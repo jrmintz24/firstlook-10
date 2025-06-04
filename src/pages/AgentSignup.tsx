@@ -148,6 +148,7 @@ const AgentSignup = () => {
                     firstName={formData.firstName}
                     email={formData.email}
                     phone={formData.phone}
+                    password={formData.password}
                     licenseNumber={formData.licenseNumber}
                     isLoading={isLoading}
                     onInputChange={handleInputChange}

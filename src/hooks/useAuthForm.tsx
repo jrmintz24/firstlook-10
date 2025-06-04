@@ -85,7 +85,8 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
           }
         }
       } else {
-        const password = generatePassword();
+        // For signup, use the password from form data or generate one for buyers
+        const password = userType === 'agent' ? formData.password : generatePassword();
 
         const metadata = {
           first_name: formData.firstName,
@@ -105,9 +106,13 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
         } else {
           const { error: signInError } = await signIn(formData.email, password);
           if (signInError) {
+            const passwordMessage = userType === 'buyer' 
+              ? `Your account was created successfully. Your password is: ${password}. Please sign in manually.`
+              : "Your account was created successfully. Please sign in manually.";
+            
             toast({
               title: "Account created but sign in failed",
-              description: `Your account was created successfully. Your password is: ${password}. Please sign in manually.`,
+              description: passwordMessage,
               duration: 15000,
             });
             setIsLogin(true);

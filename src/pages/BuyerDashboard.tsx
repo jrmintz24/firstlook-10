@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, MapPin, Phone, User, Plus, CheckCircle, AlertCircle, Star, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import ShowingRequestCard from "@/components/dashboard/ShowingRequestCard";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
 
 interface Profile {
   id: string;
@@ -21,11 +23,16 @@ interface Profile {
 interface ShowingRequest {
   id: string;
   property_address: string;
-  preferred_date: string;
-  preferred_time: string;
-  message: string;
-  status: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  message: string | null;
+  status: ShowingStatus;
   created_at: string;
+  assigned_agent_name?: string | null;
+  assigned_agent_phone?: string | null;
+  assigned_agent_email?: string | null;
+  estimated_confirmation_date?: string | null;
+  status_updated_at?: string | null;
 }
 
 const BuyerDashboard = () => {
@@ -218,23 +225,10 @@ const BuyerDashboard = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const upcomingShowings = showingRequests.filter(req => 
-    req.status === 'pending' || req.status === 'confirmed'
-  );
-  
-  const completedShowings = showingRequests.filter(req => 
-    req.status === 'completed'
-  );
+  // Organize requests by type
+  const pendingRequests = showingRequests.filter(req => isPendingRequest(req.status));
+  const activeShowings = showingRequests.filter(req => isActiveShowing(req.status));
+  const completedShowings = showingRequests.filter(req => req.status === 'completed');
 
   // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
@@ -299,59 +293,60 @@ const BuyerDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">{pendingRequests.length}</div>
+              <div className="text-gray-600">Pending Requests</div>
+            </CardContent>
+          </Card>
           <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{upcomingShowings.length}</div>
-              <div className="text-gray-600">Upcoming Showings</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{activeShowings.length}</div>
+              <div className="text-gray-600">Confirmed Showings</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">{showingRequests.length}</div>
-              <div className="text-gray-600">Total Requests</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">{completedShowings.length}</div>
+              <div className="text-gray-600">Completed</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">{completedShowings.length}</div>
-              <div className="text-gray-600">Completed</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-0 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">1</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">1</div>
               <div className="text-gray-600">Free Shows Left</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="upcoming" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="upcoming">Upcoming Showings</TabsTrigger>
+        <Tabs defaultValue="pending" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="pending">Pending Requests</TabsTrigger>
+            <TabsTrigger value="upcoming">Confirmed Showings</TabsTrigger>
             <TabsTrigger value="history">Showing History</TabsTrigger>
-            <TabsTrigger value="preferences">Profile</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upcoming" className="space-y-6">
+          <TabsContent value="pending" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Upcoming Showings</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Pending Requests</h2>
               <Button 
                 onClick={handleRequestShowing}
                 variant="outline"
                 className="border-purple-200 text-purple-700 hover:bg-purple-50"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Schedule New Showing
+                Submit New Request
               </Button>
             </div>
 
-            {upcomingShowings.length === 0 ? (
+            {pendingRequests.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
-                  <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No upcoming showings</h3>
-                  <p className="text-gray-500 mb-6">Ready to find your dream home? Schedule your first showing!</p>
+                  <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No pending requests</h3>
+                  <p className="text-gray-500 mb-6">Ready to find your dream home? Submit a showing request!</p>
                   <Button 
                     onClick={handleRequestShowing}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
@@ -362,72 +357,54 @@ const BuyerDashboard = () => {
               </Card>
             ) : (
               <div className="grid gap-6">
-                {upcomingShowings.map((showing) => (
-                  <Card key={showing.id} className="shadow-lg border-0">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Badge 
-                              variant={showing.status === 'confirmed' ? 'default' : 'secondary'}
-                              className={getStatusColor(showing.status)}
-                            >
-                              {showing.status === 'confirmed' ? (
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                              ) : (
-                                <AlertCircle className="h-3 w-3 mr-1" />
-                              )}
-                              {showing.status}
-                            </Badge>
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-purple-500" />
-                            {showing.property_address}
-                          </h3>
-                          {showing.preferred_date && (
-                            <div className="flex items-center gap-6 text-gray-600 mb-3">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date(showing.preferred_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                              </div>
-                              {showing.preferred_time && (
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  <span>{showing.preferred_time}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {showing.message && (
-                            <div className="bg-blue-50 p-3 rounded-lg mb-4">
-                              <div className="text-sm font-medium text-blue-800 mb-1">Notes</div>
-                              <div className="text-blue-600 text-sm">{showing.message}</div>
-                            </div>
-                          )}
-                          <p className="text-xs text-gray-400">
-                            Requested on {new Date(showing.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleRescheduleShowing(showing.id)}
-                        >
-                          Reschedule
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleCancelShowing(showing.id)}
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {pendingRequests.map((showing) => (
+                  <ShowingRequestCard
+                    key={showing.id}
+                    showing={showing}
+                    onCancel={handleCancelShowing}
+                    onReschedule={handleRescheduleShowing}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="upcoming" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-800">Confirmed Showings</h2>
+              <Button 
+                onClick={handleRequestShowing}
+                variant="outline"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Another Showing
+              </Button>
+            </div>
+
+            {activeShowings.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No confirmed showings</h3>
+                  <p className="text-gray-500 mb-6">Once your requests are confirmed, they'll appear here.</p>
+                  <Button 
+                    onClick={handleRequestShowing}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    Request Your Free Showing
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6">
+                {activeShowings.map((showing) => (
+                  <ShowingRequestCard
+                    key={showing.id}
+                    showing={showing}
+                    onCancel={handleCancelShowing}
+                    onReschedule={handleRescheduleShowing}
+                  />
                 ))}
               </div>
             )}
@@ -447,58 +424,19 @@ const BuyerDashboard = () => {
             ) : (
               <div className="grid gap-6">
                 {completedShowings.map((showing) => (
-                  <Card key={showing.id} className="shadow-lg border-0">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-purple-500" />
-                            {showing.property_address}
-                          </h3>
-                          {showing.preferred_date && (
-                            <div className="flex items-center gap-6 text-gray-600 mb-3">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date(showing.preferred_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                              </div>
-                              {showing.preferred_time && (
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  <span>{showing.preferred_time}</span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span className="text-green-600 font-medium">Completed</span>
-                              </div>
-                            </div>
-                          )}
-                          {showing.message && (
-                            <div className="bg-blue-50 p-3 rounded-lg mb-4">
-                              <div className="text-sm font-medium text-blue-800 mb-1">Notes</div>
-                              <div className="text-blue-600 text-sm">{showing.message}</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button 
-                          onClick={handleRequestShowing}
-                          size="sm" 
-                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Book Another Showing
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ShowingRequestCard
+                    key={showing.id}
+                    showing={showing}
+                    onCancel={handleCancelShowing}
+                    onReschedule={handleRescheduleShowing}
+                    showActions={false}
+                  />
                 ))}
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-6">
+          <TabsContent value="profile" className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Your Profile</h2>
             
             <div className="grid md:grid-cols-2 gap-6">

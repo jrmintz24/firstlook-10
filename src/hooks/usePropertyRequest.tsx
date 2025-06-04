@@ -108,14 +108,19 @@ export const usePropertyRequest = () => {
       const preferredDate = formData.preferredDate1;
       const preferredTime = formData.preferredTime1;
 
-      // Create showing requests for each property
+      // Calculate estimated confirmation date (2 business days from now)
+      const estimatedDate = new Date();
+      estimatedDate.setDate(estimatedDate.getDate() + 2);
+
+      // Create showing requests for each property with new status system
       const requests = propertiesToSubmit.map(property => ({
         user_id: user.id,
         property_address: property,
         preferred_date: preferredDate || null,
         preferred_time: preferredTime || null,
         message: formData.notes || null,
-        status: 'pending'
+        status: 'submitted', // Use new status instead of 'pending'
+        estimated_confirmation_date: estimatedDate.toISOString().split('T')[0] // YYYY-MM-DD format
       }));
 
       const { error } = await supabase
@@ -136,8 +141,8 @@ export const usePropertyRequest = () => {
       localStorage.removeItem('pendingTourRequest');
       
       toast({
-        title: "Success!",
-        description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted successfully!`,
+        title: "Request Submitted Successfully! 🎉",
+        description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
       // Navigate to dashboard

@@ -239,39 +239,68 @@ export type Database = {
       }
       showing_requests: {
         Row: {
+          assigned_agent_email: string | null
+          assigned_agent_id: string | null
+          assigned_agent_name: string | null
+          assigned_agent_phone: string | null
           created_at: string
+          estimated_confirmation_date: string | null
           id: string
+          internal_notes: string | null
           message: string | null
           preferred_date: string | null
           preferred_time: string | null
           property_address: string
           status: string | null
+          status_updated_at: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          assigned_agent_email?: string | null
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
           created_at?: string
+          estimated_confirmation_date?: string | null
           id?: string
+          internal_notes?: string | null
           message?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           property_address: string
           status?: string | null
+          status_updated_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          assigned_agent_email?: string | null
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
           created_at?: string
+          estimated_confirmation_date?: string | null
           id?: string
+          internal_notes?: string | null
           message?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           property_address?: string
           status?: string | null
+          status_updated_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "showing_requests_assigned_agent_id_fkey"
+            columns: ["assigned_agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

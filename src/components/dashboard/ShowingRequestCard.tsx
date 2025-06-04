@@ -11,7 +11,7 @@ interface ShowingRequest {
   preferred_date: string | null;
   preferred_time: string | null;
   message: string | null;
-  status: ShowingStatus;
+  status: string; // Keep as string since Supabase returns string
   created_at: string;
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;

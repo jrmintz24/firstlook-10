@@ -3,6 +3,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, Clock, Users } from "lucide-react";
 
 const WhyChooseSection = () => {
+  const features = [
+    {
+      icon: Shield,
+      title: "Peace of Mind",
+      description: "Explore homes with verified, licensed real estate agents from your Washington DC community. Your first showing is completely free.",
+      gradient: "from-slate-500 to-purple-600"
+    },
+    {
+      icon: Clock,
+      title: "On-Demand Access",
+      description: "Request DC home showings when it's convenient for you. See homes 7 days a week at times that work for your schedule.",
+      gradient: "from-purple-600 to-blue-600"
+    },
+    {
+      icon: Users,
+      title: "Local DC Experts",
+      description: "All our showing partners are licensed, verified professionals specializing in Washington DC neighborhoods and market expertise.",
+      gradient: "from-blue-600 to-cyan-600"
+    }
+  ];
+
   return (
     <div className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -19,47 +40,24 @@ const WhyChooseSection = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-slate-50 to-purple-50 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <CardHeader className="pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-slate-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                <Shield className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-xl text-gray-900">Peace of Mind</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-700 text-lg">
-                Explore homes with <span className="font-semibold text-gray-900">verified, licensed real estate agents from your Washington DC community</span>. Your first showing is <span className="font-semibold text-green-700">completely free</span>.
-              </CardDescription>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-slate-50 to-purple-50 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <CardHeader className="pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center">
-                <Clock className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-xl text-gray-900">On-Demand Access</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-700 text-lg">
-                Request DC home showings when it's <span className="font-semibold text-blue-700">convenient for you</span>. See homes 7 days a week at times that work for your schedule.
-              </CardDescription>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-slate-50 to-purple-50 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <CardHeader className="pb-4">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-xl text-gray-900">Local DC Experts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-700 text-lg">
-                All our showing partners are <span className="font-semibold text-purple-700">licensed, verified professionals specializing in Washington DC</span> neighborhoods and market expertise.
-              </CardDescription>
-            </CardContent>
-          </Card>
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <Card key={index} className="text-center border-0 shadow-lg bg-gradient-to-br from-slate-50 to-purple-50 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <CardHeader className="pb-4">
+                  <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center`}>
+                    <IconComponent className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl text-gray-900">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-700 text-lg">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>

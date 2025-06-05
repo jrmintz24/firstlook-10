@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, Sparkles, Zap, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -14,9 +14,7 @@ const MembershipPreviewSection = ({ onRequestShowing }: MembershipPreviewSection
     "Unlimited access to the FirstLook platform",
     "VIP scheduling for showings—get priority booking",
     "Access to same day viewings when available",
-    "One tour session included with subscription",
-    "15-minute monthly live support call",
-    "Keep your contact info private until you choose to share"
+    "One tour session included with subscription"
   ];
 
   return (
@@ -62,7 +60,7 @@ const MembershipPreviewSection = ({ onRequestShowing }: MembershipPreviewSection
             </CardHeader>
             <CardContent>
               <div className="space-y-3 mb-6">
-                {membershipFeatures.slice(0, 4).map((feature, index) => (
+                {membershipFeatures.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-gray-700 text-sm">{feature}</span>
@@ -97,7 +95,7 @@ const MembershipPreviewSection = ({ onRequestShowing }: MembershipPreviewSection
             <Card className="border border-gray-200 shadow-lg">
               <CardHeader className="text-center">
                 <CardTitle className="text-xl text-slate-800">Pay-Per-Tour Options</CardTitle>
-                <CardDescription>Perfect for one-time tours</CardDescription>
+                <p className="text-gray-600">Perfect for one-time tours</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">

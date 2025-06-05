@@ -127,6 +127,7 @@ const BuyerAuth = () => {
                     firstName={buyerAuth.formData.firstName}
                     email={buyerAuth.formData.email}
                     phone={buyerAuth.formData.phone}
+                    password={buyerAuth.formData.password}
                     licenseNumber={buyerAuth.formData.licenseNumber}
                     isLoading={buyerAuth.isLoading}
                     onInputChange={buyerAuth.handleInputChange}

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
-import { User, LogOut, Calendar } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
 const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -42,20 +42,35 @@ const Navigation = () => {
 
           {/* Center Navigation Links */}
           <div className="flex-1 flex justify-center">
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-8">
+              <Link to="/how-it-works">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
+                >
+                  How It Works
+                </Button>
+              </Link>
               <Link to="/subscriptions">
                 <Button 
                   variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-6 py-2 transition-colors"
+                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Plans
+                  Pricing
+                </Button>
+              </Link>
+              <Link to="/blog">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
+                >
+                  Blog
                 </Button>
               </Link>
               <Link to="/agents">
                 <Button 
                   variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-6 py-2 transition-colors"
+                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
                 >
                   Join as Showing Partner
                 </Button>
@@ -92,7 +107,7 @@ const Navigation = () => {
                   onClick={handleSignInClick}
                   className="text-purple-600 hover:bg-purple-50"
                 >
-                  Sign In
+                  Login
                 </Button>
                 <Button 
                   onClick={handleGetStartedClick}

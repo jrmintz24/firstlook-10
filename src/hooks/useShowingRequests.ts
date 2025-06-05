@@ -56,7 +56,7 @@ export const useCreateShowingRequest = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (request: Partial<ShowingRequest>) => {
+    mutationFn: async (request: Omit<ShowingRequest, 'id' | 'created_at'>) => {
       const { data, error } = await supabase
         .from('showing_requests')
         .insert([request])

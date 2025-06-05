@@ -1,6 +1,8 @@
 
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -61,6 +63,36 @@ export const CardSkeleton = () => {
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-1/2" />
       <Skeleton className="h-10 w-full" />
+    </div>
+  );
+};
+
+interface ErrorStateProps {
+  error: Error | string;
+  onRetry?: () => void;
+  title?: string;
+}
+
+export const ErrorState = ({ 
+  error, 
+  onRetry, 
+  title = "Something went wrong" 
+}: ErrorStateProps) => {
+  const errorMessage = typeof error === 'string' ? error : error.message;
+
+  return (
+    <div className="flex flex-col items-center justify-center p-8 space-y-4">
+      <AlertTriangle className="h-8 w-8 text-red-500" />
+      <div className="text-center">
+        <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-600">{errorMessage}</p>
+      </div>
+      {onRetry && (
+        <Button onClick={onRetry} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Try Again
+        </Button>
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
@@ -7,7 +6,6 @@ interface MobileNavigationProps {
   isOpen: boolean;
   user: any;
   onSignOut: () => void;
-  onHowItWorksClick: (e: React.MouseEvent) => void;
   onMenuItemClick: () => void;
 }
 
@@ -15,7 +13,6 @@ const MobileNavigation = ({
   isOpen, 
   user, 
   onSignOut, 
-  onHowItWorksClick, 
   onMenuItemClick 
 }: MobileNavigationProps) => {
   if (!isOpen) return null;
@@ -23,13 +20,14 @@ const MobileNavigation = ({
   return (
     <div className="md:hidden bg-white border-t border-purple-100 py-4">
       <div className="flex flex-col space-y-2">
-        <Button 
-          variant="ghost" 
-          className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start"
-          onClick={onHowItWorksClick}
-        >
-          How It Works
-        </Button>
+        <Link to="/faq" onClick={onMenuItemClick}>
+          <Button 
+            variant="ghost" 
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
+          >
+            FAQs
+          </Button>
+        </Link>
         <Link to="/subscriptions" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 

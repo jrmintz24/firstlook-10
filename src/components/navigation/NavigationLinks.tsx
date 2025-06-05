@@ -2,20 +2,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-interface NavigationLinksProps {
-  onHowItWorksClick: (e: React.MouseEvent) => void;
-}
-
-const NavigationLinks = ({ onHowItWorksClick }: NavigationLinksProps) => {
+const NavigationLinks = () => {
   return (
     <div className="flex items-center space-x-4">
-      <Button 
-        variant="ghost" 
-        className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-        onClick={onHowItWorksClick}
-      >
-        How It Works
-      </Button>
+      <Link to="/faq">
+        <Button 
+          variant="ghost" 
+          className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
+        >
+          FAQs
+        </Button>
+      </Link>
       <Link to="/subscriptions">
         <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
           Pricing

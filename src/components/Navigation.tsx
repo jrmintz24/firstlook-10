@@ -11,7 +11,6 @@ const Navigation = () => {
     user,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
-    handleHowItWorksClick,
     handleSignOut,
     closeMobileMenu
   } = useNavigation();
@@ -31,7 +30,7 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <NavigationLinks onHowItWorksClick={handleHowItWorksClick} />
+            <NavigationLinks />
 
             {/* Auth Section */}
             <NavigationAuth user={user} onSignOut={handleSignOut} />
@@ -43,7 +42,6 @@ const Navigation = () => {
           isOpen={isMobileMenuOpen}
           user={user}
           onSignOut={handleSignOut}
-          onHowItWorksClick={handleHowItWorksClick}
           onMenuItemClick={closeMobileMenu}
         />
       </div>

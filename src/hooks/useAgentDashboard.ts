@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,25 +42,19 @@ export const useAgentDashboard = () => {
   const fetchAgentData = async () => {
     const currentUser = user || session?.user;
     if (!currentUser) {
-      console.log('No current user available for fetchAgentData');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Starting to fetch agent data for:', currentUser.id);
-      
-      // Fetch profile to verify agent status
+      // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
         .single();
 
-      console.log('Profile fetch result:', { profileData, profileError });
-
       if (profileError || !profileData || profileData.user_type !== 'agent') {
-        console.log('User is not an agent or profile not found');
         toast({
           title: "Access Denied",
           description: "You need to be an agent to access this dashboard.",
@@ -71,20 +66,17 @@ export const useAgentDashboard = () => {
 
       setProfile(profileData);
 
-      // Fetch all showing requests for agents
+      // Fetch showing requests
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
         .order('created_at', { ascending: false });
-
-      console.log('Requests fetch result:', { requestsData, requestsError });
 
       if (requestsError) {
         console.error('Requests error:', requestsError);
         setShowingRequests([]);
       } else {
         setShowingRequests(requestsData || []);
-        console.log('Requests set:', requestsData);
       }
     } catch (error) {
       console.error('Error fetching agent data:', error);
@@ -94,7 +86,6 @@ export const useAgentDashboard = () => {
         variant: "destructive"
       });
     } finally {
-      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -104,7 +95,7 @@ export const useAgentDashboard = () => {
     
     const success = await assignToSelf(requestId, profile);
     if (success) {
-      fetchAgentData(); // Refresh data
+      fetchAgentData();
     }
   };
 
@@ -128,14 +119,14 @@ export const useAgentDashboard = () => {
           variant: "destructive"
         });
         return false;
-      } else {
-        toast({
-          title: "Status Updated",
-          description: "The request status has been updated successfully.",
-        });
-        fetchAgentData(); // Refresh data
-        return true;
       }
+
+      toast({
+        title: "Status Updated",
+        description: "The request status has been updated successfully.",
+      });
+      fetchAgentData();
+      return true;
     } catch (error) {
       console.error('Error updating status:', error);
       return false;
@@ -143,25 +134,15 @@ export const useAgentDashboard = () => {
   };
 
   useEffect(() => {
-    console.log('AgentDashboard useEffect triggered');
-    console.log('Auth loading:', authLoading);
-    console.log('User:', user);
-    console.log('Session:', session);
-    
-    if (authLoading) {
-      console.log('Auth still loading, waiting...');
-      return;
-    }
+    if (authLoading) return;
     
     if (!user && !session) {
-      console.log('No user/session found, redirecting to home');
       setLoading(false);
       navigate('/');
       return;
     }
 
     if (user || session?.user) {
-      console.log('User found, fetching agent data...');
       fetchAgentData();
     }
   }, [user, session, authLoading, navigate]);

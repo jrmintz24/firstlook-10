@@ -1,45 +1,17 @@
-
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { User, LogOut, Menu, X } from "lucide-react";
+import { useNavigation } from "@/hooks/useNavigation";
 
 const Navigation = () => {
-  const { user, signOut } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleHowItWorksClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsMobileMenuOpen(false);
-    
-    if (location.pathname === '/') {
-      // If on homepage, scroll to section
-      const element = document.getElementById('how-it-works');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // If on different page, navigate to homepage and then scroll
-      navigate('/');
-      setTimeout(() => {
-        const element = document.getElementById('how-it-works');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const {
+    user,
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    handleHowItWorksClick,
+    handleSignOut,
+    closeMobileMenu
+  } = useNavigation();
 
   return (
     <nav className="bg-white/90 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-50">
@@ -69,7 +41,6 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Navigation Links */}
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
@@ -79,34 +50,22 @@ const Navigation = () => {
                 How It Works
               </Button>
               <Link to="/subscriptions">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-                >
+                <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
                   Pricing
                 </Button>
               </Link>
               <Link to="/blog">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-                >
+                <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
                   Blog
                 </Button>
               </Link>
               <Link to="/agents">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-                >
+                <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
                   For Agents
                 </Button>
               </Link>
               <Link to="/agent-auth?tab=login">
-                <Button 
-                  variant="ghost" 
-                  className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors"
-                >
+                <Button variant="ghost" className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors">
                   Agent Login
                 </Button>
               </Link>
@@ -117,10 +76,7 @@ const Navigation = () => {
               {user ? (
                 <div className="flex items-center space-x-3">
                   <Link to="/buyer-dashboard">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center gap-2 text-purple-600 hover:bg-purple-50"
-                    >
+                    <Button variant="ghost" className="flex items-center gap-2 text-purple-600 hover:bg-purple-50">
                       <User className="w-4 h-4" />
                       Dashboard
                     </Button>
@@ -137,17 +93,12 @@ const Navigation = () => {
               ) : (
                 <div className="flex items-center space-x-2">
                   <Link to="/buyer-auth?tab=login">
-                    <Button 
-                      variant="ghost" 
-                      className="text-purple-600 hover:bg-purple-50"
-                    >
+                    <Button variant="ghost" className="text-purple-600 hover:bg-purple-50">
                       Login
                     </Button>
                   </Link>
                   <Link to="/buyer-auth">
-                    <Button 
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                    >
+                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
                       Get Started
                     </Button>
                   </Link>

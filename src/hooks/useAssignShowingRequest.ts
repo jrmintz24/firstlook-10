@@ -3,13 +3,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface Profile {
+  first_name: string;
+  last_name: string;
+  phone: string;
+}
+
 export const useAssignShowingRequest = () => {
   const { user, session } = useAuth();
   const { toast } = useToast();
 
-  const assignToSelf = async (requestId: string, profile: any) => {
+  const assignToSelf = async (requestId: string, profile: Profile) => {
     const currentUser = user || session?.user;
-    if (!currentUser || !profile) return;
+    if (!currentUser || !profile) return false;
 
     try {
       const { error } = await supabase
@@ -30,15 +36,20 @@ export const useAssignShowingRequest = () => {
           variant: "destructive"
         });
         return false;
-      } else {
-        toast({
-          title: "Request Assigned",
-          description: "You have been assigned to this showing request.",
-        });
-        return true;
       }
+
+      toast({
+        title: "Request Assigned",
+        description: "You have been assigned to this showing request.",
+      });
+      return true;
     } catch (error) {
       console.error('Error assigning request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to assign request. Please try again.",
+        variant: "destructive"
+      });
       return false;
     }
   };

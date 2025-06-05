@@ -35,6 +35,13 @@ const Navigation = () => {
     return '/buyer-dashboard'; // Default fallback
   };
 
+  const scrollToHowItWorks = () => {
+    const element = document.getElementById('how-it-works-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="bg-white/90 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -112,6 +119,7 @@ const Navigation = () => {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
+        defaultTab="signin"
       />
     </nav>
   );

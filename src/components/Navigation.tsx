@@ -40,8 +40,9 @@ const Navigation = () => {
             </span>
           </Link>
 
-          {/* Center Navigation Links */}
-          <div className="flex-1 flex justify-center">
+          {/* Right Side Navigation */}
+          <div className="flex items-center space-x-8">
+            {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
               <Link to="/how-it-works">
                 <Button 
@@ -76,47 +77,47 @@ const Navigation = () => {
                 </Button>
               </Link>
             </div>
-          </div>
 
-          {/* Auth Section */}
-          <div className="flex items-center space-x-3">
-            {user ? (
-              <div className="flex items-center space-x-3">
-                <Link to="/buyer-dashboard">
+            {/* Auth Section */}
+            <div className="flex items-center space-x-3">
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <Link to="/buyer-dashboard">
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-2 text-purple-600 hover:bg-purple-50"
+                    >
+                      <User className="w-4 h-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 border-purple-200 text-purple-600 hover:bg-purple-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
                   <Button 
                     variant="ghost" 
-                    className="flex items-center gap-2 text-purple-600 hover:bg-purple-50"
+                    onClick={handleSignInClick}
+                    className="text-purple-600 hover:bg-purple-50"
                   >
-                    <User className="w-4 h-4" />
-                    Dashboard
+                    Login
                   </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2 border-purple-200 text-purple-600 hover:bg-purple-50"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="ghost" 
-                  onClick={handleSignInClick}
-                  className="text-purple-600 hover:bg-purple-50"
-                >
-                  Login
-                </Button>
-                <Button 
-                  onClick={handleGetStartedClick}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                >
-                  Get Started
-                </Button>
-              </div>
-            )}
+                  <Button 
+                    onClick={handleGetStartedClick}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

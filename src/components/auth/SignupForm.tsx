@@ -8,7 +8,7 @@ import { Sparkles } from "lucide-react";
 import SocialLoginButtons from "./SocialLoginButtons";
 
 interface SignupFormProps {
-  userType: 'buyer' | 'agent';
+  userType: 'buyer' | 'agent' | 'admin';
   firstName: string;
   email: string;
   phone: string;

@@ -13,7 +13,7 @@ interface QuickSignInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  defaultUserType?: 'buyer' | 'agent';
+  defaultUserType?: 'buyer' | 'agent' | 'admin';
   defaultTab?: 'login' | 'signup';
 }
 
@@ -24,7 +24,7 @@ const QuickSignInModal = ({
   defaultUserType = 'buyer',
   defaultTab = 'signup'
 }: QuickSignInModalProps) => {
-  const [userType, setUserType] = useState<'buyer' | 'agent'>(defaultUserType);
+  const [userType, setUserType] = useState<'buyer' | 'agent' | 'admin'>(defaultUserType);
   const { toast } = useToast();
   const { user } = useAuth();
 

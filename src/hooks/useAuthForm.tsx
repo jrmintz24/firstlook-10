@@ -11,7 +11,10 @@ interface AuthFormData {
   licenseNumber: string;
 }
 
-export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) => {
+export const useAuthForm = (
+  userType: 'buyer' | 'agent' | 'admin',
+  onSuccess: () => void
+) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',

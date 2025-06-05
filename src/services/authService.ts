@@ -11,7 +11,11 @@ export const signUp = async (
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/${
-        metadata.user_type === 'agent' ? 'agent' : 'buyer'
+        metadata.user_type === 'agent'
+          ? 'agent'
+          : metadata.user_type === 'admin'
+          ? 'admin'
+          : 'buyer'
       }-dashboard`,
       data: metadata
     }
@@ -30,7 +34,7 @@ export const signIn = async (
 
 export const signInWithProvider = async (
   provider: 'google' | 'facebook',
-  userType: 'buyer' | 'agent'
+  userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,

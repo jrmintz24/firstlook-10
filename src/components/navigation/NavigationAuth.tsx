@@ -19,6 +19,8 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
     const dashboardLink =
       user.user_metadata?.user_type === 'agent'
         ? '/agent-dashboard'
+        : user.user_metadata?.user_type === 'admin'
+        ? '/admin-dashboard'
         : '/buyer-dashboard';
     return (
       <div className="flex items-center space-x-3">

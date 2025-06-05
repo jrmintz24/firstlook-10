@@ -36,6 +36,22 @@ npm i
 npm run dev
 ```
 
+## Environment variables
+
+Create a `.env` file at the project root by copying `.env.example`:
+
+```sh
+cp .env.example .env
+```
+
+Then fill in the following values:
+
+- `VITE_GOOGLE_PLACES_API_KEY` – API key from Google Cloud Console for the Places API.
+- `RENTCAST_API_KEY` – your API key from RentCast.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` – found in your Supabase project settings.
+
+These keys are required for the app to run locally with `npm run dev`.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).

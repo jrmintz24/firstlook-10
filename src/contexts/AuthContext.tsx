@@ -1,14 +1,25 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import type { AuthError } from '@supabase/auth-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, metadata: any) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signInWithProvider: (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata: Record<string, unknown>
+  ) => Promise<{ error: AuthError | null }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: AuthError | null }>;
+  signInWithProvider: (
+    provider: 'google' | 'facebook',
+    userType: 'buyer' | 'agent'
+  ) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   loading: boolean;
 }
@@ -46,7 +57,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, metadata: any) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata: Record<string, unknown>
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -59,7 +74,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (
+    email: string,
+    password: string
+  ) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -68,7 +86,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error };
   };
 
-  const signInWithProvider = async (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => {
+  const signInWithProvider = async (
+    provider: 'google' | 'facebook',
+    userType: 'buyer' | 'agent'
+  ) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

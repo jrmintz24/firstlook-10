@@ -30,6 +30,12 @@ interface ShowingRequest {
   user_id?: string | null;
 }
 
+interface ShowingRequestUpdates {
+  status: string;
+  status_updated_at: string;
+  estimated_confirmation_date?: string;
+}
+
 export const useAgentDashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
@@ -122,11 +128,15 @@ export const useAgentDashboard = () => {
     }
   };
 
-  const handleStatusUpdate = async (requestId: string, newStatus: string, estimatedDate?: string) => {
+  const handleStatusUpdate = async (
+    requestId: string,
+    newStatus: string,
+    estimatedDate?: string
+  ) => {
     console.log('Updating status:', { requestId, newStatus, estimatedDate });
     
     try {
-      const updates: any = { 
+      const updates: ShowingRequestUpdates = {
         status: newStatus,
         status_updated_at: new Date().toISOString()
       };

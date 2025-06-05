@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { createToastHelper } from "@/utils/toastUtils";
+import { useToastHelper } from "@/utils/toastUtils";
 
 interface Profile {
   first_name: string;
@@ -11,7 +11,7 @@ interface Profile {
 
 export const useAssignShowingRequest = () => {
   const { user, session } = useAuth();
-  const toastHelper = createToastHelper();
+  const toastHelper = useToastHelper();
 
   const assignToSelf = async (requestId: string, profile: Profile) => {
     const currentUser = user || session?.user;

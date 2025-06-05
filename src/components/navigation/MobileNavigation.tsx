@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface MobileNavigationProps {
   isOpen: boolean;
-  user: any;
+  user: SupabaseUser | null;
   onSignOut: () => void;
   onMenuItemClick: () => void;
 }

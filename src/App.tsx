@@ -11,6 +11,7 @@ import DCBuyers from "./pages/DCBuyers";
 import FAQ from "./pages/FAQ";
 import AgentLanding from "./pages/AgentLanding";
 import BuyerDashboard from "./pages/BuyerDashboard";
+import AgentDashboard from "./pages/AgentDashboard";
 import Subscriptions from "./pages/Subscriptions";
 import SingleHomeTour from "./pages/SingleHomeTour";
 import TourSession from "./pages/TourSession";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/agents" element={<AgentLanding />} />
               <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
+              <Route path="/agent-dashboard" element={<AgentDashboard />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/single-home-tour" element={<SingleHomeTour />} />
               <Route path="/tour-session" element={<TourSession />} />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,8 +31,7 @@ const AgentAuth = () => {
       title: "Welcome to FirstLook!",
       description: "You're now part of our showing partner network.",
     });
-    // Could redirect to agent dashboard when implemented
-    navigate('/');
+    navigate('/agent-dashboard');
   });
 
   if (loading) {
@@ -42,7 +40,7 @@ const AgentAuth = () => {
 
   // Redirect if already authenticated
   if (user) {
-    navigate('/');
+    navigate('/agent-dashboard');
     return null;
   }
 

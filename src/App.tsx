@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import BuyerAuth from "./pages/BuyerAuth";
 import AgentAuth from "./pages/AgentAuth";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +40,7 @@ const App = () => (
               <Route path="/agent-dashboard" element={<AgentDashboard />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/single-home-tour" element={<SingleHomeTour />} />
               <Route path="/tour-session" element={<TourSession />} />
               <Route path="/buyer-auth" element={<BuyerAuth />} />

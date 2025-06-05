@@ -19,7 +19,16 @@ const AddressAutocomplete = ({
   label = "Property Address",
   id = "address-autocomplete"
 }: AddressAutocompleteProps) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  interface PlacePrediction {
+    place_id: string;
+    description: string;
+    structured_formatting?: {
+      main_text: string;
+      secondary_text: string;
+    };
+  }
+
+  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +82,7 @@ const AddressAutocomplete = ({
     }
   };
 
-  const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = (suggestion: PlacePrediction) => {
     onChange(suggestion.description);
     setShowSuggestions(false);
   };

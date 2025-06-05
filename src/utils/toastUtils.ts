@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 
-export const createToastHelper = () => {
+export const useToastHelper = () => {
   const { toast } = useToast();
 
   return {

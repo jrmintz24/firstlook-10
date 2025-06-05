@@ -24,20 +24,22 @@ export const useAssignShowingRequest = () => {
     console.log('Attempting to assign request:', { requestId, profile, userEmail: currentUser.email });
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('showing_requests')
-        .update({
-          assigned_agent_id: currentUser.id,
-          assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
-          assigned_agent_phone: profile.phone,
-          assigned_agent_email: currentUser.email,
-          status: 'agent_assigned',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', requestId)
-        .select();
+        .update(
+          {
+            assigned_agent_id: currentUser.id,
+            assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
+            assigned_agent_phone: profile.phone,
+            assigned_agent_email: currentUser.email,
+            status: 'agent_assigned',
+            status_updated_at: new Date().toISOString()
+          },
+          { returning: 'minimal' }
+        )
+        .eq('id', requestId);
 
-      console.log('Assignment update result:', { data, error });
+      console.log('Assignment update result:', { error });
 
       if (error) {
         console.error('Error assigning request:', error);
@@ -45,13 +47,7 @@ export const useAssignShowingRequest = () => {
         return false;
       }
 
-      if (!data || data.length === 0) {
-        console.error('No rows updated - request may not exist');
-        toastHelper.error("Assignment Failed", "Request not found or already assigned.");
-        return false;
-      }
-
-      console.log('Successfully assigned request:', data[0]);
+      console.log('Successfully assigned request');
       toastHelper.success("Request Assigned", "You have been assigned to this showing request and will contact the client within 2 hours.");
       return true;
     } catch (error) {

@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { FullPageLoading } from "@/components/ui/loading-states";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import TrustIndicators from "@/components/TrustIndicators";
@@ -16,12 +16,11 @@ import FinalCTASection from "@/components/home/FinalCTASection";
 
 const Index = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const { toast } = useToast();
-  const { user, userType, loading } = useAuth();
+  const { user, userType, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleRequestShowing = () => {
-    if (user) {
+    if (isAuthenticated) {
       // If user is authenticated, go directly to dashboard
       const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
       navigate(dashboardPath);
@@ -33,19 +32,19 @@ const Index = () => {
 
   // Redirect authenticated users to their dashboard
   useEffect(() => {
-    if (!loading && user && userType) {
+    if (!loading && isAuthenticated && userType) {
       const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
       navigate(dashboardPath);
     }
-  }, [user, userType, loading, navigate]);
+  }, [isAuthenticated, userType, loading, navigate]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <FullPageLoading message="Loading FirstLook..." />;
   }
 
   // Don't render the home page if user is authenticated and will be redirected
-  if (user && userType) {
-    return <div className="min-h-screen flex items-center justify-center">Redirecting...</div>;
+  if (isAuthenticated && userType) {
+    return <FullPageLoading message="Redirecting to your dashboard..." />;
   }
 
   return (

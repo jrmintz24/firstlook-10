@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,16 +14,22 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Check if popup has already been shown
+      const hasShownPopup = localStorage.getItem('firstlook-showing-popup-shown');
+      if (hasShownPopup || showPopup) return;
+
       const element = document.querySelector('[data-trigger="showing-popup"]');
       if (element) {
         const rect = element.getBoundingClientRect();
         const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
         
-        if (isVisible && !showPopup) {
-          // Show popup after a short delay when the element becomes visible
+        if (isVisible) {
+          // Show popup after 2 seconds when the element becomes visible
           setTimeout(() => {
             setShowPopup(true);
-          }, 1000);
+            // Mark popup as shown in localStorage
+            localStorage.setItem('firstlook-showing-popup-shown', 'true');
+          }, 2000);
         }
       }
     };

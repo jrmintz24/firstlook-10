@@ -12,6 +12,8 @@ import FAQSection from "@/components/FAQSection";
 import HeroSection from "@/components/home/HeroSection";
 import WhyChooseSection from "@/components/home/WhyChooseSection";
 import FinalCTASection from "@/components/home/FinalCTASection";
+import MembershipPreviewSection from "@/components/home/MembershipPreviewSection";
+import OfferSupportSection from "@/components/home/OfferSupportSection";
 
 const Index = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
@@ -53,11 +55,17 @@ const Index = () => {
       {/* How It Works */}
       <HowItWorks />
 
+      {/* Membership Preview Section */}
+      <MembershipPreviewSection onRequestShowing={handleRequestShowing} />
+
       {/* Why Choose FirstLook */}
       <WhyChooseSection />
 
       {/* Problem-Solution Section */}
       <ProblemSolutionSection />
+
+      {/* Offer Support Section */}
+      <OfferSupportSection />
 
       {/* FAQ Section */}
       <FAQSection />

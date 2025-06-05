@@ -25,7 +25,6 @@ export const useShowingRequests = () => {
         throw error;
       }
 
-      // Cast the data to match our type interface
       return (data || []).map(item => ({
         ...item,
         property_city: item.property_address ? 'Washington' : undefined,
@@ -56,7 +55,6 @@ export const useAgentShowingRequests = () => {
         throw error;
       }
 
-      // Cast the data to match our type interface
       return (data || []).map(item => ({
         ...item,
         property_city: item.property_address ? 'Washington' : undefined,
@@ -188,7 +186,6 @@ export const useAssignShowingRequest = () => {
   });
 };
 
-// Real-time subscription hook for showing requests
 export const useShowingRequestsSubscription = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -209,11 +206,9 @@ export const useShowingRequestsSubscription = () => {
         (payload) => {
           console.log('Real-time update:', payload);
           
-          // Invalidate and refetch queries
           queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
           queryClient.invalidateQueries({ queryKey: ['agent-showing-requests'] });
           
-          // Show notification for status updates
           if (payload.eventType === 'UPDATE') {
             toast({
               title: "Status Update",

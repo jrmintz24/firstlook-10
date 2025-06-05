@@ -18,9 +18,9 @@ export interface ShowingRequest {
   id: string;
   user_id: string;
   property_address: string;
-  property_city: string;
-  property_state: string;
-  property_zip: string;
+  property_city?: string;
+  property_state?: string;
+  property_zip?: string;
   preferred_date?: string | null;
   preferred_time?: string | null;
   message?: string | null;
@@ -32,6 +32,8 @@ export interface ShowingRequest {
   estimated_confirmation_date?: string | null;
   created_at: string;
   updated_at: string;
+  status_updated_at?: string | null;
+  internal_notes?: string | null;
 }
 
 // UI and component types
@@ -89,4 +91,12 @@ export interface ContactFormData {
   email: string;
   phone?: string;
   message: string;
+}
+
+// Agent assignment types
+export interface AgentInfo {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
 }

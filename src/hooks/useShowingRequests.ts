@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import type { ShowingRequest, PropertyRequestFormData } from '@/types';
+import type { ShowingRequest, PropertyRequestFormData, AgentInfo } from '@/types';
 
 export const useShowingRequests = () => {
   const { user } = useAuth();
@@ -28,6 +28,9 @@ export const useShowingRequests = () => {
       // Cast the data to match our type interface
       return (data || []).map(item => ({
         ...item,
+        property_city: item.property_address ? 'Washington' : undefined,
+        property_state: item.property_address ? 'DC' : undefined,
+        property_zip: item.property_address ? undefined : undefined,
         status: item.status as ShowingRequest['status']
       }));
     },
@@ -56,6 +59,9 @@ export const useAgentShowingRequests = () => {
       // Cast the data to match our type interface
       return (data || []).map(item => ({
         ...item,
+        property_city: item.property_address ? 'Washington' : undefined,
+        property_state: item.property_address ? 'DC' : undefined,
+        property_zip: item.property_address ? undefined : undefined,
         status: item.status as ShowingRequest['status']
       }));
     },
@@ -77,9 +83,6 @@ export const useCreateShowingRequest = () => {
         .insert({
           user_id: user.id,
           property_address: requestData.property_address,
-          property_city: requestData.property_city,
-          property_state: requestData.property_state,
-          property_zip: requestData.property_zip,
           preferred_date: requestData.preferred_date || null,
           preferred_time: requestData.preferred_time || null,
           message: requestData.message || null,
@@ -138,6 +141,47 @@ export const useUpdateShowingRequest = () => {
       toast({
         title: "Error", 
         description: "Failed to update request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useAssignShowingRequest = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ requestId, agentInfo }: { requestId: string; agentInfo: AgentInfo }) => {
+      const { data, error } = await supabase
+        .from('showing_requests')
+        .update({
+          assigned_agent_id: agentInfo.id,
+          assigned_agent_name: agentInfo.name,
+          assigned_agent_email: agentInfo.email,
+          assigned_agent_phone: agentInfo.phone,
+          status: 'assigned'
+        })
+        .eq('id', requestId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-showing-requests'] });
+      toast({
+        title: "Request Assigned",
+        description: "You have been assigned to this showing request.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error assigning showing request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to assign request. Please try again.",
         variant: "destructive",
       });
     },

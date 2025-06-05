@@ -3,15 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-export interface UserProfile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  user_type: string;
-  license_number?: string;
-}
+import type { UserProfile } from '@/types';
 
 export const useUserProfile = () => {
   const { user } = useAuth();

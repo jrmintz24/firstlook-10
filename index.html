@@ -3,15 +3,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FirstLook - Tour DC Homes Without Commitment</title>
-    <meta name="description" content="FirstLook provides transparent access to home showings in Washington DC without upfront buyer agreements. Your first tour is free - no contracts, no pressure." />
-    <meta name="keywords" content="DC homes, Washington DC real estate, home tours, no commitment, buyer agent, NAR settlement, transparent pricing" />
-    <script src="https://cdn.gpteng.co/gptengineer.js" defer></script>
+    <title>FirstLook - Simplifying Real Estate Showings</title>
+    <meta name="description" content="FirstLook connects buyers with licensed agents for seamless property showings. Request showings, track status, and schedule visits with ease." />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="FirstLook" />
+    <link rel="apple-touch-icon" href="/placeholder.svg" />
+    
+    <!-- SEO and Social Meta Tags -->
+    <meta property="og:title" content="FirstLook - Simplifying Real Estate Showings" />
+    <meta property="og:description" content="Connect with licensed agents for seamless property showings" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/placeholder.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FirstLook" />
+    <meta name="twitter:description" content="Simplifying Real Estate Showings" />
+    
+    <!-- Accessibility -->
+    <meta name="color-scheme" content="light" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

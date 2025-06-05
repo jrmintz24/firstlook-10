@@ -5,6 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+const convertTo24Hour = (time: string): string => {
+  const [t, modifier] = time.split(' ');
+  let [hours, minutes] = t.split(':');
+  if (modifier.toLowerCase() === 'pm' && hours !== '12') {
+    hours = String(Number(hours) + 12);
+  }
+  if (modifier.toLowerCase() === 'am' && hours === '12') {
+    hours = '00';
+  }
+  return `${hours.padStart(2, '0')}:${minutes}:00`;
+};
+
 export interface PropertyRequestFormData {
   propertyAddress: string;
   mlsId: string;
@@ -106,7 +118,9 @@ export const usePropertyRequest = () => {
 
       // Get the primary preferred date/time
       const preferredDate = formData.preferredDate1;
-      const preferredTime = formData.preferredTime1;
+      const preferredTime = formData.preferredTime1
+        ? convertTo24Hour(formData.preferredTime1)
+        : '';
 
       // Calculate estimated confirmation date (2 business days from now)
       const estimatedDate = new Date();
@@ -187,3 +201,4 @@ export const usePropertyRequest = () => {
     submitShowingRequests,
   };
 };
+

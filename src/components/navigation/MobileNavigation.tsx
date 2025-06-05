@@ -54,11 +54,19 @@ const MobileNavigation = ({
           </Button>
         </Link>
         <Link to="/agent-auth?tab=login" onClick={onMenuItemClick}>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 transition-colors justify-start w-full"
           >
             Agent Login
+          </Button>
+        </Link>
+        <Link to="/admin-auth?tab=login" onClick={onMenuItemClick}>
+          <Button
+            variant="ghost"
+            className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 transition-colors justify-start w-full"
+          >
+            Admin Login
           </Button>
         </Link>
         
@@ -70,6 +78,8 @@ const MobileNavigation = ({
                 to={
                   user.user_metadata?.user_type === 'agent'
                     ? '/agent-dashboard'
+                    : user.user_metadata?.user_type === 'admin'
+                    ? '/admin-dashboard'
                     : '/buyer-dashboard'
                 }
                 onClick={onMenuItemClick}

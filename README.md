@@ -80,6 +80,22 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/df1616ad-5732-43de-9096-ccd1ee3b6fa0) and click on Share -> Publish.
 
+## Running tests
+
+Install dependencies if you haven't already:
+
+```sh
+npm install
+```
+
+Then run the unit tests with:
+
+```sh
+npm test
+```
+
+Vitest will execute the test suite defined under `src/`. If you encounter a "cannot find package 'vitest'" error, ensure dependencies are installed.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

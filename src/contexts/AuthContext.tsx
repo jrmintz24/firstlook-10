@@ -19,7 +19,7 @@ interface AuthContextType {
   ) => Promise<{ error: AuthError | null }>;
   signInWithProvider: (
     provider: 'google' | 'facebook',
-    userType: 'buyer' | 'agent'
+    userType: 'buyer' | 'agent' | 'admin'
   ) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithProvider = async (
     provider: 'google' | 'facebook',
-    userType: 'buyer' | 'agent'
+    userType: 'buyer' | 'agent' | 'admin'
   ) => authService.signInWithProvider(provider, userType);
 
   const signOut = async () => {

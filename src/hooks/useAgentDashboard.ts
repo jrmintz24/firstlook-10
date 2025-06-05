@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useAssignShowingRequest } from "./useShowingRequests.tsx";
+import { useAssignShowingRequest } from "./useShowingRequests";
 
 interface Profile {
   id: string;

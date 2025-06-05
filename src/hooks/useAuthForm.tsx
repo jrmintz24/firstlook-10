@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToastHelper } from "@/utils/toastUtils";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface AuthFormData {
@@ -21,7 +21,7 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
     licenseNumber: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const toastHelper = useToastHelper();
   const { signUp, signIn, signInWithProvider } = useAuth();
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
@@ -29,24 +29,16 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
     try {
       const { error } = await signInWithProvider(provider, userType);
       if (error) {
-        toast({
-          title: "Social Login Error",
-          description: error.message,
-          variant: "destructive"
-        });
+        toastHelper.error("Social Login Error", error.message);
       } else {
-        toast({
-          title: "Success!",
-          description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`,
-        });
+        toastHelper.success(
+          "Success!",
+          `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
+        );
         onSuccess();
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong with social login",
-        variant: "destructive"
-      });
+      toastHelper.error("Error", "Something went wrong with social login");
     } finally {
       setIsLoading(false);
     }
@@ -64,16 +56,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
       if (isLogin) {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive"
-          });
+          toastHelper.error("Error", error.message);
         } else {
-          toast({
-            title: "Success!",
-            description: "Welcome back!",
-          });
+          toastHelper.success("Success!", "Welcome back!");
           onSuccess();
           if (userType === 'buyer') {
             window.location.href = '/buyer-dashboard';
@@ -93,16 +78,12 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
 
         const { error } = await signUp(formData.email, password, metadata);
         if (error) {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive"
-          });
+          toastHelper.error("Error", error.message);
         } else {
-          toast({
-            title: "Success!",
-            description: "Account created successfully! Please check your email to verify your account.",
-          });
+          toastHelper.success(
+            "Success!",
+            "Account created successfully! Please check your email to verify your account."
+          );
           // Switch to login mode after successful signup
           setIsLogin(true);
         }

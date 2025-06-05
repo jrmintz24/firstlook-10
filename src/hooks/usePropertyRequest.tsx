@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const convertTo24Hour = (time: string): string => {
   const [t, modifier] = time.split(' ');
-  let [hours, minutes] = t.split(':');
+  let hours = t.split(':')[0];
+  const minutes = t.split(':')[1];
   if (modifier.toLowerCase() === 'pm' && hours !== '12') {
     hours = String(Number(hours) + 12);
   }

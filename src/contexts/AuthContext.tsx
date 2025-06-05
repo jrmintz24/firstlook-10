@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import type { AuthError } from '@supabase/auth-js';
 import { supabase } from '@/integrations/supabase/client';
+import * as authService from '@/services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -61,50 +62,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string,
     password: string,
     metadata: Record<string, unknown>
-  ) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/buyer-dashboard`,
-        data: metadata
-      }
-    });
-    
-    return { error };
-  };
+  ) => authService.signUp(email, password, metadata);
 
   const signIn = async (
     email: string,
     password: string
-  ) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    return { error };
-  };
+  ) => authService.signIn(email, password);
 
   const signInWithProvider = async (
     provider: 'google' | 'facebook',
     userType: 'buyer' | 'agent'
-  ) => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/buyer-dashboard`,
-        queryParams: {
-          user_type: userType
-        }
-      }
-    });
-    
-    return { error };
-  };
+  ) => authService.signInWithProvider(provider, userType);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await authService.signOut();
   };
 
   return (

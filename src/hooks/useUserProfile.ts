@@ -24,7 +24,13 @@ export const useUserProfile = () => {
         throw error;
       }
 
-      return data || null;
+      if (!data) return null;
+
+      // Cast the user_type to the correct type
+      return {
+        ...data,
+        user_type: data.user_type as 'buyer' | 'agent'
+      };
     },
     enabled: !!user,
   });

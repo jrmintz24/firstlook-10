@@ -1,130 +1,108 @@
+
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
-import type { ShowingRequest, AgentInfo } from '@/types';
-
-export interface ShowingRequestUpdates {
-  status?: string;
-  assigned_agent_id?: string;
-  assigned_agent_name?: string;
-  assigned_agent_phone?: string;
-  assigned_agent_email?: string;
-  estimated_confirmation_date?: string;
-  internal_notes?: string;
-}
+import { useToast } from '@/hooks/use-toast';
+import type { ShowingRequest, PropertyRequestFormData } from '@/types';
 
 export const useShowingRequests = () => {
-  const { user, session } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const query = useQuery({
-    queryKey: ['showing-requests'],
+  return useQuery({
+    queryKey: ['showing-requests', user?.id],
     queryFn: async (): Promise<ShowingRequest[]> => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching showing requests:', error);
+        throw error;
+      }
+
+      // Cast the data to match our type interface
+      return (data || []).map(item => ({
+        ...item,
+        status: item.status as ShowingRequest['status']
+      }));
+    },
+    enabled: !!user,
+  });
+};
+
+export const useAgentShowingRequests = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['agent-showing-requests', user?.id],
+    queryFn: async (): Promise<ShowingRequest[]> => {
+      if (!user) return [];
+
       const { data, error } = await supabase
         .from('showing_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  // Real-time subscription with enhanced error handling
-  useEffect(() => {
-    if (!user && !session) return;
-
-    const channel = supabase
-      .channel('showing-requests-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'showing_requests'
-        },
-        (payload) => {
-          console.log('Real-time update received:', payload);
-          
-          // Invalidate and refetch
-          queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
-          
-          // Show appropriate toast notifications
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: "New Showing Request",
-              description: "A new showing request has been submitted.",
-            });
-          } else if (payload.eventType === 'UPDATE') {
-            const oldRecord = payload.old as ShowingRequest;
-            const newRecord = payload.new as ShowingRequest;
-            
-            if (oldRecord.status !== newRecord.status) {
-              toast({
-                title: "Status Updated",
-                description: `Showing request status changed to ${newRecord.status}`,
-              });
-            }
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to showing requests updates');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to showing requests updates');
-        }
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, session, queryClient, toast]);
-
-  return query;
-};
-
-export const useAssignShowingRequest = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async ({ requestId, agentInfo }: { requestId: string, agentInfo: AgentInfo }) => {
-      const { data, error } = await supabase
-        .from('showing_requests')
-        .update({
-          assigned_agent_id: agentInfo.id,
-          assigned_agent_name: agentInfo.name,
-          assigned_agent_phone: agentInfo.phone,
-          assigned_agent_email: agentInfo.email,
-          status: 'agent_assigned'
-        })
-        .eq('id', requestId)
-        .select()
-        .single();
-
       if (error) {
-        console.error('Error assigning showing request:', error);
+        console.error('Error fetching agent showing requests:', error);
         throw error;
       }
 
+      // Cast the data to match our type interface
+      return (data || []).map(item => ({
+        ...item,
+        status: item.status as ShowingRequest['status']
+      }));
+    },
+    enabled: !!user,
+  });
+};
+
+export const useCreateShowingRequest = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (requestData: PropertyRequestFormData) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('showing_requests')
+        .insert({
+          user_id: user.id,
+          property_address: requestData.property_address,
+          property_city: requestData.property_city,
+          property_state: requestData.property_state,
+          property_zip: requestData.property_zip,
+          preferred_date: requestData.preferred_date || null,
+          preferred_time: requestData.preferred_time || null,
+          message: requestData.message || null,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
       toast({
-        title: "Request Assigned",
-        description: "You have successfully assigned this request to yourself.",
+        title: "Request Submitted",
+        description: "Your showing request has been submitted successfully.",
       });
     },
     onError: (error: any) => {
-      console.error('Error assigning request:', error);
+      console.error('Error creating showing request:', error);
       toast({
         title: "Error",
-        description: "Failed to assign request. Please try again.",
+        description: "Failed to submit request. Please try again.",
         variant: "destructive",
       });
     },
@@ -136,7 +114,7 @@ export const useUpdateShowingRequest = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: ShowingRequestUpdates }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ShowingRequest> }) => {
       const { data, error } = await supabase
         .from('showing_requests')
         .update(updates)
@@ -144,27 +122,66 @@ export const useUpdateShowingRequest = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error updating showing request:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-showing-requests'] });
       toast({
         title: "Request Updated",
-        description: "The request has been updated successfully.",
+        description: "The showing request has been updated successfully.",
       });
     },
     onError: (error: any) => {
-      console.error('Error updating request:', error);
+      console.error('Error updating showing request:', error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Failed to update request. Please try again.",
         variant: "destructive",
       });
     },
   });
+};
+
+// Real-time subscription hook for showing requests
+export const useShowingRequestsSubscription = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (!user) return;
+
+    const subscription = supabase
+      .channel('showing_requests_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'showing_requests',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          console.log('Real-time update:', payload);
+          
+          // Invalidate and refetch queries
+          queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
+          queryClient.invalidateQueries({ queryKey: ['agent-showing-requests'] });
+          
+          // Show notification for status updates
+          if (payload.eventType === 'UPDATE') {
+            toast({
+              title: "Status Update",
+              description: "Your showing request status has been updated.",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, queryClient, toast]);
 };

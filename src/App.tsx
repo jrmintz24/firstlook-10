@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,8 +46,12 @@ const App = () => {
     }
 
     return () => {
-      document.head.removeChild(manifestLink);
-      document.head.removeChild(themeColorMeta);
+      if (document.head.contains(manifestLink)) {
+        document.head.removeChild(manifestLink);
+      }
+      if (document.head.contains(themeColorMeta)) {
+        document.head.removeChild(themeColorMeta);
+      }
     };
   }, []);
 

@@ -1,23 +1,15 @@
 
-// Core application types
-export interface User {
-  id: string;
-  email: string;
-  user_metadata?: {
-    first_name?: string;
-    last_name?: string;
-    phone?: string;
-    user_type?: 'buyer' | 'agent';
-  };
-}
+// Re-export existing types from Supabase integration
+export type { Database } from '@/integrations/supabase/types';
 
+// Core entity types that extend the database types
 export interface UserProfile {
   id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
   user_type: 'buyer' | 'agent';
-  license_number?: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  license_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,122 +18,75 @@ export interface ShowingRequest {
   id: string;
   user_id: string;
   property_address: string;
-  preferred_date?: string;
-  preferred_time?: string;
-  message?: string;
-  status: ShowingStatus;
-  assigned_agent_id?: string;
-  assigned_agent_name?: string;
-  assigned_agent_phone?: string;
-  assigned_agent_email?: string;
-  estimated_confirmation_date?: string;
-  internal_notes?: string;
-  status_updated_at?: string;
+  property_city: string;
+  property_state: string;
+  property_zip: string;
+  preferred_date?: string | null;
+  preferred_time?: string | null;
+  message?: string | null;
+  status: 'pending' | 'assigned' | 'confirmed' | 'completed' | 'cancelled';
+  assigned_agent_id?: string | null;
+  assigned_agent_name?: string | null;
+  assigned_agent_email?: string | null;
+  assigned_agent_phone?: string | null;
+  estimated_confirmation_date?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type ShowingStatus = 
-  | 'submitted' 
-  | 'under_review' 
-  | 'agent_assigned' 
-  | 'confirmed' 
-  | 'scheduled' 
-  | 'completed' 
-  | 'cancelled' 
-  | 'pending';
-
-export interface AgentInfo {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-}
+// UI and component types
+export type ShowingStatus = ShowingRequest['status'];
 
 export interface DashboardStats {
-  pendingRequests: number;
-  activeShowings: number;
-  completedShowings: number;
-  unassignedCount?: number;
-  myRequestsCount?: number;
+  total: number;
+  pending: number;
+  confirmed: number;
+  completed: number;
 }
 
-// API Response types
-export interface ApiResponse<T> {
-  data: T;
-  error?: string;
+export interface NotificationSettings {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  count: number;
-  page: number;
-  limit: number;
+export interface UserPreferences {
+  notifications: NotificationSettings;
+  defaultSearchRadius: number;
+  preferredContactMethod: 'email' | 'phone' | 'text';
 }
 
-// Form types
-export interface PropertyRequestForm {
-  properties: string[];
-  preferredDate: string;
-  preferredTime: string;
-  message: string;
+export interface AgentProfile extends UserProfile {
+  user_type: 'agent';
+  license_number: string;
+  service_areas: string[];
+  bio?: string;
+  rating?: number;
+  total_showings?: number;
 }
 
-export interface UserSignupForm {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  userType: 'buyer' | 'agent';
-  licenseNumber?: string;
+export interface BuyerProfile extends UserProfile {
+  user_type: 'buyer';
+  budget_min?: number;
+  budget_max?: number;
+  preferred_areas?: string[];
+  requirements?: string;
 }
 
-// Hook return types
-export interface UseShowingRequestsReturn {
-  data: ShowingRequest[];
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
-
-export interface UseUserProfileReturn {
-  data: UserProfile | null;
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
-
-// Component prop types
-export interface LoadingStateProps {
+// Form and validation types
+export interface PropertyRequestFormData {
+  property_address: string;
+  property_city: string;
+  property_state: string;
+  property_zip: string;
+  preferred_date?: string;
+  preferred_time?: string;
   message?: string;
-  size?: 'sm' | 'md' | 'lg';
 }
 
-export interface ErrorStateProps {
-  error: Error | string;
-  onRetry?: () => void;
-  title?: string;
-}
-
-export interface DashboardHeaderProps {
-  displayName: string;
-  onRequestShowing?: () => void;
-}
-
-export interface TabsProps {
-  unassignedRequests?: ShowingRequest[];
-  myRequests?: ShowingRequest[];
-  activeShowings?: ShowingRequest[];
-  pendingRequests?: ShowingRequest[];
-  completedShowings?: ShowingRequest[];
-  profile?: UserProfile;
-  currentUser?: User;
-  displayName?: string;
-  isLoading?: boolean;
-  onAssignToSelf?: (requestId: string) => void;
-  onUpdateStatus?: (requestId: string) => void;
-  onCancelShowing?: (requestId: string) => void;
-  onRescheduleShowing?: (requestId: string) => void;
-  onRequestShowing?: () => void;
+export interface ContactFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
 }

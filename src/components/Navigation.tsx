@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
@@ -8,14 +8,40 @@ import { User, LogOut } from "lucide-react";
 
 const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [modalDefaultTab, setModalDefaultTab] = useState<'login' | 'signup'>('signup');
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleSignInClick = () => {
+    setModalDefaultTab('login');
     setShowAuthModal(true);
   };
 
   const handleGetStartedClick = () => {
+    setModalDefaultTab('signup');
     setShowAuthModal(true);
+  };
+
+  const handleHowItWorksClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (location.pathname === '/') {
+      // If on homepage, scroll to section
+      const element = document.getElementById('how-it-works');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If on different page, navigate to homepage and then scroll
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('how-it-works');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
   };
 
   const handleSignOut = async () => {
@@ -44,14 +70,13 @@ const Navigation = () => {
           <div className="flex items-center space-x-4">
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-4">
-              <Link to="/how-it-works">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-                >
-                  How It Works
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
+                onClick={handleHowItWorksClick}
+              >
+                How It Works
+              </Button>
               <Link to="/subscriptions">
                 <Button 
                   variant="ghost" 
@@ -127,6 +152,7 @@ const Navigation = () => {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
+        defaultTab={modalDefaultTab}
       />
     </nav>
   );

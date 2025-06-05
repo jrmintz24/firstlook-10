@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Key, Star, ArrowRight } from "lucide-react";
@@ -36,7 +35,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="py-16 bg-white relative">
+    <div id="how-it-works" className="py-16 bg-white relative">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-slate-800 mb-4">

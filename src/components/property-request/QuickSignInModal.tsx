@@ -14,9 +14,16 @@ interface QuickSignInModalProps {
   onClose: () => void;
   onSuccess: () => void;
   defaultUserType?: 'buyer' | 'agent';
+  defaultTab?: 'login' | 'signup';
 }
 
-const QuickSignInModal = ({ isOpen, onClose, onSuccess, defaultUserType = 'buyer' }: QuickSignInModalProps) => {
+const QuickSignInModal = ({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  defaultUserType = 'buyer',
+  defaultTab = 'signup'
+}: QuickSignInModalProps) => {
   const [userType, setUserType] = useState<'buyer' | 'agent'>(defaultUserType);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -32,6 +39,11 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess, defaultUserType = 'buyer
   });
 
   const currentAuth = userType === 'buyer' ? buyerAuth : agentAuth;
+
+  // Set the initial login state based on defaultTab
+  if (currentAuth.isLogin !== (defaultTab === 'login')) {
+    currentAuth.setIsLogin(defaultTab === 'login');
+  }
 
   // Close modal if user is authenticated
   if (user) {

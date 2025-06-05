@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import TrustIndicators from "@/components/TrustIndicators";
@@ -17,35 +16,27 @@ import FinalCTASection from "@/components/home/FinalCTASection";
 const Index = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const { toast } = useToast();
-  const { user, userType, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleRequestShowing = () => {
     if (user) {
       // If user is authenticated, go directly to dashboard
-      const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-      navigate(dashboardPath);
+      navigate('/buyer-dashboard');
     } else {
       // If not authenticated, show property form which will lead to sign up
       setShowPropertyForm(true);
     }
   };
 
-  // Redirect authenticated users to their dashboard
-  useEffect(() => {
-    if (!loading && user && userType) {
-      const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-      navigate(dashboardPath);
-    }
-  }, [user, userType, loading, navigate]);
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Don't render the home page if user is authenticated and will be redirected
-  if (user && userType) {
-    return <div className="min-h-screen flex items-center justify-center">Redirecting...</div>;
+  // If user is authenticated, redirect to dashboard
+  if (user) {
+    navigate('/buyer-dashboard');
+    return null;
   }
 
   return (

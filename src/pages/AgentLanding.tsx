@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ const AgentLanding = () => {
   const { user, loading } = useAuth();
 
   const handleJoinNow = () => {
-    window.location.href = '/agent-signup';
+    setShowAuthModal(true);
   };
 
   const handleAuthSuccess = () => {
@@ -397,11 +398,11 @@ const AgentLanding = () => {
       </div>
 
       {/* QuickSignInModal instead of AuthModal */}
-      {/* <QuickSignInModal 
+      <QuickSignInModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
-      /> */}
+      />
     </div>
   );
 };

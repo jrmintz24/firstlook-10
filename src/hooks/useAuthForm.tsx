@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 interface AuthFormData {
   email: string;
@@ -24,7 +23,6 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
-  const navigate = useNavigate();
 
   const generatePassword = () => {
     const randomNum = Math.floor(Math.random() * 9999);
@@ -47,9 +45,6 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
           description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`,
         });
         onSuccess();
-        // Navigate to appropriate dashboard
-        const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-        navigate(dashboardPath);
       }
     } catch (error) {
       toast({
@@ -85,13 +80,12 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
             description: "Welcome back!",
           });
           onSuccess();
-          // Navigate to appropriate dashboard
-          const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-          navigate(dashboardPath);
+          if (userType === 'buyer') {
+            window.location.href = '/buyer-dashboard';
+          }
         }
       } else {
-        // For signup, use the password from form data or generate one for buyers
-        const password = userType === 'agent' ? formData.password : generatePassword();
+        const password = generatePassword();
 
         const metadata = {
           first_name: formData.firstName,
@@ -111,13 +105,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
         } else {
           const { error: signInError } = await signIn(formData.email, password);
           if (signInError) {
-            const passwordMessage = userType === 'buyer' 
-              ? `Your account was created successfully. Your password is: ${password}. Please sign in manually.`
-              : "Your account was created successfully. Please sign in manually.";
-            
             toast({
               title: "Account created but sign in failed",
-              description: passwordMessage,
+              description: `Your account was created successfully. Your password is: ${password}. Please sign in manually.`,
               duration: 15000,
             });
             setIsLogin(true);
@@ -128,9 +118,9 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
               description: "Account created and you're now signed in!",
             });
             onSuccess();
-            // Navigate to appropriate dashboard
-            const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-            navigate(dashboardPath);
+            if (userType === 'buyer') {
+              window.location.href = '/buyer-dashboard';
+            }
           }
         }
       }

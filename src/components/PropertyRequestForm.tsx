@@ -9,10 +9,9 @@ import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 interface PropertyRequestFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void; // Add callback for successful submission
 }
 
-const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestFormProps) => {
+const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
   const {
     step,
     formData,
@@ -26,20 +25,6 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
     handleRemoveProperty,
     handleContinueToSubscriptions,
   } = usePropertyRequest();
-
-  const handleClose = () => {
-    onClose();
-    // Call onSuccess callback if provided to refresh parent data
-    if (onSuccess) {
-      onSuccess();
-    }
-  };
-
-  const handleSuccessfulSubmission = async () => {
-    await handleContinueToSubscriptions();
-    // Close the form and trigger refresh after successful submission
-    handleClose();
-  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -67,7 +52,7 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
           <SummaryStep
             formData={formData}
             onInputChange={handleInputChange}
-            onContinueToSubscriptions={handleSuccessfulSubmission}
+            onContinueToSubscriptions={handleContinueToSubscriptions}
             onBack={handleBack}
             isSubmitting={isSubmitting}
           />
@@ -79,7 +64,7 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -99,7 +84,7 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
         <QuickSignInModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
-          onSuccess={handleSuccessfulSubmission}
+          onSuccess={handleContinueToSubscriptions}
         />
       )}
     </>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,8 @@ import AgentLanding from "./pages/AgentLanding";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import Subscriptions from "./pages/Subscriptions";
 import NotFound from "./pages/NotFound";
+import BuyerAuth from "./pages/BuyerAuth";
+import AgentAuth from "./pages/AgentAuth";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,8 @@ const App = () => (
               <Route path="/agents" element={<AgentLanding />} />
               <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/buyer-auth" element={<BuyerAuth />} />
+              <Route path="/agent-auth" element={<AgentAuth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

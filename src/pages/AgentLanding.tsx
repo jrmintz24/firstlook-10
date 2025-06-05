@@ -6,6 +6,7 @@ import { DollarSign, Users, Clock, Shield, Star, TrendingUp, CheckCircle, Phone,
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
+import { Link } from "react-router-dom";
 
 const AgentLanding = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -13,7 +14,8 @@ const AgentLanding = () => {
   const { user, loading } = useAuth();
 
   const handleJoinNow = () => {
-    setShowAuthModal(true);
+    // Navigate to dedicated agent auth page
+    window.location.href = '/agent-auth';
   };
 
   const handleAuthSuccess = () => {
@@ -78,15 +80,16 @@ const AgentLanding = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={handleJoinNow}
-              >
-                <Sparkles className="mr-3 h-6 w-6" />
-                Join as Showing Partner
-                <ArrowRight className="ml-3 h-6 w-6" />
-              </Button>
+              <Link to="/agent-auth">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <Sparkles className="mr-3 h-6 w-6" />
+                  Join as Showing Partner
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 size="lg" 
@@ -361,14 +364,15 @@ const AgentLanding = () => {
             Join hundreds of successful agents who are building their business with FirstLook. Get started today and receive your first lead within 48 hours of approval.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
-            <Button 
-              size="lg" 
-              className="bg-white text-purple-600 hover:bg-gray-100 px-12 py-6 font-bold text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
-              onClick={handleJoinNow}
-            >
-              <Sparkles className="mr-3 h-6 w-6" />
-              Join as Showing Partner
-            </Button>
+            <Link to="/agent-auth">
+              <Button 
+                size="lg" 
+                className="bg-white text-purple-600 hover:bg-gray-100 px-12 py-6 font-bold text-xl shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <Sparkles className="mr-3 h-6 w-6" />
+                Join as Showing Partner
+              </Button>
+            </Link>
             <Button 
               size="lg" 
               className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-12 py-6 font-bold text-xl transition-all duration-300"

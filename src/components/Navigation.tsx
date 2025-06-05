@@ -3,25 +3,12 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import { User, LogOut } from "lucide-react";
 
 const Navigation = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [modalDefaultTab, setModalDefaultTab] = useState<'login' | 'signup'>('signup');
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
-  const handleSignInClick = () => {
-    setModalDefaultTab('login');
-    setShowAuthModal(true);
-  };
-
-  const handleGetStartedClick = () => {
-    setModalDefaultTab('signup');
-    setShowAuthModal(true);
-  };
 
   const handleHowItWorksClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,10 +33,6 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
-  };
-
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
   };
 
   return (
@@ -101,6 +84,15 @@ const Navigation = () => {
                   Join as Showing Partner
                 </Button>
               </Link>
+              {/* Strategic Agent Login */}
+              <Link to="/agent-auth">
+                <Button 
+                  variant="ghost" 
+                  className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors"
+                >
+                  Agent Login
+                </Button>
+              </Link>
             </div>
 
             {/* Auth Section */}
@@ -127,33 +119,27 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    onClick={handleSignInClick}
-                    className="text-purple-600 hover:bg-purple-50"
-                  >
-                    Login
-                  </Button>
-                  <Button 
-                    onClick={handleGetStartedClick}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                  >
-                    Get Started
-                  </Button>
+                  <Link to="/buyer-auth">
+                    <Button 
+                      variant="ghost" 
+                      className="text-purple-600 hover:bg-purple-50"
+                    >
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/buyer-auth">
+                    <Button 
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Quick Sign-In Modal */}
-      <QuickSignInModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-        defaultTab={modalDefaultTab}
-      />
     </nav>
   );
 };

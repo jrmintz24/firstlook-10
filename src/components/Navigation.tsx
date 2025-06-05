@@ -76,16 +76,8 @@ const Navigation = () => {
                   Blog
                 </Button>
               </Link>
-              <Link to="/agents">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors"
-                >
-                  Join as Showing Partner
-                </Button>
-              </Link>
               {/* Strategic Agent Login */}
-              <Link to="/agent-auth">
+              <Link to="/agent-auth?tab=login">
                 <Button 
                   variant="ghost" 
                   className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors"
@@ -119,7 +111,7 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Link to="/buyer-auth">
+                  <Link to="/buyer-auth?tab=login">
                     <Button 
                       variant="ghost" 
                       className="text-purple-600 hover:bg-purple-50"

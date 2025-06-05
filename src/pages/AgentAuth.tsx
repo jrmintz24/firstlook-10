@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +13,19 @@ import { Home, DollarSign, Users, TrendingUp, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AgentAuth = () => {
-  const [activeTab, setActiveTab] = useState("signup");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'signup';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'login' || tab === 'signup') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const agentAuth = useAuthForm('agent', () => {
     toast({

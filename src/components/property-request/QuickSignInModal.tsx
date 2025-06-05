@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,10 +40,12 @@ const QuickSignInModal = ({
 
   const currentAuth = userType === 'buyer' ? buyerAuth : agentAuth;
 
-  // Set the initial login state based on defaultTab
-  if (currentAuth.isLogin !== (defaultTab === 'login')) {
+  // Set the initial login state when the modal opens or when the user type
+  // changes. Using an effect prevents overriding user interactions on every
+  // render.
+  useEffect(() => {
     currentAuth.setIsLogin(defaultTab === 'login');
-  }
+  }, [defaultTab, userType]);
 
   // Close modal if user is authenticated
   if (user) {

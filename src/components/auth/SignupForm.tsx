@@ -12,6 +12,7 @@ interface SignupFormProps {
   firstName: string;
   email: string;
   phone: string;
+  password: string;
   licenseNumber: string;
   isLoading: boolean;
   onInputChange: (field: string, value: string) => void;
@@ -24,6 +25,7 @@ const SignupForm = ({
   firstName, 
   email, 
   phone, 
+  password,
   licenseNumber, 
   isLoading, 
   onInputChange, 
@@ -86,6 +88,19 @@ const SignupForm = ({
               required
               disabled={isLoading}
               className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+            />
+          </div>
+          <div>
+            <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => onInputChange('password', e.target.value)}
+              required
+              disabled={isLoading}
+              className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              minLength={6}
             />
           </div>
           <div>

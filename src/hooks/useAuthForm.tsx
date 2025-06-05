@@ -24,11 +24,6 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
   const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
 
-  const generatePassword = () => {
-    const randomNum = Math.floor(Math.random() * 9999);
-    return `${formData.firstName}${randomNum}`;
-  };
-
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setIsLoading(true);
     try {
@@ -85,7 +80,8 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
           }
         }
       } else {
-        const password = generatePassword();
+        // Use the password from the form instead of generating one
+        const password = formData.password;
 
         const metadata = {
           first_name: formData.firstName,
@@ -103,25 +99,12 @@ export const useAuthForm = (userType: 'buyer' | 'agent', onSuccess: () => void) 
             variant: "destructive"
           });
         } else {
-          const { error: signInError } = await signIn(formData.email, password);
-          if (signInError) {
-            toast({
-              title: "Account created but sign in failed",
-              description: `Your account was created successfully. Your password is: ${password}. Please sign in manually.`,
-              duration: 15000,
-            });
-            setIsLogin(true);
-            setFormData(prev => ({ ...prev, password }));
-          } else {
-            toast({
-              title: "Success!",
-              description: "Account created and you're now signed in!",
-            });
-            onSuccess();
-            if (userType === 'buyer') {
-              window.location.href = '/buyer-dashboard';
-            }
-          }
+          toast({
+            title: "Success!",
+            description: "Account created successfully! Please check your email to verify your account.",
+          });
+          // Switch to login mode after successful signup
+          setIsLogin(true);
         }
       }
     } finally {

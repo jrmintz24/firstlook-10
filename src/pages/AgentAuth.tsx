@@ -128,6 +128,7 @@ const AgentAuth = () => {
                     firstName={agentAuth.formData.firstName}
                     email={agentAuth.formData.email}
                     phone={agentAuth.formData.phone}
+                    password={agentAuth.formData.password}
                     licenseNumber={agentAuth.formData.licenseNumber}
                     isLoading={agentAuth.isLoading}
                     onInputChange={agentAuth.handleInputChange}

@@ -114,6 +114,7 @@ const QuickSignInModal = ({
                 firstName={currentAuth.formData.firstName}
                 email={currentAuth.formData.email}
                 phone={currentAuth.formData.phone}
+                password={currentAuth.formData.password}
                 licenseNumber={currentAuth.formData.licenseNumber}
                 isLoading={currentAuth.isLoading}
                 onInputChange={currentAuth.handleInputChange}

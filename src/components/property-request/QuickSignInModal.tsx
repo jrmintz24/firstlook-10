@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
+import { useAuthForm } from "@/hooks/useAuthForm";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -12,6 +13,16 @@ interface QuickSignInModalProps {
 }
 
 const QuickSignInModal = ({ isOpen, onClose, onSuccess, defaultTab = 'signup' }: QuickSignInModalProps) => {
+  const handleAuthSuccess = () => {
+    onClose();
+    if (onSuccess) {
+      onSuccess();
+    }
+  };
+
+  const loginFormHook = useAuthForm('buyer', handleAuthSuccess);
+  const signupFormHook = useAuthForm('buyer', handleAuthSuccess);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -29,11 +40,29 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess, defaultTab = 'signup' }:
           </TabsList>
           
           <TabsContent value="signin" className="space-y-4">
-            <LoginForm onSuccess={onSuccess} />
+            <LoginForm
+              email={loginFormHook.formData.email}
+              password={loginFormHook.formData.password}
+              isLoading={loginFormHook.isLoading}
+              onInputChange={loginFormHook.handleInputChange}
+              onSubmit={loginFormHook.handleSubmit}
+              onSocialLogin={loginFormHook.handleSocialLogin}
+            />
           </TabsContent>
           
           <TabsContent value="signup" className="space-y-4">
-            <SignupForm onSuccess={onSuccess} />
+            <SignupForm
+              userType="buyer"
+              firstName={signupFormHook.formData.firstName}
+              email={signupFormHook.formData.email}
+              phone={signupFormHook.formData.phone}
+              password={signupFormHook.formData.password}
+              licenseNumber={signupFormHook.formData.licenseNumber}
+              isLoading={signupFormHook.isLoading}
+              onInputChange={signupFormHook.handleInputChange}
+              onSubmit={signupFormHook.handleSubmit}
+              onSocialLogin={signupFormHook.handleSocialLogin}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>

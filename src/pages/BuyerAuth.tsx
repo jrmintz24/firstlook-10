@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +13,7 @@ import { Home, Sparkles, Shield, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BuyerAuth = () => {
-  const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabParam === 'login' ? 'login' : 'signup');
+  const [activeTab, setActiveTab] = useState("signup");
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -27,12 +25,6 @@ const BuyerAuth = () => {
     });
     navigate('/buyer-dashboard');
   });
-
-  useEffect(() => {
-    if (tabParam === 'login') {
-      setActiveTab('login');
-    }
-  }, [tabParam]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

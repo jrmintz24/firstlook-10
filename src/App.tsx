@@ -18,6 +18,7 @@ import TourSession from "./pages/TourSession";
 import NotFound from "./pages/NotFound";
 import BuyerAuth from "./pages/BuyerAuth";
 import AgentAuth from "./pages/AgentAuth";
+import Blog from "./pages/Blog";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
               <Route path="/agent-dashboard" element={<AgentDashboard />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/blog" element={<Blog />} />
               <Route path="/single-home-tour" element={<SingleHomeTour />} />
               <Route path="/tour-session" element={<TourSession />} />
               <Route path="/buyer-auth" element={<BuyerAuth />} />

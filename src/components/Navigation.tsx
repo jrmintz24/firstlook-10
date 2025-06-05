@@ -41,9 +41,9 @@ const Navigation = () => {
           </Link>
 
           {/* Right Side Navigation */}
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-4">
             {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-4">
               <Link to="/how-it-works">
                 <Button 
                   variant="ghost" 

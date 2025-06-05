@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Phone, CheckCircle, Shield } from "lucide-react";
+import { Sparkles, ArrowRight, Phone, CheckCircle, Shield, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface FinalCTASectionProps {
   onRequestShowing: () => void;
@@ -39,7 +40,7 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto text-white">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto text-white mb-8">
           <div className="flex items-center justify-center space-x-2">
             <Phone className="h-5 w-5" />
             <span>See homes 7 days a week</span>
@@ -51,6 +52,12 @@ const FinalCTASection = ({ onRequestShowing, onSignUp }: FinalCTASectionProps) =
           <div className="flex items-center justify-center space-x-2">
             <Shield className="h-5 w-5" />
             <span>Licensed DC Professionals</span>
+          </div>
+          <div className="flex items-center justify-center space-x-2">
+            <Link to="/agents" className="flex items-center space-x-2 hover:text-yellow-300 transition-colors">
+              <Users className="h-5 w-5" />
+              <span>Join as Agent →</span>
+            </Link>
           </div>
         </div>
       </div>

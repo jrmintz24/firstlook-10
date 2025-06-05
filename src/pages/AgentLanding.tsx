@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -397,11 +396,12 @@ const AgentLanding = () => {
         </div>
       </div>
 
-      {/* QuickSignInModal instead of AuthModal */}
+      {/* QuickSignInModal for agent signup */}
       <QuickSignInModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
+        defaultUserType="agent"
       />
     </div>
   );

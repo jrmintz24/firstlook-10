@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Sparkles, DollarSign } from "lucide-react";
+import { Sparkles, DollarSign, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface FinalCTASectionProps {
@@ -51,6 +51,12 @@ const FinalCTASection = ({ onRequestShowing }: FinalCTASectionProps) => {
             <Link to="/subscriptions">
               <Button variant="ghost" className="text-white hover:bg-white/10 underline">
                 💎 See All Pricing & Plans →
+              </Button>
+            </Link>
+            <Link to="/agents">
+              <Button variant="ghost" className="text-white hover:bg-white/10 underline">
+                <Users className="mr-2 h-4 w-4" />
+                Join as Showing Partner →
               </Button>
             </Link>
           </div>

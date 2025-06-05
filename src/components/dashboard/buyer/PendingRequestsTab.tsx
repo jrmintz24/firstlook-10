@@ -3,21 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Plus } from "lucide-react";
 import ShowingRequestCard from "@/components/dashboard/ShowingRequestCard";
-
-interface ShowingRequest {
-  id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_name?: string | null;
-  assigned_agent_phone?: string | null;
-  assigned_agent_email?: string | null;
-  estimated_confirmation_date?: string | null;
-  status_updated_at?: string | null;
-}
+import type { ShowingRequest } from "@/types";
 
 interface PendingRequestsTabProps {
   pendingRequests: ShowingRequest[];

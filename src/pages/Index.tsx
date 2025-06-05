@@ -1,9 +1,9 @@
 
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { FullPageLoading } from "@/components/ui/loading-states";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import HowItWorks from "@/components/HowItWorks";
 import TrustIndicators from "@/components/TrustIndicators";
@@ -16,11 +16,12 @@ import FinalCTASection from "@/components/home/FinalCTASection";
 
 const Index = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const { user, userType, loading, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const { user, userType, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleRequestShowing = () => {
-    if (isAuthenticated) {
+    if (user) {
       // If user is authenticated, go directly to dashboard
       const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
       navigate(dashboardPath);
@@ -32,19 +33,19 @@ const Index = () => {
 
   // Redirect authenticated users to their dashboard
   useEffect(() => {
-    if (!loading && isAuthenticated && userType) {
+    if (!loading && user && userType) {
       const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
       navigate(dashboardPath);
     }
-  }, [isAuthenticated, userType, loading, navigate]);
+  }, [user, userType, loading, navigate]);
 
   if (loading) {
-    return <FullPageLoading message="Loading FirstLook..." />;
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   // Don't render the home page if user is authenticated and will be redirected
-  if (isAuthenticated && userType) {
-    return <FullPageLoading message="Redirecting to your dashboard..." />;
+  if (user && userType) {
+    return <div className="min-h-screen flex items-center justify-center">Redirecting...</div>;
   }
 
   return (

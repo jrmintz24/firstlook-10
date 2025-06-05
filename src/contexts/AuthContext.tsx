@@ -1,7 +1,8 @@
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -12,7 +13,6 @@ interface AuthContextType {
   signInWithProvider: (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
-  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,8 +22,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
-  const fetchUserProfile = useCallback(async (userId: string) => {
+  const fetchUserProfile = async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching user profile:', error);
         return null;
       }
@@ -41,154 +42,115 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Error in fetchUserProfile:', error);
       return null;
     }
-  }, []);
-
-  const handleAuthStateChange = useCallback(async (event: string, session: Session | null) => {
-    console.log('Auth state change:', { event, session: !!session });
-    
-    setSession(session);
-    setUser(session?.user ?? null);
-    
-    if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-      // Use setTimeout to defer the async operation and prevent deadlocks
-      setTimeout(async () => {
-        try {
-          const profileUserType = await fetchUserProfile(session.user.id);
-          setUserType(profileUserType);
-        } catch (error) {
-          console.error('Error fetching user type:', error);
-        }
-      }, 0);
-    } else if (event === 'SIGNED_OUT') {
-      setUserType(null);
-    }
-    
-    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-      setLoading(false);
-    }
-  }, [fetchUserProfile]);
+  };
 
   useEffect(() => {
-    let mounted = true;
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-    // Get initial session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state change:', { event, session });
+        setSession(session);
+        setUser(session?.user ?? null);
         
-        if (error) {
-          console.error('Error getting session:', error);
-          setLoading(false);
-          return;
-        }
-
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
+        // Fetch user type when user signs in
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          // Use setTimeout to defer the async operation
+          setTimeout(async () => {
             const profileUserType = await fetchUserProfile(session.user.id);
             setUserType(profileUserType);
-          }
-          
-          setLoading(false);
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          setUserType(null);
+          setHasRedirected(false);
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        if (mounted) {
+        
+        // Only set loading to false after we've processed the auth state
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
           setLoading(false);
         }
       }
-    };
+    );
 
-    initializeAuth();
+    // Then get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session:', session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const profileUserType = await fetchUserProfile(session.user.id);
+        setUserType(profileUserType);
+      }
+      
+      setLoading(false);
+    });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [handleAuthStateChange, fetchUserProfile]);
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (email: string, password: string, metadata: any) => {
-    try {
-      const redirectUrl = metadata.user_type === 'agent' 
-        ? `${window.location.origin}/agent-dashboard`
-        : `${window.location.origin}/buyer-dashboard`;
+    const redirectUrl = metadata.user_type === 'agent' 
+      ? `${window.location.origin}/agent-dashboard`
+      : `${window.location.origin}/buyer-dashboard`;
 
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: metadata
-        }
-      });
-      
-      return { error };
-    } catch (error) {
-      console.error('SignUp error:', error);
-      return { error };
-    }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: metadata
+      }
+    });
+    
+    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      return { error };
-    } catch (error) {
-      console.error('SignIn error:', error);
-      return { error };
-    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    return { error };
   };
 
   const signInWithProvider = async (provider: 'google' | 'facebook', userType: 'buyer' | 'agent') => {
-    try {
-      const redirectUrl = userType === 'agent'
-        ? `${window.location.origin}/agent-dashboard`
-        : `${window.location.origin}/buyer-dashboard`;
+    const redirectUrl = userType === 'agent'
+      ? `${window.location.origin}/agent-dashboard`
+      : `${window.location.origin}/buyer-dashboard`;
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            user_type: userType
-          }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          user_type: userType
         }
-      });
-      
-      return { error };
-    } catch (error) {
-      console.error('Social login error:', error);
-      return { error };
-    }
+      }
+    });
+    
+    return { error };
   };
 
   const signOut = async () => {
     try {
       console.log('Starting sign out process...');
       
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-      }
-      
-      // Clear state
+      // Clear state immediately to prevent UI issues
       setSession(null);
       setUser(null);
       setUserType(null);
+      setHasRedirected(false);
       
-      // Clear any cached data
-      localStorage.removeItem('firstlook-showing-popup-shown');
+      // Attempt to sign out, but don't worry if it fails (session might already be expired)
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.log('Sign out warning (expected if session expired):', error.message);
+      } else {
+        console.log('Sign out successful');
+      }
       
-      // Redirect to home
+      // Always redirect to home regardless of sign out success/failure
       window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
@@ -196,11 +158,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       setUserType(null);
+      setHasRedirected(false);
       window.location.href = '/';
     }
   };
-
-  const isAuthenticated = !!user && !!session;
 
   return (
     <AuthContext.Provider value={{
@@ -211,8 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signInWithProvider,
       signOut,
-      loading,
-      isAuthenticated
+      loading
     }}>
       {children}
     </AuthContext.Provider>

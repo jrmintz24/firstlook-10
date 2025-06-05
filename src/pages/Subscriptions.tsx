@@ -181,12 +181,13 @@ const Subscriptions = () => {
                 <CardContent className="text-center">
                   <div className="text-4xl font-bold text-purple-600 mb-2">$59</div>
                   <p className="text-gray-600 mb-4">See one home without membership</p>
-                  <Button 
-                    className="w-full bg-purple-600 text-white hover:bg-purple-700 border-0"
-                    onClick={handleGetVIPAccess}
-                  >
-                    Book Single Home Tour
-                  </Button>
+                  <Link to="/single-home-tour">
+                    <Button 
+                      className="w-full bg-purple-600 text-white hover:bg-purple-700 border-0"
+                    >
+                      Book Single Home Tour
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
 
@@ -197,12 +198,13 @@ const Subscriptions = () => {
                 <CardContent className="text-center">
                   <div className="text-4xl font-bold text-blue-600 mb-2">$149</div>
                   <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
-                  <Button 
-                    className="w-full bg-blue-600 text-white hover:bg-blue-700 border-0"
-                    onClick={handleGetVIPAccess}
-                  >
-                    Book Tour Session
-                  </Button>
+                  <Link to="/tour-session">
+                    <Button 
+                      className="w-full bg-blue-600 text-white hover:bg-blue-700 border-0"
+                    >
+                      Book Tour Session
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
@@ -393,18 +395,20 @@ const Subscriptions = () => {
             <div className="border-t border-white/20 pt-6 mt-8">
               <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3"
-                  onClick={handleRequestShowing}
-                >
-                  Single Home Tour - $59
-                </Button>
-                <Button 
-                  className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3"
-                  onClick={handleRequestShowing}
-                >
-                  Tour Session - $149
-                </Button>
+                <Link to="/single-home-tour">
+                  <Button 
+                    className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3"
+                  >
+                    Single Home Tour - $59
+                  </Button>
+                </Link>
+                <Link to="/tour-session">
+                  <Button 
+                    className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3"
+                  >
+                    Tour Session - $149
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

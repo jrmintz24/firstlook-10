@@ -21,7 +21,11 @@ const Index = () => {
 
   const handleRequestShowing = () => {
     if (user) {
-      navigate('/buyer-dashboard');
+      navigate(
+        user.user_metadata?.user_type === 'agent'
+          ? '/agent-dashboard'
+          : '/buyer-dashboard'
+      );
     } else {
       setShowPropertyForm(true);
     }
@@ -36,7 +40,11 @@ const Index = () => {
   }
 
   if (user) {
-    navigate('/buyer-dashboard');
+    navigate(
+      user.user_metadata?.user_type === 'agent'
+        ? '/agent-dashboard'
+        : '/buyer-dashboard'
+    );
     return null;
   }
 

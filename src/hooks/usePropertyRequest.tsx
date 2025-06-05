@@ -117,11 +117,21 @@ export const usePropertyRequest = () => {
         ? formData.selectedProperties 
         : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
 
-      // Get the primary preferred date/time
-      const preferredDate = formData.preferredDate1;
-      const preferredTime = formData.preferredTime1
-        ? convertTo24Hour(formData.preferredTime1)
-        : '';
+      // Gather all preferred date/time options
+      const preferredOptions = [1, 2, 3]
+        .map((num) => {
+          const date = formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string;
+          const time = formData[`preferredTime${num}` as keyof PropertyRequestFormData] as string;
+          if (!date && !time) return null;
+          return {
+            date,
+            time: time ? convertTo24Hour(time) : ''
+          };
+        })
+        .filter(Boolean) as { date: string; time: string }[];
+
+      const preferredDate = preferredOptions[0]?.date || '';
+      const preferredTime = preferredOptions[0]?.time || '';
 
       // Calculate estimated confirmation date (2 business days from now)
       const estimatedDate = new Date();
@@ -136,6 +146,7 @@ export const usePropertyRequest = () => {
         preferred_date: preferredDate || null,
         preferred_time: preferredTime || null,
         message: formData.notes || null,
+        internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
         status: 'pending',
         estimated_confirmation_date: estimatedDate.toISOString().split('T')[0] // YYYY-MM-DD format
       }));
@@ -162,8 +173,12 @@ export const usePropertyRequest = () => {
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Navigate to dashboard
-      navigate('/buyer-dashboard');
+      // Navigate to dashboard based on user type
+      navigate(
+        user.user_metadata?.user_type === 'agent'
+          ? '/agent-dashboard'
+          : '/buyer-dashboard'
+      );
       
     } catch (error) {
       console.error('Error submitting showing requests:', error);
@@ -179,6 +194,21 @@ export const usePropertyRequest = () => {
 
   const handleContinueToSubscriptions = async () => {
     if (!user) {
+      const properties = formData.selectedProperties.length > 0
+        ? formData.selectedProperties
+        : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
+
+      const preferredDates = [1, 2, 3]
+        .map((num) => ({
+          date: formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string,
+          time: formData[`preferredTime${num}` as keyof PropertyRequestFormData] as string,
+        }))
+        .filter((opt) => opt.date || opt.time);
+
+      localStorage.setItem(
+        'pendingTourRequest',
+        JSON.stringify({ properties, preferredDates, notes: formData.notes })
+      );
       setShowAuthModal(true);
       return;
     }

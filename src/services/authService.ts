@@ -4,13 +4,15 @@ import type { AuthError } from "@supabase/auth-js";
 export const signUp = async (
   email: string,
   password: string,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown> & { user_type?: string }
 ): Promise<{ error: AuthError | null }> => {
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/buyer-dashboard`,
+      emailRedirectTo: `${window.location.origin}/${
+        metadata.user_type === 'agent' ? 'agent' : 'buyer'
+      }-dashboard`,
       data: metadata
     }
   });
@@ -33,7 +35,7 @@ export const signInWithProvider = async (
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/buyer-dashboard`,
+      redirectTo: `${window.location.origin}/${userType}-dashboard`,
       queryParams: { user_type: userType }
     }
   });

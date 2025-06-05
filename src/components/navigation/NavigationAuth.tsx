@@ -6,6 +6,7 @@ import { User, LogOut } from "lucide-react";
 interface User {
   id: string;
   email?: string;
+  user_metadata?: { user_type?: string };
 }
 
 interface NavigationAuthProps {
@@ -15,9 +16,13 @@ interface NavigationAuthProps {
 
 const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
   if (user) {
+    const dashboardLink =
+      user.user_metadata?.user_type === 'agent'
+        ? '/agent-dashboard'
+        : '/buyer-dashboard';
     return (
       <div className="flex items-center space-x-3">
-        <Link to="/buyer-dashboard">
+        <Link to={dashboardLink}>
           <Button variant="ghost" className="flex items-center gap-2 text-purple-600 hover:bg-purple-50">
             <User className="w-4 h-4" />
             Dashboard

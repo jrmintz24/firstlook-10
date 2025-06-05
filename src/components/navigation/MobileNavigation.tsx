@@ -66,9 +66,16 @@ const MobileNavigation = ({
         <div className="border-t border-purple-100 pt-4 mt-4">
           {user ? (
             <div className="flex flex-col space-y-2">
-              <Link to="/buyer-dashboard" onClick={onMenuItemClick}>
-                <Button 
-                  variant="ghost" 
+              <Link
+                to={
+                  user.user_metadata?.user_type === 'agent'
+                    ? '/agent-dashboard'
+                    : '/buyer-dashboard'
+                }
+                onClick={onMenuItemClick}
+              >
+                <Button
+                  variant="ghost"
                   className="flex items-center gap-2 text-purple-600 hover:bg-purple-50 justify-start w-full"
                 >
                   <User className="w-4 h-4" />

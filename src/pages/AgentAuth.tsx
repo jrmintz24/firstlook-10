@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,9 @@ import { Home, DollarSign, Users, TrendingUp, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AgentAuth = () => {
-  const [activeTab, setActiveTab] = useState("signup");
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam === 'login' ? 'login' : 'signup');
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -26,6 +28,12 @@ const AgentAuth = () => {
     // Could redirect to agent dashboard when implemented
     navigate('/');
   });
+
+  useEffect(() => {
+    if (tabParam === 'login') {
+      setActiveTab('login');
+    }
+  }, [tabParam]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

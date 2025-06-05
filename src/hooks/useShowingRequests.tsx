@@ -45,6 +45,3 @@ export const useAssignShowingRequest = () => {
 
   return { assignToSelf };
 };
-
-// Default export as well for flexibility
-export default useAssignShowingRequest;

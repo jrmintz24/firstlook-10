@@ -15,30 +15,47 @@ export const useAssignShowingRequest = () => {
 
   const assignToSelf = async (requestId: string, profile: Profile) => {
     const currentUser = user || session?.user;
-    if (!currentUser || !profile) return false;
+    if (!currentUser || !profile) {
+      console.error('No user or profile available for assignment');
+      toastHelper.error("Error", "Authentication required to assign request.");
+      return false;
+    }
+
+    console.log('Attempting to assign request:', { requestId, profile, userEmail: currentUser.email });
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('showing_requests')
         .update({
           assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
           assigned_agent_phone: profile.phone,
           assigned_agent_email: currentUser.email,
-          status: 'agent_assigned'
+          status: 'agent_assigned',
+          status_updated_at: new Date().toISOString()
         })
-        .eq('id', requestId);
+        .eq('id', requestId)
+        .select();
+
+      console.log('Assignment update result:', { data, error });
 
       if (error) {
         console.error('Error assigning request:', error);
-        toastHelper.error("Error", "Failed to assign request. Please try again.");
+        toastHelper.error("Assignment Failed", `Database error: ${error.message}`);
         return false;
       }
 
-      toastHelper.success("Request Assigned", "You have been assigned to this showing request.");
+      if (!data || data.length === 0) {
+        console.error('No rows updated - request may not exist');
+        toastHelper.error("Assignment Failed", "Request not found or already assigned.");
+        return false;
+      }
+
+      console.log('Successfully assigned request:', data[0]);
+      toastHelper.success("Request Assigned", "You have been assigned to this showing request and will contact the client within 2 hours.");
       return true;
     } catch (error) {
-      console.error('Error assigning request:', error);
-      toastHelper.error("Error", "Failed to assign request. Please try again.");
+      console.error('Exception during assignment:', error);
+      toastHelper.error("Assignment Failed", "An unexpected error occurred. Please try again.");
       return false;
     }
   };

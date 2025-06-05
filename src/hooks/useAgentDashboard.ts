@@ -42,9 +42,12 @@ export const useAgentDashboard = () => {
   const fetchAgentData = async () => {
     const currentUser = user || session?.user;
     if (!currentUser) {
+      console.log('No user found, stopping fetch');
       setLoading(false);
       return;
     }
+
+    console.log('Fetching agent data for user:', currentUser.id);
 
     try {
       // Fetch profile
@@ -54,7 +57,10 @@ export const useAgentDashboard = () => {
         .eq('id', currentUser.id)
         .single();
 
+      console.log('Profile fetch result:', { profileData, profileError });
+
       if (profileError || !profileData || profileData.user_type !== 'agent') {
+        console.error('Profile error or not agent:', { profileError, profileData });
         toast({
           title: "Access Denied",
           description: "You need to be an agent to access this dashboard.",
@@ -66,14 +72,21 @@ export const useAgentDashboard = () => {
 
       setProfile(profileData);
 
-      // Fetch showing requests
+      // Fetch all showing requests for agents to see
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Requests fetch result:', { requestsData, requestsError });
+
       if (requestsError) {
         console.error('Requests error:', requestsError);
+        toast({
+          title: "Error",
+          description: "Failed to load showing requests.",
+          variant: "destructive"
+        });
         setShowingRequests([]);
       } else {
         setShowingRequests(requestsData || []);
@@ -91,25 +104,43 @@ export const useAgentDashboard = () => {
   };
 
   const handleAssignToSelf = async (requestId: string) => {
-    if (!profile) return;
+    if (!profile) {
+      console.error('No profile available for assignment');
+      toast({
+        title: "Error",
+        description: "Profile not loaded. Please refresh the page.",
+        variant: "destructive"
+      });
+      return;
+    }
     
+    console.log('Handling assignment with profile:', profile);
     const success = await assignToSelf(requestId, profile);
     if (success) {
+      console.log('Assignment successful, refreshing data');
       fetchAgentData();
     }
   };
 
   const handleStatusUpdate = async (requestId: string, newStatus: string, estimatedDate?: string) => {
+    console.log('Updating status:', { requestId, newStatus, estimatedDate });
+    
     try {
-      const updates: any = { status: newStatus };
+      const updates: any = { 
+        status: newStatus,
+        status_updated_at: new Date().toISOString()
+      };
       if (estimatedDate) {
         updates.estimated_confirmation_date = estimatedDate;
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('showing_requests')
         .update(updates)
-        .eq('id', requestId);
+        .eq('id', requestId)
+        .select();
+
+      console.log('Status update result:', { data, error });
 
       if (error) {
         console.error('Error updating status:', error);
@@ -128,23 +159,31 @@ export const useAgentDashboard = () => {
       fetchAgentData();
       return true;
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error('Exception updating status:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
       return false;
     }
   };
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) {
+      console.log('Auth still loading...');
+      return;
+    }
     
     if (!user && !session) {
+      console.log('No user or session, redirecting to home');
       setLoading(false);
       navigate('/');
       return;
     }
 
-    if (user || session?.user) {
-      fetchAgentData();
-    }
+    console.log('User available, fetching agent data');
+    fetchAgentData();
   }, [user, session, authLoading, navigate]);
 
   return {

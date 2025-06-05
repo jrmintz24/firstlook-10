@@ -7,7 +7,7 @@ export type ShowingStatus =
   | 'scheduled' 
   | 'completed' 
   | 'cancelled' 
-  | 'pending'; // legacy
+  | 'pending'; // legacy status
 
 export interface StatusInfo {
   label: string;
@@ -77,8 +77,8 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
       isActive: false
     },
     pending: {
-      label: 'Pending',
-      description: 'Awaiting review',
+      label: 'Awaiting Review',
+      description: 'Request received and awaiting agent assignment',
       color: 'text-yellow-800',
       bgColor: 'bg-yellow-100',
       icon: '⏳',
@@ -98,7 +98,7 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
     scheduled: 'All set! See you at the showing',
     completed: 'Thank you for using FirstLook!',
     cancelled: 'You can submit a new request anytime',
-    pending: 'We typically respond within 2-4 hours'
+    pending: 'We typically assign agents within 2-4 hours'
   };
 
   return timelineMap[status] || timelineMap.pending;
@@ -109,5 +109,9 @@ export const isActiveShowing = (status: ShowingStatus): boolean => {
 };
 
 export const isPendingRequest = (status: ShowingStatus): boolean => {
-  return ['submitted', 'under_review', 'agent_assigned', 'pending'].includes(status);
+  return ['submitted', 'under_review', 'pending'].includes(status);
+};
+
+export const canBeAssigned = (status: ShowingStatus): boolean => {
+  return ['submitted', 'under_review', 'pending'].includes(status);
 };

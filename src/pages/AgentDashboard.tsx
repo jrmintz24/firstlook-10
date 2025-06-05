@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
-import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
+import { isActiveShowing, canBeAssigned, type ShowingStatus } from "@/utils/showingStatus";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 
 interface ShowingRequest {
@@ -51,12 +50,16 @@ const AgentDashboard = () => {
   };
 
   // Organize requests by type
+  const currentUserEmail = user?.email || session?.user?.email;
+  
   const unassignedRequests = showingRequests.filter(req => 
-    isPendingRequest(req.status as ShowingStatus) && !req.assigned_agent_name
+    canBeAssigned(req.status as ShowingStatus) && !req.assigned_agent_name
   );
+  
   const myRequests = showingRequests.filter(req => 
-    req.assigned_agent_email === (user?.email || session?.user?.email)
+    req.assigned_agent_email === currentUserEmail
   );
+  
   const activeShowings = myRequests.filter(req => 
     isActiveShowing(req.status as ShowingStatus)
   );
@@ -80,8 +83,8 @@ const AgentDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Please sign in to view your agent dashboard</div>
-          <Link to="/">
-            <Button>Go to Home</Button>
+          <Link to="/agent-auth">
+            <Button>Sign In as Agent</Button>
           </Link>
         </div>
       </div>
@@ -120,7 +123,7 @@ const AgentDashboard = () => {
           <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-orange-600 mb-2">{unassignedRequests.length}</div>
-              <div className="text-gray-600">Unassigned Requests</div>
+              <div className="text-gray-600">Available Requests</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
@@ -146,7 +149,7 @@ const AgentDashboard = () => {
         {/* Main Content */}
         <Tabs defaultValue="unassigned" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="unassigned">Unassigned ({unassignedRequests.length})</TabsTrigger>
+            <TabsTrigger value="unassigned">Available ({unassignedRequests.length})</TabsTrigger>
             <TabsTrigger value="my-requests">My Requests ({myRequests.length})</TabsTrigger>
             <TabsTrigger value="active">Active Showings ({activeShowings.length})</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -154,7 +157,7 @@ const AgentDashboard = () => {
 
           <TabsContent value="unassigned" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Unassigned Requests</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
               <Badge variant="outline" className="text-orange-600 border-orange-200">
                 {unassignedRequests.length} Available
               </Badge>
@@ -164,7 +167,7 @@ const AgentDashboard = () => {
               <Card className="text-center py-12">
                 <CardContent>
                   <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No unassigned requests</h3>
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
                   <p className="text-gray-500">All current requests have been assigned to agents.</p>
                 </CardContent>
               </Card>
@@ -199,7 +202,7 @@ const AgentDashboard = () => {
                 <CardContent>
                   <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No assigned requests</h3>
-                  <p className="text-gray-500">Visit the unassigned tab to claim new showing requests.</p>
+                  <p className="text-gray-500">Visit the Available tab to claim new showing requests.</p>
                 </CardContent>
               </Card>
             ) : (

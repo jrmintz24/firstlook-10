@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useAgentShowingRequests, useAssignShowingRequest, useUpdateShowingRequest } from "@/hooks/useShowingRequests";
+import { useShowingRequests, useAssignShowingRequest, useUpdateShowingRequest } from "@/hooks/useShowingRequests";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
@@ -20,7 +20,7 @@ export const useAgentDashboard = () => {
     data: showingRequests = [], 
     isLoading: requestsLoading, 
     error: requestsError 
-  } = useAgentShowingRequests();
+  } = useShowingRequests();
   
   const { 
     data: profile, 

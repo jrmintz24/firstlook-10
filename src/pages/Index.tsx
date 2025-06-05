@@ -59,7 +59,9 @@ const Index = () => {
       <TrustIndicators />
 
       {/* How It Works */}
-      <HowItWorks />
+      <div id="how-it-works-section">
+        <HowItWorks />
+      </div>
 
       {/* Why Choose FirstLook */}
       <WhyChooseSection />

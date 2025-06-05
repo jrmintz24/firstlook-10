@@ -1,5 +1,5 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,43 @@ export interface ShowingRequest {
 export const useShowingRequests = () => {
   const { user, userType } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('showing-requests-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'showing_requests'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          // Invalidate and refetch showing requests
+          queryClient.invalidateQueries({ queryKey: ['showing-requests'] });
+          
+          // Show toast notification for status updates
+          if (payload.eventType === 'UPDATE' && payload.new?.status !== payload.old?.status) {
+            const newRequest = payload.new as ShowingRequest;
+            toast({
+              title: "Request Updated",
+              description: `Showing for ${newRequest.property_address} status changed to ${newRequest.status}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient, toast]);
 
   return useQuery({
     queryKey: ['showing-requests', user?.id, userType],
@@ -48,6 +85,8 @@ export const useShowingRequests = () => {
       return data || [];
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchOnWindowFocus: true,
   });
 };
 

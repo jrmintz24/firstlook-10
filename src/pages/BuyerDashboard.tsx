@@ -1,13 +1,9 @@
 
-import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 import { FullPageLoading, LoadingState, ErrorState } from "@/components/ui/loading-states";
-import { useShowingRequests, useUpdateShowingRequest } from "@/hooks/useShowingRequests";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
+import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import BuyerDashboardHeader from "@/components/dashboard/buyer/BuyerDashboardHeader";
 import BuyerDashboardStats from "@/components/dashboard/buyer/BuyerDashboardStats";
@@ -17,77 +13,35 @@ import ShowingHistoryTab from "@/components/dashboard/buyer/ShowingHistoryTab";
 import ProfileTab from "@/components/dashboard/buyer/ProfileTab";
 
 const BuyerDashboard = () => {
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const { user, session, loading: authLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // Use our new hooks for data fetching
-  const { 
-    data: showingRequests = [], 
-    isLoading: requestsLoading, 
-    error: requestsError 
-  } = useShowingRequests();
-  
-  const { 
-    data: profile, 
-    isLoading: profileLoading, 
-    error: profileError 
-  } = useUserProfile();
-
-  const updateShowingMutation = useUpdateShowingRequest();
-
-  useEffect(() => {
-    if (authLoading) return;
+  const {
+    // Data
+    pendingRequests,
+    activeShowings,
+    completedShowings,
+    profile,
     
-    if (!isAuthenticated) {
-      navigate('/');
-      return;
-    }
-
-    handlePendingTourRequest();
-  }, [isAuthenticated, authLoading, navigate]);
-
-  const handlePendingTourRequest = async () => {
-    const pendingRequest = localStorage.getItem('pendingTourRequest');
-    if (!pendingRequest || !user) return;
-
-    try {
-      const tourData = JSON.parse(pendingRequest);
-      
-      if (!tourData.properties?.length) {
-        localStorage.removeItem('pendingTourRequest');
-        return;
-      }
-
-      // This would be handled by the PropertyRequestForm component
-      // when it's opened, so we just clean up here
-      localStorage.removeItem('pendingTourRequest');
-    } catch (error) {
-      console.error('Error processing pending tour request:', error);
-      localStorage.removeItem('pendingTourRequest');
-    }
-  };
-
-  const handleRequestShowing = () => {
-    setShowPropertyForm(true);
-  };
-
-  const handleCancelShowing = async (showingId: string) => {
-    updateShowingMutation.mutate({
-      id: showingId,
-      updates: { status: 'cancelled' }
-    });
-  };
-
-  const handleRescheduleShowing = (showingId: string) => {
-    // This would trigger a more complex flow - for now just show a message
-    console.log('Reschedule showing:', showingId);
-  };
-
-  // Organize requests by type
-  const pendingRequests = showingRequests.filter(req => isPendingRequest(req.status as ShowingStatus));
-  const activeShowings = showingRequests.filter(req => isActiveShowing(req.status as ShowingStatus));
-  const completedShowings = showingRequests.filter(req => req.status === 'completed');
+    // Loading states
+    authLoading,
+    requestsLoading,
+    profileLoading,
+    
+    // Errors
+    requestsError,
+    profileError,
+    
+    // UI state
+    showPropertyForm,
+    setShowPropertyForm,
+    
+    // Actions
+    handleRequestShowing,
+    handleCancelShowing,
+    handleRescheduleShowing,
+    
+    // User info
+    currentUser,
+    isAuthenticated
+  } = useBuyerDashboard();
 
   // Show loading while auth is loading
   if (authLoading) {
@@ -125,7 +79,6 @@ const BuyerDashboard = () => {
     );
   }
 
-  const currentUser = user || session?.user;
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
 
   return (

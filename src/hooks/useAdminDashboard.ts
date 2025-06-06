@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { isValidShowingStatus } from "@/utils/showingStatus";
 import { useNavigate } from "react-router-dom";
 
 interface Profile {
@@ -87,6 +88,13 @@ export const useAdminDashboard = () => {
   };
 
   const assignToAgent = async (requestId: string, agent: Profile) => {
+    const newStatus = "agent_assigned";
+
+    if (!isValidShowingStatus(newStatus)) {
+      toast({ title: "Error", description: "Invalid status", variant: "destructive" });
+      return;
+    }
+
     const { error } = await supabase
       .from("showing_requests")
       .update({
@@ -94,7 +102,7 @@ export const useAdminDashboard = () => {
         assigned_agent_name: `${agent.first_name} ${agent.last_name}`,
         assigned_agent_phone: agent.phone,
         assigned_agent_email: null,
-        status: "agent_assigned",
+        status: newStatus,
         status_updated_at: new Date().toISOString(),
       })
       .eq("id", requestId);
@@ -112,6 +120,11 @@ export const useAdminDashboard = () => {
     newStatus: string,
     estimatedDate?: string
   ) => {
+    if (!isValidShowingStatus(newStatus)) {
+      toast({ title: "Error", description: "Invalid status", variant: "destructive" });
+      return false;
+    }
+
     const updates: ShowingRequestUpdates = {
       status: newStatus,
       status_updated_at: new Date().toISOString(),

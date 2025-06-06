@@ -54,8 +54,11 @@ export const useAssignShowingRequest = () => {
       console.log('Assignment update result:', { error, agentEmail });
 
       if (error) {
-        console.error('Error assigning request:', error);
-        toastHelper.error("Assignment Failed", `Database error: ${error.message}`);
+        console.error('Error assigning request:', error.message, error.details);
+        toastHelper.error(
+          "Assignment Failed",
+          `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`
+        );
         return false;
       }
 

@@ -4,12 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
-import AdminRequestCard from "@/components/dashboard/AdminRequestCard";
+import AdminRequestCard, { ShowingRequest } from "@/components/dashboard/AdminRequestCard";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { isActiveShowing, canBeAssigned, ShowingStatus } from "@/utils/showingStatus";
 
 const AdminDashboard = () => {
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
 
   const { showingRequests, agents, loading, assignToAgent, handleStatusUpdate } = useAdminDashboard();

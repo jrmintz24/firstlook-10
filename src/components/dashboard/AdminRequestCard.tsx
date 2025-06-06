@@ -19,7 +19,7 @@ interface AgentProfile {
   phone: string;
 }
 
-interface ShowingRequest {
+export interface ShowingRequest {
   id: string;
   property_address: string;
   preferred_date: string | null;

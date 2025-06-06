@@ -96,6 +96,19 @@ npm test
 
 Vitest will execute the test suite defined under `src/`. If you encounter a "cannot find package 'vitest'" error, ensure dependencies are installed.
 
+## Database migrations
+
+SQL files used to keep the Supabase schema in sync live under `supabase/sql`.
+To apply the latest changes for the admin workflow run:
+
+```sh
+supabase db execute < supabase/sql/20250605_admin_workflow.sql
+```
+
+This adds columns for agent assignment and status tracking on the
+`showing_requests` table and installs a trigger to update
+`status_updated_at` whenever the status changes.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

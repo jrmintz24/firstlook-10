@@ -94,7 +94,7 @@ Then run the unit tests with:
 npm test
 ```
 
-Vitest will execute the test suite defined under `src/`. If you encounter a "cannot find package 'vitest'" error, ensure dependencies are installed.
+Vitest will execute the test suite defined under `src/`. If you see an error like `sh: vitest: not found` or "cannot find package 'vitest'", make sure you've installed dependencies.
 
 ## Database migrations
 

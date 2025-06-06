@@ -88,6 +88,9 @@ Install dependencies if you haven't already:
 npm install
 ```
 
+If you encounter errors running `npm run lint` or `npm test`, double-check that
+all dependencies are installed.
+
 Then run the unit tests with:
 
 ```sh

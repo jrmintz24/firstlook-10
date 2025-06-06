@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles, Zap, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Subscriptions = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -424,10 +425,12 @@ const Subscriptions = () => {
         </div>
       </div>
 
-      <PropertyRequestForm 
-        isOpen={showPropertyForm} 
-        onClose={() => setShowPropertyForm(false)} 
-      />
+      <ErrorBoundary>
+        <PropertyRequestForm
+          isOpen={showPropertyForm}
+          onClose={() => setShowPropertyForm(false)}
+        />
+      </ErrorBoundary>
     </div>
   );
 };

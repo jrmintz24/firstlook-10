@@ -109,6 +109,11 @@ This adds columns for agent assignment and status tracking on the
 `showing_requests` table and installs a trigger to update
 `status_updated_at` whenever the status changes.
 
+To enable messaging and buyer agreement tracking run the next migration:
+```sh
+supabase db execute < supabase/sql/20250610_messages_and_agreements.sql
+```
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

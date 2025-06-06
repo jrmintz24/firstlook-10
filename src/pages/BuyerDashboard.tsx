@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ShowingRequestCard from "@/components/dashboard/ShowingRequestCard";
+import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,8 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
+  user_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
 }
@@ -40,6 +43,9 @@ const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
+  const [selectedShowing, setSelectedShowing] = useState<ShowingRequest | null>(null);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
@@ -179,6 +185,18 @@ const BuyerDashboard = () => {
       } else {
         setShowingRequests(requestsData || []);
         console.log('Requests set:', requestsData);
+
+        if (requestsData && requestsData.length > 0) {
+          const { data: agreementsData } = await supabase
+            .from('tour_agreements')
+            .select('*')
+            .in('showing_request_id', requestsData.map(r => r.id));
+          const map: Record<string, boolean> = {};
+          agreementsData?.forEach(a => { map[a.showing_request_id] = a.signed; });
+          setAgreements(map);
+        } else {
+          setAgreements({});
+        }
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -191,6 +209,11 @@ const BuyerDashboard = () => {
 
   const handleRequestShowing = () => {
     setShowPropertyForm(true);
+  };
+
+  const handleConfirmShowing = (showing: ShowingRequest) => {
+    setSelectedShowing(showing);
+    setShowAgreementModal(true);
   };
 
   const handleCancelShowing = async (showingId: string) => {
@@ -224,6 +247,25 @@ const BuyerDashboard = () => {
       title: "Reschedule Request Sent",
       description: "Your showing partner will contact you with new available times.",
     });
+  };
+
+  const handleAgreementSign = async (name: string) => {
+    if (!selectedShowing) return;
+    const { error } = await supabase.from('tour_agreements').upsert({
+      showing_request_id: selectedShowing.id,
+      agent_id: selectedShowing.assigned_agent_id,
+      buyer_id: selectedShowing.user_id,
+      signed: true,
+      signed_at: new Date().toISOString()
+    });
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to save agreement', variant: 'destructive' });
+    } else {
+      toast({ title: 'Confirmed', description: 'Your showing has been confirmed.' });
+      setAgreements(prev => ({ ...prev, [selectedShowing.id]: true }));
+    }
+    setShowAgreementModal(false);
+    setSelectedShowing(null);
   };
 
   // Organize requests by type - cast status to ShowingStatus for utility functions
@@ -405,6 +447,7 @@ const BuyerDashboard = () => {
                     showing={showing}
                     onCancel={handleCancelShowing}
                     onReschedule={handleRescheduleShowing}
+                    onConfirm={agreements[showing.id] ? undefined : () => handleConfirmShowing(showing)}
                   />
                 ))}
               </div>
@@ -514,6 +557,14 @@ const BuyerDashboard = () => {
           onClose={() => setShowPropertyForm(false)}
         />
       </ErrorBoundary>
+
+      {selectedShowing && (
+        <SignAgreementModal
+          isOpen={showAgreementModal}
+          onClose={() => setShowAgreementModal(false)}
+          onSign={handleAgreementSign}
+        />
+      )}
     </div>
   );
 };

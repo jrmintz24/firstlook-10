@@ -24,10 +24,11 @@ interface ShowingRequestCardProps {
   showing: ShowingRequest;
   onCancel: (id: string) => void;
   onReschedule: (id: string) => void;
+  onConfirm?: (id: string) => void;
   showActions?: boolean;
 }
 
-const ShowingRequestCard = ({ showing, onCancel, onReschedule, showActions = true }: ShowingRequestCardProps) => {
+const ShowingRequestCard = ({ showing, onCancel, onReschedule, onConfirm, showActions = true }: ShowingRequestCardProps) => {
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
 
@@ -132,15 +133,20 @@ const ShowingRequestCard = ({ showing, onCancel, onReschedule, showActions = tru
         {/* Actions */}
         {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending'].includes(showing.status) && (
           <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+            {showing.status === 'confirmed' && onConfirm && (
+              <Button variant="outline" size="sm" onClick={() => onConfirm(showing.id)} className="border-green-200 text-green-700 hover:bg-green-50">
+                Confirm & Sign
+              </Button>
+            )}
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => onReschedule(showing.id)}
             >
               Reschedule
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => onCancel(showing.id)}
               className="text-red-600 border-red-200 hover:bg-red-50"

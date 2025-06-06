@@ -35,21 +35,6 @@ const AddressAutocomplete = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  useEffect(() => {
-    if (!isInputFocused) return;
-
-    const timeoutId = setTimeout(async () => {
-      if (value.length > 2) {
-        await fetchSuggestions(value);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [value, isInputFocused, fetchSuggestions]);
-
   const fetchSuggestions = useCallback(async (input: string) => {
     setIsLoading(true);
     setError(null);
@@ -86,6 +71,21 @@ const AddressAutocomplete = ({
       setIsLoading(false);
     }
   }, [isInputFocused]);
+
+  useEffect(() => {
+    if (!isInputFocused) return;
+
+    const timeoutId = setTimeout(async () => {
+      if (value.length > 2) {
+        await fetchSuggestions(value);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [value, isInputFocused, fetchSuggestions]);
 
   const handleSuggestionClick = (suggestion: PlacePrediction) => {
     onChange(suggestion.description);

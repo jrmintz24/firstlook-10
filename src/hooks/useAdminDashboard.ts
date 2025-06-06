@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,7 +79,7 @@ export const useAdminDashboard = () => {
 
     const { data: agentsData } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, phone")
+      .select("id, first_name, last_name, phone, user_type")
       .eq("user_type", "agent");
 
     setAgents(agentsData || []);

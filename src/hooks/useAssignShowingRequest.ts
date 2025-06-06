@@ -26,17 +26,14 @@ export const useAssignShowingRequest = () => {
     try {
       const { error } = await supabase
         .from('showing_requests')
-        .update(
-          {
-            assigned_agent_id: currentUser.id,
-            assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
-            assigned_agent_phone: profile.phone,
-            assigned_agent_email: currentUser.email,
-            status: 'agent_assigned',
-            status_updated_at: new Date().toISOString()
-          },
-          { returning: 'minimal' }
-        )
+        .update({
+          assigned_agent_id: currentUser.id,
+          assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
+          assigned_agent_phone: profile.phone,
+          assigned_agent_email: currentUser.email,
+          status: 'agent_assigned',
+          status_updated_at: new Date().toISOString()
+        })
         .eq('id', requestId);
 
       console.log('Assignment update result:', { error });

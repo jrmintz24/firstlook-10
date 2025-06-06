@@ -1,3 +1,4 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -11,7 +12,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 import { signInWithProvider } from './authService';
 import { supabase } from '@/integrations/supabase/client';
 
-const oauthMock = supabase.auth.signInWithOAuth as vi.Mock;
+const oauthMock = supabase.auth.signInWithOAuth as ReturnType<typeof vi.fn>;
 
 interface GlobalWithWindow {
   window: { location: { href: string } };

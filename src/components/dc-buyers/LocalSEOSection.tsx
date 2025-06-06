@@ -1,7 +1,10 @@
-
 import { CheckCircle } from "lucide-react";
 
-const LocalSEOSection = () => {
+interface LocalSEOSectionProps {
+  onRequestShowing: () => void;
+}
+
+const LocalSEOSection = ({ onRequestShowing }: LocalSEOSectionProps) => {
   return (
     <div className="py-20 bg-white">
       <div className="container mx-auto px-4">

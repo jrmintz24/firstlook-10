@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "@/components/routes/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
 import Index from "./pages/Index";
@@ -37,9 +38,30 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/agents" element={<AgentLanding />} />
-              <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
-              <Route path="/agent-dashboard" element={<AgentDashboard />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route
+                path="/buyer-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["buyer"]}>
+                    <BuyerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agent-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["agent"]}>
+                    <AgentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />

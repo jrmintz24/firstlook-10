@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToastHelper } from "@/utils/toastUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthFormData {
   email: string;
@@ -62,10 +63,19 @@ export const useAuthForm = (
           toastHelper.error("Error", error.message);
         } else {
           toastHelper.success("Success!", "Welcome back!");
+          // Fetch the authenticated user to determine their role
+          const { data } = await supabase.auth.getUser();
+          const type =
+            (data.user?.user_metadata?.user_type as string | undefined) ??
+            userType;
           onSuccess();
-          if (userType === 'buyer') {
-            window.location.href = '/buyer-dashboard';
-          }
+          const redirect =
+            type === "agent"
+              ? "/agent-dashboard"
+              : type === "admin"
+              ? "/admin-dashboard"
+              : "/buyer-dashboard";
+          window.location.href = redirect;
         }
       } else {
         // Use the password from the form instead of generating one

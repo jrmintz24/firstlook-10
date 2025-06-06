@@ -35,7 +35,7 @@ const DCBuyers = () => {
       </div>
 
       {/* Main Content Sections */}
-      <ProblemSolutionSection />
+      <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
       <BenefitsSection onSignUp={handleSignUp} />
       <HowItWorksSection />
       <NeighborhoodsSection />

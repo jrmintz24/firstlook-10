@@ -85,7 +85,7 @@ Simply open [Lovable](https://lovable.dev/projects/df1616ad-5732-43de-9096-ccd1e
 Install dependencies if you haven't already:
 
 ```sh
-npm install
+npm ci
 ```
 
 If you encounter errors running `npm run lint` or `npm test`, double-check that
@@ -97,7 +97,7 @@ Then run the unit tests with:
 npm test
 ```
 
-Vitest will execute the test suite defined under `src/`. If you see an error like `sh: vitest: not found` or "cannot find package 'vitest'", make sure you've installed dependencies.
+Vitest will execute the test suite defined under `src/` using the locally installed binary. If you see an error like `sh: vitest: not found`, make sure you've installed dependencies.
 
 ## Database migrations
 
@@ -115,6 +115,12 @@ This adds columns for agent assignment and status tracking on the
 To enable messaging and buyer agreement tracking run the next migration:
 ```sh
 supabase db execute < supabase/sql/20250610_messages_and_agreements.sql
+```
+
+If agent assignment fails with a `showing_requests_status_check` error, apply the
+status migration:
+```sh
+supabase db execute < supabase/sql/20250615_update_status_check.sql
 ```
 
 ## Can I connect a custom domain to my Lovable project?

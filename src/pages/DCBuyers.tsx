@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import HeroSection from "@/components/dc-buyers/HeroSection";
 import TrustIndicators from "@/components/dc-buyers/TrustIndicators";
 import ProblemSolutionSection from "@/components/dc-buyers/ProblemSolutionSection";
@@ -44,10 +45,12 @@ const DCBuyers = () => {
       <FinalCTASection onRequestShowing={handleRequestShowing} onSignUp={handleSignUp} />
 
       {/* Property Request Form Modal */}
-      <PropertyRequestForm 
-        isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
-      />
+      <ErrorBoundary>
+        <PropertyRequestForm
+          isOpen={showPropertyForm}
+          onClose={() => setShowPropertyForm(false)}
+        />
+      </ErrorBoundary>
     </div>
   );
 };

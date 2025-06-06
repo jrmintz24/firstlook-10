@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import HowItWorks from "@/components/HowItWorks";
 import TrustIndicators from "@/components/TrustIndicators";
 import ProblemSolutionSection from "@/components/ProblemSolutionSection";
@@ -61,10 +62,12 @@ const Index = () => {
       <FAQSection />
       <FinalCTASection onRequestShowing={handleRequestShowing} />
 
-      <PropertyRequestForm 
-        isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
-      />
+      <ErrorBoundary>
+        <PropertyRequestForm
+          isOpen={showPropertyForm}
+          onClose={() => setShowPropertyForm(false)}
+        />
+      </ErrorBoundary>
 
       <footer className="bg-slate-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">

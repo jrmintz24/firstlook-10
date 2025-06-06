@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, MapPin, Phone, User, Plus, CheckCircle, AlertCircle, Star, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import ShowingRequestCard from "@/components/dashboard/ShowingRequestCard";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -507,10 +508,12 @@ const BuyerDashboard = () => {
         </Tabs>
       </div>
 
-      <PropertyRequestForm 
-        isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
-      />
+      <ErrorBoundary>
+        <PropertyRequestForm
+          isOpen={showPropertyForm}
+          onClose={() => setShowPropertyForm(false)}
+        />
+      </ErrorBoundary>
     </div>
   );
 };

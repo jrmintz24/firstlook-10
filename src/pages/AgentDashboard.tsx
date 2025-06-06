@@ -8,8 +8,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
+import SendMessageModal from "@/components/dashboard/SendMessageModal";
 import { isActiveShowing, canBeAssigned, type ShowingStatus } from "@/utils/showingStatus";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ShowingRequest {
   id: string;
@@ -30,8 +33,10 @@ interface ShowingRequest {
 const AgentDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
   const { user, session } = useAuth();
-  
+  const { toast } = useToast();
+
   const {
     profile,
     showingRequests,
@@ -46,6 +51,29 @@ const AgentDashboard = () => {
     if (success) {
       setShowStatusModal(false);
       setSelectedRequest(null);
+    }
+  };
+
+  const handleSendMessage = async (requestId: string, message: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from('messages').insert({
+      showing_request_id: requestId,
+      sender_id: profile.id,
+      receiver_id: showingRequests.find(r => r.id === requestId)?.user_id ?? null,
+      content: message
+    });
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' });
+    } else {
+      toast({ title: 'Message Sent', description: 'Buyer has been notified.' });
+    }
+  };
+
+  const handleAcceptShowing = async (request: ShowingRequest) => {
+    const success = await handleStatusUpdate(request.id, 'confirmed');
+    if (success) {
+      setSelectedRequest(request);
+      setShowMessageModal(true);
     }
   };
 
@@ -182,6 +210,11 @@ const AgentDashboard = () => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
                     }}
+                    onSendMessage={() => {
+                      setSelectedRequest(request);
+                      setShowMessageModal(true);
+                    }}
+                    onAccept={() => handleAcceptShowing(request)}
                     showAssignButton={true}
                   />
                 ))}
@@ -216,6 +249,11 @@ const AgentDashboard = () => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
                     }}
+                    onSendMessage={() => {
+                      setSelectedRequest(request);
+                      setShowMessageModal(true);
+                    }}
+                    onAccept={() => handleAcceptShowing(request)}
                     showAssignButton={false}
                   />
                 ))}
@@ -250,6 +288,11 @@ const AgentDashboard = () => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
                     }}
+                    onSendMessage={() => {
+                      setSelectedRequest(request);
+                      setShowMessageModal(true);
+                    }}
+                    onAccept={() => handleAcceptShowing(request)}
                     showAssignButton={false}
                   />
                 ))}
@@ -325,6 +368,17 @@ const AgentDashboard = () => {
           }}
           request={selectedRequest}
           onUpdateStatus={handleStatusUpdateWithModal}
+        />
+      )}
+
+      {selectedRequest && (
+        <SendMessageModal
+          isOpen={showMessageModal}
+          onClose={() => setShowMessageModal(false)}
+          onSend={async (msg) => {
+            await handleSendMessage(selectedRequest.id, msg);
+            setShowMessageModal(false);
+          }}
         />
       )}
     </div>

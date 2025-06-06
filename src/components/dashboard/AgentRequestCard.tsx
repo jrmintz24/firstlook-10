@@ -25,10 +25,12 @@ interface AgentRequestCardProps {
   request: ShowingRequest;
   onAssign: () => void;
   onUpdateStatus: (status: string, estimatedDate?: string) => void;
+  onSendMessage: () => void;
+  onAccept?: () => void;
   showAssignButton: boolean;
 }
 
-const AgentRequestCard = ({ request, onAssign, onUpdateStatus, showAssignButton }: AgentRequestCardProps) => {
+const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, onAccept, showAssignButton }: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
 
@@ -133,7 +135,7 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, showAssignButton 
         {/* Actions */}
         <div className="flex gap-3">
           {showAssignButton && (
-            <Button 
+            <Button
               onClick={onAssign}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
@@ -141,14 +143,30 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, showAssignButton 
               Assign to Me
             </Button>
           )}
-          
+
+          {!showAssignButton && request.status === 'agent_assigned' && onAccept && (
+            <Button
+              onClick={onAccept}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Accept Showing
+            </Button>
+          )}
+
           {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'scheduled'].includes(request.status) && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => onUpdateStatus(request.status)}
               className="border-purple-200 text-purple-700 hover:bg-purple-50"
             >
               Update Status
+            </Button>
+          )}
+
+          {!showAssignButton && (
+            <Button variant="outline" onClick={onSendMessage} className="border-purple-200 text-purple-700 hover:bg-purple-50">
+              Send Message
             </Button>
           )}
         </div>

@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,8 +33,11 @@ const AddressAutocomplete = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
+    if (!isInputFocused) return;
+
     const timeoutId = setTimeout(async () => {
       if (value.length > 2) {
         await fetchSuggestions(value);
@@ -45,9 +48,9 @@ const AddressAutocomplete = ({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [value]);
+  }, [value, isInputFocused, fetchSuggestions]);
 
-  const fetchSuggestions = async (input: string) => {
+  const fetchSuggestions = useCallback(async (input: string) => {
     setIsLoading(true);
     setError(null);
     
@@ -68,7 +71,9 @@ const AddressAutocomplete = ({
       if (data && data.predictions) {
         console.log('Received suggestions:', data.predictions);
         setSuggestions(data.predictions);
-        setShowSuggestions(true);
+        if (isInputFocused) {
+          setShowSuggestions(true);
+        }
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -80,11 +85,12 @@ const AddressAutocomplete = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isInputFocused]);
 
   const handleSuggestionClick = (suggestion: PlacePrediction) => {
     onChange(suggestion.description);
     setShowSuggestions(false);
+    inputRef.current?.blur();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,12 +98,14 @@ const AddressAutocomplete = ({
   };
 
   const handleInputFocus = () => {
+    setIsInputFocused(true);
     if (suggestions.length > 0) {
       setShowSuggestions(true);
     }
   };
 
   const handleInputBlur = () => {
+    setIsInputFocused(false);
     // Delay hiding suggestions to allow clicking on them
     setTimeout(() => setShowSuggestions(false), 150);
   };

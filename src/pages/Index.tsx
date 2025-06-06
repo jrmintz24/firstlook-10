@@ -56,7 +56,7 @@ const Index = () => {
       <HowItWorks />
       <MembershipPreviewSection onRequestShowing={handleRequestShowing} />
       <WhyChooseSection />
-      <ProblemSolutionSection />
+      <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
       <OfferSupportSection />
       <FAQSection />
       <FinalCTASection onRequestShowing={handleRequestShowing} />

@@ -1,7 +1,11 @@
 
 import { problemPoints } from "@/data/problemPoints";
 
-const ProblemSolutionSection = () => {
+interface ProblemSolutionSectionProps {
+  onRequestShowing: () => void;
+}
+
+const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProps) => {
 
   return (
     <div className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
@@ -63,10 +67,18 @@ const ProblemSolutionSection = () => {
                 Join thousands of smart buyers who've taken control of their home search. Your first private showing is completely free - no contracts, no commitments, no catch.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                <button
+                  type="button"
+                  onClick={onRequestShowing}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                >
                   Get Your Free Home Tour
                 </button>
-                <button className="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg border-2 border-purple-200 hover:bg-purple-50 transition-all duration-300">
+                <button
+                  type="button"
+                  onClick={onRequestShowing}
+                  className="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg border-2 border-purple-200 hover:bg-purple-50 transition-all duration-300"
+                >
                   See How It Works
                 </button>
               </div>

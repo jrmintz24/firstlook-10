@@ -60,10 +60,17 @@ export const useAssignShowingRequest = () => {
 
       if (error) {
         console.error('Error assigning request:', error.message, error.details, error.hint);
-        toastHelper.error(
-          "Assignment Failed",
-          `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`
-        );
+        if (error.message?.includes('showing_requests_status_check')) {
+          toastHelper.error(
+            'Assignment Failed',
+            'Database schema outdated. Run `supabase db execute < supabase/sql/20250615_update_status_check.sql` to allow new statuses.'
+          );
+        } else {
+          toastHelper.error(
+            'Assignment Failed',
+            `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`
+          );
+        }
         return false;
       }
 

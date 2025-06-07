@@ -173,12 +173,18 @@ export const usePropertyRequest = () => {
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Navigate to dashboard based on user type
-      navigate(
+      // Redirect to the appropriate dashboard. Using a full page reload
+      // ensures the latest requests are fetched even if the user
+      // is already on their dashboard.
+      const redirectPath =
         user.user_metadata?.user_type === 'agent'
           ? '/agent-dashboard'
-          : '/buyer-dashboard'
-      );
+          : '/buyer-dashboard';
+
+      // React Router's navigate won't reload the page if we're already on
+      // the dashboard. Using window.location.href guarantees the dashboard
+      // refreshes and shows the new request immediately.
+      window.location.href = redirectPath;
       
     } catch (error) {
       console.error('Error submitting showing requests:', error);

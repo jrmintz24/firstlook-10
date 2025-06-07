@@ -39,6 +39,55 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          receiver_id: string | null
+          sender_id: string | null
+          showing_request_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          receiver_id?: string | null
+          sender_id?: string | null
+          showing_request_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_id?: string | null
+          sender_id?: string | null
+          showing_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       open_houses: {
         Row: {
           address: string
@@ -298,6 +347,58 @@ export type Database = {
             columns: ["assigned_agent_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tour_agreements: {
+        Row: {
+          agent_id: string | null
+          buyer_id: string | null
+          created_at: string
+          id: string
+          showing_request_id: string | null
+          signed: boolean
+          signed_at: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          showing_request_id?: string | null
+          signed?: boolean
+          signed_at?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          showing_request_id?: string | null
+          signed?: boolean
+          signed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_agreements_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_agreements_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_agreements_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
             referencedColumns: ["id"]
           },
         ]

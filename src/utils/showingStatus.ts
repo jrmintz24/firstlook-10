@@ -1,13 +1,27 @@
 
-export type ShowingStatus = 
-  | 'submitted' 
-  | 'under_review' 
-  | 'agent_assigned' 
-  | 'confirmed' 
-  | 'scheduled' 
-  | 'completed' 
-  | 'cancelled' 
+export type ShowingStatus =
+  | 'submitted'
+  | 'under_review'
+  | 'agent_assigned'
+  | 'confirmed'
+  | 'scheduled'
+  | 'completed'
+  | 'cancelled'
   | 'pending'; // legacy status
+
+export const SHOWING_STATUS_VALUES: readonly ShowingStatus[] = [
+  'pending',
+  'submitted',
+  'under_review',
+  'agent_assigned',
+  'confirmed',
+  'scheduled',
+  'completed',
+  'cancelled'
+];
+
+export const isValidShowingStatus = (value: string): value is ShowingStatus =>
+  SHOWING_STATUS_VALUES.includes(value as ShowingStatus);
 
 export interface StatusInfo {
   label: string;

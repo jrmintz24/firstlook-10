@@ -123,6 +123,19 @@ status migration:
 supabase db execute < supabase/sql/20250615_update_status_check.sql
 ```
 
+The allowed values for the `status` column are:
+
+```
+pending
+submitted
+under_review
+agent_assigned
+confirmed
+scheduled
+completed
+cancelled
+```
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

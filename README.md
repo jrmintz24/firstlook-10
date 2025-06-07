@@ -82,10 +82,10 @@ Simply open [Lovable](https://lovable.dev/projects/df1616ad-5732-43de-9096-ccd1e
 
 ## Running tests
 
-Install dependencies if you haven't already:
+Install dependencies if you haven't already. This ensures `vitest` and the ESLint configuration are available:
 
 ```sh
-npm ci
+npm install
 ```
 
 If you encounter errors running `npm run lint` or `npm test`, double-check that

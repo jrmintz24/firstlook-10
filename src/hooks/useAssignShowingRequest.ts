@@ -39,22 +39,27 @@ export const useAssignShowingRequest = () => {
 
       const agentEmail = currentUser.email;
       
+      // Use 'under_review' status instead of 'agent_assigned' to avoid constraint violation
+      const updateData = {
+        assigned_agent_id: currentUser.id,
+        assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
+        assigned_agent_phone: profile.phone,
+        assigned_agent_email: agentEmail,
+        status: 'under_review', // Changed from 'agent_assigned' to avoid constraint violation
+        status_updated_at: new Date().toISOString()
+      };
+
+      console.log('Assignment update data:', updateData);
+
       const { error } = await supabase
         .from('showing_requests')
-        .update({
-          assigned_agent_id: currentUser.id,
-          assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
-          assigned_agent_phone: profile.phone,
-          assigned_agent_email: agentEmail,
-          status: 'agent_assigned',
-          status_updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', requestId);
 
       console.log('Assignment update result:', { error, agentEmail });
 
       if (error) {
-        console.error('Error assigning request:', error.message, error.details);
+        console.error('Error assigning request:', error.message, error.details, error.hint);
         toastHelper.error(
           "Assignment Failed",
           `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`

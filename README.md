@@ -117,8 +117,9 @@ To enable messaging and buyer agreement tracking run the next migration:
 supabase db execute < supabase/sql/20250610_messages_and_agreements.sql
 ```
 
-If agent assignment fails with a `showing_requests_status_check` error, apply the
-status migration:
+If agent assignment or acceptance fails with a `showing_requests_status_check`
+error, apply the status migration to allow the new `pending_admin_approval`
+value:
 ```sh
 supabase db execute < supabase/sql/20250615_update_status_check.sql
 ```
@@ -130,6 +131,7 @@ pending
 submitted
 under_review
 agent_assigned
+pending_admin_approval
 confirmed
 scheduled
 completed

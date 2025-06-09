@@ -52,12 +52,16 @@ export const useAuthForm = (
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    loginMode?: boolean
+  ) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isLogin) {
+      const isLoginMode = loginMode ?? isLogin;
+      if (isLoginMode) {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
           toastHelper.error("Error", error.message);

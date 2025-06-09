@@ -13,6 +13,7 @@ import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { isActiveShowing, canBeAssigned, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
 
 const AgentDashboard = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   // const [showMessageModal, setShowMessageModal] = useState(false);
@@ -48,7 +49,7 @@ const AgentDashboard = () => {
   };
 
   const handleAcceptShowing = async (requestId: string) => {
-    await handleStatusUpdate(requestId, 'scheduled');
+    await handleStatusUpdate(requestId, 'pending_admin_approval');
   };
 
   // Organize requests by categories
@@ -56,8 +57,8 @@ const AgentDashboard = () => {
     canBeAssigned(req.status as ShowingStatus) && !req.assigned_agent_name
   );
   
-  const myRequests = showingRequests.filter(req => 
-    profile && req.assigned_agent_email === (profile as any).email
+  const myRequests = showingRequests.filter(
+    req => profile && req.assigned_agent_email === (profile as { email?: string }).email
   );
   
   const activeShowings = showingRequests.filter(req => 

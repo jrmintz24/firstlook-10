@@ -214,11 +214,24 @@ export const useBuyerDashboard = () => {
   };
 
   const handleAgreementSign = async (name: string) => {
-    if (!selectedShowing) return;
-    
-    toast({ title: 'Confirmed', description: 'Your showing has been confirmed.' });
+    if (!selectedShowing || !user) return;
+
+    const { error } = await supabase.from('tour_agreements').insert({
+        showing_request_id: selectedShowing.id,
+        agent_id: selectedShowing.assigned_agent_id,
+        buyer_id: user.id,
+        signed: true,
+        signed_at: new Date().toISOString()
+    });
+
+    if (error) {
+        toast({ title: 'Error', description: 'Failed to save agreement.', variant: 'destructive' });
+        return;
+    }
+
+    toast({ title: 'Confirmed', description: 'Your showing has been confirmed and agreement signed.' });
     setAgreements(prev => ({ ...prev, [selectedShowing.id]: true }));
-    
+
     setSelectedShowing(null);
   };
 

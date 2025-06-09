@@ -9,6 +9,7 @@ ALTER TABLE showing_requests
       'submitted',
       'under_review',
       'agent_assigned',
+      'pending_admin_approval',
       'confirmed',
       'scheduled',
       'completed',

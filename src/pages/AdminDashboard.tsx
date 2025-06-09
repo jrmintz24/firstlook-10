@@ -12,10 +12,11 @@ const AdminDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
 
-  const { showingRequests, agents, loading, assignToAgent, handleStatusUpdate } = useAdminDashboard();
+  const { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest } = useAdminDashboard();
 
   const unassigned = showingRequests.filter((r) => canBeAssigned(r.status as ShowingStatus) && !r.assigned_agent_name);
   const active = showingRequests.filter((r) => isActiveShowing(r.status as ShowingStatus));
+  const pendingApproval = showingRequests.filter((r) => r.status === 'pending_admin_approval');
 
   const handleUpdateStatus = async (id: string, newStatus: string, estimated?: string) => {
     const success = await handleStatusUpdate(id, newStatus, estimated);
@@ -44,9 +45,10 @@ const AdminDashboard = () => {
       </div>
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all">All ({showingRequests.length})</TabsTrigger>
             <TabsTrigger value="unassigned">Unassigned ({unassigned.length})</TabsTrigger>
+            <TabsTrigger value="pending_approval">Pending Approval ({pendingApproval.length})</TabsTrigger>
             <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="space-y-6">
@@ -82,6 +84,21 @@ const AdminDashboard = () => {
                 />
               ))
             )}
+          </TabsContent>
+          <TabsContent value="pending_approval" className="space-y-6">
+            {pendingApproval.map((req) => (
+              <AdminRequestCard
+                key={req.id}
+                request={req}
+                agents={agents}
+                onAssign={assignToAgent}
+                onApprove={approveShowingRequest}
+                onUpdateStatus={() => {
+                  setSelectedRequest(req);
+                  setShowStatusModal(true);
+                }}
+              />
+            ))}
           </TabsContent>
           <TabsContent value="active" className="space-y-6">
             {active.length === 0 ? (

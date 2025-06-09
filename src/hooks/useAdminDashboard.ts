@@ -147,6 +147,28 @@ export const useAdminDashboard = () => {
     return true;
   };
 
+  const approveShowingRequest = async (requestId: string) => {
+    const newStatus = 'confirmed';
+    const { error } = await supabase
+      .from('showing_requests')
+      .update({
+        status: newStatus,
+        status_updated_at: new Date().toISOString(),
+      })
+      .eq('id', requestId);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to approve request', variant: 'destructive' });
+    } else {
+      toast({ title: 'Approved', description: 'Showing request approved.' });
+      fetchAdminData();
+      // Call notification function
+      await supabase.functions.invoke('notify-agent', {
+        body: { requestId },
+      });
+    }
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user && !session) {
@@ -157,5 +179,5 @@ export const useAdminDashboard = () => {
     fetchAdminData();
   }, [user, session, authLoading, navigate]);
 
-  return { showingRequests, agents, loading, assignToAgent, handleStatusUpdate };
+  return { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest };
 };

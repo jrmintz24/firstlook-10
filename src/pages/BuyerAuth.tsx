@@ -135,10 +135,7 @@ const BuyerAuth = () => {
                     licenseNumber={buyerAuth.formData.licenseNumber}
                     isLoading={buyerAuth.isLoading}
                     onInputChange={buyerAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      buyerAuth.setIsLogin(false);
-                      buyerAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => buyerAuth.handleSubmit(e, false)}
                     onSocialLogin={buyerAuth.handleSocialLogin}
                   />
                 </TabsContent>
@@ -149,10 +146,7 @@ const BuyerAuth = () => {
                     password={buyerAuth.formData.password}
                     isLoading={buyerAuth.isLoading}
                     onInputChange={buyerAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      buyerAuth.setIsLogin(true);
-                      buyerAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => buyerAuth.handleSubmit(e, true)}
                     onSocialLogin={buyerAuth.handleSocialLogin}
                   />
                 </TabsContent>

@@ -105,7 +105,7 @@ const QuickSignInModal = ({
                 password={currentAuth.formData.password}
                 isLoading={currentAuth.isLoading}
                 onInputChange={currentAuth.handleInputChange}
-                onSubmit={currentAuth.handleSubmit}
+                onSubmit={(e) => currentAuth.handleSubmit(e, true)}
                 onSocialLogin={currentAuth.handleSocialLogin}
               />
             </TabsContent>
@@ -120,7 +120,7 @@ const QuickSignInModal = ({
                 licenseNumber={currentAuth.formData.licenseNumber}
                 isLoading={currentAuth.isLoading}
                 onInputChange={currentAuth.handleInputChange}
-                onSubmit={currentAuth.handleSubmit}
+                onSubmit={(e) => currentAuth.handleSubmit(e, false)}
                 onSocialLogin={currentAuth.handleSocialLogin}
               />
             </TabsContent>

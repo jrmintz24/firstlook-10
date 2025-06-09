@@ -61,10 +61,7 @@ const AdminAuth = () => {
                     licenseNumber={adminAuth.formData.licenseNumber}
                     isLoading={adminAuth.isLoading}
                     onInputChange={adminAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      adminAuth.setIsLogin(false);
-                      adminAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => adminAuth.handleSubmit(e, false)}
                     onSocialLogin={adminAuth.handleSocialLogin}
                   />
                 </TabsContent>
@@ -74,10 +71,7 @@ const AdminAuth = () => {
                     password={adminAuth.formData.password}
                     isLoading={adminAuth.isLoading}
                     onInputChange={adminAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      adminAuth.setIsLogin(true);
-                      adminAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => adminAuth.handleSubmit(e, true)}
                     onSocialLogin={adminAuth.handleSocialLogin}
                   />
                 </TabsContent>

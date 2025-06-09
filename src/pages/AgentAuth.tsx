@@ -130,10 +130,7 @@ const AgentAuth = () => {
                     licenseNumber={agentAuth.formData.licenseNumber}
                     isLoading={agentAuth.isLoading}
                     onInputChange={agentAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      agentAuth.setIsLogin(false);
-                      agentAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => agentAuth.handleSubmit(e, false)}
                     onSocialLogin={agentAuth.handleSocialLogin}
                   />
                 </TabsContent>
@@ -144,10 +141,7 @@ const AgentAuth = () => {
                     password={agentAuth.formData.password}
                     isLoading={agentAuth.isLoading}
                     onInputChange={agentAuth.handleInputChange}
-                    onSubmit={(e) => {
-                      agentAuth.setIsLogin(true);
-                      agentAuth.handleSubmit(e);
-                    }}
+                    onSubmit={(e) => agentAuth.handleSubmit(e, true)}
                     onSocialLogin={agentAuth.handleSocialLogin}
                   />
                 </TabsContent>

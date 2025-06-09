@@ -38,6 +38,7 @@ const BuyerDashboard = () => {
     setShowPropertyForm(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleConfirmShowingWithModal = (showing: any) => {
     handleConfirmShowing(showing);
     setShowAgreementModal(true);

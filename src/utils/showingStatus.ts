@@ -3,6 +3,7 @@ export type ShowingStatus =
   | 'submitted'
   | 'under_review'
   | 'agent_assigned'
+  | 'pending_admin_approval'
   | 'confirmed'
   | 'scheduled'
   | 'completed'
@@ -14,6 +15,7 @@ export const SHOWING_STATUS_VALUES: readonly ShowingStatus[] = [
   'submitted',
   'under_review',
   'agent_assigned',
+  'pending_admin_approval',
   'confirmed',
   'scheduled',
   'completed',
@@ -56,6 +58,14 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
       color: 'text-purple-800',
       bgColor: 'bg-purple-100',
       icon: '👤',
+      isActive: false
+    },
+    pending_admin_approval: {
+      label: 'Pending Admin Approval',
+      description: 'The agent has accepted, awaiting final approval from admin.',
+      color: 'text-yellow-800',
+      bgColor: 'bg-yellow-100',
+      icon: '⏳',
       isActive: false
     },
     confirmed: {
@@ -108,6 +118,7 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
     submitted: 'We typically respond within 2-4 hours',
     under_review: 'Agent assignment usually takes 4-8 hours',
     agent_assigned: 'Your agent will contact you within 2 hours',
+    pending_admin_approval: 'Awaiting final admin approval',
     confirmed: 'All set! See you at the showing',
     scheduled: 'All set! See you at the showing',
     completed: 'Thank you for using FirstLook!',

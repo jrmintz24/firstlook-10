@@ -40,9 +40,10 @@ interface AdminRequestCardProps {
   agents: AgentProfile[];
   onAssign: (requestId: string, agent: AgentProfile) => void;
   onUpdateStatus: (status: string) => void;
+  onApprove?: (requestId: string) => void;
 }
 
-const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus }: AdminRequestCardProps) => {
+const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus, onApprove }: AdminRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
 
@@ -118,6 +119,9 @@ const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus }: AdminRe
           </div>
         </div>
         <div className="flex gap-3 items-center">
+          {request.status === 'pending_admin_approval' && onApprove && (
+            <Button onClick={() => onApprove(request.id)}>Approve</Button>
+          )}
           {!request.assigned_agent_name && (
             <Select onValueChange={(value) => {
               const agent = agents.find((a) => a.id === value);

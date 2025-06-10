@@ -159,3 +159,14 @@ export const canRequestAssignment = (status: ShowingStatus): boolean => {
 export const isAgentRequested = (status: ShowingStatus): boolean => {
   return status === 'agent_requested';
 };
+
+export const isFinalStatus = (status: ShowingStatus): boolean => {
+  return ['completed', 'cancelled'].includes(status);
+};
+
+export const isUnassignedRequest = (request: { assigned_agent_name?: string | null; status: string }): boolean => {
+  // A request is unassigned if:
+  // 1. It has no assigned agent AND
+  // 2. It's not in a final status (completed/cancelled)
+  return !request.assigned_agent_name && !isFinalStatus(request.status as ShowingStatus);
+};

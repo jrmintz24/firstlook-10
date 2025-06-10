@@ -185,8 +185,6 @@ const AgentDashboard = () => {
                     }}
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={true}
-                    assignButtonText="Request Assignment"
-                    assignButtonLoading={requestLoading}
                   />
                 ))}
               </div>

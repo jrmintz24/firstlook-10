@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,6 +101,14 @@ const AdminDashboard = () => {
             Agent requests: {agentRequests.length} | 
             Active: {activeShowings.length}
           </p>
+          <div className="mt-2 text-xs text-yellow-600">
+            <strong>All requests:</strong>
+            {showingRequests.map(req => (
+              <div key={req.id} className="ml-2">
+                ID: {req.id}, Status: {req.status}, Agent: {req.assigned_agent_name || 'None'}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -155,6 +164,9 @@ const AdminDashboard = () => {
                   <p className="text-gray-500">All current requests have been assigned to agents.</p>
                   <div className="mt-4 text-sm text-gray-400">
                     Total requests in system: {showingRequests.length}
+                  </div>
+                  <div className="mt-2 text-xs text-gray-400">
+                    Check console for detailed filtering information.
                   </div>
                 </CardContent>
               </Card>
@@ -287,5 +299,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
-</edits_to_apply>

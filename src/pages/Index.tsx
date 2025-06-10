@@ -1,12 +1,44 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+
+import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { Home, Users, Shield, ArrowRight } from 'lucide-react'
+import HeroSection from '../components/home/HeroSection'
+import HowItWorks from '../components/HowItWorks'
+import TrustIndicators from '../components/TrustIndicators'
+import ProblemSolutionSection from '../components/ProblemSolutionSection'
+import IndustryChangesSection from '../components/IndustryChangesSection'
+import FinalCTASection from '../components/home/FinalCTASection'
+import QuickSignInModal from '../components/property-request/QuickSignInModal'
+import { useToast } from '../hooks/use-toast'
+import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function Index() {
   const { user } = useAuth()
+  const { toast } = useToast()
+  const [showAuthModal, setShowAuthModal] = useState(false)
+
+  const handleRequestShowing = () => {
+    if (user) {
+      // User is signed in, redirect to property request
+      window.location.href = '/dashboard'
+    } else {
+      // Show auth modal for quick sign up
+      setShowAuthModal(true)
+    }
+  }
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false)
+    toast({
+      title: "Welcome to FirstLook!",
+      description: "You're now ready to request your first home showing.",
+    })
+    // Redirect to dashboard after successful auth
+    setTimeout(() => {
+      window.location.href = '/dashboard'
+    }, 1000)
+  }
 
   if (user) {
     return (
@@ -14,7 +46,7 @@ export default function Index() {
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-4xl font-bold mb-4">Welcome back!</h1>
           <p className="text-xl text-gray-600 mb-8">
-            You're already signed in. Go to your dashboard to manage your house assignment.
+            You're already signed in. Go to your dashboard to manage your showing requests.
           </p>
           <Link to="/dashboard">
             <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600">
@@ -28,87 +60,32 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Find Your Perfect Home
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Join our platform to get assigned to your ideal house. Simple, fast, and secure.
-        </p>
-        <div className="space-x-4">
-          <Link to="/auth">
-            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Link to="/auth">
-            <Button variant="outline" size="lg">
-              Sign In
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <HeroSection onRequestShowing={handleRequestShowing} />
 
-      {/* Features Section */}
-      <div className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose Our Platform?</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card>
-            <CardHeader className="text-center">
-              <Home className="h-12 w-12 mx-auto mb-4 text-purple-600" />
-              <CardTitle>Quality Homes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-center">
-                Carefully selected properties in prime locations with modern amenities and competitive pricing.
-              </CardDescription>
-            </CardContent>
-          </Card>
+      {/* Industry Changes Section */}
+      <IndustryChangesSection />
 
-          <Card>
-            <CardHeader className="text-center">
-              <Users className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-              <CardTitle>Easy Assignment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-center">
-                Simple one-click house assignment process. Browse available properties and get assigned instantly.
-              </CardDescription>
-            </CardContent>
-          </Card>
+      {/* How It Works */}
+      <HowItWorks />
 
-          <Card>
-            <CardHeader className="text-center">
-              <Shield className="h-12 w-12 mx-auto mb-4 text-green-600" />
-              <CardTitle>Secure Platform</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-center">
-                Your data is protected with enterprise-grade security. Safe and reliable house assignment process.
-              </CardDescription>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      {/* Problem/Solution Section */}
+      <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
 
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Find Your Home?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join thousands of users who have found their perfect house through our platform.
-          </p>
-          <Link to="/auth">
-            <Button size="lg" variant="secondary">
-              Start Your Journey
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Trust Indicators */}
+      <TrustIndicators />
+
+      {/* Final CTA */}
+      <FinalCTASection onRequestShowing={handleRequestShowing} />
+
+      {/* Quick Sign In Modal */}
+      <QuickSignInModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        defaultUserType="buyer"
+      />
     </div>
   )
 }

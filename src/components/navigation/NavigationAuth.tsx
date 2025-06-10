@@ -16,12 +16,14 @@ interface NavigationAuthProps {
 
 const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
   if (user) {
-    const dashboardLink =
-      user.user_metadata?.user_type === 'agent'
-        ? '/agent-dashboard'
-        : user.user_metadata?.user_type === 'admin'
+    const userType = user.user_metadata?.user_type;
+    const dashboardLink = 
+      userType === 'admin' 
         ? '/admin-dashboard'
+        : userType === 'agent'
+        ? '/agent-dashboard'
         : '/buyer-dashboard';
+
     return (
       <div className="flex items-center space-x-3">
         <Link to={dashboardLink}>
@@ -50,7 +52,7 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
         </Button>
       </Link>
       <Link to="/buyer-auth">
-        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover: to-blue-700 text-white">
+        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
           Get Started
         </Button>
       </Link>

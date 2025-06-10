@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,14 +84,14 @@ export const useAdminDashboard = () => {
         return;
       }
 
-      // Fetch ALL showing requests with comprehensive logging
+      // Fetch ALL showing requests
       console.log('Fetching all showing requests...');
       const { data: requestsData, error: requestsError } = await supabase
         .from("showing_requests")
         .select("*")
         .order("created_at", { ascending: false });
 
-      console.log('Raw requests fetch result:', { 
+      console.log('Requests fetch result:', { 
         requestsData, 
         requestsError,
         count: requestsData?.length || 0 
@@ -106,18 +107,6 @@ export const useAdminDashboard = () => {
         setShowingRequests([]);
       } else {
         console.log('Successfully fetched requests:', requestsData?.length || 0);
-        // Log each request for debugging
-        requestsData?.forEach(req => {
-          console.log('Request details:', {
-            id: req.id,
-            status: req.status,
-            assigned_agent_id: req.assigned_agent_id,
-            assigned_agent_name: req.assigned_agent_name,
-            requested_agent_id: req.requested_agent_id,
-            requested_agent_name: req.requested_agent_name,
-            property_address: req.property_address
-          });
-        });
         setShowingRequests(requestsData || []);
       }
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,17 +7,18 @@ import { Link } from "react-router-dom";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import AdminRequestCard, { ShowingRequest } from "@/components/dashboard/AdminRequestCard";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { isActiveShowing, canBeAssigned, ShowingStatus } from "@/utils/showingStatus";
+import { isActiveShowing, canBeAssigned, isAgentRequested, ShowingStatus } from "@/utils/showingStatus";
 
 const AdminDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
 
-  const { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest } = useAdminDashboard();
+  const { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest, approveAgentRequest } = useAdminDashboard();
 
   const unassigned = showingRequests.filter((r) => canBeAssigned(r.status as ShowingStatus) && !r.assigned_agent_name);
   const active = showingRequests.filter((r) => isActiveShowing(r.status as ShowingStatus));
   const pendingApproval = showingRequests.filter((r) => r.status === 'pending_admin_approval');
+  const agentRequests = showingRequests.filter((r) => isAgentRequested(r.status as ShowingStatus));
 
   const handleUpdateStatus = async (id: string, newStatus: string, estimated?: string) => {
     const success = await handleStatusUpdate(id, newStatus, estimated);
@@ -45,9 +47,10 @@ const AdminDashboard = () => {
       </div>
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all">All ({showingRequests.length})</TabsTrigger>
             <TabsTrigger value="unassigned">Unassigned ({unassigned.length})</TabsTrigger>
+            <TabsTrigger value="agent_requests">Agent Requests ({agentRequests.length})</TabsTrigger>
             <TabsTrigger value="pending_approval">Pending Approval ({pendingApproval.length})</TabsTrigger>
             <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
           </TabsList>
@@ -62,6 +65,8 @@ const AdminDashboard = () => {
                   setSelectedRequest(req);
                   setShowStatusModal(true);
                 }}
+                onApprove={approveShowingRequest}
+                onApproveAgent={approveAgentRequest}
               />
             ))}
           </TabsContent>
@@ -81,6 +86,30 @@ const AdminDashboard = () => {
                     setSelectedRequest(req);
                     setShowStatusModal(true);
                   }}
+                  onApprove={approveShowingRequest}
+                  onApproveAgent={approveAgentRequest}
+                />
+              ))
+            )}
+          </TabsContent>
+          <TabsContent value="agent_requests" className="space-y-6">
+            {agentRequests.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>No agent requests pending approval</CardContent>
+              </Card>
+            ) : (
+              agentRequests.map((req) => (
+                <AdminRequestCard
+                  key={req.id}
+                  request={req}
+                  agents={agents}
+                  onAssign={assignToAgent}
+                  onUpdateStatus={() => {
+                    setSelectedRequest(req);
+                    setShowStatusModal(true);
+                  }}
+                  onApprove={approveShowingRequest}
+                  onApproveAgent={approveAgentRequest}
                 />
               ))
             )}
@@ -93,6 +122,7 @@ const AdminDashboard = () => {
                 agents={agents}
                 onAssign={assignToAgent}
                 onApprove={approveShowingRequest}
+                onApproveAgent={approveAgentRequest}
                 onUpdateStatus={() => {
                   setSelectedRequest(req);
                   setShowStatusModal(true);
@@ -116,6 +146,8 @@ const AdminDashboard = () => {
                     setSelectedRequest(req);
                     setShowStatusModal(true);
                   }}
+                  onApprove={approveShowingRequest}
+                  onApproveAgent={approveAgentRequest}
                 />
               ))
             )}

@@ -2,6 +2,7 @@
 export type ShowingStatus =
   | 'submitted'
   | 'under_review'
+  | 'agent_requested'
   | 'agent_assigned'
   | 'pending_admin_approval'
   | 'confirmed'
@@ -14,6 +15,7 @@ export const SHOWING_STATUS_VALUES: readonly ShowingStatus[] = [
   'pending',
   'submitted',
   'under_review',
+  'agent_requested',
   'agent_assigned',
   'pending_admin_approval',
   'confirmed',
@@ -50,6 +52,14 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
       color: 'text-orange-800',
       bgColor: 'bg-orange-100',
       icon: '🔍',
+      isActive: false
+    },
+    agent_requested: {
+      label: 'Agent Requested',
+      description: 'A licensed agent has requested to handle this showing',
+      color: 'text-indigo-800',
+      bgColor: 'bg-indigo-100',
+      icon: '🙋',
       isActive: false
     },
     agent_assigned: {
@@ -117,6 +127,7 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
   const timelineMap: Record<ShowingStatus, string> = {
     submitted: 'We typically respond within 2-4 hours',
     under_review: 'Agent assignment usually takes 4-8 hours',
+    agent_requested: 'Admin reviewing agent request',
     agent_assigned: 'Your agent will contact you within 2 hours',
     pending_admin_approval: 'Awaiting final admin approval',
     confirmed: 'All set! See you at the showing',
@@ -139,4 +150,12 @@ export const isPendingRequest = (status: ShowingStatus): boolean => {
 
 export const canBeAssigned = (status: ShowingStatus): boolean => {
   return ['submitted', 'under_review', 'pending'].includes(status);
+};
+
+export const canRequestAssignment = (status: ShowingStatus): boolean => {
+  return ['submitted', 'under_review', 'pending'].includes(status);
+};
+
+export const isAgentRequested = (status: ShowingStatus): boolean => {
+  return status === 'agent_requested';
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -115,6 +114,39 @@ export const useAdminDashboard = () => {
     }
   };
 
+  const approveAgentRequest = async (requestId: string) => {
+    const newStatus = 'agent_assigned';
+    const { data: requestData, error: fetchError } = await supabase
+      .from('showing_requests')
+      .select('requested_agent_id, requested_agent_name, requested_agent_phone, requested_agent_email')
+      .eq('id', requestId)
+      .single();
+
+    if (fetchError || !requestData) {
+      toast({ title: 'Error', description: 'Failed to fetch request details', variant: 'destructive' });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('showing_requests')
+      .update({
+        assigned_agent_id: requestData.requested_agent_id,
+        assigned_agent_name: requestData.requested_agent_name,
+        assigned_agent_phone: requestData.requested_agent_phone,
+        assigned_agent_email: requestData.requested_agent_email,
+        status: newStatus,
+        status_updated_at: new Date().toISOString(),
+      })
+      .eq('id', requestId);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to approve agent request', variant: 'destructive' });
+    } else {
+      toast({ title: 'Approved', description: 'Agent request approved successfully.' });
+      fetchAdminData();
+    }
+  };
+
   const handleStatusUpdate = async (
     requestId: string,
     newStatus: string,
@@ -179,5 +211,5 @@ export const useAdminDashboard = () => {
     fetchAdminData();
   }, [user, session, authLoading, navigate]);
 
-  return { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest };
+  return { showingRequests, agents, loading, assignToAgent, handleStatusUpdate, approveShowingRequest, approveAgentRequest };
 };

@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useAssignShowingRequest } from "./useAssignShowingRequest";
 
 interface Profile {
   id: string;
@@ -25,6 +24,9 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  requested_agent_name?: string | null;
+  requested_agent_phone?: string | null;
+  requested_agent_email?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
@@ -43,7 +45,6 @@ export const useAgentDashboard = () => {
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { assignToSelf } = useAssignShowingRequest();
 
   const fetchAgentData = async () => {
     const currentUser = user || session?.user;
@@ -106,25 +107,6 @@ export const useAgentDashboard = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAssignToSelf = async (requestId: string) => {
-    if (!profile) {
-      console.error('No profile available for assignment');
-      toast({
-        title: "Error",
-        description: "Profile not loaded. Please refresh the page.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    console.log('Handling assignment with profile:', profile);
-    const success = await assignToSelf(requestId, profile);
-    if (success) {
-      console.log('Assignment successful, refreshing data');
-      fetchAgentData();
     }
   };
 
@@ -201,7 +183,6 @@ export const useAgentDashboard = () => {
     showingRequests,
     loading,
     authLoading,
-    handleAssignToSelf,
     handleStatusUpdate,
     fetchAgentData
   };

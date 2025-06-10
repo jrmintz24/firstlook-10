@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,35 +8,27 @@ import { Link } from "react-router-dom";
 import { User, UserPlus, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
-// import SendMessageModal from "@/components/dashboard/SendMessageModal";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
-import { isActiveShowing, canBeAssigned, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
+import { useAgentRequest } from "@/hooks/useAgentRequest";
+import { isActiveShowing, canRequestAssignment, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  // const [showMessageModal, setShowMessageModal] = useState(false);
   
   const { 
     profile, 
     showingRequests, 
     loading, 
     authLoading,
-    handleAssignToSelf, 
-    handleStatusUpdate 
+    handleStatusUpdate,
+    fetchAgentData
   } = useAgentDashboard();
 
+  const { requestAssignment, loading: requestLoading } = useAgentRequest();
+
   const handleSendMessage = (requestId: string) => {
-    // TODO: Re-enable when TypeScript types are updated
-    // Temporarily disabled messaging until types are updated
-    /*
-    const request = showingRequests.find(r => r.id === requestId);
-    if (request) {
-      setSelectedRequest(request);
-      setShowMessageModal(true);
-    }
-    */
     console.log('Message functionality temporarily disabled until database types are updated');
   };
 
@@ -47,15 +40,28 @@ const AgentDashboard = () => {
     }
   };
 
-  // Removed handleAcceptShowing since assignment now goes directly to admin approval
+  const handleRequestAssignment = async (requestId: string) => {
+    if (!profile) {
+      console.error('No profile available for assignment request');
+      return;
+    }
+    
+    const success = await requestAssignment(requestId, profile);
+    if (success) {
+      fetchAgentData();
+    }
+  };
 
   // Organize requests by categories
-  const unassignedRequests = showingRequests.filter(req => 
-    canBeAssigned(req.status as ShowingStatus) && !req.assigned_agent_name
+  const availableRequests = showingRequests.filter(req => 
+    canRequestAssignment(req.status as ShowingStatus) && !req.assigned_agent_name && !req.requested_agent_name
   );
   
   const myRequests = showingRequests.filter(
-    req => profile && req.assigned_agent_email === (profile as { email?: string }).email
+    req => profile && (
+      req.assigned_agent_email === (profile as { email?: string }).email ||
+      req.requested_agent_name?.includes(profile.first_name)
+    )
   );
   
   const activeShowings = showingRequests.filter(req => 
@@ -117,14 +123,14 @@ const AgentDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">{unassignedRequests.length}</div>
+              <div className="text-3xl font-bold text-orange-600 mb-2">{availableRequests.length}</div>
               <div className="text-gray-600">Available Requests</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">{myRequests.length}</div>
-              <div className="text-gray-600">My Assignments</div>
+              <div className="text-gray-600">My Requests</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
@@ -146,8 +152,8 @@ const AgentDashboard = () => {
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="available">Available ({unassignedRequests.length})</TabsTrigger>
-            <TabsTrigger value="mine">My Assignments ({myRequests.length})</TabsTrigger>
+            <TabsTrigger value="available">Available ({availableRequests.length})</TabsTrigger>
+            <TabsTrigger value="mine">My Requests ({myRequests.length})</TabsTrigger>
             <TabsTrigger value="active">Active Showings ({activeShowings.length})</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
@@ -155,30 +161,32 @@ const AgentDashboard = () => {
           <TabsContent value="available" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
-              <p className="text-gray-600">Assign yourself to showing requests</p>
+              <p className="text-gray-600">Request assignment to showing requests</p>
             </div>
 
-            {unassignedRequests.length === 0 ? (
+            {availableRequests.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
                   <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
-                  <p className="text-gray-500">All current requests have been assigned to agents.</p>
+                  <p className="text-gray-500">All current requests have been assigned or requested by agents.</p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-6">
-                {unassignedRequests.map((request) => (
+                {availableRequests.map((request) => (
                   <AgentRequestCard
                     key={request.id}
                     request={request}
-                    onAssign={() => handleAssignToSelf(request.id)}
+                    onAssign={() => handleRequestAssignment(request.id)}
                     onUpdateStatus={(status, estimatedDate) => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
                     }}
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={true}
+                    assignButtonText="Request Assignment"
+                    assignButtonLoading={requestLoading}
                   />
                 ))}
               </div>
@@ -187,16 +195,16 @@ const AgentDashboard = () => {
 
           <TabsContent value="mine" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">My Assignments</h2>
-              <p className="text-gray-600">Requests assigned to you</p>
+              <h2 className="text-2xl font-bold text-gray-800">My Requests</h2>
+              <p className="text-gray-600">Requests assigned to or requested by you</p>
             </div>
 
             {myRequests.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
                   <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No assignments yet</h3>
-                  <p className="text-gray-500">Assign yourself to available requests to get started.</p>
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No requests yet</h3>
+                  <p className="text-gray-500">Request assignment to available requests to get started.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -211,7 +219,6 @@ const AgentDashboard = () => {
                       setShowStatusModal(true);
                     }}
                     onSendMessage={() => handleSendMessage(request.id)}
-                    // Removed onAccept prop since it's no longer needed
                     showAssignButton={false}
                   />
                 ))}
@@ -294,21 +301,6 @@ const AgentDashboard = () => {
           onUpdateStatus={handleUpdateStatus}
         />
       )}
-
-      {/* TODO: Re-enable when TypeScript types are updated */}
-      {/*
-      {selectedRequest && (
-        <SendMessageModal
-          isOpen={showMessageModal}
-          onClose={() => {
-            setShowMessageModal(false);
-            setSelectedRequest(null);
-          }}
-          request={selectedRequest}
-          onSendMessage={() => {}}
-        />
-      )}
-      */}
     </div>
   );
 };

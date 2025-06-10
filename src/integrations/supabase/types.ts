@@ -383,6 +383,10 @@ export type Database = {
           preferred_date: string | null
           preferred_time: string | null
           property_address: string
+          requested_agent_email: string | null
+          requested_agent_id: string | null
+          requested_agent_name: string | null
+          requested_agent_phone: string | null
           status: string | null
           status_updated_at: string | null
           updated_at: string
@@ -401,6 +405,10 @@ export type Database = {
           preferred_date?: string | null
           preferred_time?: string | null
           property_address: string
+          requested_agent_email?: string | null
+          requested_agent_id?: string | null
+          requested_agent_name?: string | null
+          requested_agent_phone?: string | null
           status?: string | null
           status_updated_at?: string | null
           updated_at?: string
@@ -419,6 +427,10 @@ export type Database = {
           preferred_date?: string | null
           preferred_time?: string | null
           property_address?: string
+          requested_agent_email?: string | null
+          requested_agent_id?: string | null
+          requested_agent_name?: string | null
+          requested_agent_phone?: string | null
           status?: string | null
           status_updated_at?: string | null
           updated_at?: string

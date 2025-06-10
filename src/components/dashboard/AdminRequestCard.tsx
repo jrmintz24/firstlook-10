@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import {
   User,
   Phone,
   Mail,
+  UserCheck,
 } from "lucide-react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
@@ -30,6 +32,9 @@ export interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  requested_agent_name?: string | null;
+  requested_agent_phone?: string | null;
+  requested_agent_email?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
@@ -41,9 +46,10 @@ interface AdminRequestCardProps {
   onAssign: (requestId: string, agent: AgentProfile) => void;
   onUpdateStatus: (status: string) => void;
   onApprove?: (requestId: string) => void;
+  onApproveAgent?: (requestId: string) => void;
 }
 
-const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus, onApprove }: AdminRequestCardProps) => {
+const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus, onApprove, onApproveAgent }: AdminRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
 
@@ -85,6 +91,28 @@ const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus, onApprove
                 )}
               </div>
             )}
+            {request.requested_agent_name && request.status === 'agent_requested' && (
+              <div className="bg-indigo-50 p-3 rounded-lg mb-4">
+                <div className="text-sm font-medium text-indigo-800 mb-2 flex items-center gap-1">
+                  <UserCheck className="h-4 w-4" /> Agent Request
+                </div>
+                <div className="text-indigo-700 font-medium">{request.requested_agent_name}</div>
+                <div className="flex items-center gap-4 mt-2">
+                  {request.requested_agent_phone && (
+                    <div className="flex items-center gap-1 text-indigo-600 text-sm">
+                      <Phone className="h-3 w-3" />
+                      <span>{request.requested_agent_phone}</span>
+                    </div>
+                  )}
+                  {request.requested_agent_email && (
+                    <div className="flex items-center gap-1 text-indigo-600 text-sm">
+                      <Mail className="h-3 w-3" />
+                      <span>{request.requested_agent_email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {request.assigned_agent_name && (
               <div className="bg-green-50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
@@ -119,10 +147,15 @@ const AdminRequestCard = ({ request, agents, onAssign, onUpdateStatus, onApprove
           </div>
         </div>
         <div className="flex gap-3 items-center">
+          {request.status === 'agent_requested' && onApproveAgent && (
+            <Button onClick={() => onApproveAgent(request.id)} className="bg-indigo-600 hover:bg-indigo-700">
+              Approve Agent Request
+            </Button>
+          )}
           {request.status === 'pending_admin_approval' && onApprove && (
             <Button onClick={() => onApprove(request.id)}>Approve</Button>
           )}
-          {!request.assigned_agent_name && (
+          {!request.assigned_agent_name && request.status !== 'agent_requested' && (
             <Select onValueChange={(value) => {
               const agent = agents.find((a) => a.id === value);
               if (agent) onAssign(request.id, agent);

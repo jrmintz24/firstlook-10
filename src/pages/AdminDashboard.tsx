@@ -288,4 +288,4 @@ const AdminDashboard = () => {
 
 export default AdminDashboard;
 
-</initial_code>
+</edits_to_apply>

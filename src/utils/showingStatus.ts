@@ -1,4 +1,3 @@
-
 export type ShowingStatus =
   | 'submitted'
   | 'under_review'
@@ -167,23 +166,40 @@ export const isFinalStatus = (status: ShowingStatus): boolean => {
 export const isUnassignedRequest = (request: { 
   assigned_agent_name?: string | null; 
   assigned_agent_id?: string | null;
+  requested_agent_name?: string | null;
+  requested_agent_id?: string | null;
   status: string 
 }): boolean => {
+  console.log('=== CHECKING REQUEST ASSIGNMENT ===');
+  console.log('Request ID:', (request as any).id);
+  console.log('Status:', request.status);
+  console.log('Assigned agent name:', request.assigned_agent_name);
+  console.log('Assigned agent ID:', request.assigned_agent_id);
+  console.log('Requested agent name:', request.requested_agent_name);
+  console.log('Requested agent ID:', request.requested_agent_id);
+  
   // A request is unassigned if:
-  // 1. It has no assigned agent (checking both name and id) AND
-  // 2. It's not in a final status (completed/cancelled)
-  const hasNoAssignedAgent = !request.assigned_agent_name && !request.assigned_agent_id;
+  // 1. No agent is currently assigned (both name and id are null/empty)
+  // 2. No agent has requested assignment (both requested fields are null/empty)  
+  // 3. It's not in agent_requested status (which means an agent has requested it)
+  // 4. It's not in a final status (completed/cancelled)
+  
+  const hasAssignedAgent = !!(request.assigned_agent_name || request.assigned_agent_id);
+  const hasRequestedAgent = !!(request.requested_agent_name || request.requested_agent_id);
+  const isAgentRequestedStatus = request.status === 'agent_requested';
   const isNotFinalStatus = !isFinalStatus(request.status as ShowingStatus);
   
-  console.log('Checking request:', {
-    id: (request as any).id,
-    status: request.status,
-    assigned_agent_name: request.assigned_agent_name,
-    assigned_agent_id: request.assigned_agent_id,
-    hasNoAssignedAgent,
-    isNotFinalStatus,
-    isUnassigned: hasNoAssignedAgent && isNotFinalStatus
-  });
+  // For unassigned tab: requests with no assignment and no pending agent request
+  const isUnassigned = !hasAssignedAgent && !hasRequestedAgent && !isAgentRequestedStatus && isNotFinalStatus;
   
-  return hasNoAssignedAgent && isNotFinalStatus;
+  console.log('Analysis:', {
+    hasAssignedAgent,
+    hasRequestedAgent,
+    isAgentRequestedStatus,
+    isNotFinalStatus,
+    isUnassigned
+  });
+  console.log('=== END CHECK ===');
+  
+  return isUnassigned;
 };

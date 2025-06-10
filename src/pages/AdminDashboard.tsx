@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,28 +35,41 @@ const AdminDashboard = () => {
     }
   };
 
-  // Add debugging to see all requests
-  console.log('All showing requests:', showingRequests);
+  // Enhanced debugging with more detailed analysis
+  console.log('=== ADMIN DASHBOARD ANALYSIS ===');
+  console.log('Total showing requests loaded:', showingRequests.length);
+  console.log('Raw requests data:', showingRequests);
 
-  // Organize requests by categories with improved filtering
+  // Organize requests by categories with improved filtering and logging
   const unassignedRequests = showingRequests.filter(req => {
     const isUnassigned = isUnassignedRequest(req);
-    console.log(`Request ${req.id} is unassigned:`, isUnassigned);
+    console.log(`Request ${req.id} unassigned check result:`, isUnassigned);
     return isUnassigned;
   });
   
-  const agentRequests = showingRequests.filter(req => isAgentRequested(req.status as ShowingStatus));
+  const agentRequests = showingRequests.filter(req => {
+    const isAgentReq = isAgentRequested(req.status as ShowingStatus);
+    console.log(`Request ${req.id} agent requested check result:`, isAgentReq);
+    return isAgentReq;
+  });
   
-  const activeShowings = showingRequests.filter(req => 
-    isActiveShowing(req.status as ShowingStatus)
-  );
+  const activeShowings = showingRequests.filter(req => {
+    const isActive = isActiveShowing(req.status as ShowingStatus);
+    console.log(`Request ${req.id} active showing check result:`, isActive);
+    return isActive;
+  });
 
-  console.log('Filtered requests:', {
+  console.log('=== FILTERING RESULTS ===');
+  console.log('Filtered results:', {
     total: showingRequests.length,
     unassigned: unassignedRequests.length,
     agentRequests: agentRequests.length,
     activeShowings: activeShowings.length
   });
+  console.log('Unassigned requests:', unassignedRequests);
+  console.log('Agent requests:', agentRequests);
+  console.log('Active showings:', activeShowings);
+  console.log('=== END ANALYSIS ===');
 
   if (loading) {
     return (
@@ -92,22 +106,30 @@ const AdminDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Debug Information */}
+        {/* Enhanced Debug Information */}
         <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <h3 className="font-semibold text-yellow-800 mb-2">Debug Information</h3>
-          <p className="text-sm text-yellow-700">
+          <p className="text-sm text-yellow-700 mb-2">
             Total requests: {showingRequests.length} | 
             Unassigned: {unassignedRequests.length} | 
             Agent requests: {agentRequests.length} | 
             Active: {activeShowings.length}
           </p>
           <div className="mt-2 text-xs text-yellow-600">
-            <strong>All requests:</strong>
-            {showingRequests.map(req => (
-              <div key={req.id} className="ml-2">
-                ID: {req.id}, Status: {req.status}, Agent: {req.assigned_agent_name || 'None'}
-              </div>
-            ))}
+            <strong>Request Details:</strong>
+            {showingRequests.length === 0 ? (
+              <div className="ml-2 text-red-600">No requests found! Check database connection and RLS policies.</div>
+            ) : (
+              showingRequests.map(req => (
+                <div key={req.id} className="ml-2 mb-1 p-2 bg-yellow-100 rounded">
+                  <div><strong>ID:</strong> {req.id}</div>
+                  <div><strong>Status:</strong> {req.status}</div>
+                  <div><strong>Assigned Agent:</strong> {req.assigned_agent_name || 'None'}</div>
+                  <div><strong>Requested Agent:</strong> {req.requested_agent_name || 'None'}</div>
+                  <div><strong>Property:</strong> {req.property_address}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -161,13 +183,26 @@ const AdminDashboard = () => {
                 <CardContent>
                   <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No unassigned requests</h3>
-                  <p className="text-gray-500">All current requests have been assigned to agents.</p>
-                  <div className="mt-4 text-sm text-gray-400">
-                    Total requests in system: {showingRequests.length}
-                  </div>
-                  <div className="mt-2 text-xs text-gray-400">
-                    Check console for detailed filtering information.
-                  </div>
+                  {showingRequests.length === 0 ? (
+                    <div>
+                      <p className="text-gray-500 mb-4">No requests found in the system.</p>
+                      <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                        This could indicate:
+                        <ul className="mt-2 text-left list-disc list-inside">
+                          <li>Database connection issues</li>
+                          <li>RLS policies preventing data access</li>
+                          <li>No requests have been submitted yet</li>
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-gray-500">All current requests have been assigned to agents or are pending agent requests.</p>
+                      <div className="mt-4 text-sm text-gray-400">
+                        Total requests in system: {showingRequests.length}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ) : (

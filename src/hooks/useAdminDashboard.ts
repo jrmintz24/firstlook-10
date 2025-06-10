@@ -24,6 +24,11 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
+  requested_agent_name?: string | null;
+  requested_agent_phone?: string | null;
+  requested_agent_email?: string | null;
+  requested_agent_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
@@ -50,40 +55,106 @@ export const useAdminDashboard = () => {
   const fetchAdminData = async () => {
     const currentUser = user || session?.user;
     if (!currentUser) {
+      console.log('No current user found');
       setLoading(false);
       return;
     }
 
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .single();
+    console.log('Fetching admin data for user:', currentUser.id);
 
-    if (profileError || !profileData || profileData.user_type !== "admin") {
+    try {
+      // First verify admin access
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      console.log('Admin profile fetch result:', { profileData, profileError });
+
+      if (profileError || !profileData || profileData.user_type !== "admin") {
+        console.error('Access denied - not admin:', { profileError, profileData });
+        toast({
+          title: "Access Denied",
+          description: "Admin account required to view this page",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      // Fetch ALL showing requests with comprehensive logging
+      console.log('Fetching all showing requests...');
+      const { data: requestsData, error: requestsError } = await supabase
+        .from("showing_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      console.log('Raw requests fetch result:', { 
+        requestsData, 
+        requestsError,
+        count: requestsData?.length || 0 
+      });
+
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
+        toast({
+          title: "Error",
+          description: "Failed to load showing requests",
+          variant: "destructive",
+        });
+        setShowingRequests([]);
+      } else {
+        console.log('Successfully fetched requests:', requestsData?.length || 0);
+        // Log each request for debugging
+        requestsData?.forEach(req => {
+          console.log('Request details:', {
+            id: req.id,
+            status: req.status,
+            assigned_agent_id: req.assigned_agent_id,
+            assigned_agent_name: req.assigned_agent_name,
+            requested_agent_id: req.requested_agent_id,
+            requested_agent_name: req.requested_agent_name,
+            property_address: req.property_address
+          });
+        });
+        setShowingRequests(requestsData || []);
+      }
+
+      // Fetch agents
+      console.log('Fetching agents...');
+      const { data: agentsData, error: agentsError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, phone, user_type")
+        .eq("user_type", "agent");
+
+      console.log('Agents fetch result:', { 
+        agentsData, 
+        agentsError,
+        count: agentsData?.length || 0 
+      });
+
+      if (agentsError) {
+        console.error('Error fetching agents:', agentsError);
+        toast({
+          title: "Error",
+          description: "Failed to load agents",
+          variant: "destructive",
+        });
+        setAgents([]);
+      } else {
+        setAgents(agentsData || []);
+      }
+    } catch (error) {
+      console.error('Exception in fetchAdminData:', error);
       toast({
-        title: "Access Denied",
-        description: "Admin account required to view this page",
+        title: "Error",
+        description: "An unexpected error occurred while loading data",
         variant: "destructive",
       });
-      navigate("/");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const { data: requestsData } = await supabase
-      .from("showing_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setShowingRequests(requestsData || []);
-
-    const { data: agentsData } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name, phone, user_type")
-      .eq("user_type", "agent");
-
-    setAgents(agentsData || []);
-    setLoading(false);
   };
 
   const assignToAgent = async (requestId: string, agent: Profile) => {
@@ -202,12 +273,17 @@ export const useAdminDashboard = () => {
   };
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) {
+      console.log('Auth still loading...');
+      return;
+    }
     if (!user && !session) {
+      console.log('No user or session found');
       setLoading(false);
       navigate("/");
       return;
     }
+    console.log('Starting fetchAdminData...');
     fetchAdminData();
   }, [user, session, authLoading, navigate]);
 

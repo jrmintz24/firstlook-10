@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToastHelper } from "@/utils/toastUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Profile {
   first_name: string;
@@ -11,13 +11,17 @@ interface Profile {
 
 export const useAssignShowingRequest = () => {
   const { user, session } = useAuth();
-  const toastHelper = useToastHelper();
+  const { toast } = useToast();
 
   const assignToSelf = async (requestId: string, profile: Profile) => {
     const currentUser = user || session?.user;
     if (!currentUser || !profile) {
       console.error('No user or profile available for assignment');
-      toastHelper.error("Error", "Authentication required to assign request.");
+      toast({
+        title: "Error",
+        description: "Authentication required to assign request.",
+        variant: "destructive"
+      });
       return false;
     }
 
@@ -33,7 +37,11 @@ export const useAssignShowingRequest = () => {
 
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
-        toastHelper.error("Assignment Failed", "Could not fetch user profile.");
+        toast({
+          title: "Assignment Failed",
+          description: "Could not fetch user profile.",
+          variant: "destructive"
+        });
         return false;
       }
 
@@ -61,25 +69,34 @@ export const useAssignShowingRequest = () => {
       if (error) {
         console.error('Error assigning request:', error.message, error.details, error.hint);
         if (error.message?.includes('showing_requests_status_check')) {
-          toastHelper.error(
-            'Assignment Failed',
-            'Database schema outdated. Run `supabase db execute < supabase/sql/20250615_update_status_check.sql` to allow new statuses.'
-          );
+          toast({
+            title: 'Assignment Failed',
+            description: 'Database schema outdated. Run `supabase db execute < supabase/sql/20250615_update_status_check.sql` to allow new statuses.',
+            variant: "destructive"
+          });
         } else {
-          toastHelper.error(
-            'Assignment Failed',
-            `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`
-          );
+          toast({
+            title: 'Assignment Failed',
+            description: `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`,
+            variant: "destructive"
+          });
         }
         return false;
       }
 
       console.log('Successfully assigned request to:', agentEmail);
-      toastHelper.success("Request Assigned", "You have been assigned to this showing request and will contact the client within 2 hours.");
+      toast({
+        title: "Request Assigned",
+        description: "You have been assigned to this showing request and will contact the client within 2 hours."
+      });
       return true;
     } catch (error) {
       console.error('Exception during assignment:', error);
-      toastHelper.error("Assignment Failed", "An unexpected error occurred. Please try again.");
+      toast({
+        title: "Assignment Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
       return false;
     }
   };

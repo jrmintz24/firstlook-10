@@ -17,14 +17,12 @@ const AdminDashboard = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   
   const { 
-    profile, 
     showingRequests, 
     agents, 
     loading, 
-    authLoading,
-    handleAssignAgent,
+    assignToAgent,
     handleStatusUpdate,
-    handleApprove,
+    approveShowingRequest,
     approveAgentRequest
   } = useAdminDashboard();
 
@@ -45,28 +43,12 @@ const AdminDashboard = () => {
     isActiveShowing(req.status as ShowingStatus)
   );
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Loading admin dashboard...</div>
-          <div className="text-sm text-gray-600">
-            {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg mb-4">Access Denied</div>
-          <div className="text-sm text-gray-600 mb-4">You need to be an admin to access this dashboard.</div>
-          <Link to="/">
-            <Button>Go to Home</Button>
-          </Link>
+          <div className="text-sm text-gray-600">Loading dashboard data...</div>
         </div>
       </div>
     );
@@ -88,7 +70,7 @@ const AdminDashboard = () => {
               <Badge className="bg-red-100 text-red-800">Admin</Badge>
               <div className="flex items-center gap-2 text-gray-600">
                 <User className="h-5 w-5" />
-                <span>Welcome, {profile.first_name}!</span>
+                <span>Welcome, Admin!</span>
               </div>
             </div>
           </div>
@@ -156,7 +138,7 @@ const AdminDashboard = () => {
                     key={request.id}
                     request={request}
                     agents={agents}
-                    onAssign={handleAssignAgent}
+                    onAssign={assignToAgent}
                     onUpdateStatus={(status) => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
@@ -188,7 +170,7 @@ const AdminDashboard = () => {
                     key={request.id}
                     request={request}
                     agents={agents}
-                    onAssign={handleAssignAgent}
+                    onAssign={assignToAgent}
                     onUpdateStatus={(status) => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
@@ -221,7 +203,7 @@ const AdminDashboard = () => {
                     key={request.id}
                     request={request}
                     agents={agents}
-                    onAssign={handleAssignAgent}
+                    onAssign={assignToAgent}
                     onUpdateStatus={(status) => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
@@ -252,7 +234,7 @@ const AdminDashboard = () => {
                       key={request.id}
                       request={request}
                       agents={agents}
-                      onAssign={handleAssignAgent}
+                      onAssign={assignToAgent}
                       onUpdateStatus={() => {}}
                     />
                   ))}

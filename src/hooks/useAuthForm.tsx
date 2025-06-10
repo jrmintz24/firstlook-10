@@ -78,17 +78,25 @@ export const useAuthForm = (
       if (isLoginMode) {
         try {
           await signIn(formData.email, formData.password);
-          toast({
-            title: "Success!",
-            description: "Welcome back!"
-          });
+          
+          // Wait a moment for the session to be established
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           const { data } = await supabase.auth.getUser();
-          const type =
-            (data.user?.user_metadata?.user_type as string | undefined) ??
-            userType;
-          onSuccess();
-          const redirect = getDashboardRedirect(type);
-          window.location.href = redirect;
+          if (data.user) {
+            const type = (data.user.user_metadata?.user_type as string) ?? userType;
+            const redirectPath = getDashboardRedirect(type);
+            
+            toast({
+              title: "Success!",
+              description: "Welcome back!"
+            });
+            
+            onSuccess();
+            
+            // Use window.location.href for reliable redirect
+            window.location.href = redirectPath;
+          }
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
           toast({

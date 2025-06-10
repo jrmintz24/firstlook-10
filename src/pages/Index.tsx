@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
 import HeroSection from '../components/home/HeroSection'
@@ -14,9 +14,24 @@ import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Index() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const { toast } = useToast()
   const [showAuthModal, setShowAuthModal] = useState(false)
+
+  // Handle redirects for authenticated users
+  useEffect(() => {
+    if (!loading && user) {
+      const userType = user.user_metadata?.user_type;
+      const dashboardPath = userType === 'agent'
+        ? '/agent-dashboard'
+        : userType === 'admin'
+        ? '/admin-dashboard'
+        : '/buyer-dashboard';
+      
+      console.log('Redirecting authenticated user to:', dashboardPath);
+      window.location.href = dashboardPath;
+    }
+  }, [user, loading]);
 
   const handleRequestShowing = () => {
     if (user) {
@@ -40,39 +55,25 @@ export default function Index() {
       title: "Welcome to FirstLook!",
       description: "You're now ready to request your first home showing.",
     })
-    // Redirect to correct dashboard after successful auth
-    setTimeout(() => {
-      const userType = user?.user_metadata?.user_type;
-      const dashboardPath = userType === 'agent'
-        ? '/agent-dashboard'
-        : userType === 'admin'
-        ? '/admin-dashboard'
-        : '/buyer-dashboard';
-      window.location.href = dashboardPath;
-    }, 1000)
+    // The redirect will be handled by the useEffect above
   }
 
-  if (user) {
-    const userType = user.user_metadata?.user_type;
-    const dashboardPath = userType === 'agent'
-      ? '/agent-dashboard'
-      : userType === 'admin'
-      ? '/admin-dashboard'
-      : '/buyer-dashboard';
-
+  // Show loading while checking auth state
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-4xl font-bold mb-4">Welcome back!</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            You're already signed in. Go to your dashboard to manage your showing requests.
-          </p>
-          <Link to={dashboardPath}>
-            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600">
-              Go to Dashboard
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
+
+  // If user is authenticated, show loading while redirecting
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to your dashboard...</p>
         </div>
       </div>
     )

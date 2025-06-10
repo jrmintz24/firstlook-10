@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useToastHelper } from "@/utils/toastUtils";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,7 +25,7 @@ export const useAuthForm = (
     licenseNumber: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const toastHelper = useToastHelper();
+  const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
 
   const handleSocialLogin = async (
@@ -34,14 +34,18 @@ export const useAuthForm = (
     setIsLoading(true);
     try {
       await signInWithProvider(provider);
-      toastHelper.success(
-        "Success!",
-        `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
-      );
+      toast({
+        title: "Success!",
+        description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
+      });
       onSuccess();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong with social login";
-      toastHelper.error("Error", message);
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +67,10 @@ export const useAuthForm = (
       if (isLoginMode) {
         try {
           await signIn(formData.email, formData.password);
-          toastHelper.success("Success!", "Welcome back!");
+          toast({
+            title: "Success!",
+            description: "Welcome back!"
+          });
           const { data } = await supabase.auth.getUser();
           const type =
             (data.user?.user_metadata?.user_type as string | undefined) ??
@@ -78,7 +85,11 @@ export const useAuthForm = (
           window.location.href = redirect;
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
-          toastHelper.error("Error", message);
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive"
+          });
         }
       } else {
         // Use the password from the form instead of generating one
@@ -86,14 +97,18 @@ export const useAuthForm = (
 
         try {
           await signUp(formData.email, password);
-          toastHelper.success(
-            "Success!",
-            "Account created successfully! Please check your email to verify your account."
-          );
+          toast({
+            title: "Success!",
+            description: "Account created successfully! Please check your email to verify your account."
+          });
           setIsLogin(true);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
-          toastHelper.error("Error", message);
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive"
+          });
         }
       }
     } finally {

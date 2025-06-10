@@ -144,17 +144,9 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, on
             </Button>
           )}
 
-          {!showAssignButton && request.status === 'agent_assigned' && onAccept && (
-            <Button
-              onClick={onAccept}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Accept Showing
-            </Button>
-          )}
+          {/* Removed the redundant "Accept Showing" button since assignment now goes directly to admin approval */}
 
-          {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'scheduled'].includes(request.status) && (
+          {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'pending_admin_approval', 'confirmed', 'scheduled'].includes(request.status) && (
             <Button
               variant="outline"
               onClick={() => onUpdateStatus(request.status)}

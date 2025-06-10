@@ -47,13 +47,13 @@ export const useAssignShowingRequest = () => {
 
       const agentEmail = currentUser.email;
       
-      // Use 'under_review' status instead of 'agent_assigned' to avoid constraint violation
+      // Go directly to pending_admin_approval status instead of under_review
       const updateData = {
         assigned_agent_id: currentUser.id,
         assigned_agent_name: `${profile.first_name} ${profile.last_name}`,
         assigned_agent_phone: profile.phone,
         assigned_agent_email: agentEmail,
-        status: 'under_review', // Changed from 'agent_assigned' to avoid constraint violation
+        status: 'pending_admin_approval', // Changed from 'under_review' to skip redundant step
         status_updated_at: new Date().toISOString()
       };
 
@@ -87,7 +87,7 @@ export const useAssignShowingRequest = () => {
       console.log('Successfully assigned request to:', agentEmail);
       toast({
         title: "Request Assigned",
-        description: "You have been assigned to this showing request and will contact the client within 2 hours."
+        description: "You have been assigned to this showing request. It's now pending admin approval."
       });
       return true;
     } catch (error) {

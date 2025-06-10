@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,9 +47,7 @@ const AgentDashboard = () => {
     }
   };
 
-  const handleAcceptShowing = async (requestId: string) => {
-    await handleStatusUpdate(requestId, 'pending_admin_approval');
-  };
+  // Removed handleAcceptShowing since assignment now goes directly to admin approval
 
   // Organize requests by categories
   const unassignedRequests = showingRequests.filter(req => 
@@ -214,7 +211,7 @@ const AgentDashboard = () => {
                       setShowStatusModal(true);
                     }}
                     onSendMessage={() => handleSendMessage(request.id)}
-                    onAccept={request.status === 'under_review' ? () => handleAcceptShowing(request.id) : undefined}
+                    // Removed onAccept prop since it's no longer needed
                     showAssignButton={false}
                   />
                 ))}

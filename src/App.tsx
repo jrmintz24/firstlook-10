@@ -11,6 +11,18 @@ import { AuthCallback } from './pages/AuthCallback'
 import Index from './pages/Index'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+import BuyerAuth from './pages/BuyerAuth'
+import AgentAuth from './pages/AgentAuth'
+import AdminAuth from './pages/AdminAuth'
+import BuyerDashboard from './pages/BuyerDashboard'
+import AgentDashboard from './pages/AgentDashboard'
+import AdminDashboard from './pages/AdminDashboard'
+import Subscriptions from './pages/Subscriptions'
+import FAQ from './pages/FAQ'
+import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
+import AgentLanding from './pages/AgentLanding'
+import NotFound from './pages/NotFound'
 
 const queryClient = new QueryClient()
 
@@ -27,6 +39,46 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+
+              {/* Authentication Pages */}
+              <Route path="/buyer-auth" element={<BuyerAuth />} />
+              <Route path="/agent-auth" element={<AgentAuth />} />
+              <Route path="/admin-auth" element={<AdminAuth />} />
+
+              {/* Dashboards */}
+              <Route
+                path="/buyer-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <BuyerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agent-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AgentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Informational Pages */}
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/agents" element={<AgentLanding />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+
+              {/* Legacy Dashboard Route */}
               <Route
                 path="/dashboard"
                 element={
@@ -35,7 +87,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
+
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

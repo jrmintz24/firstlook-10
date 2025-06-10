@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,14 +33,28 @@ const AdminDashboard = () => {
     }
   };
 
+  // Add debugging to see all requests
+  console.log('All showing requests:', showingRequests);
+
   // Organize requests by categories with improved filtering
-  const unassignedRequests = showingRequests.filter(req => isUnassignedRequest(req));
+  const unassignedRequests = showingRequests.filter(req => {
+    const isUnassigned = isUnassignedRequest(req);
+    console.log(`Request ${req.id} is unassigned:`, isUnassigned);
+    return isUnassigned;
+  });
   
   const agentRequests = showingRequests.filter(req => isAgentRequested(req.status as ShowingStatus));
   
   const activeShowings = showingRequests.filter(req => 
     isActiveShowing(req.status as ShowingStatus)
   );
+
+  console.log('Filtered requests:', {
+    total: showingRequests.length,
+    unassigned: unassignedRequests.length,
+    agentRequests: agentRequests.length,
+    activeShowings: activeShowings.length
+  });
 
   if (loading) {
     return (
@@ -78,6 +91,17 @@ const AdminDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Debug Information */}
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 className="font-semibold text-yellow-800 mb-2">Debug Information</h3>
+          <p className="text-sm text-yellow-700">
+            Total requests: {showingRequests.length} | 
+            Unassigned: {unassignedRequests.length} | 
+            Agent requests: {agentRequests.length} | 
+            Active: {activeShowings.length}
+          </p>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg">
@@ -129,6 +153,9 @@ const AdminDashboard = () => {
                   <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No unassigned requests</h3>
                   <p className="text-gray-500">All current requests have been assigned to agents.</p>
+                  <div className="mt-4 text-sm text-gray-400">
+                    Total requests in system: {showingRequests.length}
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -260,3 +287,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+</initial_code>

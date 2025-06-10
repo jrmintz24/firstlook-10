@@ -28,21 +28,20 @@ export const useAuthForm = (
   const toastHelper = useToastHelper();
   const { signUp, signIn, signInWithProvider } = useAuth();
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleSocialLogin = async (
+    provider: 'google' | 'github' | 'discord' | 'facebook'
+  ) => {
     setIsLoading(true);
     try {
-      const { error } = await signInWithProvider(provider, userType);
-      if (error) {
-        toastHelper.error("Social Login Error", error.message);
-      } else {
-        toastHelper.success(
-          "Success!",
-          `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
-        );
-        onSuccess();
-      }
+      await signInWithProvider(provider);
+      toastHelper.success(
+        "Success!",
+        `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
+      );
+      onSuccess();
     } catch (error) {
-      toastHelper.error("Error", "Something went wrong with social login");
+      const message = error instanceof Error ? error.message : "Something went wrong with social login";
+      toastHelper.error("Error", message);
     } finally {
       setIsLoading(false);
     }
@@ -62,12 +61,9 @@ export const useAuthForm = (
     try {
       const isLoginMode = loginMode ?? isLogin;
       if (isLoginMode) {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) {
-          toastHelper.error("Error", error.message);
-        } else {
+        try {
+          await signIn(formData.email, formData.password);
           toastHelper.success("Success!", "Welcome back!");
-          // Fetch the authenticated user to determine their role
           const { data } = await supabase.auth.getUser();
           const type =
             (data.user?.user_metadata?.user_type as string | undefined) ??
@@ -80,29 +76,24 @@ export const useAuthForm = (
               ? "/admin-dashboard"
               : "/buyer-dashboard";
           window.location.href = redirect;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          toastHelper.error("Error", message);
         }
       } else {
         // Use the password from the form instead of generating one
         const password = formData.password;
 
-        const metadata = {
-          first_name: formData.firstName,
-          last_name: '',
-          phone: formData.phone,
-          user_type: userType,
-          ...(userType === 'agent' && { license_number: formData.licenseNumber })
-        };
-
-        const { error } = await signUp(formData.email, password, metadata);
-        if (error) {
-          toastHelper.error("Error", error.message);
-        } else {
+        try {
+          await signUp(formData.email, password);
           toastHelper.success(
             "Success!",
             "Account created successfully! Please check your email to verify your account."
           );
-          // Switch to login mode after successful signup
           setIsLogin(true);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          toastHelper.error("Error", message);
         }
       }
     } finally {

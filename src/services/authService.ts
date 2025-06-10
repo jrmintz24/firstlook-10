@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthError } from "@supabase/auth-js";
 
@@ -6,17 +7,18 @@ export const signUp = async (
   password: string,
   metadata: Record<string, unknown> & { user_type?: string }
 ): Promise<{ error: AuthError | null }> => {
+  const userType = metadata.user_type || 'buyer';
+  const redirectPath = userType === 'agent'
+    ? 'agent-dashboard'
+    : userType === 'admin'
+    ? 'admin-dashboard'
+    : 'buyer-dashboard';
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/${
-        metadata.user_type === 'agent'
-          ? 'agent'
-          : metadata.user_type === 'admin'
-          ? 'admin'
-          : 'buyer'
-      }-dashboard`,
+      emailRedirectTo: `${window.location.origin}/${redirectPath}`,
       data: metadata
     }
   });
@@ -36,10 +38,16 @@ export const signInWithProvider = async (
   provider: 'google' | 'facebook',
   userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
+  const redirectPath = userType === 'agent'
+    ? 'agent-dashboard'
+    : userType === 'admin'
+    ? 'admin-dashboard'
+    : 'buyer-dashboard';
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/${userType}-dashboard`,
+      redirectTo: `${window.location.origin}/${redirectPath}`,
       queryParams: { user_type: userType }
     }
   });

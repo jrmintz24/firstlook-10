@@ -55,6 +55,17 @@ export const useAuthForm = (
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const getDashboardRedirect = (userType: string) => {
+    switch (userType) {
+      case 'agent':
+        return '/agent-dashboard';
+      case 'admin':
+        return '/admin-dashboard';
+      default:
+        return '/buyer-dashboard';
+    }
+  };
+
   const handleSubmit = async (
     e: React.FormEvent,
     loginMode?: boolean
@@ -76,12 +87,7 @@ export const useAuthForm = (
             (data.user?.user_metadata?.user_type as string | undefined) ??
             userType;
           onSuccess();
-          const redirect =
-            type === "agent"
-              ? "/agent-dashboard"
-              : type === "admin"
-              ? "/admin-dashboard"
-              : "/buyer-dashboard";
+          const redirect = getDashboardRedirect(type);
           window.location.href = redirect;
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
@@ -92,11 +98,8 @@ export const useAuthForm = (
           });
         }
       } else {
-        // Use the password from the form instead of generating one
-        const password = formData.password;
-
         try {
-          await signUp(formData.email, password);
+          await signUp(formData.email, formData.password);
           toast({
             title: "Success!",
             description: "Account created successfully! Please check your email to verify your account."

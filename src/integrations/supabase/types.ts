@@ -39,6 +39,89 @@ export type Database = {
         }
         Relationships: []
       }
+      house_assignments: {
+        Row: {
+          assigned_at: string
+          house_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          house_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          house_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "house_assignments_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      houses: {
+        Row: {
+          address: string
+          available: boolean
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          price: number
+          sqft: number | null
+          state: string
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          available?: boolean
+          baths: number
+          beds: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          price: number
+          sqft?: number | null
+          state?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          available?: boolean
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          price?: number
+          sqft?: number | null
+          state?: string
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

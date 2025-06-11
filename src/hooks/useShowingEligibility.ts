@@ -61,7 +61,7 @@ export const useShowingEligibility = () => {
         return false;
       }
 
-      return data as boolean;
+      return data as unknown as boolean;
     } catch (error) {
       console.error('Error marking free showing as used:', error);
       return false;
@@ -81,7 +81,7 @@ export const useShowingEligibility = () => {
         return false;
       }
 
-      return data as boolean;
+      return data as unknown as boolean;
     } catch (error) {
       console.error('Error resetting free showing eligibility:', error);
       return false;

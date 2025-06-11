@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +7,16 @@ import { Check, Star, Phone, Shield, Users, ArrowRight, Sparkles, Zap, Home } fr
 import { Link } from "react-router-dom";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Subscriptions = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const { isSubscribed, subscriptionTier, loading } = useSubscriptionStatus();
+  const { user } = useAuth();
 
   const membershipFeatures = [
     "Unlimited access to the FirstLook platform",
@@ -44,11 +51,44 @@ const Subscriptions = () => {
   ];
 
   const handleGetVIPAccess = () => {
-    setShowAuthModal(true);
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    if (isSubscribed) {
+      return; // User is already subscribed
+    }
+    
+    setShowSubscribeModal(true);
   };
 
   const handleRequestShowing = () => {
     setShowPropertyForm(true);
+  };
+
+  const handleSubscriptionComplete = () => {
+    // Refresh subscription status after successful subscription
+    window.location.reload(); // Simple approach to refresh all state
+  };
+
+  // Show subscription success badge
+  const SubscriptionBadge = () => {
+    if (!isSubscribed) return null;
+    
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <Star className="h-6 w-6 text-green-600" />
+          <div>
+            <h3 className="font-semibold text-green-800">You're subscribed! 🎉</h3>
+            <p className="text-green-700">
+              Enjoying {subscriptionTier || 'Premium'} membership with unlimited home tours
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -59,21 +99,27 @@ const Subscriptions = () => {
           <div className="text-center max-w-4xl mx-auto">
             <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
               <Star className="w-4 h-4 mr-2" />
-              VIP Membership Available
+              {isSubscribed ? "Premium Member" : "VIP Membership Available"}
             </Badge>
             
             <h1 className="text-6xl md:text-7xl font-bold leading-tight mb-8">
               <span className="bg-gradient-to-r from-slate-700 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Unlock Home Shopping
+                {isSubscribed ? "Welcome Back" : "Unlock Home Shopping"}
               </span>
               <span className="block bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Freedom
+                {isSubscribed ? "Premium Member" : "Freedom"}
               </span>
             </h1>
             
             <p className="text-2xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Get <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">VIP Access</span> to Tours, Real Support, and Total Control—All for One Simple Monthly Fee.
+              {isSubscribed ? (
+                <>Your <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Premium Access</span> is active. Enjoy unlimited tours and VIP support!</>
+              ) : (
+                <>Get <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">VIP Access</span> to Tours, Real Support, and Total Control—All for One Simple Monthly Fee.</>
+              )}
             </p>
+
+            <SubscriptionBadge />
           </div>
         </div>
       </div>
@@ -87,131 +133,136 @@ const Subscriptions = () => {
             onClick={handleRequestShowing}
           >
             <Home className="mr-3 h-6 w-6" />
-            See Your First Home FREE
+            {isSubscribed ? "Book Another Tour" : "See Your First Home FREE"}
             <ArrowRight className="ml-3 h-6 w-6" />
           </Button>
-          <p className="text-gray-600 mt-3 text-sm">Start with a completely free showing - no membership required</p>
+          <p className="text-gray-600 mt-3 text-sm">
+            {isSubscribed ? "Unlimited tours with your Premium membership" : "Start with a completely free showing - no membership required"}
+          </p>
         </div>
       </div>
 
       {/* Membership Pricing */}
-      <div className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-slate-800 mb-4">Membership at a Glance</h2>
-          </div>
-          
-          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Membership Card */}
-            <Card className="border-2 border-purple-200 shadow-xl relative overflow-hidden lg:col-span-2">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-blue-600"></div>
-              
-              {/* Special Offer Banner */}
-              <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold transform rotate-12 shadow-lg">
-                <Zap className="w-4 h-4 inline mr-1" />
-                LIMITED TIME!
-              </div>
-
-              <CardHeader className="text-center pb-4">
-                <Badge className="w-fit mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">Most Popular</Badge>
-                <CardTitle className="text-3xl text-slate-800">FirstLook Membership</CardTitle>
+      {!isSubscribed && (
+        <div className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">Membership at a Glance</h2>
+            </div>
+            
+            <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Membership Card */}
+              <Card className="border-2 border-purple-200 shadow-xl relative overflow-hidden lg:col-span-2">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-blue-600"></div>
                 
-                {/* Special Pricing Display */}
-                <div className="mb-4">
-                  <div className="text-6xl font-bold text-green-600">$29<span className="text-lg text-gray-600">/first month</span></div>
-                  <div className="text-xl text-gray-500 line-through">$69.95</div>
-                  <div className="text-2xl font-semibold text-purple-600">Then $69.95/month</div>
-                  <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-300">
-                    Save $40.95 Your First Month!
-                  </Badge>
+                {/* Special Offer Banner */}
+                <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold transform rotate-12 shadow-lg">
+                  <Zap className="w-4 h-4 inline mr-1" />
+                  LIMITED TIME!
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 mb-8">
-                  {membershipFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-                <Button 
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-6 text-xl"
-                  onClick={handleGetVIPAccess}
-                >
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Start for $29 First Month
-                </Button>
-                <p className="text-center text-sm text-gray-600 mt-4">Cancel anytime. No long-term contracts.</p>
-              </CardContent>
-            </Card>
 
-            {/* Additional Options */}
-            <Card className="border border-gray-200 shadow-lg">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-slate-800">Want More?</CardTitle>
-                <CardDescription className="text-lg">Additional options for extra flexibility</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-slate-800">Additional tour sessions</span>
-                    <span className="text-2xl font-bold text-blue-600">$69</span>
+                <CardHeader className="text-center pb-4">
+                  <Badge className="w-fit mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">Most Popular</Badge>
+                  <CardTitle className="text-3xl text-slate-800">FirstLook Membership</CardTitle>
+                  
+                  {/* Special Pricing Display */}
+                  <div className="mb-4">
+                    <div className="text-6xl font-bold text-green-600">$29<span className="text-lg text-gray-600">/first month</span></div>
+                    <div className="text-xl text-gray-500 line-through">$69.95</div>
+                    <div className="text-2xl font-semibold text-purple-600">Then $69.95/month</div>
+                    <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-300">
+                      Save $40.95 Your First Month!
+                    </Badge>
                   </div>
-                  <p className="text-gray-600 text-sm">Each additional session beyond your monthly membership</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-slate-800">Single home showing</span>
-                    <span className="text-2xl font-bold text-green-600">$39</span>
-                  </div>
-                  <p className="text-gray-600 text-sm">Perfect for one-time tours as a member</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Non-Member Options */}
-          <div className="max-w-4xl mx-auto mt-12">
-            <h3 className="text-2xl font-bold text-slate-800 text-center mb-8">Not Ready for Membership? No Problem!</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border border-gray-200 shadow-lg">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl text-slate-800">Single Home Tour</CardTitle>
                 </CardHeader>
-                <CardContent className="text-center">
-                  <div className="text-4xl font-bold text-purple-600 mb-2">$59</div>
-                  <p className="text-gray-600 mb-4">See one home without membership</p>
-                  <Link to="/single-home-tour">
-                    <Button 
-                      className="w-full bg-purple-600 text-white hover:bg-purple-700 border-0"
-                    >
-                      Book Single Home Tour
-                    </Button>
-                  </Link>
+                <CardContent>
+                  <div className="space-y-4 mb-8">
+                    {membershipFeatures.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-6 text-xl"
+                    onClick={handleGetVIPAccess}
+                    disabled={loading}
+                  >
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Start for $29 First Month
+                  </Button>
+                  <p className="text-center text-sm text-gray-600 mt-4">Cancel anytime. No long-term contracts.</p>
                 </CardContent>
               </Card>
 
+              {/* Additional Options */}
               <Card className="border border-gray-200 shadow-lg">
                 <CardHeader className="text-center">
-                  <CardTitle className="text-xl text-slate-800">Tour Session</CardTitle>
+                  <CardTitle className="text-2xl text-slate-800">Want More?</CardTitle>
+                  <CardDescription className="text-lg">Additional options for extra flexibility</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">$149</div>
-                  <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
-                  <Link to="/tour-session">
-                    <Button 
-                      className="w-full bg-blue-600 text-white hover:bg-blue-700 border-0"
-                    >
-                      Book Tour Session
-                    </Button>
-                  </Link>
+                <CardContent className="space-y-6">
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-800">Additional tour sessions</span>
+                      <span className="text-2xl font-bold text-blue-600">$69</span>
+                    </div>
+                    <p className="text-gray-600 text-sm">Each additional session beyond your monthly membership</p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-800">Single home showing</span>
+                      <span className="text-2xl font-bold text-green-600">$39</span>
+                    </div>
+                    <p className="text-gray-600 text-sm">Perfect for one-time tours as a member</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Non-Member Options */}
+            <div className="max-w-4xl mx-auto mt-12">
+              <h3 className="text-2xl font-bold text-slate-800 text-center mb-8">Not Ready for Membership? No Problem!</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="border border-gray-200 shadow-lg">
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-xl text-slate-800">Single Home Tour</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <div className="text-4xl font-bold text-purple-600 mb-2">$59</div>
+                    <p className="text-gray-600 mb-4">See one home without membership</p>
+                    <Link to="/single-home-tour">
+                      <Button 
+                        className="w-full bg-purple-600 text-white hover:bg-purple-700 border-0"
+                      >
+                        Book Single Home Tour
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-gray-200 shadow-lg">
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-xl text-slate-800">Tour Session</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <div className="text-4xl font-bold text-blue-600 mb-2">$149</div>
+                    <p className="text-gray-600 mb-4">See up to 3 homes in one session</p>
+                    <Link to="/tour-session">
+                      <Button 
+                        className="w-full bg-blue-600 text-white hover:bg-blue-700 border-0"
+                      >
+                        Book Tour Session
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* How It Works */}
       <div className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
@@ -379,51 +430,54 @@ const Subscriptions = () => {
       </div>
 
       {/* Final CTA */}
-      <div className="py-20 bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold text-white mb-8">Ready to Start?</h2>
-          <div className="max-w-2xl mx-auto space-y-6">
-            <Button 
-              size="lg" 
-              className="bg-white text-purple-600 hover:bg-gray-100 px-12 py-6 text-xl font-bold shadow-xl"
-              onClick={handleGetVIPAccess}
-            >
-              <Sparkles className="mr-3 h-6 w-6" />
-              Start for $29 First Month
-            </Button>
-            <p className="text-purple-100 text-lg">Then $69.95/month. Cancel anytime. No long-term contracts.</p>
-            
-            <div className="border-t border-white/20 pt-6 mt-8">
-              <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/single-home-tour">
-                  <Button 
-                    className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3"
-                  >
-                    Single Home Tour - $59
-                  </Button>
-                </Link>
-                <Link to="/tour-session">
-                  <Button 
-                    className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3"
-                  >
-                    Tour Session - $149
-                  </Button>
-                </Link>
+      {!isSubscribed && (
+        <div className="py-20 bg-gradient-to-r from-slate-700 via-purple-700 to-blue-700">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-5xl font-bold text-white mb-8">Ready to Start?</h2>
+            <div className="max-w-2xl mx-auto space-y-6">
+              <Button 
+                size="lg" 
+                className="bg-white text-purple-600 hover:bg-gray-100 px-12 py-6 text-xl font-bold shadow-xl"
+                onClick={handleGetVIPAccess}
+                disabled={loading}
+              >
+                <Sparkles className="mr-3 h-6 w-6" />
+                Start for $29 First Month
+              </Button>
+              <p className="text-purple-100 text-lg">Then $69.95/month. Cancel anytime. No long-term contracts.</p>
+              
+              <div className="border-t border-white/20 pt-6 mt-8">
+                <p className="text-white mb-4">Prefer a pay-as-you-go approach?</p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/single-home-tour">
+                    <Button 
+                      className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3"
+                    >
+                      Single Home Tour - $59
+                    </Button>
+                  </Link>
+                  <Link to="/tour-session">
+                    <Button 
+                      className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3"
+                    >
+                      Tour Session - $149
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="mt-12 text-center">
-            <p className="text-purple-100 mb-4">Questions? Chat with our support team or check out our FAQ below.</p>
-            <Link to="/faq">
-              <Button variant="ghost" className="text-white hover:bg-white/10 underline">
-                Check out our FAQ →
-              </Button>
-            </Link>
+            
+            <div className="mt-12 text-center">
+              <p className="text-purple-100 mb-4">Questions? Chat with our support team or check out our FAQ below.</p>
+              <Link to="/faq">
+                <Button variant="ghost" className="text-white hover:bg-white/10 underline">
+                  Check out our FAQ →
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <ErrorBoundary>
         <PropertyRequestForm
@@ -431,6 +485,12 @@ const Subscriptions = () => {
           onClose={() => setShowPropertyForm(false)}
         />
       </ErrorBoundary>
+
+      <SubscribeModal
+        isOpen={showSubscribeModal}
+        onClose={() => setShowSubscribeModal(false)}
+        onSubscriptionComplete={handleSubscriptionComplete}
+      />
     </div>
   );
 };

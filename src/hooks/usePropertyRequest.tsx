@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +29,13 @@ export interface PropertyRequestFormData {
   preferredTime3: string;
   notes: string;
   selectedProperties: string[];
+}
+
+interface EligibilityResult {
+  eligible: boolean;
+  reason: string;
+  active_showing_count?: number;
+  subscription_tier?: string;
 }
 
 export const usePropertyRequest = () => {

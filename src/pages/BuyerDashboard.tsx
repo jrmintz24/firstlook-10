@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +13,13 @@ import { Link } from "react-router-dom";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useToast } from "@/hooks/use-toast";
+
+interface EligibilityResult {
+  eligible: boolean;
+  reason: string;
+  active_showing_count?: number;
+  subscription_tier?: string;
+}
 
 const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
@@ -40,7 +46,7 @@ const BuyerDashboard = () => {
 
   const handleRequestShowing = async () => {
     // Check eligibility before opening the form
-    const currentEligibility = await checkEligibility();
+    const currentEligibility = await checkEligibility() as EligibilityResult | null;
     
     if (!currentEligibility?.eligible) {
       if (currentEligibility?.reason === 'active_showing_exists') {

@@ -36,8 +36,10 @@ export const useShowingEligibility = () => {
         return null;
       }
 
-      setEligibility(data);
-      return data;
+      // Cast the Json response to our expected type
+      const eligibilityResult = data as EligibilityResult;
+      setEligibility(eligibilityResult);
+      return eligibilityResult;
     } catch (error) {
       console.error('Error checking showing eligibility:', error);
       return null;
@@ -59,7 +61,7 @@ export const useShowingEligibility = () => {
         return false;
       }
 
-      return data;
+      return data as boolean;
     } catch (error) {
       console.error('Error marking free showing as used:', error);
       return false;
@@ -79,7 +81,7 @@ export const useShowingEligibility = () => {
         return false;
       }
 
-      return data;
+      return data as boolean;
     } catch (error) {
       console.error('Error resetting free showing eligibility:', error);
       return false;

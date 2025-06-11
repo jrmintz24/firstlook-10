@@ -32,7 +32,7 @@ export interface PostShowingAction {
   action_type: 'schedule_same_agent' | 'schedule_different_agent' | 'work_with_agent' | 
               'request_offer_assistance' | 'favorite_property' | 'request_disclosures' | 
               'ask_question' | 'no_action';
-  action_details?: any;
+  action_details?: Record<string, unknown>;
 }
 
 export const usePostShowingWorkflow = () => {

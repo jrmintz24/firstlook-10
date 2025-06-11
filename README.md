@@ -48,7 +48,8 @@ Then fill in the following values:
 
 - `VITE_GOOGLE_PLACES_API_KEY` – API key from Google Cloud Console for the Places API.
 - `RENTCAST_API_KEY` – your API key from RentCast.
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` – found in your Supabase project settings.
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` – your Supabase project's URL and anon key for the frontend.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` – service role credentials for Supabase Edge Functions.
 
 These keys are required for the app to run locally with `npm run dev`.
 

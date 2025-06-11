@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,7 @@ interface WorkflowTrigger {
   showing_request_id: string;
   trigger_type: 'post_showing_workflow' | 'follow_up_nudge' | 'agent_notification' | 'attendance_confirmation';
   scheduled_for: string;
-  payload?: any;
+  payload?: Record<string, unknown>;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -66,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-async function triggerPostShowingWorkflow(supabase: any, showing_request_id: string) {
+async function triggerPostShowingWorkflow(supabase: SupabaseClient, showing_request_id: string) {
   console.log('Triggering post-showing workflow for:', showing_request_id);
   
   // Get showing details
@@ -117,10 +118,14 @@ async function triggerPostShowingWorkflow(supabase: any, showing_request_id: str
   );
 }
 
-async function checkAttendance(supabase: any, showing_request_id: string, data: any) {
+async function checkAttendance(
+  supabase: SupabaseClient,
+  showing_request_id: string,
+  data: Record<string, unknown>
+) {
   const { user_type, attended, checked_out } = data;
   
-  const updateData: any = {};
+  const updateData: Record<string, unknown> = {};
   
   if (user_type === 'buyer') {
     if (attended !== undefined) updateData.buyer_attended = attended;
@@ -165,7 +170,11 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
   );
 }
 
-async function submitBuyerFeedback(supabase: any, showing_request_id: string, feedback: any) {
+async function submitBuyerFeedback(
+  supabase: SupabaseClient,
+  showing_request_id: string,
+  feedback: Record<string, unknown>
+) {
   const { buyer_id, agent_id, property_rating, agent_rating, property_comments, agent_comments } = feedback;
 
   const { error } = await supabase
@@ -190,7 +199,11 @@ async function submitBuyerFeedback(supabase: any, showing_request_id: string, fe
   );
 }
 
-async function submitAgentFeedback(supabase: any, showing_request_id: string, feedback: any) {
+async function submitAgentFeedback(
+  supabase: SupabaseClient,
+  showing_request_id: string,
+  feedback: Record<string, unknown>
+) {
   const { agent_id, buyer_id, buyer_interest_level, buyer_seriousness_rating, notes, recommend_buyer } = feedback;
 
   const { error } = await supabase
@@ -215,7 +228,11 @@ async function submitAgentFeedback(supabase: any, showing_request_id: string, fe
   );
 }
 
-async function recordPostShowingAction(supabase: any, showing_request_id: string, actionData: any) {
+async function recordPostShowingAction(
+  supabase: SupabaseClient,
+  showing_request_id: string,
+  actionData: Record<string, unknown>
+) {
   const { buyer_id, action_type, action_details } = actionData;
 
   const { error } = await supabase
@@ -247,7 +264,7 @@ async function recordPostShowingAction(supabase: any, showing_request_id: string
   );
 }
 
-async function sendFollowUpNudge(supabase: any, showing_request_id: string) {
+async function sendFollowUpNudge(supabase: SupabaseClient, showing_request_id: string) {
   // Check if buyer has taken any action
   const { data: actions } = await supabase
     .from('post_showing_actions')
@@ -271,7 +288,11 @@ async function sendFollowUpNudge(supabase: any, showing_request_id: string) {
   );
 }
 
-async function scheduleWorkflowTriggers(supabase: any, showing_request_id: string, data: any) {
+async function scheduleWorkflowTriggers(
+  supabase: SupabaseClient,
+  showing_request_id: string,
+  data: Record<string, unknown>
+) {
   const { scheduled_end_time } = data;
   
   // Schedule post-showing workflow for 30 minutes after scheduled end

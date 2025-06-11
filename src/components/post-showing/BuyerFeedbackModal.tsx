@@ -67,12 +67,15 @@ const BuyerFeedbackModal = ({ isOpen, onClose, showing, buyerId }: BuyerFeedback
     setStep('actions');
   };
 
-  const handleAction = async (actionType: string, details?: any) => {
-    await recordAction(showing.id, {
-      buyer_id: buyerId,
-      action_type: actionType as any,
-      action_details: details
-    });
+  const handleAction = async (
+    actionType: PostShowingAction['action_type'],
+    details?: Record<string, unknown>
+  ) => {
+      await recordAction(showing.id, {
+        buyer_id: buyerId,
+        action_type: actionType,
+        action_details: details
+      });
 
     // Handle specific actions
     if (actionType === 'favorite_property') {

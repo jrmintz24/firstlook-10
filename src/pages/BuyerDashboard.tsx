@@ -12,10 +12,14 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
 import { Link } from "react-router-dom";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
+import { useShowingEligibility } from "@/hooks/useShowingEligibility";
+import { useToast } from "@/hooks/use-toast";
 
 const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const { toast } = useToast();
+  const { eligibility, checkEligibility } = useShowingEligibility();
   
   const {
     profile,
@@ -34,7 +38,28 @@ const BuyerDashboard = () => {
     handleAgreementSign
   } = useBuyerDashboard();
 
-  const handleRequestShowing = () => {
+  const handleRequestShowing = async () => {
+    // Check eligibility before opening the form
+    const currentEligibility = await checkEligibility();
+    
+    if (!currentEligibility?.eligible) {
+      if (currentEligibility?.reason === 'active_showing_exists') {
+        toast({
+          title: "Active Showing Exists",
+          description: "You already have a showing scheduled. Complete or cancel it before booking another.",
+          variant: "destructive"
+        });
+        return;
+      } else if (currentEligibility?.reason === 'free_showing_used') {
+        toast({
+          title: "Subscription Required",
+          description: "You've used your free showing. Subscribe to continue viewing homes!",
+        });
+        // Could redirect to subscriptions page here
+        return;
+      }
+    }
+    
     setShowPropertyForm(true);
   };
 
@@ -90,6 +115,25 @@ const BuyerDashboard = () => {
           activeCount={activeShowings.length}
           completedCount={completedShowings.length}
         />
+
+        {/* Show eligibility status if helpful */}
+        {eligibility && !eligibility.eligible && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600" />
+              <div>
+                <h3 className="font-medium text-blue-900">Showing Status</h3>
+                <p className="text-sm text-blue-700">
+                  {eligibility.reason === 'active_showing_exists' 
+                    ? "You have an active showing scheduled. Complete or cancel it to book another."
+                    : eligibility.reason === 'free_showing_used'
+                    ? "You've used your free showing. Subscribe to view more homes!"
+                    : "Check your showing eligibility in your profile."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <Tabs defaultValue="pending" className="space-y-6">

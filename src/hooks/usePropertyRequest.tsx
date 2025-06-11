@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const convertTo24Hour = (time: string): string => {
   const [t, modifier] = time.split(' ');
@@ -46,10 +47,14 @@ export const usePropertyRequest = () => {
     selectedProperties: [],
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showFreeShowingLimitModal, setShowFreeShowingLimitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingShowingAddress, setPendingShowingAddress] = useState<string>('');
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { eligibility, checkEligibility, markFreeShowingUsed, resetFreeShowingEligibility } = useShowingEligibility();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -100,6 +105,82 @@ export const usePropertyRequest = () => {
     }));
   };
 
+  const getPendingShowingAddress = async (): Promise<string> => {
+    if (!user) return '';
+    
+    try {
+      const { data, error } = await supabase
+        .from('showing_requests')
+        .select('property_address')
+        .eq('user_id', user.id)
+        .not('status', 'in', '(completed,cancelled)')
+        .limit(1)
+        .single();
+
+      if (error || !data) return '';
+      return data.property_address;
+    } catch (error) {
+      return '';
+    }
+  };
+
+  const handleCancelPendingShowing = async () => {
+    if (!user) return;
+
+    try {
+      // Get the active showing
+      const { data: activeShowing, error: fetchError } = await supabase
+        .from('showing_requests')
+        .select('id')
+        .eq('user_id', user.id)
+        .not('status', 'in', '(completed,cancelled)')
+        .limit(1)
+        .single();
+
+      if (fetchError || !activeShowing) {
+        toast({
+          title: "Error",
+          description: "Could not find active showing to cancel.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Cancel the showing
+      const { error: cancelError } = await supabase
+        .from('showing_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', activeShowing.id);
+
+      if (cancelError) {
+        toast({
+          title: "Error",
+          description: "Failed to cancel showing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Reset free showing eligibility
+      await resetFreeShowingEligibility();
+      
+      toast({
+        title: "Showing Cancelled",
+        description: "Your previous showing has been cancelled. You can now book a different property.",
+      });
+
+      // Refresh eligibility
+      await checkEligibility();
+    } catch (error) {
+      console.error('Error cancelling showing:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const submitShowingRequests = async () => {
     if (!user) {
       toast({
@@ -138,8 +219,6 @@ export const usePropertyRequest = () => {
       estimatedDate.setDate(estimatedDate.getDate() + 2);
 
       // Create showing requests for each property.
-      // Use the legacy "pending" status since the database check constraint
-      // currently only allows this value.
       const requests = propertiesToSubmit.map(property => ({
         user_id: user.id,
         property_address: property,
@@ -148,7 +227,7 @@ export const usePropertyRequest = () => {
         message: formData.notes || null,
         internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
         status: 'pending',
-        estimated_confirmation_date: estimatedDate.toISOString().split('T')[0] // YYYY-MM-DD format
+        estimated_confirmation_date: estimatedDate.toISOString().split('T')[0]
       }));
 
       const { error } = await supabase
@@ -165,6 +244,12 @@ export const usePropertyRequest = () => {
         return;
       }
 
+      // Mark free showing as used for first-time users
+      const currentEligibility = await checkEligibility();
+      if (currentEligibility?.reason === 'first_free_showing') {
+        await markFreeShowingUsed();
+      }
+
       // Clear any pending tour data
       localStorage.removeItem('pendingTourRequest');
       
@@ -173,17 +258,12 @@ export const usePropertyRequest = () => {
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Redirect to the appropriate dashboard. Using a full page reload
-      // ensures the latest requests are fetched even if the user
-      // is already on their dashboard.
+      // Redirect to the appropriate dashboard
       const redirectPath =
         user.user_metadata?.user_type === 'agent'
           ? '/agent-dashboard'
           : '/buyer-dashboard';
 
-      // React Router's navigate won't reload the page if we're already on
-      // the dashboard. Using window.location.href guarantees the dashboard
-      // refreshes and shows the new request immediately.
       window.location.href = redirectPath;
       
     } catch (error) {
@@ -219,7 +299,28 @@ export const usePropertyRequest = () => {
       return;
     }
     
-    // Submit the showing requests directly instead of going to subscriptions
+    // Check showing eligibility before proceeding
+    const currentEligibility = await checkEligibility();
+    
+    if (!currentEligibility?.eligible) {
+      if (currentEligibility?.reason === 'active_showing_exists') {
+        // Show the free showing limit modal
+        const address = await getPendingShowingAddress();
+        setPendingShowingAddress(address);
+        setShowFreeShowingLimitModal(true);
+        return;
+      } else if (currentEligibility?.reason === 'free_showing_used') {
+        // Direct to subscriptions for users who have used their free showing
+        toast({
+          title: "Subscription Required",
+          description: "You've already used your free showing. Subscribe to continue viewing homes!",
+        });
+        navigate('/subscriptions');
+        return;
+      }
+    }
+
+    // Submit the showing requests directly if eligible
     await submitShowingRequests();
   };
 
@@ -228,14 +329,18 @@ export const usePropertyRequest = () => {
     formData,
     showAuthModal,
     setShowAuthModal,
+    showFreeShowingLimitModal,
+    setShowFreeShowingLimitModal,
+    pendingShowingAddress,
     isSubmitting,
+    eligibility,
     handleInputChange,
     handleNext,
     handleBack,
     handleAddProperty,
     handleRemoveProperty,
     handleContinueToSubscriptions,
+    handleCancelPendingShowing,
     submitShowingRequests,
   };
 };
-

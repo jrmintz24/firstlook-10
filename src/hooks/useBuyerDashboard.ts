@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
+import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 interface Profile {
   id: string;
@@ -12,6 +13,8 @@ interface Profile {
   last_name: string;
   phone: string;
   user_type: string;
+  free_showing_used?: boolean;
+  subscription_status?: string;
 }
 
 interface ShowingRequest {
@@ -40,6 +43,7 @@ export const useBuyerDashboard = () => {
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { resetFreeShowingEligibility, checkEligibility } = useShowingEligibility();
 
   useEffect(() => {
     console.log('BuyerDashboard useEffect triggered');
@@ -191,6 +195,21 @@ export const useBuyerDashboard = () => {
           variant: "destructive"
         });
       } else {
+        // Check if this was the user's only active showing and reset eligibility if so
+        const cancelledShowing = showingRequests.find(req => req.id === showingId);
+        if (cancelledShowing && user) {
+          // Check if this was their only active showing
+          const otherActiveShowings = showingRequests.filter(req => 
+            req.id !== showingId && 
+            !['completed', 'cancelled'].includes(req.status)
+          );
+          
+          if (otherActiveShowings.length === 0) {
+            await resetFreeShowingEligibility();
+            await checkEligibility();
+          }
+        }
+
         toast({
           title: "Showing Cancelled",
           description: "Your showing has been cancelled successfully.",

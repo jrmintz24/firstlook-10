@@ -475,30 +475,36 @@ export type Database = {
         Row: {
           created_at: string
           first_name: string | null
+          free_showing_used: boolean | null
           id: string
           last_name: string | null
           license_number: string | null
           phone: string | null
+          subscription_status: string | null
           updated_at: string
           user_type: string | null
         }
         Insert: {
           created_at?: string
           first_name?: string | null
+          free_showing_used?: boolean | null
           id: string
           last_name?: string | null
           license_number?: string | null
           phone?: string | null
+          subscription_status?: string | null
           updated_at?: string
           user_type?: string | null
         }
         Update: {
           created_at?: string
           first_name?: string | null
+          free_showing_used?: boolean | null
           id?: string
           last_name?: string | null
           license_number?: string | null
           phone?: string | null
+          subscription_status?: string | null
           updated_at?: string
           user_type?: string | null
         }
@@ -745,6 +751,42 @@ export type Database = {
           },
         ]
       }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tour_agreements: {
         Row: {
           agent_id: string | null
@@ -843,9 +885,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_showing_eligibility: {
+        Args: { user_uuid: string }
+        Returns: Json
+      }
       get_user_type: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      mark_free_showing_used: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
+      reset_free_showing_eligibility: {
+        Args: { user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {

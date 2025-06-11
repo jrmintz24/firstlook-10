@@ -5,6 +5,7 @@ import PropertySelectionStep from "@/components/property-request/PropertySelecti
 import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
+import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 
 interface PropertyRequestFormProps {
   isOpen: boolean;
@@ -17,13 +18,18 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     formData,
     showAuthModal,
     setShowAuthModal,
+    showFreeShowingLimitModal,
+    setShowFreeShowingLimitModal,
+    pendingShowingAddress,
     isSubmitting,
+    eligibility,
     handleInputChange,
     handleNext,
     handleBack,
     handleAddProperty,
     handleRemoveProperty,
     handleContinueToSubscriptions,
+    handleCancelPendingShowing,
   } = usePropertyRequest();
 
   const renderStepContent = () => {
@@ -85,6 +91,17 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
           onSuccess={handleContinueToSubscriptions}
+        />
+      )}
+
+      {/* Free Showing Limit Modal */}
+      {showFreeShowingLimitModal && (
+        <FreeShowingLimitModal
+          isOpen={showFreeShowingLimitModal}
+          onClose={() => setShowFreeShowingLimitModal(false)}
+          onCancelPendingShowing={handleCancelPendingShowing}
+          pendingShowingAddress={pendingShowingAddress}
+          activeShowingCount={eligibility?.active_showing_count}
         />
       )}
     </>

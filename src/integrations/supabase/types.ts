@@ -9,6 +9,64 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agent_feedback: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          buyer_interest_level: number | null
+          buyer_seriousness_rating: number | null
+          created_at: string
+          id: string
+          notes: string | null
+          recommend_buyer: boolean | null
+          showing_request_id: string
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          buyer_interest_level?: number | null
+          buyer_seriousness_rating?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recommend_buyer?: boolean | null
+          showing_request_id: string
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          buyer_interest_level?: number | null
+          buyer_seriousness_rating?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recommend_buyer?: boolean | null
+          showing_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_feedback_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_feedback_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_feedback_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_sync_logs: {
         Row: {
           completed_at: string | null
@@ -38,6 +96,119 @@ export type Database = {
           sync_type?: string
         }
         Relationships: []
+      }
+      buyer_feedback: {
+        Row: {
+          agent_comments: string | null
+          agent_id: string | null
+          agent_rating: number | null
+          buyer_id: string
+          created_at: string
+          id: string
+          property_comments: string | null
+          property_rating: number | null
+          showing_request_id: string
+        }
+        Insert: {
+          agent_comments?: string | null
+          agent_id?: string | null
+          agent_rating?: number | null
+          buyer_id: string
+          created_at?: string
+          id?: string
+          property_comments?: string | null
+          property_rating?: number | null
+          showing_request_id: string
+        }
+        Update: {
+          agent_comments?: string | null
+          agent_id?: string | null
+          agent_rating?: number | null
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          property_comments?: string | null
+          property_rating?: number | null
+          showing_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_feedback_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_feedback_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_feedback_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follow_up_questions: {
+        Row: {
+          agent_id: string | null
+          answer: string | null
+          answered_at: string | null
+          buyer_id: string
+          created_at: string
+          id: string
+          question: string
+          showing_request_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          answer?: string | null
+          answered_at?: string | null
+          buyer_id: string
+          created_at?: string
+          id?: string
+          question: string
+          showing_request_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          answer?: string | null
+          answered_at?: string | null
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          question?: string
+          showing_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_questions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_up_questions_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_up_questions_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       house_assignments: {
         Row: {
@@ -258,6 +429,48 @@ export type Database = {
         }
         Relationships: []
       }
+      post_showing_actions: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          buyer_id: string
+          created_at: string
+          id: string
+          showing_request_id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          buyer_id: string
+          created_at?: string
+          id?: string
+          showing_request_id: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          showing_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_showing_actions_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_showing_actions_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -368,6 +581,92 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      property_favorites: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          id: string
+          property_address: string
+          showing_request_id: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          id?: string
+          property_address: string
+          showing_request_id?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          property_address?: string
+          showing_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_favorites_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_favorites_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showing_attendance: {
+        Row: {
+          agent_attended: boolean | null
+          agent_checked_out: boolean | null
+          agent_checkout_time: string | null
+          buyer_attended: boolean | null
+          buyer_checked_out: boolean | null
+          buyer_checkout_time: string | null
+          created_at: string
+          id: string
+          showing_request_id: string
+          updated_at: string
+        }
+        Insert: {
+          agent_attended?: boolean | null
+          agent_checked_out?: boolean | null
+          agent_checkout_time?: string | null
+          buyer_attended?: boolean | null
+          buyer_checked_out?: boolean | null
+          buyer_checkout_time?: string | null
+          created_at?: string
+          id?: string
+          showing_request_id: string
+          updated_at?: string
+        }
+        Update: {
+          agent_attended?: boolean | null
+          agent_checked_out?: boolean | null
+          agent_checkout_time?: string | null
+          buyer_attended?: boolean | null
+          buyer_checked_out?: boolean | null
+          buyer_checkout_time?: string | null
+          created_at?: string
+          id?: string
+          showing_request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showing_attendance_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       showing_requests: {
         Row: {
@@ -491,6 +790,47 @@ export type Database = {
           },
           {
             foreignKeyName: "tour_agreements_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_triggers: {
+        Row: {
+          created_at: string
+          executed_at: string | null
+          id: string
+          payload: Json | null
+          scheduled_for: string
+          showing_request_id: string
+          status: string
+          trigger_type: string
+        }
+        Insert: {
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          payload?: Json | null
+          scheduled_for: string
+          showing_request_id: string
+          status?: string
+          trigger_type: string
+        }
+        Update: {
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          payload?: Json | null
+          scheduled_for?: string
+          showing_request_id?: string
+          status?: string
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_triggers_showing_request_id_fkey"
             columns: ["showing_request_id"]
             isOneToOne: false
             referencedRelation: "showing_requests"

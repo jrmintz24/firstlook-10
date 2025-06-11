@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
+import ShowingCheckoutButton from "./ShowingCheckoutButton";
+import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
 
 interface ShowingRequest {
   id: string;
@@ -16,8 +18,10 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
+  user_id?: string | null;
 }
 
 interface ShowingRequestCardProps {
@@ -26,15 +30,31 @@ interface ShowingRequestCardProps {
   onReschedule: (id: string) => void;
   onConfirm?: (id: string) => void;
   showActions?: boolean;
+  userType?: 'buyer' | 'agent';
 }
 
-const ShowingRequestCard = ({ showing, onCancel, onReschedule, onConfirm, showActions = true }: ShowingRequestCardProps) => {
+const ShowingRequestCard = ({ 
+  showing, 
+  onCancel, 
+  onReschedule, 
+  onConfirm, 
+  showActions = true,
+  userType = 'buyer'
+}: ShowingRequestCardProps) => {
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
 
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="p-6">
+        {/* Post-showing workflow trigger */}
+        <PostShowingTrigger
+          showingId={showing.id}
+          status={showing.status}
+          preferredDate={showing.preferred_date || undefined}
+          preferredTime={showing.preferred_time || undefined}
+        />
+
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
@@ -131,13 +151,20 @@ const ShowingRequestCard = ({ showing, onCancel, onReschedule, onConfirm, showAc
         </div>
 
         {/* Actions */}
-        {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending'].includes(showing.status) && (
-          <div className="flex gap-3">
+        {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
+          <div className="flex gap-3 flex-wrap">
             {showing.status === 'confirmed' && onConfirm && (
               <Button variant="outline" size="sm" onClick={() => onConfirm(showing.id)} className="border-green-200 text-green-700 hover:bg-green-50">
                 Confirm & Sign
               </Button>
             )}
+            
+            {/* Show checkout button for active showings */}
+            <ShowingCheckoutButton 
+              showing={showing}
+              userType={userType}
+            />
+            
             <Button
               variant="outline"
               size="sm"

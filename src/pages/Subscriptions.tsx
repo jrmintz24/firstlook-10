@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +11,6 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Subscriptions = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const { isSubscribed, subscriptionTier, loading } = useSubscriptionStatus();
@@ -51,14 +49,11 @@ const Subscriptions = () => {
   ];
 
   const handleGetVIPAccess = () => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-    
-    if (isSubscribed) {
-      return; // User is already subscribed
-    }
+    console.log('VIP Access button clicked', {
+      userId: user?.id,
+      email: user?.email,
+      timestamp: new Date().toISOString()
+    });
     
     setShowSubscribeModal(true);
   };

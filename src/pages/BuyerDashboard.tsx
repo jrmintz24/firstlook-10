@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Calendar, Star } from "lucide-react";
+import { AlertCircle, Calendar, Star, Crown } from "lucide-react";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -9,9 +10,11 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QuickStatsGrid from "@/components/dashboard/QuickStatsGrid";
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
+import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import { Link } from "react-router-dom";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
 
 interface EligibilityResult {
@@ -24,8 +27,10 @@ interface EligibilityResult {
 const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const { toast } = useToast();
   const { eligibility, checkEligibility } = useShowingEligibility();
+  const { isSubscribed, subscriptionTier, refreshStatus } = useSubscriptionStatus();
   
   const {
     profile,
@@ -41,7 +46,8 @@ const BuyerDashboard = () => {
     handleCancelShowing,
     handleRescheduleShowing,
     handleConfirmShowing,
-    handleAgreementSign
+    handleAgreementSign,
+    fetchUserData
   } = useBuyerDashboard();
 
   const handleRequestShowing = async () => {
@@ -57,16 +63,39 @@ const BuyerDashboard = () => {
         });
         return;
       } else if (currentEligibility?.reason === 'free_showing_used') {
-        toast({
-          title: "Subscription Required",
-          description: "You've used your free showing. Subscribe to continue viewing homes!",
-        });
-        // Could redirect to subscriptions page here
+        // Don't show the old toast, user will see the updated UI notification
         return;
       }
     }
     
     setShowPropertyForm(true);
+  };
+
+  const handleUpgradeClick = () => {
+    console.log('Upgrade button clicked', {
+      userId: user?.id,
+      email: user?.email,
+      eligibilityReason: eligibility?.reason,
+      timestamp: new Date().toISOString()
+    });
+    setShowSubscribeModal(true);
+  };
+
+  const handleSubscriptionComplete = async () => {
+    console.log('Subscription completed from dashboard', {
+      userId: user?.id,
+      email: user?.email,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Refresh subscription status and dashboard data
+    await refreshStatus();
+    await fetchUserData();
+    
+    toast({
+      title: "Welcome to FirstLook Premium! 🎉",
+      description: "You can now book unlimited home tours!",
+    });
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,20 +151,40 @@ const BuyerDashboard = () => {
           completedCount={completedShowings.length}
         />
 
-        {/* Show eligibility status if helpful */}
-        {eligibility && !eligibility.eligible && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        {/* Show subscription status or upgrade CTA */}
+        {isSubscribed ? (
+          <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-blue-600" />
+              <Crown className="h-6 w-6 text-purple-600" />
               <div>
-                <h3 className="font-medium text-blue-900">Showing Status</h3>
-                <p className="text-sm text-blue-700">
-                  {eligibility.reason === 'active_showing_exists' 
-                    ? "You have an active showing scheduled. Complete or cancel it to book another."
-                    : eligibility.reason === 'free_showing_used'
-                    ? "You've used your free showing. Subscribe to view more homes!"
-                    : "Check your showing eligibility in your profile."}
+                <h3 className="font-semibold text-purple-900">FirstLook Premium Member</h3>
+                <p className="text-sm text-purple-700">
+                  You have unlimited access to home tours and VIP priority scheduling! 
+                  {subscriptionTier && ` (${subscriptionTier} Plan)`}
                 </p>
+              </div>
+            </div>
+          </div>
+        ) : eligibility && !eligibility.eligible && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-6 w-6 text-orange-600 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-orange-900 mb-2">Showing Limit Reached</h3>
+                  <p className="text-sm text-orange-700 mb-4">
+                    {eligibility.reason === 'active_showing_exists' 
+                      ? "You have an active showing scheduled. Complete or cancel it to book another, or upgrade to FirstLook Premium for unlimited access."
+                      : "You've used your free showing. Upgrade to a FirstLook Premium membership for unlimited home tours and VIP priority scheduling."}
+                  </p>
+                  <Button 
+                    onClick={handleUpgradeClick}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  >
+                    <Crown className="mr-2 h-4 w-4" />
+                    Upgrade to Premium
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -219,6 +268,12 @@ const BuyerDashboard = () => {
           onSign={handleAgreementSignWithModal}
         />
       )}
+
+      <SubscribeModal
+        isOpen={showSubscribeModal}
+        onClose={() => setShowSubscribeModal(false)}
+        onSubscriptionComplete={handleSubscriptionComplete}
+      />
     </div>
   );
 };

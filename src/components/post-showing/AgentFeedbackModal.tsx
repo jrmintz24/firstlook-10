@@ -45,7 +45,7 @@ const AgentFeedbackModal = ({ isOpen, onClose, showing, agentId }: AgentFeedback
         buyer_interest_level: buyerInterestLevel || undefined,
         buyer_seriousness_rating: buyerSeriousnessRating || undefined,
         notes: notes || undefined,
-        recommend_buyer
+        recommend_buyer: recommendBuyer
       };
 
       await submitAgentFeedback(showing.id, feedback);

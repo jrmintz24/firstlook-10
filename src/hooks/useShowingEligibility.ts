@@ -36,8 +36,8 @@ export const useShowingEligibility = () => {
         return null;
       }
 
-      // Cast the Json response to our expected type
-      const eligibilityResult = data as EligibilityResult;
+      // Cast the Json response to our expected type through unknown
+      const eligibilityResult = data as unknown as EligibilityResult;
       setEligibility(eligibilityResult);
       return eligibilityResult;
     } catch (error) {

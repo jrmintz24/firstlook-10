@@ -34,66 +34,63 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
-          <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
+        <div className="text-center max-w-5xl mx-auto">
+          <Badge variant="secondary" className="mb-8 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
             <MapPin className="w-4 h-4 mr-2" />
-            🏛️ Now Serving Washington DC Metro Area
+            🏛️ Washington DC Metro Area
           </Badge>
           
-          <h1 className="text-6xl md:text-7xl font-bold leading-tight mb-8">
+          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
             <span className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 bg-clip-text text-transparent">
-              Tour DC homes
-            </span>{" "}
-            <span className="block mt-2">
-              <span className="relative inline-block text-slate-700">
-                on your terms
-                <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
-              </span>
+              Tour Homes On Your Terms
             </span>
           </h1>
           
-          <p className="text-2xl text-gray-800 mb-6 max-w-3xl mx-auto leading-relaxed">
-            Finally, a <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">transparent way</span> to see homes in DC. No pushy agents, no upfront commitments, no hidden fees. Just <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">professional showings when you want them</span>. 
-            <br />
-            <span className="text-xl text-green-700 font-bold mt-2 inline-block">
-              Save thousands vs. traditional 6% commissions ✨
-            </span>
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-600 mb-8 leading-relaxed">
+            No Agent Contracts, No Pressure
+          </h2>
+          
+          <p className="text-xl md:text-2xl text-gray-700 mb-10 max-w-4xl mx-auto leading-relaxed">
+            On-demand private home tours with <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">transparent pricing</span> and <span className="font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md">zero commitment</span> until you're ready.
           </p>
 
-          {/* Value proposition */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-10 border border-purple-100 shadow-lg max-w-2xl mx-auto">
-            <div className="flex items-center justify-center gap-6 text-sm font-medium text-gray-800">
-              <div className="flex items-center gap-2 group">
-                <Shield className="w-5 h-5 text-green-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-green-600 transition-colors duration-200">Licensed DC Pros</span>
+          {/* Simple, clean value props */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-purple-100 shadow-lg max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center group">
+                <Shield className="w-8 h-8 text-green-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
+                <h3 className="font-bold text-gray-900 mb-2">Licensed DC Pros</h3>
+                <p className="text-gray-600 text-sm">Verified agents, no binding contracts</p>
               </div>
-              <div className="flex items-center gap-2 group">
-                <Clock className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-blue-600 transition-colors duration-200">Book in Minutes</span>
+              <div className="text-center group">
+                <Clock className="w-8 h-8 text-blue-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
+                <h3 className="font-bold text-gray-900 mb-2">Book Instantly</h3>
+                <p className="text-gray-600 text-sm">Schedule tours on your timeline</p>
               </div>
-              <div className="flex items-center gap-2 group">
-                <Sparkles className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-purple-600 transition-colors duration-200">First Tour Free</span>
+              <div className="text-center group">
+                <Sparkles className="w-8 h-8 text-purple-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
+                <h3 className="font-bold text-gray-900 mb-2">First Tour Free</h3>
+                <p className="text-gray-600 text-sm">Try before you commit to anything</p>
               </div>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-xl shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-12 py-6 text-xl font-bold shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
               onClick={onRequestShowing}
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <Sparkles className="mr-3 h-6 w-6 relative z-10" />
-              <span className="relative z-10">Start Your Free DC Tour</span>
+              <span className="relative z-10">Start Your Free Tour</span>
               <ChevronRight className="ml-3 h-6 w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
             <Link to="/faq">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="px-10 py-6 text-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300"
+                className="px-12 py-6 text-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300 font-semibold"
               >
                 How It Works
               </Button>
@@ -106,7 +103,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
                 variant="ghost" 
                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 underline font-medium hover:scale-105 transition-all duration-200"
               >
-                💎 See All Plans & Pricing →
+                💰 See Transparent Pricing →
               </Button>
             </Link>
             <Link to="/agents">
@@ -119,9 +116,9 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             </Link>
           </div>
 
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
-            <p className="text-green-800 max-w-2xl mx-auto text-lg">
-              <strong>🎯 What happens next?</strong> Pick your properties, choose a time that works for you, and we'll connect you with a <span className="text-purple-600 font-medium">licensed DC professional</span>. <span className="font-bold text-green-700">Zero pressure, total transparency.</span>
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 max-w-3xl mx-auto">
+            <p className="text-green-800 text-lg leading-relaxed">
+              <strong>🎯 What happens next?</strong> Pick your properties, choose your time, and we'll connect you with a licensed DC professional. <span className="font-bold text-green-700">No pressure, complete transparency, total control.</span>
             </p>
           </div>
         </div>

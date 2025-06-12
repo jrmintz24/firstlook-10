@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
@@ -41,7 +40,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </Badge>
           
           <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-            <span className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Tour Homes On Your Terms
             </span>
           </h1>

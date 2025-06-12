@@ -8,7 +8,7 @@ import TrustIndicators from '../components/TrustIndicators'
 import ProblemSolutionSection from '../components/ProblemSolutionSection'
 import IndustryChangesSection from '../components/IndustryChangesSection'
 import FinalCTASection from '../components/home/FinalCTASection'
-import QuickSignInModal from '../components/property-request/QuickSignInModal'
+import PropertyRequestForm from '../components/PropertyRequestForm'
 import { useToast } from '../hooks/use-toast'
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom'
 export default function Index() {
   const { user, loading } = useAuth()
   const { toast } = useToast()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
 
   // Handle redirects for authenticated users
   useEffect(() => {
@@ -34,28 +34,8 @@ export default function Index() {
   }, [user, loading]);
 
   const handleRequestShowing = () => {
-    if (user) {
-      // User is signed in, redirect to correct dashboard based on user type
-      const userType = user.user_metadata?.user_type;
-      const dashboardPath = userType === 'agent'
-        ? '/agent-dashboard'
-        : userType === 'admin'
-        ? '/admin-dashboard'
-        : '/buyer-dashboard';
-      window.location.href = dashboardPath;
-    } else {
-      // Show auth modal for quick sign up
-      setShowAuthModal(true)
-    }
-  }
-
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false)
-    toast({
-      title: "Welcome to FirstLook!",
-      description: "You're now ready to request your first home showing.",
-    })
-    // The redirect will be handled by the useEffect above
+    // Open the property request form directly
+    setShowPropertyRequestForm(true)
   }
 
   // Show loading while checking auth state
@@ -99,12 +79,10 @@ export default function Index() {
       {/* Final CTA */}
       <FinalCTASection onRequestShowing={handleRequestShowing} />
 
-      {/* Quick Sign In Modal */}
-      <QuickSignInModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-        defaultUserType="buyer"
+      {/* Property Request Form Modal */}
+      <PropertyRequestForm 
+        isOpen={showPropertyRequestForm}
+        onClose={() => setShowPropertyRequestForm(false)}
       />
     </div>
   )

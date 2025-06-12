@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Key, Star, ArrowRight } from "lucide-react";
@@ -6,29 +7,29 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: Search,
-      title: "Find Your Property",
-      description: "Enter the MLS ID or address of a home you want to see",
+      title: "Pick Your Properties",
+      description: "Enter addresses or MLS IDs for homes you want to see. You're in control of your tour list.",
       badge: "1",
       gradient: "from-blue-400 to-cyan-500"
     },
     {
       icon: Calendar,
-      title: "Pick Your Time",
-      description: "Choose from available time slots that work for your schedule",
+      title: "Choose Your Time",
+      description: "Book a time that actually works for you. Need to reschedule? No problem - it's your tour.",
       badge: "2",
       gradient: "from-purple-400 to-pink-500"
     },
     {
       icon: Key,
-      title: "Meet & View",
-      description: "Meet your licensed showing partner and explore the home",
+      title: "Tour With Confidence",
+      description: "Meet your licensed DC professional and explore homes at your own pace. Ask questions, take your time.",
       badge: "3",
       gradient: "from-green-400 to-emerald-500"
     },
     {
       icon: Star,
-      title: "Decide Next Steps",
-      description: "No pressure - choose your next steps when you're ready",
+      title: "Move Forward (Or Don't)",
+      description: "Loved a home? Get help with offers. Not feeling it? No worries. Zero pressure, always.",
       badge: "4",
       gradient: "from-orange-400 to-red-500"
     }
@@ -45,7 +46,7 @@ const HowItWorks = () => {
             </span>
           </h2>
           <p className="text-gray-700 max-w-2xl mx-auto text-lg">
-            Getting your first <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showing</span> is simple, fast, and completely free. Here's how it works:
+            House hunting should be <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">on your timeline</span>, not an agent's. Here's how we make it simple:
           </p>
         </div>
         
@@ -86,12 +87,15 @@ const HowItWorks = () => {
         
         <div className="text-center mt-12">
           <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 px-8 py-4 rounded-full border-2 border-green-200 shadow-lg">
-            <span className="text-3xl">🎉</span>
-            <span className="font-semibold text-lg">Your first showing is <span className="font-black text-green-700 relative">
-              completely FREE
+            <span className="text-3xl">💰</span>
+            <span className="font-semibold text-lg">Save <span className="font-black text-green-700 relative">
+              thousands vs. 6% commissions
               <span className="absolute -bottom-1 left-0 w-full h-2 bg-green-200 rounded-full opacity-60 -z-10"></span>
-            </span></span>
+            </span> + your first tour is free</span>
           </div>
+          <p className="text-gray-600 mt-4 text-sm">
+            With new industry rules, you can finally choose how much to pay for buyer representation. FirstLook gives you transparent options.
+          </p>
         </div>
       </div>
     </div>

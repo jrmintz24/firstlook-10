@@ -37,33 +37,27 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
         <div className="text-center max-w-4xl mx-auto">
           <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
             <MapPin className="w-4 h-4 mr-2" />
-            🏛️ Now Serving Washington DC Metro Area & Beyond
+            🏛️ Now Serving Washington DC Metro Area
           </Badge>
           
           <h1 className="text-6xl md:text-7xl font-bold leading-tight mb-8">
             <span className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 bg-clip-text text-transparent">
-              See the home you want,
+              Tour DC homes
             </span>{" "}
-            <span className="block text-slate-700">
-              <span className="relative inline-block">
-                when you want,
-                <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full opacity-60"></span>
-              </span>
-            </span>
             <span className="block mt-2">
-              <span className="text-slate-700">without the </span>
-              <span className="relative inline-block bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent font-black transform hover:scale-110 transition-transform duration-300">
-                commitment
-                <span className="absolute -top-1 -right-2 text-2xl">✋</span>
+              <span className="relative inline-block text-slate-700">
+                on your terms
+                <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-60"></span>
               </span>
             </span>
           </h1>
           
           <p className="text-2xl text-gray-800 mb-6 max-w-3xl mx-auto leading-relaxed">
-            <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> empowers Washington DC homebuyers to request <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">private showings on-demand</span>, without requiring upfront buyer agreements. Stop dealing with pushy agents and restrictive buyer agreements. Your first showing is <span className="relative inline-block font-black text-green-700">
-              completely FREE
-              <span className="absolute -bottom-1 left-0 w-full h-2 bg-green-200 rounded-full -z-10"></span>
-            </span>. 🏠✨
+            Finally, a <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">transparent way</span> to see homes in DC. No pushy agents, no upfront commitments, no hidden fees. Just <span className="font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">professional showings when you want them</span>. 
+            <br />
+            <span className="text-xl text-green-700 font-bold mt-2 inline-block">
+              Save thousands vs. traditional 6% commissions ✨
+            </span>
           </p>
 
           {/* Value proposition */}
@@ -71,15 +65,15 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             <div className="flex items-center justify-center gap-6 text-sm font-medium text-gray-800">
               <div className="flex items-center gap-2 group">
                 <Shield className="w-5 h-5 text-green-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-green-600 transition-colors duration-200">Verified DC Professionals</span>
+                <span className="group-hover:text-green-600 transition-colors duration-200">Licensed DC Pros</span>
               </div>
               <div className="flex items-center gap-2 group">
                 <Clock className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-blue-600 transition-colors duration-200">Available 7 Days a Week</span>
+                <span className="group-hover:text-blue-600 transition-colors duration-200">Book in Minutes</span>
               </div>
               <div className="flex items-center gap-2 group">
                 <Sparkles className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform duration-200" />
-                <span className="group-hover:text-purple-600 transition-colors duration-200">100% Free First Tour</span>
+                <span className="group-hover:text-purple-600 transition-colors duration-200">First Tour Free</span>
               </div>
             </div>
           </div>
@@ -92,7 +86,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <Sparkles className="mr-3 h-6 w-6 relative z-10" />
-              <span className="relative z-10">Get Your FREE DC Home Tour</span>
+              <span className="relative z-10">Start Your Free DC Tour</span>
               <ChevronRight className="ml-3 h-6 w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
             <Link to="/faq">
@@ -107,27 +101,29 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link to="/agents">
+            <Link to="/subscriptions">
               <Button 
                 variant="ghost" 
                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 underline font-medium hover:scale-105 transition-all duration-200"
               >
-                Join as DC Showing Partner →
+                💎 See All Plans & Pricing →
               </Button>
             </Link>
-            <Link to="/subscriptions">
+            <Link to="/agents">
               <Button 
                 variant="ghost" 
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 underline font-medium hover:scale-105 transition-all duration-200"
               >
-                💎 See Subscription Options →
+                Join as DC Showing Partner →
               </Button>
             </Link>
           </div>
 
-          <p className="text-sm text-gray-600 max-w-lg mx-auto">
-            <strong>What happens next?</strong> We'll match you with a <span className="text-purple-600 font-medium">verified, licensed real estate professional</span> who will <span className="font-bold text-blue-600">confirm your requested time</span>. <span className="text-green-600 font-bold">No strings attached.</span>
-          </p>
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+            <p className="text-green-800 max-w-2xl mx-auto text-lg">
+              <strong>🎯 What happens next?</strong> Pick your properties, choose a time that works for you, and we'll connect you with a <span className="text-purple-600 font-medium">licensed DC professional</span>. <span className="font-bold text-green-700">Zero pressure, total transparency.</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

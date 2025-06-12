@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
 import HeroSection from '../components/home/HeroSection'
 import HowItWorks from '../components/HowItWorks'
-import WhyChooseSection from '../components/home/WhyChooseSection'
 import TrustIndicators from '../components/TrustIndicators'
 import ProblemSolutionSection from '../components/ProblemSolutionSection'
 import IndustryChangesSection from '../components/IndustryChangesSection'
@@ -89,10 +88,7 @@ export default function Index() {
       <IndustryChangesSection />
 
       {/* How It Works */}
-      <HowItWorks onStartTour={handleRequestShowing} />
-
-      {/* Why Choose Section */}
-      <WhyChooseSection />
+      <HowItWorks />
 
       {/* Problem/Solution Section */}
       <ProblemSolutionSection onRequestShowing={handleRequestShowing} />

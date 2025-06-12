@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, Heart, Calendar, User, FileText, MessageSquare, Home } from "lucide-react";
-import { usePostShowingWorkflow, type BuyerFeedback, type PostShowingAction } from "@/hooks/usePostShowingWorkflow";
+import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -66,15 +67,12 @@ const BuyerFeedbackModal = ({ isOpen, onClose, showing, buyerId }: BuyerFeedback
     setStep('actions');
   };
 
-  const handleAction = async (
-    actionType: PostShowingAction['action_type'],
-    details?: Record<string, unknown>
-  ) => {
-      await recordAction(showing.id, {
-        buyer_id: buyerId,
-        action_type: actionType,
-        action_details: details
-      });
+  const handleAction = async (actionType: string, details?: any) => {
+    await recordAction(showing.id, {
+      buyer_id: buyerId,
+      action_type: actionType as any,
+      action_details: details
+    });
 
     // Handle specific actions
     if (actionType === 'favorite_property') {

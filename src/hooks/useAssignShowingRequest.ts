@@ -59,16 +59,16 @@ export const useAssignShowingRequest = () => {
 
       console.log('Assignment update data:', updateData);
 
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('showing_requests')
         .update(updateData)
         .eq('id', requestId);
 
-      console.log('Assignment update result:', { error: updateError, agentEmail });
+      console.log('Assignment update result:', { error, agentEmail });
 
-      if (updateError) {
-        console.error('Error assigning request:', updateError.message, updateError.details, updateError.hint);
-        if (updateError.message?.includes('showing_requests_status_check')) {
+      if (error) {
+        console.error('Error assigning request:', error.message, error.details, error.hint);
+        if (error.message?.includes('showing_requests_status_check')) {
           toast({
             title: 'Assignment Failed',
             description: 'Database schema outdated. Run `supabase db execute < supabase/sql/20250615_update_status_check.sql` to allow new statuses.',
@@ -77,7 +77,7 @@ export const useAssignShowingRequest = () => {
         } else {
           toast({
             title: 'Assignment Failed',
-            description: `Database error: ${updateError.message}${updateError.details ? ` - ${updateError.details}` : ''}`,
+            description: `Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`,
             variant: "destructive"
           });
         }
@@ -90,8 +90,8 @@ export const useAssignShowingRequest = () => {
         description: "You have been assigned to this showing request. It's now pending admin approval."
       });
       return true;
-    } catch (err) {
-      console.error('Exception during assignment:', err);
+    } catch (error) {
+      console.error('Exception during assignment:', error);
       toast({
         title: "Assignment Failed",
         description: "An unexpected error occurred. Please try again.",

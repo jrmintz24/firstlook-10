@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
 import HeroSection from '../components/home/HeroSection'
+import ValuePropositionSection from '../components/ValuePropositionSection'
 import HowItWorks from '../components/HowItWorks'
 import TrustIndicators from '../components/TrustIndicators'
 import ProblemSolutionSection from '../components/ProblemSolutionSection'
@@ -63,6 +64,9 @@ export default function Index() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <HeroSection onRequestShowing={handleRequestShowing} />
+
+      {/* Value Proposition Section */}
+      <ValuePropositionSection />
 
       {/* Industry Changes Section */}
       <IndustryChangesSection />

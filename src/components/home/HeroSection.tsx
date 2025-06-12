@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Shield, ChevronRight, Sparkles, MapPin } from "lucide-react";
+import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
@@ -54,8 +54,8 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             On-demand private home tours with <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">transparent pricing</span> and <span className="font-bold text-green-700 bg-green-100 px-2 py-1 rounded-md">zero commitment</span> until you're ready.
           </p>
 
-          {/* Simple, clean value props */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-purple-100 shadow-lg max-w-4xl mx-auto">
+          {/* Enhanced Value Props */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 mb-10 border border-purple-100 shadow-lg max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center group">
                 <Shield className="w-8 h-8 text-green-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
@@ -68,10 +68,26 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
                 <p className="text-gray-600 text-sm">Schedule tours on your timeline</p>
               </div>
               <div className="text-center group">
-                <Sparkles className="w-8 h-8 text-purple-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
-                <h3 className="font-bold text-gray-900 mb-2">First Tour Free</h3>
-                <p className="text-gray-600 text-sm">Try before you commit to anything</p>
+                <DollarSign className="w-8 h-8 text-purple-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
+                <h3 className="font-bold text-gray-900 mb-2">Save Thousands</h3>
+                <p className="text-gray-600 text-sm">Pay only for what you need</p>
               </div>
+            </div>
+          </div>
+
+          {/* Key Benefits Row */}
+          <div className="flex flex-wrap justify-center gap-4 mb-10">
+            <div className="flex items-center gap-2 bg-green-50 text-green-800 px-4 py-2 rounded-full border border-green-200">
+              <Sparkles className="w-4 h-4" />
+              <span className="font-semibold">First Tour Free</span>
+            </div>
+            <div className="flex items-center gap-2 bg-blue-50 text-blue-800 px-4 py-2 rounded-full border border-blue-200">
+              <Calendar className="w-4 h-4" />
+              <span className="font-semibold">Same-Day Booking</span>
+            </div>
+            <div className="flex items-center gap-2 bg-purple-50 text-purple-800 px-4 py-2 rounded-full border border-purple-200">
+              <Shield className="w-4 h-4" />
+              <span className="font-semibold">No Hidden Fees</span>
             </div>
           </div>
           

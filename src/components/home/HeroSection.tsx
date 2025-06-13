@@ -20,12 +20,12 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
     <div className="py-20 relative overflow-hidden bg-white">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          <span className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-6 block">
+          <h1 className="text-6xl md:text-7xl font-light text-gray-900 mb-6 tracking-tight">
             FirstLook
-          </span>
+          </h1>
           
           <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-4 leading-relaxed tracking-tight">
-            Tour homes on your schedule—<span className="font-semibold">no agent agreement required</span>
+            Tour homes on your schedule—<span className="font-bold">no agent agreement required</span>
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">

@@ -79,10 +79,8 @@ const HowItWorks = () => {
         
         <div className="text-center mt-12">
           <div className="inline-flex items-center gap-3 bg-white text-gray-600 px-8 py-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <span className="text-2xl">💰</span>
-            <span className="font-medium text-lg">Save <span className="font-semibold text-gray-900">
-              thousands vs. 6% commissions
-            </span> + your first tour is free</span>
+            <span className="text-2xl">💸</span>
+            <span className="font-medium text-lg">Save thousands, skip agent fees—<span className="font-semibold text-gray-900">your first home tour is on us</span></span>
           </div>
           <p className="text-gray-500 mt-6 text-sm font-light max-w-2xl mx-auto">
             With new industry rules, you can finally choose how much to pay for buyer representation. FirstLook gives you transparent options.

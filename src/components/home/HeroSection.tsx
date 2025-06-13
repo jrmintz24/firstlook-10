@@ -25,7 +25,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </span>
           
           <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-4 leading-relaxed tracking-tight">
-            Tour homes on your schedule—no agent agreement required
+            Tour homes on your schedule—<span className="font-semibold">no agent agreement required</span>
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">

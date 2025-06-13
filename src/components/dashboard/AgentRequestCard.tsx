@@ -26,11 +26,11 @@ interface AgentRequestCardProps {
   onAssign: () => void;
   onUpdateStatus: (status: string, estimatedDate?: string) => void;
   onSendMessage: () => void;
-  onAccept?: () => void;
+  onConfirm?: (request: ShowingRequest) => void;
   showAssignButton: boolean;
 }
 
-const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, onAccept, showAssignButton }: AgentRequestCardProps) => {
+const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, onConfirm, showAssignButton }: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
 
@@ -134,19 +134,17 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, on
 
         {/* Actions */}
         <div className="flex gap-3">
-          {showAssignButton && (
+          {showAssignButton && request.status === 'pending' && (
             <Button
-              onClick={onAssign}
+              onClick={() => onConfirm && onConfirm(request)}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Assign to Me
+              Accept & Confirm
             </Button>
           )}
 
-          {/* Removed the redundant "Accept Showing" button since assignment now goes directly to admin approval */}
-
-          {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'pending_admin_approval', 'confirmed', 'scheduled'].includes(request.status) && (
+          {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'agent_confirmed', 'confirmed', 'scheduled'].includes(request.status) && (
             <Button
               variant="outline"
               onClick={() => onUpdateStatus(request.status)}

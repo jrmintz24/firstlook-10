@@ -35,108 +35,140 @@ export interface StatusInfo {
   isActive: boolean;
 }
 
-export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
-  const statusMap: Record<ShowingStatus, StatusInfo> = {
-    submitted: {
-      label: 'Submitted',
-      description: 'Your request has been received and is being reviewed',
-      color: 'text-blue-800',
-      bgColor: 'bg-blue-100',
-      icon: '📝',
-      isActive: false
-    },
-    under_review: {
-      label: 'Under Review',
-      description: 'Our team is reviewing your request and finding the best showing partner',
-      color: 'text-orange-800',
-      bgColor: 'bg-orange-100',
-      icon: '🔍',
-      isActive: false
-    },
-    agent_requested: {
-      label: 'Agent Requested',
-      description: 'A licensed agent has requested to handle this showing',
-      color: 'text-indigo-800',
-      bgColor: 'bg-indigo-100',
-      icon: '🙋',
-      isActive: false
-    },
-    agent_assigned: {
-      label: 'Agent Assigned',
-      description: 'A licensed showing partner has been assigned to your request',
-      color: 'text-purple-800',
-      bgColor: 'bg-purple-100',
-      icon: '👤',
-      isActive: false
-    },
-    pending_admin_approval: {
-      label: 'Pending Admin Approval',
-      description: 'The agent has accepted, awaiting final approval from admin.',
-      color: 'text-yellow-800',
-      bgColor: 'bg-yellow-100',
-      icon: '⏳',
-      isActive: false
-    },
-    confirmed: {
-      label: 'Confirmed',
-      description: 'Your showing has been confirmed and scheduled',
-      color: 'text-green-800',
-      bgColor: 'bg-green-100',
-      icon: '✅',
-      isActive: true
-    },
-    scheduled: {
-      label: 'Scheduled',
-      description: 'Your showing is coming up soon',
-      color: 'text-green-800',
-      bgColor: 'bg-green-100',
-      icon: '📅',
-      isActive: true
-    },
-    completed: {
-      label: 'Completed',
-      description: 'Your showing has been completed',
-      color: 'text-gray-800',
-      bgColor: 'bg-gray-100',
-      icon: '🏁',
-      isActive: false
-    },
-    cancelled: {
-      label: 'Cancelled',
-      description: 'This showing has been cancelled',
-      color: 'text-red-800',
-      bgColor: 'bg-red-100',
-      icon: '❌',
-      isActive: false
-    },
-    pending: {
-      label: 'Awaiting Review',
-      description: 'Request received and awaiting agent assignment',
-      color: 'text-yellow-800',
-      bgColor: 'bg-yellow-100',
-      icon: '⏳',
-      isActive: false
-    }
-  };
-
-  return statusMap[status] || statusMap.pending;
+export const getStatusInfo = (status: ShowingStatus) => {
+  switch (status) {
+    case 'pending':
+      return {
+        label: 'Pending',
+        color: 'text-orange-800',
+        bgColor: 'bg-orange-100',
+        icon: '⏳',
+        description: 'Your request has been submitted and is waiting for agent assignment.'
+      };
+    case 'submitted':
+      return {
+        label: 'Submitted',
+        color: 'text-blue-800',
+        bgColor: 'bg-blue-100',
+        icon: '📤',
+        description: 'Request submitted and under review.'
+      };
+    case 'under_review':
+      return {
+        label: 'Under Review',
+        color: 'text-purple-800',
+        bgColor: 'bg-purple-100',
+        icon: '👀',
+        description: 'Our team is reviewing your showing request.'
+      };
+    case 'agent_assigned':
+      return {
+        label: 'Agent Assigned',
+        color: 'text-blue-800',
+        bgColor: 'bg-blue-100',
+        icon: '👤',
+        description: 'An agent has been assigned to your request.'
+      };
+    case 'pending_admin_approval':
+      return {
+        label: 'Pending Approval',
+        color: 'text-purple-800',
+        bgColor: 'bg-purple-100',
+        icon: '⏱️',
+        description: 'Agent assignment is pending admin approval.'
+      };
+    case 'agent_confirmed':
+      return {
+        label: 'Agent Confirmed',
+        color: 'text-green-800',
+        bgColor: 'bg-green-100',
+        icon: '✅',
+        description: 'Your agent has confirmed the showing details and will contact you soon.'
+      };
+    case 'confirmed':
+      return {
+        label: 'Confirmed',
+        color: 'text-green-800',
+        bgColor: 'bg-green-100',
+        icon: '✅',
+        description: 'Your showing has been confirmed! Your agent will meet you at the scheduled time.'
+      };
+    case 'scheduled':
+      return {
+        label: 'Scheduled',
+        color: 'text-green-800',
+        bgColor: 'bg-green-100',
+        icon: '📅',
+        description: 'Showing is scheduled and confirmed.'
+      };
+    case 'in_progress':
+      return {
+        label: 'In Progress',
+        color: 'text-blue-800',
+        bgColor: 'bg-blue-100',
+        icon: '🏠',
+        description: 'Your showing is currently taking place.'
+      };
+    case 'completed':
+      return {
+        label: 'Completed',
+        color: 'text-gray-800',
+        bgColor: 'bg-gray-100',
+        icon: '✓',
+        description: 'Showing has been completed successfully.'
+      };
+    case 'cancelled':
+      return {
+        label: 'Cancelled',
+        color: 'text-red-800',
+        bgColor: 'bg-red-100',
+        icon: '❌',
+        description: 'This showing request has been cancelled.'
+      };
+    case 'no_show':
+      return {
+        label: 'No Show',
+        color: 'text-red-800',
+        bgColor: 'bg-red-100',
+        icon: '⚠️',
+        description: 'Showing was scheduled but attendee did not show up.'
+      };
+    default:
+      return {
+        label: 'Unknown',
+        color: 'text-gray-800',
+        bgColor: 'bg-gray-100',
+        icon: '❓',
+        description: 'Status unknown.'
+      };
+  }
 };
 
 export const getEstimatedTimeline = (status: ShowingStatus): string => {
-  const timelineMap: Record<ShowingStatus, string> = {
-    submitted: 'We typically respond within 2-4 hours',
-    under_review: 'Agent assignment usually takes 4-8 hours',
-    agent_requested: 'Admin reviewing agent request',
-    agent_assigned: 'Your agent will contact you within 2 hours',
-    pending_admin_approval: 'Awaiting final admin approval',
-    confirmed: 'All set! See you at the showing',
-    scheduled: 'All set! See you at the showing',
-    completed: 'Thank you for using FirstLook!',
-    cancelled: 'You can submit a new request anytime',
-    pending: 'We typically assign agents within 2-4 hours'
-  };
-
-  return timelineMap[status] || timelineMap.pending;
+  switch (status) {
+    case 'pending':
+      return 'Agents typically respond within 2-4 hours';
+    case 'submitted':
+    case 'under_review':
+      return 'Review typically takes 1-2 hours';
+    case 'agent_assigned':
+    case 'pending_admin_approval':
+      return 'Approval and confirmation usually within 1-2 hours';
+    case 'agent_confirmed':
+      return 'Your agent will contact you soon to finalize details';
+    case 'confirmed':
+    case 'scheduled':
+      return 'All set! See you at the showing';
+    case 'in_progress':
+      return 'Showing in progress';
+    case 'completed':
+      return 'Completed successfully';
+    case 'cancelled':
+    case 'no_show':
+      return '';
+    default:
+      return '';
+  }
 };
 
 export const isActiveShowing = (status: ShowingStatus): boolean => {

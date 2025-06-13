@@ -7,15 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { User, UserPlus, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
+import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
-import { useAgentRequest } from "@/hooks/useAgentRequest";
+import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { isActiveShowing, canRequestAssignment, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   
   const { 
     profile, 
@@ -26,7 +28,7 @@ const AgentDashboard = () => {
     fetchAgentData
   } = useAgentDashboard();
 
-  const { requestAssignment, loading: requestLoading } = useAgentRequest();
+  const { confirmShowing, loading: confirmationLoading } = useAgentConfirmation();
 
   const handleSendMessage = (requestId: string) => {
     console.log('Message functionality temporarily disabled until database types are updated');
@@ -40,27 +42,35 @@ const AgentDashboard = () => {
     }
   };
 
-  const handleRequestAssignment = async (requestId: string) => {
+  const handleConfirmShowing = (request: any) => {
+    setSelectedRequest(request);
+    setShowConfirmationModal(true);
+  };
+
+  const handleAgentConfirmation = async (confirmationData: any) => {
     if (!profile) {
-      console.error('No profile available for assignment request');
+      console.error('No profile available for confirmation');
       return;
     }
     
-    const success = await requestAssignment(requestId, profile);
+    const success = await confirmShowing(confirmationData, profile);
     if (success) {
+      setShowConfirmationModal(false);
+      setSelectedRequest(null);
       fetchAgentData();
     }
   };
 
   // Organize requests by categories
   const availableRequests = showingRequests.filter(req => 
-    canRequestAssignment(req.status as ShowingStatus) && !req.assigned_agent_name && !req.requested_agent_name
+    req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
   );
   
   const myRequests = showingRequests.filter(
     req => profile && (
       req.assigned_agent_email === (profile as { email?: string }).email ||
-      req.requested_agent_name?.includes(profile.first_name)
+      req.requested_agent_name?.includes(profile.first_name) ||
+      req.assigned_agent_id === profile.id
     )
   );
   
@@ -161,7 +171,7 @@ const AgentDashboard = () => {
           <TabsContent value="available" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
-              <p className="text-gray-600">Request assignment to showing requests</p>
+              <p className="text-gray-600">Accept and confirm showing requests</p>
             </div>
 
             {availableRequests.length === 0 ? (
@@ -169,7 +179,7 @@ const AgentDashboard = () => {
                 <CardContent>
                   <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
-                  <p className="text-gray-500">All current requests have been assigned or requested by agents.</p>
+                  <p className="text-gray-500">All current requests have been accepted by agents.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -178,12 +188,13 @@ const AgentDashboard = () => {
                   <AgentRequestCard
                     key={request.id}
                     request={request}
-                    onAssign={() => handleRequestAssignment(request.id)}
+                    onAssign={() => {}}
                     onUpdateStatus={(status, estimatedDate) => {
                       setSelectedRequest(request);
                       setShowStatusModal(true);
                     }}
                     onSendMessage={() => handleSendMessage(request.id)}
+                    onConfirm={handleConfirmShowing}
                     showAssignButton={true}
                   />
                 ))}
@@ -194,7 +205,7 @@ const AgentDashboard = () => {
           <TabsContent value="mine" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-800">My Requests</h2>
-              <p className="text-gray-600">Requests assigned to or requested by you</p>
+              <p className="text-gray-600">Requests assigned to or confirmed by you</p>
             </div>
 
             {myRequests.length === 0 ? (
@@ -202,7 +213,7 @@ const AgentDashboard = () => {
                 <CardContent>
                   <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No requests yet</h3>
-                  <p className="text-gray-500">Request assignment to available requests to get started.</p>
+                  <p className="text-gray-500">Accept available requests to get started.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -289,15 +300,27 @@ const AgentDashboard = () => {
       </div>
 
       {selectedRequest && (
-        <StatusUpdateModal
-          isOpen={showStatusModal}
-          onClose={() => {
-            setShowStatusModal(false);
-            setSelectedRequest(null);
-          }}
-          request={selectedRequest}
-          onUpdateStatus={handleUpdateStatus}
-        />
+        <>
+          <AgentConfirmationModal
+            isOpen={showConfirmationModal}
+            onClose={() => {
+              setShowConfirmationModal(false);
+              setSelectedRequest(null);
+            }}
+            request={selectedRequest}
+            onConfirm={handleAgentConfirmation}
+          />
+
+          <StatusUpdateModal
+            isOpen={showStatusModal}
+            onClose={() => {
+              setShowStatusModal(false);
+              setSelectedRequest(null);
+            }}
+            request={selectedRequest}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        </>
       )}
     </div>
   );

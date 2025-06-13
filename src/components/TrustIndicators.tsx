@@ -6,89 +6,81 @@ const TrustIndicators = () => {
     { 
       value: "1000+", 
       label: "Successful Home Tours", 
-      gradient: "from-blue-600 to-blue-700",
       icon: Users,
       detail: "Happy DC homebuyers served"
     },
     { 
       value: "12min", 
       label: "Average Response Time", 
-      gradient: "from-slate-600 to-slate-700",
       icon: Clock,
       detail: "Quick scheduling guaranteed"
     },
     { 
       value: "Licensed", 
       label: "DC Professionals", 
-      gradient: "from-purple-600 to-purple-700",
       icon: Shield,
       detail: "All partners verified & DC-licensed"
     },
     { 
       value: "100%", 
       label: "Free First Tour", 
-      gradient: "from-purple-700 to-blue-700",
       icon: Award,
       detail: "No hidden fees or surprises"
     }
   ];
 
   return (
-    <div className="py-16 bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50">
+    <div className="py-24 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-slate-800 mb-4">
-            Trusted by <span className="relative inline-block text-purple-700">
-              DC Homebuyers
-              <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full opacity-50"></span>
-            </span>
+        <div className="text-center mb-16">
+          <h2 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
+            Trusted by <span className="font-medium">DC Homebuyers</span>
           </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            Join <span className="font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-md">thousands</span> who've discovered a better way to tour Washington DC homes
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Join thousands who've discovered a better way to tour Washington DC homes
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mb-16">
           {indicators.map((indicator, index) => {
             const IconComponent = indicator.icon;
             return (
               <div 
                 key={index}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 text-center group"
+                className="bg-gray-50 rounded-3xl p-8 border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 text-center group"
               >
-                <div className="mb-4">
-                  <div className={`w-16 h-16 mx-auto mb-3 bg-gradient-to-r ${indicator.gradient} rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <div className="mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-900 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
                     <IconComponent className="w-8 h-8 text-white" />
                   </div>
-                  <div className={`text-4xl font-bold bg-gradient-to-r ${indicator.gradient} bg-clip-text text-transparent`}>
+                  <div className="text-4xl font-light text-gray-900 mb-2">
                     {indicator.value}
                   </div>
                 </div>
-                <div className="text-gray-900 font-semibold text-lg mb-1">{indicator.label}</div>
-                <div className="text-gray-600 text-sm">{indicator.detail}</div>
+                <div className="text-gray-900 font-medium text-lg mb-2">{indicator.label}</div>
+                <div className="text-gray-600 text-sm font-light">{indicator.detail}</div>
               </div>
             );
           })}
         </div>
 
-        {/* Additional trust elements */}
-        <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto border border-purple-100">
+        <div className="bg-gray-50 rounded-3xl p-12 max-w-4xl mx-auto border border-gray-200 shadow-sm">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              What makes <span className="text-purple-700">FirstLook</span> different in Washington DC?
+            <h3 className="text-3xl font-light text-gray-900 mb-8 tracking-tight">
+              What makes <span className="font-medium">FirstLook</span> different in Washington DC?
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <span className="text-lg"><strong className="text-green-700">Transparent pricing</strong> from day one</span>
+                <span className="text-lg font-light"><span className="font-medium text-green-700">Transparent pricing</span> from day one</span>
               </div>
               <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <span className="text-lg"><strong className="text-blue-700">No binding agreements</strong> required</span>
+                <span className="text-lg font-light"><span className="font-medium text-blue-700">No binding agreements</span> required</span>
               </div>
               <div className="flex items-center justify-center gap-3 text-gray-800">
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <span className="text-lg"><strong className="text-purple-700">Local DC experts</strong> only</span>
+                <span className="text-lg font-light"><span className="font-medium text-purple-700">Local DC experts</span> only</span>
               </div>
             </div>
           </div>

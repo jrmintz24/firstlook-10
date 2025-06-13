@@ -59,72 +59,72 @@ const FAQ = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-6">
           <Link to="/">
-            <Button variant="ghost" className="mb-4">
+            <Button variant="ghost" className="mb-6 text-gray-600 hover:text-gray-900">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
           
           <div className="text-center max-w-4xl mx-auto">
-            <Badge variant="secondary" className="mb-4 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-blue-200 px-4 py-2">
+            <Badge variant="secondary" className="mb-6 bg-gray-100 text-gray-700 border-gray-200 px-4 py-2 rounded-full font-medium">
               <Shield className="h-4 w-4 mr-2" />
               Transparent Home Touring
             </Badge>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
               Frequently Asked Questions
             </h1>
-            <p className="text-gray-600 text-lg">
-              Everything you need to know about <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">FirstLook</span> and commitment-free home touring.
+            <p className="text-gray-600 text-xl font-light leading-relaxed">
+              Everything you need to know about <span className="font-medium">FirstLook</span> and commitment-free home touring.
             </p>
           </div>
         </div>
       </div>
 
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
-            <CardHeader>
-              <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
+          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
+            <CardHeader className="pb-6">
+              <div className="w-14 h-14 mx-auto mb-4 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <Shield className="h-7 w-7 text-blue-600" />
               </div>
-              <CardTitle className="text-lg">No Pressure</CardTitle>
+              <CardTitle className="text-xl font-medium text-gray-900">No Pressure</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <CardDescription className="text-gray-600 font-light">
                 Explore homes without sales pressure or binding commitments
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
-            <CardHeader>
-              <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <Clock className="h-6 w-6 text-white" />
+          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
+            <CardHeader className="pb-6">
+              <div className="w-14 h-14 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
+                <Clock className="h-7 w-7 text-purple-600" />
               </div>
-              <CardTitle className="text-lg">On-Demand Access</CardTitle>
+              <CardTitle className="text-xl font-medium text-gray-900">On-Demand Access</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <CardDescription className="text-gray-600 font-light">
                 Schedule showings when convenient for you, 7 days a week
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
-            <CardHeader>
-              <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-white" />
+          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
+            <CardHeader className="pb-6">
+              <div className="w-14 h-14 mx-auto mb-4 bg-green-100 rounded-2xl flex items-center justify-center">
+                <DollarSign className="h-7 w-7 text-green-600" />
               </div>
-              <CardTitle className="text-lg">Transparent Pricing</CardTitle>
+              <CardTitle className="text-xl font-medium text-gray-900">Transparent Pricing</CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>
+              <CardDescription className="text-gray-600 font-light">
                 First showing free, clear pricing for additional services
               </CardDescription>
             </CardContent>
@@ -133,17 +133,17 @@ const FAQ = () => {
 
         {/* FAQ Accordion */}
         <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-6">
             {faqs.map((faq, index) => (
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="bg-white rounded-lg shadow-sm border-0 px-6"
+                className="bg-white rounded-3xl shadow-sm border border-gray-200 px-8"
               >
-                <AccordionTrigger className="text-left hover:no-underline py-6">
-                  <span className="font-semibold text-gray-800 pr-4">{faq.question}</span>
+                <AccordionTrigger className="text-left hover:no-underline py-8">
+                  <span className="font-medium text-gray-900 pr-4 text-lg">{faq.question}</span>
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-600 leading-relaxed pb-6">
+                <AccordionContent className="text-gray-600 leading-relaxed pb-8 text-lg font-light">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -152,15 +152,15 @@ const FAQ = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16 max-w-2xl mx-auto">
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-            <Home className="h-12 w-12 mx-auto mb-4 opacity-90" />
-            <h3 className="text-2xl font-bold mb-4">Ready to Start Your Home Search?</h3>
-            <p className="mb-6 text-purple-100">
-              Get your first private showing completely free with <span className="font-bold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">FirstLook</span>. No commitments, no pressure.
+        <div className="text-center mt-20 max-w-3xl mx-auto">
+          <div className="bg-gray-900 rounded-3xl p-12 text-white">
+            <Home className="h-14 w-14 mx-auto mb-6 opacity-90" />
+            <h3 className="text-3xl font-light mb-6 tracking-tight">Ready to Start Your Home Search?</h3>
+            <p className="mb-8 text-gray-300 text-lg font-light leading-relaxed">
+              Get your first private showing completely free with <span className="font-medium text-white">FirstLook</span>. No commitments, no pressure.
             </p>
             <Link to="/">
-              <Button size="lg" variant="secondary" className="bg-white text-purple-600 hover:bg-gray-100">
+              <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-2xl font-medium text-lg shadow-none">
                 Get Your Free Showing
               </Button>
             </Link>

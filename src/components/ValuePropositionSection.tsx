@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Zap, Gift, MapPin, CheckCircle } from "lucide-react";
@@ -41,7 +42,7 @@ const ValuePropositionSection = () => {
             The only platform built for <span className="font-medium">buyers, not agents.</span>
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
-            See how we're different — for Washington DC buyers.
+            See how we're different
           </p>
         </div>
 

@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
@@ -51,22 +52,6 @@ const MobileNavigation = ({
             className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
           >
             For Agents
-          </Button>
-        </Link>
-        <Link to="/agent-auth?tab=login" onClick={onMenuItemClick}>
-          <Button
-            variant="ghost"
-            className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 transition-colors justify-start w-full"
-          >
-            Agent Login
-          </Button>
-        </Link>
-        <Link to="/admin-auth?tab=login" onClick={onMenuItemClick}>
-          <Button
-            variant="ghost"
-            className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 transition-colors justify-start w-full"
-          >
-            Admin Login
           </Button>
         </Link>
         

@@ -28,16 +28,6 @@ const NavigationLinks = () => {
           For Agents
         </Button>
       </Link>
-      <Link to="/agent-auth?tab=login">
-        <Button variant="ghost" className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors">
-          Agent Login
-        </Button>
-      </Link>
-      <Link to="/admin-auth?tab=login">
-        <Button variant="ghost" className="text-xs text-gray-500 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 transition-colors">
-          Admin Login
-        </Button>
-      </Link>
     </div>
   );
 };

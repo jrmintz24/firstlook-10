@@ -1,50 +1,141 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Shield, Gift, Handshake, DollarSign, AlertCircle, CreditCard } from "lucide-react";
+import { ArrowLeft, Home, Shield, Gift, Handshake, DollarSign, AlertCircle, CreditCard, Calendar, Users, MapPin, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FAQ = () => {
-  const tourExperienceFAQs = [
+  const generalFAQs = [
     {
-      question: "How private is my contact info?",
-      answer: "Your email and phone number are never shared unless you choose to share them—no cold calls, no spam, just control. We believe your privacy should be protected throughout your home search journey.",
-      icon: Shield
-    },
-    {
-      question: "Will I need to sign a contract?",
-      answer: "No contracts required. Our tours are on-demand and commitment-free. No agent sign-ups, no pressure to buy—just explore homes on your schedule whenever you're ready.",
-      icon: Handshake
-    },
-    {
-      question: "What happens after my free first tour?",
-      answer: "You're in complete control. Use the same easy process to book additional tours at affordable flat rates—only when you're ready. No pressure, no follow-up calls unless you want them.",
-      icon: Gift
-    },
-    {
-      question: "Will an agent still be involved?",
-      answer: "You lead, we support. Licensed DC professionals are available on-call only if you want guidance or have questions. They're there to help, not to pressure you into decisions.",
+      question: "What is FirstLook and how does it work?",
+      answer: "FirstLook lets you tour homes on your schedule—no agent commitment, no pressure, no sharing your personal info. You browse, book, and tour independently, with support available only when you ask for it.",
       icon: Home
     }
   ];
 
-  const pricingPolicyFAQs = [
+  const privacyControlFAQs = [
     {
-      question: "How do your fees compare to traditional agent commissions?",
-      answer: "Traditional 6% commissions? Skip them. We operate on transparent flat-rate per-tour pricing so you save thousands. Your first tour is completely free—no hidden agenda.",
+      question: "Will agents or sellers get my contact info?",
+      answer: "Never—unless you explicitly decide to share it. You're in control every step of the way. No cold calls, no spam, ever.",
+      icon: Shield
+    },
+    {
+      question: "Can I tour homes without being assigned an agent?",
+      answer: "Absolutely. FirstLook was built to put buyers in charge, with zero agent assignment or pressure until you're ready.",
+      icon: Handshake
+    },
+    {
+      question: "If I want to work with an agent, can I?",
+      answer: "Yes! If and when you want agent help, you can connect with a vetted, DC-licensed pro—on your terms.",
+      icon: Users
+    }
+  ];
+
+  const touringExperienceFAQs = [
+    {
+      question: "How do I schedule a tour?",
+      answer: "Simply select a property, pick your preferred time, and book instantly—no phone tag, no back-and-forth, just confirmation in minutes.",
+      icon: Calendar
+    },
+    {
+      question: "Who shows the home during my tour?",
+      answer: "A verified, DC-licensed local pro will greet you and give access. They're there to help if you need, but will always respect your space and privacy.",
+      icon: Home
+    },
+    {
+      question: "Can I bring friends or family on a tour?",
+      answer: "Of course—bring whoever you like. We want you to feel comfortable and empowered in your decision-making.",
+      icon: Users
+    },
+    {
+      question: "What happens after my first (free) tour?",
+      answer: "You can continue booking tours at transparent, flat rates. Still no contracts or commitments.",
+      icon: Gift
+    }
+  ];
+
+  const costValueFAQs = [
+    {
+      question: "How much does FirstLook cost?",
+      answer: "Your first tour is free. After that, simply pay per tour—no subscriptions, no hidden fees, and absolutely no 6% commissions.",
       icon: DollarSign
     },
     {
-      question: "Any hidden costs or subscriptions?",
-      answer: "None. You only pay for the tours you book—no monthly fees, no surprise charges, no fine print. What you see is exactly what you get.",
-      icon: AlertCircle
+      question: "How do you save me money compared to traditional agents?",
+      answer: "By removing the 6% commission structure and letting you pay only for the tours and services you actually use, FirstLook puts thousands back in your pocket.",
+      icon: Gift
     },
     {
-      question: "What payment methods are accepted?",
-      answer: "We accept all major credit and debit cards, processed securely. Simple, straightforward payment when you book additional tours.",
-      icon: CreditCard
+      question: "Are there any hidden fees or upcharges?",
+      answer: "No. Our pricing is upfront, all-inclusive, and you'll never be surprised by extra costs.",
+      icon: AlertCircle
     }
+  ];
+
+  const differentiatorsFAQs = [
+    {
+      question: "How is FirstLook different from traditional real estate services?",
+      answer: "Privacy-first: You never get spammed or cold-called. No commitment: No contracts, no agent sign-up, ever. On-demand: Book tours instantly, on your schedule. Flat, transparent pricing: No commissions. Local support, only if you want it: Agents are on-call, not in your face.",
+      icon: Shield
+    },
+    {
+      question: "What if I want to make an offer on a home?",
+      answer: "When you're ready, we offer expert offer-writing support for a flat fee, or you can bring in your own agent—your choice, no pressure.",
+      icon: Handshake
+    },
+    {
+      question: "Can I use FirstLook and still work with my own agent?",
+      answer: "Yes! You're never locked in. Use FirstLook to tour homes, then bring in your own agent at any stage if you wish.",
+      icon: Users
+    }
+  ];
+
+  const safetySupportFAQs = [
+    {
+      question: "Is my information safe with FirstLook?",
+      answer: "Absolutely. All data is encrypted, and we only collect what's needed to facilitate your tours—never for marketing or sales.",
+      icon: Shield
+    },
+    {
+      question: "What if I need help during a tour?",
+      answer: "Local pros are always available for questions or support, but never pushy. You can also reach us directly via chat or support.",
+      icon: HelpCircle
+    }
+  ];
+
+  const practicalFAQs = [
+    {
+      question: "What if I want to keep seeing homes before making a decision?",
+      answer: "No problem. Book as many tours as you like, whenever you like. There's no limit and never any pressure to buy.",
+      icon: Calendar
+    },
+    {
+      question: "Do you serve areas outside DC?",
+      answer: "We're currently focused on Washington, DC, but let us know if you want to see FirstLook in your city!",
+      icon: MapPin
+    },
+    {
+      question: "Can sellers list their homes on FirstLook?",
+      answer: "Yes—contact us for details on our transparent, commission-free listing process.",
+      icon: Home
+    },
+    {
+      question: "What happens if I need to reschedule or cancel a tour?",
+      answer: "You can reschedule or cancel any tour with a simple click—no penalties or headaches.",
+      icon: Calendar
+    }
+  ];
+
+  const faqSections = [
+    { title: "General", faqs: generalFAQs, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+    { title: "Privacy & Control", faqs: privacyControlFAQs, iconBg: "bg-green-100", iconColor: "text-green-600" },
+    { title: "Touring & Experience", faqs: touringExperienceFAQs, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+    { title: "Cost & Value", faqs: costValueFAQs, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
+    { title: "Differentiators", faqs: differentiatorsFAQs, iconBg: "bg-red-100", iconColor: "text-red-600" },
+    { title: "Safety & Support", faqs: safetySupportFAQs, iconBg: "bg-indigo-100", iconColor: "text-indigo-600" },
+    { title: "Other Practical Questions", faqs: practicalFAQs, iconBg: "bg-gray-100", iconColor: "text-gray-600" }
   ];
 
   return (
@@ -76,79 +167,43 @@ const FAQ = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
-        {/* Tour Experience Section */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Home className="h-5 w-5 text-blue-600" />
+        {faqSections.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="max-w-4xl mx-auto mb-16">
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`w-10 h-10 ${section.iconBg} rounded-xl flex items-center justify-center`}>
+                  <Home className={`h-5 w-5 ${section.iconColor}`} />
+                </div>
+                <h2 className="text-3xl font-light text-gray-900">{section.title}</h2>
               </div>
-              <h2 className="text-3xl font-light text-gray-900">Tour Experience</h2>
-            </div>
-            
-            <Accordion type="single" collapsible className="space-y-4">
-              {tourExperienceFAQs.map((faq, index) => {
-                const IconComponent = faq.icon;
-                return (
-                  <AccordionItem 
-                    key={index} 
-                    value={`tour-${index}`}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200"
-                  >
-                    <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="h-5 w-5 text-blue-600" />
+              
+              <Accordion type="single" collapsible className="space-y-4">
+                {section.faqs.map((faq, index) => {
+                  const IconComponent = faq.icon;
+                  return (
+                    <AccordionItem 
+                      key={index} 
+                      value={`${sectionIndex}-${index}`}
+                      className="bg-white rounded-2xl shadow-sm border border-gray-200"
+                    >
+                      <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 ${section.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                            <IconComponent className={`h-5 w-5 ${section.iconColor}`} />
+                          </div>
+                          <span className="font-medium text-gray-900 text-lg">{faq.question}</span>
                         </div>
-                        <span className="font-medium text-gray-900 text-lg">{faq.question}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-600 leading-relaxed px-6 pb-6 ml-14 text-lg font-light">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          </div>
-        </div>
-
-        {/* Pricing & Policies Section */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-green-600" />
-              </div>
-              <h2 className="text-3xl font-light text-gray-900">Pricing & Policies</h2>
+                      </AccordionTrigger>
+                      <AccordionContent className="text-gray-600 leading-relaxed px-6 pb-6 ml-14 text-lg font-light">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </div>
-            
-            <Accordion type="single" collapsible className="space-y-4">
-              {pricingPolicyFAQs.map((faq, index) => {
-                const IconComponent = faq.icon;
-                return (
-                  <AccordionItem 
-                    key={index} 
-                    value={`pricing-${index}`}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200"
-                  >
-                    <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="h-5 w-5 text-green-600" />
-                        </div>
-                        <span className="font-medium text-gray-900 text-lg">{faq.question}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-600 leading-relaxed px-6 pb-6 ml-14 text-lg font-light">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
           </div>
-        </div>
+        ))}
 
         {/* Call to Action */}
         <div className="text-center max-w-3xl mx-auto">

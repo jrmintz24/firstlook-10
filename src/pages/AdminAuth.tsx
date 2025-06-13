@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
@@ -36,12 +37,12 @@ const AdminAuth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-white py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto">
-          <Card className="bg-white/90 backdrop-blur-sm border-purple-100 shadow-lg">
+          <Card className="bg-white border border-gray-200">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl font-light text-gray-900 tracking-tight">
                 Admin Portal
               </CardTitle>
             </CardHeader>
@@ -80,7 +81,7 @@ const AdminAuth = () => {
           </Card>
           <div className="text-center mt-8">
             <Link to="/">
-              <Button variant="ghost" className="text-purple-600 hover:bg-purple-50">
+              <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 font-light">
                 Back to Home
               </Button>
             </Link>

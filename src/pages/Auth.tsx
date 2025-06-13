@@ -95,11 +95,11 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border border-gray-200">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-light text-gray-900 tracking-tight">Welcome</CardTitle>
+          <CardDescription className="text-gray-600 font-light">
             Sign in to your account or create a new one
           </CardDescription>
         </CardHeader>
@@ -113,7 +113,7 @@ export default function Auth() {
             <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email" className="text-gray-700 font-medium">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -122,10 +122,11 @@ export default function Auth() {
                     placeholder="Enter your email"
                     required
                     disabled={loading}
+                    className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password" className="text-gray-700 font-medium">Password</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -134,9 +135,10 @@ export default function Auth() {
                     placeholder="Enter your password"
                     required
                     disabled={loading}
+                    className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -152,7 +154,7 @@ export default function Auth() {
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="text-gray-700 font-medium">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -161,10 +163,11 @@ export default function Auth() {
                     placeholder="Enter your email"
                     required
                     disabled={loading}
+                    className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="text-gray-700 font-medium">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -173,10 +176,11 @@ export default function Auth() {
                     placeholder="Enter your password"
                     required
                     disabled={loading}
+                    className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password" className="text-gray-700 font-medium">Confirm Password</Label>
                   <Input
                     id="confirm-password"
                     type="password"
@@ -185,9 +189,10 @@ export default function Auth() {
                     placeholder="Confirm your password"
                     required
                     disabled={loading}
+                    className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

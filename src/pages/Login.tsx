@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -51,10 +52,10 @@ export const Login: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-bold">Sign in to your account</h2>
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="w-full max-w-md space-y-8 p-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-light text-gray-900 tracking-tight">Sign in to your account</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -70,6 +71,7 @@ export const Login: React.FC = () => {
               placeholder="Email address"
               required
               disabled={loading}
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
             <Input
               type="password"
@@ -78,33 +80,34 @@ export const Login: React.FC = () => {
               placeholder="Password"
               required
               disabled={loading}
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-white px-2 text-gray-500 font-light">Or continue with</span>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('google')} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('google')} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
               Google
             </Button>
-            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('github')} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('github')} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
               GitHub
             </Button>
-            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('discord')} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => handleOAuthLogin('discord')} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
               Discord
             </Button>
           </div>
-          <p className="text-center text-sm">
+          <p className="text-center text-sm text-gray-600 font-light">
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-primary hover:underline">
+            <Link to="/signup" className="font-medium text-gray-900 hover:underline">
               Sign up
             </Link>
           </p>

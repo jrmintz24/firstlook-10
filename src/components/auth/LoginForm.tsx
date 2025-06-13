@@ -16,10 +16,10 @@ interface LoginFormProps {
 
 const LoginForm = ({ email, password, isLoading, onInputChange, onSubmit, onSocialLogin }: LoginFormProps) => {
   return (
-    <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+    <Card className="border-0 bg-white">
       <CardHeader>
-        <CardTitle className="text-xl text-gray-800">Welcome back</CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardTitle className="text-xl text-gray-900 font-medium">Welcome back</CardTitle>
+        <CardDescription className="text-gray-600 font-light">
           Sign in to your FirstLook account
         </CardDescription>
       </CardHeader>
@@ -33,10 +33,10 @@ const LoginForm = ({ email, password, isLoading, onInputChange, onSubmit, onSoci
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+            <span className="bg-background px-2 text-gray-500 font-light">Or continue with email</span>
           </div>
         </div>
 
@@ -50,7 +50,7 @@ const LoginForm = ({ email, password, isLoading, onInputChange, onSubmit, onSoci
               onChange={(e) => onInputChange('email', e.target.value)}
               required
               disabled={isLoading}
-              className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
           </div>
           <div>
@@ -62,12 +62,12 @@ const LoginForm = ({ email, password, isLoading, onInputChange, onSubmit, onSoci
               onChange={(e) => onInputChange('password', e.target.value)}
               required
               disabled={isLoading}
-              className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 shadow-lg transform hover:scale-105 transition-all duration-300"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3"
             disabled={isLoading}
           >
             {isLoading ? "Signing In..." : "Sign In"}

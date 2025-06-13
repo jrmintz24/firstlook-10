@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -31,10 +32,10 @@ export const SignUp: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-bold">Create an account</h2>
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="w-full max-w-md space-y-8 p-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-light text-gray-900 tracking-tight">Create an account</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -50,6 +51,7 @@ export const SignUp: React.FC = () => {
               placeholder="Email address"
               required
               disabled={loading}
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
             <Input
               type="password"
@@ -58,14 +60,15 @@ export const SignUp: React.FC = () => {
               placeholder="Password"
               required
               disabled={loading}
+              className="border-gray-300 focus:border-gray-500 focus:ring-gray-500"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign up'}
           </Button>
-          <p className="text-center text-sm">
+          <p className="text-center text-sm text-gray-600 font-light">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-primary hover:underline">
+            <Link to="/login" className="font-medium text-gray-900 hover:underline">
               Sign in
             </Link>
           </p>

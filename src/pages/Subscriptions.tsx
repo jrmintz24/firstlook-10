@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,14 +89,9 @@ const Subscriptions = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="py-16 relative overflow-hidden bg-white">
+      <div className="py-12 relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <Badge variant="secondary" className="mb-6 bg-gray-100 text-gray-700 border-gray-200 px-6 py-3 text-lg rounded-full font-medium">
-              <Star className="w-5 h-5 mr-2" />
-              {isSubscribed ? "Premium Member" : "VIP Membership Available"}
-            </Badge>
-            
             <h1 className="text-5xl md:text-6xl font-light leading-tight mb-6 text-gray-900 tracking-tight">
               {isSubscribed ? (
                 <>Welcome Back <span className="font-medium">Premium Member</span></>
@@ -139,9 +133,9 @@ const Subscriptions = () => {
 
       {/* Membership Pricing */}
       {!isSubscribed && (
-        <div className="py-16 bg-white">
+        <div className="py-12 bg-white">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-tight">Membership at a Glance</h2>
             </div>
             
@@ -217,8 +211,8 @@ const Subscriptions = () => {
             </div>
 
             {/* Non-Member Options */}
-            <div className="max-w-4xl mx-auto mt-12">
-              <h3 className="text-3xl font-light text-gray-900 text-center mb-8 tracking-tight">Not Ready for Membership? No Problem!</h3>
+            <div className="max-w-4xl mx-auto mt-8">
+              <h3 className="text-3xl font-light text-gray-900 text-center mb-6 tracking-tight">Not Ready for Membership? No Problem!</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="border border-gray-200 shadow-lg rounded-3xl">
                   <CardHeader className="text-center">
@@ -260,9 +254,9 @@ const Subscriptions = () => {
       )}
 
       {/* How It Works */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-tight">How It Works</h2>
           </div>
           
@@ -307,9 +301,9 @@ const Subscriptions = () => {
       </div>
 
       {/* What's Next */}
-      <div className="py-16 bg-white">
+      <div className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-tight">What's Next After Your Tour?</h2>
           </div>
           
@@ -345,9 +339,9 @@ const Subscriptions = () => {
       </div>
 
       {/* Offer Support Details */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-tight">Need Help Making an Offer?</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">FirstLook offers professional offer support to help you navigate the buying process with confidence.</p>
           </div>
@@ -395,9 +389,9 @@ const Subscriptions = () => {
       </div>
 
       {/* Why Go FirstLook */}
-      <div className="py-16 bg-white">
+      <div className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-tight">Why Go FirstLook?</h2>
           </div>
           
@@ -426,7 +420,7 @@ const Subscriptions = () => {
 
       {/* Final CTA */}
       {!isSubscribed && (
-        <div className="py-20 bg-gray-900">
+        <div className="py-16 bg-gray-900">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-5xl font-light text-white mb-8 tracking-tight">Ready to Start?</h2>
             <div className="max-w-2xl mx-auto space-y-8">

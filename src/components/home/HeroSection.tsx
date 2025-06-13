@@ -28,11 +28,11 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             Tour homes on your schedule—<span className="font-bold">no agent agreement required</span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
             Discover a modern homebuying experience built for you.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Button 
               size="lg" 
               className="bg-gray-900 hover:bg-gray-800 text-white px-12 py-6 text-xl font-medium shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-300 rounded-2xl"
@@ -49,25 +49,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             >
               How It Works
             </Button>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link to="/subscriptions">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 underline font-medium hover:scale-105 transition-all duration-200 shadow-none"
-              >
-                💰 See Transparent Pricing →
-              </Button>
-            </Link>
-            <Link to="/agents">
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 underline font-medium hover:scale-105 transition-all duration-200 shadow-none"
-              >
-                Join as DC Showing Partner →
-              </Button>
-            </Link>
           </div>
         </div>
       </div>

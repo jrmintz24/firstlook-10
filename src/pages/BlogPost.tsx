@@ -72,9 +72,19 @@ const BlogPost = () => {
 
         {/* Featured Image */}
         <div className="mb-12">
-          <div className="h-64 md:h-80 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 rounded-3xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
-          </div>
+          {post.image ? (
+            <div className="h-64 md:h-80 rounded-3xl overflow-hidden relative">
+              <img 
+                src={post.image} 
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="h-64 md:h-80 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 rounded-3xl overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
+            </div>
+          )}
         </div>
       </div>
 

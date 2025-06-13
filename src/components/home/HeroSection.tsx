@@ -1,6 +1,7 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
@@ -30,43 +31,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
             Discover a modern, transparent homebuying experience built for you.
           </p>
-
-          {/* Enhanced Value Props */}
-          <div className="bg-gray-50 rounded-3xl p-8 mb-10 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center group">
-                <Shield className="w-8 h-8 text-gray-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
-                <h3 className="font-medium text-gray-900 mb-2">Licensed DC Pros</h3>
-                <p className="text-gray-600 text-sm font-light">Verified agents, no binding contracts</p>
-              </div>
-              <div className="text-center group">
-                <Clock className="w-8 h-8 text-gray-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
-                <h3 className="font-medium text-gray-900 mb-2">Book Instantly</h3>
-                <p className="text-gray-600 text-sm font-light">Schedule tours on your timeline</p>
-              </div>
-              <div className="text-center group">
-                <DollarSign className="w-8 h-8 text-gray-600 mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" />
-                <h3 className="font-medium text-gray-900 mb-2">Save Thousands</h3>
-                <p className="text-gray-600 text-sm font-light">Pay only for what you need</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Benefits Row */}
-          <div className="flex flex-wrap justify-center gap-4 mb-10">
-            <div className="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-full border border-gray-200 font-medium">
-              <Sparkles className="w-4 h-4" />
-              <span>First Tour Free</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-full border border-gray-200 font-medium">
-              <Calendar className="w-4 h-4" />
-              <span>Same-Day Booking</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white text-gray-600 px-4 py-2 rounded-full border border-gray-200 font-medium">
-              <Shield className="w-4 h-4" />
-              <span>No Hidden Fees</span>
-            </div>
-          </div>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
             <Button 

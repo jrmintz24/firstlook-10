@@ -29,7 +29,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">
-            Discover a modern, transparent homebuying experience built for you.
+            Discover a modern homebuying experience built for you.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">

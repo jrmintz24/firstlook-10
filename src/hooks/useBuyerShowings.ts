@@ -2,18 +2,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { isActiveShowing, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
-import { useShowingEligibility } from "@/hooks/useShowingEligibility";
-
-interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  user_type: string;
-  free_showing_used?: boolean;
-  subscription_status?: string;
-}
 
 interface ShowingRequest {
   id: string;
@@ -32,13 +20,12 @@ interface ShowingRequest {
   status_updated_at?: string | null;
 }
 
-export const useBuyerShowings = (currentUser: any, profile: Profile | null) => {
+export const useBuyerShowings = (currentUser: any, profile: any) => {
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [selectedShowing, setSelectedShowing] = useState<ShowingRequest | null>(null);
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { resetFreeShowingEligibility, checkEligibility } = useShowingEligibility();
 
   const fetchShowingRequests = async () => {
     if (!currentUser) {
@@ -48,77 +35,95 @@ export const useBuyerShowings = (currentUser: any, profile: Profile | null) => {
     }
 
     try {
-      console.log('Fetching showing requests for:', currentUser.id);
+      console.log('Fetching showing requests for user:', currentUser.id);
       
-      const { data: requestsData, error: requestsError } = await supabase
+      const { data: showingData, error: showingError } = await supabase
         .from('showing_requests')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      console.log('Requests fetch result:', { requestsData, requestsError });
+      console.log('Showing requests fetch result:', { showingData, showingError });
 
-      if (requestsError) {
-        console.error('Requests error:', requestsError);
-        setShowingRequests([]);
+      if (showingError) {
+        console.error('Error fetching showing requests:', showingError);
+        throw showingError;
+      }
+
+      setShowingRequests(showingData || []);
+
+      const { data: agreementData, error: agreementError } = await supabase
+        .from('tour_agreements')
+        .select('showing_request_id, signed')
+        .eq('buyer_id', currentUser.id);
+
+      if (agreementError) {
+        console.error('Error fetching agreements:', agreementError);
       } else {
-        setShowingRequests(requestsData || []);
-        console.log('Requests set:', requestsData);
-        setAgreements({});
+        const agreementMap = (agreementData || []).reduce((acc, agreement) => {
+          acc[agreement.showing_request_id] = agreement.signed;
+          return acc;
+        }, {} as Record<string, boolean>);
+        setAgreements(agreementMap);
       }
     } catch (error) {
-      console.error('Error fetching showing requests:', error);
+      console.error('Error in fetchShowingRequests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your showing requests. Please try again.",
+        variant: "destructive"
+      });
     } finally {
-      console.log('Setting loading to false');
       setLoading(false);
     }
   };
 
-  const handleCancelShowing = async (showingId: string) => {
+  useEffect(() => {
+    fetchShowingRequests();
+  }, [currentUser]);
+
+  const pendingRequests = showingRequests.filter(
+    request => request.status === 'pending' || request.status === 'assigned'
+  );
+
+  const activeShowings = showingRequests.filter(
+    request => request.status === 'confirmed' || request.status === 'in_progress'
+  );
+
+  const completedShowings = showingRequests.filter(
+    request => request.status === 'completed' || request.status === 'cancelled'
+  );
+
+  const handleCancelShowing = async (id: string) => {
     try {
       const { error } = await supabase
         .from('showing_requests')
         .update({ status: 'cancelled' })
-        .eq('id', showingId);
+        .eq('id', id);
 
-      if (error) {
-        console.error('Error cancelling showing:', error);
-        toast({
-          title: "Error",
-          description: "Failed to cancel showing. Please try again.",
-          variant: "destructive"
-        });
-      } else {
-        // Check if this was the user's only active showing and reset eligibility if so
-        const cancelledShowing = showingRequests.find(req => req.id === showingId);
-        if (cancelledShowing && currentUser) {
-          // Check if this was their only active showing
-          const otherActiveShowings = showingRequests.filter(req => 
-            req.id !== showingId && 
-            !['completed', 'cancelled'].includes(req.status)
-          );
-          
-          if (otherActiveShowings.length === 0) {
-            await resetFreeShowingEligibility();
-            await checkEligibility();
-          }
-        }
+      if (error) throw error;
 
-        toast({
-          title: "Showing Cancelled",
-          description: "Your showing has been cancelled successfully.",
-        });
-        fetchShowingRequests();
-      }
+      toast({
+        title: "Showing Cancelled",
+        description: "Your showing request has been cancelled successfully.",
+      });
+
+      fetchShowingRequests();
     } catch (error) {
       console.error('Error cancelling showing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel showing. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleRescheduleShowing = (showingId: string) => {
+  const handleRescheduleShowing = async (id: string) => {
+    console.log('Reschedule showing:', id);
     toast({
-      title: "Reschedule Request Sent",
-      description: "Your showing partner will contact you with new available times.",
+      title: "Feature Coming Soon",
+      description: "Rescheduling functionality will be available soon.",
     });
   };
 
@@ -126,37 +131,35 @@ export const useBuyerShowings = (currentUser: any, profile: Profile | null) => {
     setSelectedShowing(showing);
   };
 
-  const handleAgreementSign = async (name: string) => {
-    if (!selectedShowing || !currentUser) return;
+  const handleAgreementSign = async (showingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tour_agreements')
+        .upsert({
+          showing_request_id: showingId,
+          buyer_id: currentUser.id,
+          signed: true,
+          signed_at: new Date().toISOString()
+        });
 
-    const { error } = await supabase.from('tour_agreements').insert({
-        showing_request_id: selectedShowing.id,
-        agent_id: selectedShowing.assigned_agent_id,
-        buyer_id: currentUser.id,
-        signed: true,
-        signed_at: new Date().toISOString()
-    });
+      if (error) throw error;
 
-    if (error) {
-        toast({ title: 'Error', description: 'Failed to save agreement.', variant: 'destructive' });
-        return;
+      setAgreements(prev => ({ ...prev, [showingId]: true }));
+      setSelectedShowing(null);
+
+      toast({
+        title: "Agreement Signed",
+        description: "Tour agreement signed successfully!",
+      });
+    } catch (error) {
+      console.error('Error signing agreement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign agreement. Please try again.",
+        variant: "destructive"
+      });
     }
-
-    toast({ title: 'Confirmed', description: 'Your showing has been confirmed and agreement signed.' });
-    setAgreements(prev => ({ ...prev, [selectedShowing.id]: true }));
-    setSelectedShowing(null);
   };
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchShowingRequests();
-    }
-  }, [currentUser]);
-
-  // Organize requests by type
-  const pendingRequests = showingRequests.filter(req => isPendingRequest(req.status as ShowingStatus));
-  const activeShowings = showingRequests.filter(req => isActiveShowing(req.status as ShowingStatus));
-  const completedShowings = showingRequests.filter(req => req.status === 'completed');
 
   return {
     showingRequests,

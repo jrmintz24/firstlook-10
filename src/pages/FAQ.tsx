@@ -3,58 +3,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Users, AlertCircle, Shield, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, Home, Shield, Gift, HandShake, DollarSign, AlertCircle, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FAQ = () => {
-  const faqs = [
+  const tourExperienceFAQs = [
     {
-      question: "How is FirstLook different from traditional real estate agents?",
-      answer: "FirstLook provides transparent, commitment-free home showings. Unlike traditional agents who often require buyer agreements upfront, we let you explore homes without pressure or long-term commitments. Your first showing is completely free, and you can decide if and when you want to work with an agent for next steps."
+      question: "How private is my contact info?",
+      answer: "Your email and phone number are never shared unless you choose to share them—no cold calls, no spam, just control. We believe your privacy should be protected throughout your home search journey.",
+      icon: Shield
     },
     {
-      question: "What does 'free first showing' actually mean? Are there hidden costs?",
-      answer: "Your first property tour is completely free - no fees, no contracts, no obligations. If you want additional showings, our transparent flat-rate pricing starts at $50 per showing. No hidden fees, ever. You'll know exactly what you're paying before you book."
+      question: "Will I need to sign a contract?",
+      answer: "No contracts required. Our tours are on-demand and commitment-free. No agent sign-ups, no pressure to buy—just explore homes on your schedule whenever you're ready.",
+      icon: HandShake
     },
     {
-      question: "How quickly can I schedule a showing?",
-      answer: "We typically match you with a showing partner within 24 hours. Once matched, you can usually schedule your showing within 2-3 days, depending on property availability and your schedule preferences. Our partners work 7 days a week to accommodate your needs."
+      question: "What happens after my free first tour?",
+      answer: "You're in complete control. Use the same easy process to book additional tours at affordable flat rates—only when you're ready. No pressure, no follow-up calls unless you want them.",
+      icon: Gift
     },
     {
-      question: "Are FirstLook's showing partners actually licensed real estate professionals?",
-      answer: "Yes! All our showing partners are licensed real estate agents, fully insured, and verified through our screening process. We check credentials, references, and ensure they meet our standards for professionalism and local market knowledge."
+      question: "Will an agent still be involved?",
+      answer: "You lead, we support. Licensed DC professionals are available on-call only if you want guidance or have questions. They're there to help, not to pressure you into decisions.",
+      icon: Home
+    }
+  ];
+
+  const pricingPolicyFAQs = [
+    {
+      question: "How do your fees compare to traditional agent commissions?",
+      answer: "Traditional 6% commissions? Skip them. We operate on transparent flat-rate per-tour pricing so you save thousands. Your first tour is completely free—no hidden agenda.",
+      icon: DollarSign
     },
     {
-      question: "What happens after my free showing?",
-      answer: "After your tour, you have complete control. You can: book additional showings, ask your showing partner to help with offers or negotiations, connect with other qualified agents, or simply walk away with no obligations. The choice is entirely yours."
+      question: "Any hidden costs or subscriptions?",
+      answer: "None. You only pay for the tours you book—no monthly fees, no surprise charges, no fine print. What you see is exactly what you get.",
+      icon: AlertCircle
     },
     {
-      question: "What if I want to make an offer on a home I tour?",
-      answer: "Great! Your showing partner can help facilitate the offer process. At that point, you can choose to work with them as your buyer's agent (with transparent pricing) or we can connect you with other qualified professionals. You're never locked into anything."
-    },
-    {
-      question: "Can I tour multiple properties in different neighborhoods?",
-      answer: "Absolutely! Each property tour is independent. You can explore homes across different neighborhoods and markets. We'll match you with partners who have expertise in each specific area you're interested in."
-    },
-    {
-      question: "How much does FirstLook cost after the free showing?",
-      answer: "We offer transparent, per-showing rates starting at $50, or package deals for multiple showings. We also provide offer-writing assistance for a flat fee if you decide to make an offer. No hidden charges - you'll know exactly what you're paying before you commit to anything."
-    },
-    {
-      question: "Can I use FirstLook if I already have a buyer's agent?",
-      answer: "If you've already signed an exclusive buyer agreement with an agent, you'll need to work through them for showings. However, if you're just starting your search or haven't committed to representation yet, FirstLook is perfect for exploring your options before making that decision."
-    },
-    {
-      question: "Is FirstLook available in my area?",
-      answer: "We're currently operating in Washington D.C. and expanding to other major metropolitan areas. Sign up to be notified when we launch in your city! We're prioritizing markets based on demand and where we can provide the best service."
-    },
-    {
-      question: "Why do I need FirstLook instead of just going to open houses?",
-      answer: "Open houses are great, but they have limitations: they're only scheduled at specific times, many properties don't have them, and you're competing with crowds. Private showings let you view properties on your schedule, ask detailed questions, and really get a feel for the space without pressure."
-    },
-    {
-      question: "How do I prepare for my FirstLook showing?",
-      answer: "Come prepared with questions about the property, neighborhood, and any concerns. Since your showing partner is focused on access rather than sales pressure, feel free to take your time exploring. Bring your phone for photos/notes if allowed, and don't feel pressured to make any decisions during the visit."
+      question: "What payment methods are accepted?",
+      answer: "We accept all major credit and debit cards, processed securely. Simple, straightforward payment when you book additional tours.",
+      icon: CreditCard
     }
   ];
 
@@ -73,97 +63,117 @@ const FAQ = () => {
           <div className="text-center max-w-4xl mx-auto">
             <Badge variant="secondary" className="mb-6 bg-gray-100 text-gray-700 border-gray-200 px-4 py-2 rounded-full font-medium">
               <Shield className="h-4 w-4 mr-2" />
-              Transparent Home Touring
+              Commitment-Free Home Tours
             </Badge>
             <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
               Frequently Asked Questions
             </h1>
             <p className="text-gray-600 text-xl font-light leading-relaxed">
-              Everything you need to know about <span className="font-medium">FirstLook</span> and commitment-free home touring.
+              Get the answers you need about <span className="font-medium">FirstLook's</span> privacy-first, commitment-free home touring experience.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
-          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
-            <CardHeader className="pb-6">
-              <div className="w-14 h-14 mx-auto mb-4 bg-blue-100 rounded-2xl flex items-center justify-center">
-                <Shield className="h-7 w-7 text-blue-600" />
+        {/* Tour Experience Section */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Home className="h-5 w-5 text-blue-600" />
               </div>
-              <CardTitle className="text-xl font-medium text-gray-900">No Pressure</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600 font-light">
-                Explore homes without sales pressure or binding commitments
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
-            <CardHeader className="pb-6">
-              <div className="w-14 h-14 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
-                <Clock className="h-7 w-7 text-purple-600" />
-              </div>
-              <CardTitle className="text-xl font-medium text-gray-900">On-Demand Access</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600 font-light">
-                Schedule showings when convenient for you, 7 days a week
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border border-gray-200 shadow-sm bg-white rounded-3xl">
-            <CardHeader className="pb-6">
-              <div className="w-14 h-14 mx-auto mb-4 bg-green-100 rounded-2xl flex items-center justify-center">
-                <DollarSign className="h-7 w-7 text-green-600" />
-              </div>
-              <CardTitle className="text-xl font-medium text-gray-900">Transparent Pricing</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600 font-light">
-                First showing free, clear pricing for additional services
-              </CardDescription>
-            </CardContent>
-          </Card>
+              <h2 className="text-3xl font-light text-gray-900">Tour Experience</h2>
+            </div>
+            
+            <Accordion type="single" collapsible className="space-y-4">
+              {tourExperienceFAQs.map((faq, index) => {
+                const IconComponent = faq.icon;
+                return (
+                  <AccordionItem 
+                    key={index} 
+                    value={`tour-${index}`}
+                    className="bg-white rounded-2xl shadow-sm border border-gray-200"
+                  >
+                    <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <span className="font-medium text-gray-900 text-lg">{faq.question}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-600 leading-relaxed px-6 pb-6 ml-14 text-lg font-light">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          </div>
         </div>
 
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-6">
-            {faqs.map((faq, index) => (
-              <AccordionItem 
-                key={index} 
-                value={`item-${index}`}
-                className="bg-white rounded-3xl shadow-sm border border-gray-200 px-8"
-              >
-                <AccordionTrigger className="text-left hover:no-underline py-8">
-                  <span className="font-medium text-gray-900 pr-4 text-lg">{faq.question}</span>
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-600 leading-relaxed pb-8 text-lg font-light">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+        {/* Pricing & Policies Section */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-green-600" />
+              </div>
+              <h2 className="text-3xl font-light text-gray-900">Pricing & Policies</h2>
+            </div>
+            
+            <Accordion type="single" collapsible className="space-y-4">
+              {pricingPolicyFAQs.map((faq, index) => {
+                const IconComponent = faq.icon;
+                return (
+                  <AccordionItem 
+                    key={index} 
+                    value={`pricing-${index}`}
+                    className="bg-white rounded-2xl shadow-sm border border-gray-200"
+                  >
+                    <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="h-5 w-5 text-green-600" />
+                        </div>
+                        <span className="font-medium text-gray-900 text-lg">{faq.question}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-600 leading-relaxed px-6 pb-6 ml-14 text-lg font-light">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-20 max-w-3xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto">
           <div className="bg-gray-900 rounded-3xl p-12 text-white">
-            <Home className="h-14 w-14 mx-auto mb-6 opacity-90" />
-            <h3 className="text-3xl font-light mb-6 tracking-tight">Ready to Start Your Home Search?</h3>
+            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Gift className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="text-3xl font-light mb-6 tracking-tight">Still have questions?</h3>
             <p className="mb-8 text-gray-300 text-lg font-light leading-relaxed">
-              Get your first private showing completely free with <span className="font-medium text-white">FirstLook</span>. No commitments, no pressure.
+              Get personalized answers and start your commitment-free home search today.
             </p>
-            <Link to="/">
-              <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-2xl font-medium text-lg shadow-none">
-                Get Your Free Showing
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/">
+                <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-2xl font-medium text-lg shadow-none">
+                  Start Your Free Tour
+                </Button>
+              </Link>
+              <a 
+                href="mailto:support@firstlook.com"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-2xl font-medium text-lg border-2 border-white/20 text-white hover:bg-white/10 transition-all duration-300"
+              >
+                Contact Support
+              </a>
+            </div>
           </div>
         </div>
       </div>

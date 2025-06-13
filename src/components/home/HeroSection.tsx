@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
@@ -9,6 +8,13 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
+  const scrollToHowItWorks = () => {
+    const element = document.getElementById('how-it-works');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="py-20 relative overflow-hidden bg-white">
       <div className="container mx-auto px-4 relative z-10">
@@ -76,15 +82,14 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
               <span>Start Your Free Tour</span>
               <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
-            <Link to="/faq">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="px-12 py-6 text-xl border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300 font-medium rounded-2xl shadow-none"
-              >
-                How It Works
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="px-12 py-6 text-xl border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:scale-105 transition-all duration-300 font-medium rounded-2xl shadow-none"
+              onClick={scrollToHowItWorks}
+            >
+              How It Works
+            </Button>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

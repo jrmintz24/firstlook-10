@@ -19,19 +19,26 @@ export const blogPosts: BlogPost[] = [
     image: "/lovable-uploads/8d1df8a0-4d41-4044-86f0-4cfc3ccb5296.png",
     content: [
       "Dreaming about seeing a house in person, but not ready to get bombarded with agent calls or sign a contract? You're not alone. Today's buyers want control, privacy, and the freedom to tour homes without old-school pressure—and FirstLook makes it possible.",
+      "Why Tour a Home Without an Agent?",
       "Traditional real estate sites push you to connect with an agent before you even step inside a property. That means calls, texts, and commitment—sometimes before you're even sure you like the house. For many Millennial and Gen Z buyers, that's a dealbreaker.",
       "But what if you could tour any home on your schedule, with no agent obligation? That's where FirstLook comes in.",
+      "How FirstLook Lets You Tour Homes on Your Terms",
       "Here's how easy it is:",
       "Create a free FirstLook account: Sign up in seconds—no commitment, no pressure.",
       "Pick any home you want to tour: Enter the address or drop a link from Zillow or Redfin. If it's on the market, you can tour it.",
       "Choose a time that works for you: Skip the back-and-forth. Select the best time, and we handle the logistics.",
       "Get matched with a vetted, local pro: Our licensed showing partners open the door and let you explore privately. Ask questions if you want—or just look around at your own pace.",
+      "What Happens After Your Tour?",
       "After your first (free!) showing, you're totally in control:",
       "Want to keep browsing? Book more showings—no pressure, ever.",
       "Found 'the one'? Get flat-fee offer help from a pro, or connect with your showing agent if you want to move forward.",
       "Changed your mind? Walk away, no spam, no strings.",
-      "Total transparency: You decide when—and if—you want agent help. Zero commitment: No contracts, no hidden fees, and no endless calls. Full control: Explore homes on your terms and timeline.",
-      "Ready to see for yourself? Create your free FirstLook account and schedule your first home tour today."
+      "Why More Buyers Are Choosing Agent-Free Tours",
+      "Total transparency: You decide when—and if—you want agent help.",
+      "Zero commitment: No contracts, no hidden fees, and no endless calls.",
+      "Full control: Explore homes on your terms and timeline.",
+      "Ready to see for yourself?",
+      "Create your free FirstLook account and schedule your first home tour today."
     ],
   },
   {

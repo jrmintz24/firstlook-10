@@ -1,4 +1,5 @@
 
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
@@ -25,11 +26,11 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </span>
           
           <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-8 leading-relaxed">
-            Tour the home you want on your own terms
+            Tour homes on your schedule—no agent required
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-            The modern home buying experience for today's homebuyer. Navigate real estate with <span className="font-medium text-gray-900">confidence and clarity.</span>
+            Buy with confidence and privacy. Discover a modern, transparent homebuying experience built for you.
           </p>
 
           {/* Enhanced Value Props */}
@@ -113,3 +114,4 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
 };
 
 export default HeroSection;
+

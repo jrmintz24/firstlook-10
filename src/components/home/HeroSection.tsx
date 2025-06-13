@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
@@ -27,7 +28,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             Tour the home you want on your own terms
           </h2>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-4xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
             The modern home buying experience for today's homebuyer. Navigate real estate with <span className="font-medium text-gray-900">confidence and clarity.</span>
           </p>
 
@@ -87,7 +88,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/subscriptions">
               <Button 
                 variant="ghost" 
@@ -104,12 +105,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
                 Join as DC Showing Partner →
               </Button>
             </Link>
-          </div>
-
-          <div className="bg-gray-50 rounded-3xl p-8 max-w-3xl mx-auto">
-            <p className="text-gray-600 text-lg leading-relaxed font-light">
-              <strong className="font-medium text-gray-900">🎯 What happens next?</strong> Pick your properties, choose your time, and we'll connect you with a licensed DC professional. <span className="font-medium text-gray-900">No pressure, complete transparency, total control.</span>
-            </p>
           </div>
         </div>
       </div>

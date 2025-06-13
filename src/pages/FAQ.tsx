@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home, Shield, Gift, HandShake, DollarSign, AlertCircle, CreditCard } from "lucide-react";
+import { ArrowLeft, Home, Shield, Gift, Handshake, DollarSign, AlertCircle, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FAQ = () => {
@@ -16,7 +15,7 @@ const FAQ = () => {
     {
       question: "Will I need to sign a contract?",
       answer: "No contracts required. Our tours are on-demand and commitment-free. No agent sign-ups, no pressure to buy—just explore homes on your schedule whenever you're ready.",
-      icon: HandShake
+      icon: Handshake
     },
     {
       question: "What happens after my free first tour?",

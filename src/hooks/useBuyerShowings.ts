@@ -87,7 +87,7 @@ export const useBuyerShowings = (currentUser: any, profile: any) => {
   );
 
   const activeShowings = showingRequests.filter(
-    request => request.status === 'confirmed' || request.status === 'in_progress'
+    request => request.status === 'confirmed' || request.status === 'agent_confirmed' || request.status === 'in_progress'
   );
 
   const completedShowings = showingRequests.filter(

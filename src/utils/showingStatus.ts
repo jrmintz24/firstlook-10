@@ -178,7 +178,7 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
 };
 
 export const isActiveShowing = (status: ShowingStatus): boolean => {
-  return ['confirmed', 'scheduled'].includes(status);
+  return ['confirmed', 'agent_confirmed', 'scheduled'].includes(status);
 };
 
 export const isPendingRequest = (status: ShowingStatus): boolean => {

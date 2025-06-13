@@ -69,7 +69,7 @@ export default function Index() {
       <ValuePropositionSection />
 
       {/* Industry Changes Section */}
-      <IndustryChangesSection />
+      <IndustryChangesSection onRequestShowing={handleRequestShowing} />
 
       {/* How It Works */}
       <HowItWorks />

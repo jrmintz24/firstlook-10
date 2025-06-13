@@ -5,9 +5,12 @@ export type ShowingStatus =
   | 'agent_assigned'
   | 'pending_admin_approval'
   | 'confirmed'
+  | 'agent_confirmed'
   | 'scheduled'
+  | 'in_progress'
   | 'completed'
   | 'cancelled'
+  | 'no_show'
   | 'pending'; // legacy status
 
 export const SHOWING_STATUS_VALUES: readonly ShowingStatus[] = [
@@ -18,9 +21,12 @@ export const SHOWING_STATUS_VALUES: readonly ShowingStatus[] = [
   'agent_assigned',
   'pending_admin_approval',
   'confirmed',
+  'agent_confirmed',
   'scheduled',
+  'in_progress',
   'completed',
-  'cancelled'
+  'cancelled',
+  'no_show'
 ];
 
 export const isValidShowingStatus = (value: string): value is ShowingStatus =>

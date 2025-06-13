@@ -70,7 +70,7 @@ const AgentDashboard = () => {
     req => profile && (
       req.assigned_agent_email === (profile as { email?: string }).email ||
       req.requested_agent_name?.includes(profile.first_name) ||
-      req.assigned_agent_id === profile.id
+      req.assigned_agent_email === profile.id
     )
   );
   

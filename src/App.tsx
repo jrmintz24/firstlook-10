@@ -23,6 +23,7 @@ import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
 import AgentLanding from './pages/AgentLanding'
 import SingleHomeTour from './pages/SingleHomeTour'
+import TourSession from './pages/TourSession'
 import NotFound from './pages/NotFound'
 
 const queryClient = new QueryClient()
@@ -79,6 +80,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/single-home-tour" element={<SingleHomeTour />} />
+              <Route path="/tour-session" element={<TourSession />} />
 
               {/* Legacy Dashboard Route */}
               <Route

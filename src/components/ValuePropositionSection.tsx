@@ -35,10 +35,10 @@ const ValuePropositionSection = () => {
   };
 
   return (
-    <div className="py-16 bg-white relative">
+    <div className="py-12 bg-white relative">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 max-w-5xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight">
+        <div className="text-center mb-8 max-w-5xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-tight">
             The only platform built for <span className="font-medium">buyers, not agents</span>
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -67,7 +67,7 @@ const ValuePropositionSection = () => {
         </div>
 
         {/* Secondary CTA */}
-        <div className="mt-12 text-center">
+        <div className="mt-8 text-center">
           <Button 
             size="lg" 
             className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 font-medium shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"

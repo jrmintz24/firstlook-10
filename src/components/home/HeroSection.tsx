@@ -17,18 +17,18 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
   };
 
   return (
-    <div className="py-20 relative overflow-hidden bg-white">
+    <div className="py-16 relative overflow-hidden bg-white">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          <h1 className="text-6xl md:text-7xl font-light text-gray-900 mb-6 tracking-tight">
+          <h1 className="text-6xl md:text-7xl font-light text-gray-900 mb-4 tracking-tight">
             FirstLook
           </h1>
           
-          <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-4 leading-relaxed tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-3 leading-relaxed tracking-tight">
             Tour homes on your schedule—<span className="font-bold">no agent agreement required</span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">
             Discover a modern homebuying experience built for you.
           </p>
           

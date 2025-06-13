@@ -65,23 +65,35 @@ export default function Index() {
       {/* Hero Section */}
       <HeroSection onRequestShowing={handleRequestShowing} />
 
-      {/* Value Proposition Section */}
-      <ValuePropositionSection />
+      {/* Value Proposition Section - reduced top padding */}
+      <div className="-mt-8">
+        <ValuePropositionSection />
+      </div>
 
-      {/* Industry Changes Section */}
-      <IndustryChangesSection onRequestShowing={handleRequestShowing} />
+      {/* Industry Changes Section - reduced spacing */}
+      <div className="-mt-8">
+        <IndustryChangesSection onRequestShowing={handleRequestShowing} />
+      </div>
 
-      {/* How It Works */}
-      <HowItWorks />
+      {/* How It Works - reduced spacing */}
+      <div className="-mt-8">
+        <HowItWorks />
+      </div>
 
-      {/* Problem/Solution Section */}
-      <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
+      {/* Problem/Solution Section - reduced spacing */}
+      <div className="-mt-8">
+        <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
+      </div>
 
-      {/* Trust Indicators */}
-      <TrustIndicators />
+      {/* Trust Indicators - reduced spacing */}
+      <div className="-mt-8">
+        <TrustIndicators />
+      </div>
 
-      {/* Final CTA */}
-      <FinalCTASection onRequestShowing={handleRequestShowing} />
+      {/* Final CTA - reduced spacing */}
+      <div className="-mt-8">
+        <FinalCTASection onRequestShowing={handleRequestShowing} />
+      </div>
 
       {/* Property Request Form Modal */}
       <PropertyRequestForm 

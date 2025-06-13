@@ -22,6 +22,7 @@ import FAQ from './pages/FAQ'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
 import AgentLanding from './pages/AgentLanding'
+import SingleHomeTour from './pages/SingleHomeTour'
 import NotFound from './pages/NotFound'
 
 const queryClient = new QueryClient()
@@ -77,6 +78,7 @@ function App() {
               <Route path="/agents" element={<AgentLanding />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/single-home-tour" element={<SingleHomeTour />} />
 
               {/* Legacy Dashboard Route */}
               <Route

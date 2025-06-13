@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Home, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 const SingleHomeTour = () => {
   const [formData, setFormData] = useState({
@@ -117,16 +117,13 @@ const SingleHomeTour = () => {
                   Property Information
                 </h3>
                 
-                <div>
-                  <Label htmlFor="propertyAddress">Property Address *</Label>
-                  <Input
-                    id="propertyAddress"
-                    placeholder="Enter the full property address"
-                    value={formData.propertyAddress}
-                    onChange={(e) => handleInputChange("propertyAddress", e.target.value)}
-                    required
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={formData.propertyAddress}
+                  onChange={(value) => handleInputChange("propertyAddress", value)}
+                  placeholder="Enter the full property address"
+                  label="Property Address *"
+                  id="propertyAddress"
+                />
               </div>
 
               {/* Scheduling */}

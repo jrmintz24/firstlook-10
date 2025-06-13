@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Home, MapPin, Clock, ArrowLeft, Plus, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface Property {
   id: string;
@@ -151,17 +151,14 @@ const TourSession = () => {
                 </div>
                 
                 {properties.map((property, index) => (
-                  <div key={property.id} className="flex gap-2 items-center">
+                  <div key={property.id} className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <Label htmlFor={`property-${property.id}`}>
-                        Property {index + 1} {index === 0 && "*"}
-                      </Label>
-                      <Input
-                        id={`property-${property.id}`}
-                        placeholder="Enter property address"
+                      <AddressAutocomplete
                         value={property.address}
-                        onChange={(e) => handlePropertyChange(property.id, e.target.value)}
-                        required={index === 0}
+                        onChange={(value) => handlePropertyChange(property.id, value)}
+                        placeholder="Enter property address"
+                        label={`Property ${index + 1} ${index === 0 ? "*" : ""}`}
+                        id={`property-${property.id}`}
                       />
                     </div>
                     {properties.length > 1 && (
@@ -170,7 +167,7 @@ const TourSession = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => removeProperty(property.id)}
-                        className="mt-6"
+                        className="mb-0"
                       >
                         <X className="w-4 h-4" />
                       </Button>

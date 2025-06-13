@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { blogPosts } from "@/data/blogPosts";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,8 +29,18 @@ const Blog = () => {
             <Card className="border-0 shadow-none hover:shadow-xl transition-all duration-500 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden rounded-3xl">
               <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
                 {/* Featured Image */}
-                <div className="relative bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20"></div>
+                <div className="relative overflow-hidden">
+                  {featuredPost.image ? (
+                    <img 
+                      src={featuredPost.image} 
+                      alt={featuredPost.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20"></div>
+                    </div>
+                  )}
                   <div className="absolute top-6 left-6">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-800 backdrop-blur-sm">
                       Featured

@@ -1,4 +1,3 @@
-
 export interface BlogPost {
   slug: string;
   title: string;
@@ -17,7 +16,7 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Dreaming about seeing a house in person, but not ready to get bombarded with agent calls or sign a contract? You're not alone.",
     category: "Touring Homes Without an Agent",
-    image: "/lovable-uploads/8d1df8a0-4d41-4044-86f0-4cfc3ccb5296.png",
+    image: "/lovable-uploads/d4cf6b4c-e8f0-43eb-b997-1acf16bfc523.png",
     content: [
       "Dreaming about seeing a house in person, but not ready to get bombarded with agent calls or sign a contract? You're not alone. Today's buyers want control, privacy, and the freedom to tour homes without old-school pressure—and FirstLook makes it possible.",
       "Why Tour a Home Without an Agent?",

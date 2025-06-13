@@ -1,4 +1,3 @@
-
 import { Link, useParams } from "react-router-dom";
 import { blogPosts } from "@/data/blogPosts";
 import { ArrowLeft, Calendar, Clock, Share2, Tag, ArrowRight } from "lucide-react";
@@ -73,11 +72,11 @@ const BlogPost = () => {
         {/* Featured Image */}
         <div className="mb-12">
           {post.image ? (
-            <div className="h-64 md:h-80 rounded-3xl overflow-hidden relative">
+            <div className="aspect-video w-full rounded-3xl overflow-hidden relative">
               <img 
                 src={post.image} 
                 alt={post.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain bg-gray-50"
               />
             </div>
           ) : (

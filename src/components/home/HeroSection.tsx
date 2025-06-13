@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Shield, ChevronRight, Sparkles, MapPin, DollarSign, Calendar } from "lucide-react";
@@ -19,14 +20,14 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
     <div className="py-20 relative overflow-hidden bg-white">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          <Badge variant="secondary" className="mb-8 bg-gray-100 text-gray-600 border-gray-200 px-6 py-3 text-lg font-medium rounded-full">
-            <MapPin className="w-4 h-4 mr-2" />
-            🏛️ Washington DC Metro Area
-          </Badge>
-          
-          <h1 className="text-6xl md:text-7xl font-light text-gray-900 mb-6 tracking-tight">
-            FirstLook
-          </h1>
+          <div className="flex items-center justify-center space-x-2 mb-8">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">F</span>
+            </div>
+            <span className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              FirstLook
+            </span>
+          </div>
           
           <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-8 leading-relaxed">
             Tour homes on your terms

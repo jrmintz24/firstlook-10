@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle, ArrowRight, Sparkles, AlertCircle, DollarSign, Clock, Users, Lightbulb } from "lucide-react";
 
 interface GuideSection {
   id: string;
@@ -26,6 +26,65 @@ interface GuideSectionProps {
   section: GuideSection;
   index: number;
 }
+
+const getCalloutIcon = (text: string) => {
+  if (text.toLowerCase().includes('money') || text.toLowerCase().includes('cost') || text.toLowerCase().includes('save')) {
+    return DollarSign;
+  }
+  if (text.toLowerCase().includes('time') || text.toLowerCase().includes('quick') || text.toLowerCase().includes('fast')) {
+    return Clock;
+  }
+  if (text.toLowerCase().includes('tip') || text.toLowerCase().includes('remember') || text.toLowerCase().includes('pro')) {
+    return Lightbulb;
+  }
+  if (text.toLowerCase().includes('important') || text.toLowerCase().includes('warning') || text.toLowerCase().includes('careful')) {
+    return AlertCircle;
+  }
+  return Sparkles;
+};
+
+const formatContentParagraph = (paragraph: string, index: number) => {
+  // Check if this is a heading (starts with a topic followed by colon)
+  const headingMatch = paragraph.match(/^([^:]+):\s*(.+)$/);
+  
+  if (headingMatch) {
+    const [, heading, content] = headingMatch;
+    const IconComponent = getCalloutIcon(heading);
+    
+    return (
+      <div key={index} className="mb-8">
+        <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <IconComponent className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2 text-lg">{heading}</h4>
+            <p className="text-gray-700 leading-relaxed">{content}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check for FirstLook mentions and highlight them
+  if (paragraph.includes('FirstLook') || paragraph.includes('How FirstLook')) {
+    return (
+      <div key={index} className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
+        <div className="flex items-start gap-3">
+          <Users className="w-6 h-6 text-purple-600 mt-1 flex-shrink-0" />
+          <p className="text-gray-700 leading-relaxed font-medium">{paragraph}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular paragraph with better spacing
+  return (
+    <p key={index} className="text-gray-700 leading-relaxed mb-6 text-lg font-light">
+      {paragraph}
+    </p>
+  );
+};
 
 export const GuideSection = ({ section, index }: GuideSectionProps) => {
   const Icon = section.icon;
@@ -75,13 +134,11 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
               </div>
             </div>
 
-            {/* Detailed Content with better typography */}
-            <div className="prose prose-lg max-w-none mb-12">
-              {section.content.content.map((paragraph, paragraphIndex) => (
-                <p key={paragraphIndex} className="text-gray-700 leading-relaxed mb-6 text-lg font-light">
-                  {paragraph}
-                </p>
-              ))}
+            {/* Detailed Content with better formatting */}
+            <div className="max-w-none mb-12">
+              {section.content.content.map((paragraph, paragraphIndex) => 
+                formatContentParagraph(paragraph, paragraphIndex)
+              )}
             </div>
 
             {/* Modern Comparison Table for Introduction Section */}

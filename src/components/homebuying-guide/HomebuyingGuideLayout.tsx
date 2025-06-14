@@ -48,27 +48,24 @@ export const HomebuyingGuideLayout = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Modern Fixed Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200/50 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
+      {/* Integrated Progress Bar - positioned below navigation */}
+      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-16 z-40">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-4">
               <h2 className="text-sm font-medium text-gray-900">No Agent Buyer Guide</h2>
               <DownloadGuideButton />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">{Math.round(progress)}% Complete</span>
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
                 <span className="text-white text-xs font-bold">{activeSection + 1}</span>
               </div>
             </div>
           </div>
           <Progress 
             value={progress} 
-            className="h-2 bg-gray-100" 
-            style={{
-              background: 'linear-gradient(to right, rgb(147 51 234), rgb(79 70 229))'
-            }}
+            className="h-1.5 bg-gray-100"
           />
         </div>
       </div>

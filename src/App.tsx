@@ -75,6 +75,7 @@ function App() {
               />
 
               {/* Informational Pages */}
+              <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/agents" element={<AgentLanding />} />

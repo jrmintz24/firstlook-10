@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
@@ -32,7 +32,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             Discover a modern homebuying experience built for you.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
             <Button 
               size="lg" 
               className="bg-gray-900 hover:bg-gray-800 text-white px-12 py-6 text-xl font-medium shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-300 rounded-2xl"
@@ -49,6 +49,21 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             >
               How It Works
             </Button>
+          </div>
+
+          {/* Featured Guide Link */}
+          <div className="flex justify-center">
+            <Link to="/homebuying-guide">
+              <Button 
+                variant="ghost" 
+                size="lg" 
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-8 py-4 text-lg font-light transition-all duration-300 group"
+              >
+                <BookOpen className="mr-3 h-5 w-5 group-hover:text-gray-900" />
+                Read Our Complete Homebuying Guide
+                <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

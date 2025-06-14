@@ -1,3 +1,4 @@
+
 import { CheckCircle, Search, FileText, DollarSign, ClipboardCheck, Handshake, Scale, Key, Home } from "lucide-react";
 
 export const guideSections = [
@@ -58,7 +59,7 @@ export const guideSections = [
   },
   {
     id: "readiness",
-    title: "Step 1: Clarify Your Needs and Finances",
+    title: "Clarify Your Needs and Finances",
     icon: CheckCircle,
     content: {
       overview: "The first step in any homebuying journey is figuring out what you want and what you can afford. Traditionally, a buyer's agent would ask you a bunch of questions to nail down your wish list and budget. But you absolutely can (and should) do this yourself – after all, you know your situation best!",
@@ -79,7 +80,7 @@ export const guideSections = [
   },
   {
     id: "searching",
-    title: "Step 2: Searching for Homes",
+    title: "Searching for Homes",
     icon: Search,
     content: {
       overview: "Use modern tools to search more effectively than ever before, with access to the same data agents use.",
@@ -99,7 +100,7 @@ export const guideSections = [
   },
   {
     id: "touring",
-    title: "Step 3: Touring Homes",
+    title: "Touring Homes",
     icon: Key,
     content: {
       overview: "Tour homes safely and effectively without an agent, knowing what to look for and questions to ask.",
@@ -119,7 +120,7 @@ export const guideSections = [
   },
   {
     id: "financing",
-    title: "Step 4: Securing Financing",
+    title: "Securing Financing",
     icon: DollarSign,
     content: {
       overview: "Navigate the mortgage process efficiently, from pre-approval to final loan approval.",
@@ -139,7 +140,7 @@ export const guideSections = [
   },
   {
     id: "due-diligence",
-    title: "Step 5: Due Diligence and Inspections",
+    title: "Due Diligence and Inspections",
     icon: ClipboardCheck,
     content: {
       overview: "Protect yourself with thorough inspections and research, even without an agent advocating for you.",
@@ -159,7 +160,7 @@ export const guideSections = [
   },
   {
     id: "making-offers",
-    title: "Step 6: Making Offers and Negotiating",
+    title: "Making Offers and Negotiating",
     icon: FileText,
     content: {
       overview: "Write competitive offers and negotiate effectively, leveraging your position as an unrepresented buyer.",
@@ -179,7 +180,7 @@ export const guideSections = [
   },
   {
     id: "closing",
-    title: "Step 7: Legal Support and Closing",
+    title: "Legal Support and Closing",
     icon: Scale,
     content: {
       overview: "Navigate the closing process with confidence, working with title companies and attorneys as needed.",
@@ -199,7 +200,7 @@ export const guideSections = [
   },
   {
     id: "moving-in",
-    title: "Step 8: Moving In and Next Steps",
+    title: "Moving In and Next Steps",
     icon: Home,
     content: {
       overview: "Complete your journey with a smooth move-in and enjoy the savings from buying without a traditional agent.",

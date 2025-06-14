@@ -47,8 +47,6 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium text-purple-300">Step {index + 1}</span>
-                    <div className="w-1 h-1 bg-purple-300 rounded-full" />
-                    <span className="text-sm text-gray-300">Essential Knowledge</span>
                   </div>
                   <h2 className="text-3xl font-light tracking-tight">{section.title}</h2>
                 </div>

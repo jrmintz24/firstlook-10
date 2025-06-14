@@ -5,6 +5,7 @@ import { GuideTableOfContents } from "./GuideTableOfContents";
 import { GuideHeroSection } from "./GuideHeroSection";
 import { GuideFinalCTA } from "./GuideFinalCTA";
 import { GuideSection } from "./GuideSection";
+import { MobileStickyCTA } from "./MobileStickyCTA";
 import { guideSections } from "./guideSections";
 
 export const HomebuyingGuideLayout = () => {
@@ -85,6 +86,9 @@ export const HomebuyingGuideLayout = () => {
 
         <GuideFinalCTA />
       </div>
+
+      {/* Mobile Sticky CTA */}
+      <MobileStickyCTA />
     </div>
   );
 };

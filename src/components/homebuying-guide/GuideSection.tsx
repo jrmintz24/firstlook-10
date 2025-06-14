@@ -1,8 +1,13 @@
-
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight, Sparkles, AlertCircle, DollarSign, Clock, Users, Lightbulb } from "lucide-react";
+import { SavingsCalculator } from "./SavingsCalculator";
+import { InlineTooltip } from "./InlineTooltip";
+import { ReadTimeEstimate } from "./ReadTimeEstimate";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GuideSection {
   id: string;
@@ -84,8 +89,30 @@ const formatContentParagraph = (paragraph: string, index: number) => {
 };
 
 const formatTextContent = (text: string) => {
+  // Real estate terms that should have tooltips
+  const termsWithTooltips: { [key: string]: string } = {
+    "MLS": "Multiple Listing Service - A database used by real estate professionals to share property listings",
+    "earnest money": "A deposit made to a seller showing the buyer's good faith in a transaction",
+    "contingencies": "Conditions that must be met for a real estate contract to become final",
+    "due diligence": "The investigation or research done before entering into an agreement or contract",
+    "closing costs": "Fees paid at the closing of a real estate transaction, typically 2-5% of the home price",
+    "pre-approval": "A lender's conditional commitment to provide a mortgage up to a certain amount"
+  };
+
   // Split text into parts and apply formatting
-  return text.split(/(\b(?:FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors)\b|\$[0-9,]+|\d+%|[A-Z]{2,})/g).map((part, index) => {
+  return text.split(/(\b(?:FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors|earnest money|contingencies|due diligence|closing costs|pre-approval)\b|\$[0-9,]+|\d+%|[A-Z]{2,})/g).map((part, index) => {
+    // Check if this term should have a tooltip
+    const lowerPart = part.toLowerCase();
+    const tooltipContent = termsWithTooltips[lowerPart];
+    
+    if (tooltipContent) {
+      return (
+        <InlineTooltip key={index} content={tooltipContent}>
+          <strong>{part}</strong>
+        </InlineTooltip>
+      );
+    }
+    
     // Bold important terms and acronyms
     if (/^(FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors)$/.test(part)) {
       return <strong key={index}>{part}</strong>;
@@ -107,6 +134,8 @@ const formatTextContent = (text: string) => {
 
 export const GuideSection = ({ section, index }: GuideSectionProps) => {
   const Icon = section.icon;
+  const isMobile = useIsMobile();
+  const [isContentExpanded, setIsContentExpanded] = useState(!isMobile);
 
   return (
     <div data-section={section.id} className="mb-24">
@@ -132,33 +161,79 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
               <p className="text-xl text-gray-300 leading-relaxed font-light max-w-4xl">
                 {section.content.overview}
               </p>
+              <ReadTimeEstimate content={section.content.content} />
             </div>
           </div>
 
-          {/* Section Content */}
+          {/* Section Content - Mobile Collapsible */}
           <div className="p-10">
-            {/* Key Points with modern styling */}
-            <div className="mb-12">
-              <div className="flex items-center gap-2 mb-6">
-                <Sparkles className="w-5 h-5 text-purple-600" />
-                <h3 className="text-xl font-medium text-gray-900">Key Takeaways</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {section.content.keyPoints.map((point, pointIndex) => (
-                  <div key={pointIndex} className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 font-medium">{point}</span>
+            {isMobile ? (
+              <Collapsible open={isContentExpanded} onOpenChange={setIsContentExpanded}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl mb-6 hover:bg-gray-100 transition-colors">
+                  <span className="font-medium text-gray-900">
+                    {isContentExpanded ? 'Hide Details' : 'Show Full Section'}
+                  </span>
+                  <ArrowRight className={`w-5 h-5 text-gray-600 transition-transform ${isContentExpanded ? 'rotate-90' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  {/* Key Points with modern styling */}
+                  <div className="mb-12">
+                    <div className="flex items-center gap-2 mb-6">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      <h3 className="text-xl font-medium text-gray-900">Key Takeaways</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {section.content.keyPoints.map((point, pointIndex) => (
+                        <div key={pointIndex} className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 font-medium">{point}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Detailed Content with better formatting */}
-            <div className="max-w-none mb-12">
-              {section.content.content.map((paragraph, paragraphIndex) => 
-                formatContentParagraph(paragraph, paragraphIndex)
-              )}
-            </div>
+                  {/* Detailed Content */}
+                  <div className="max-w-none mb-12">
+                    {section.content.content.map((paragraph, paragraphIndex) => 
+                      formatContentParagraph(paragraph, paragraphIndex)
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <>
+                {/* Desktop version - always expanded */}
+                {/* Key Points with modern styling */}
+                <div className="mb-12">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-xl font-medium text-gray-900">Key Takeaways</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {section.content.keyPoints.map((point, pointIndex) => (
+                      <div key={pointIndex} className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700 font-medium">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Detailed Content with better formatting */}
+                <div className="max-w-none mb-12">
+                  {section.content.content.map((paragraph, paragraphIndex) => 
+                    formatContentParagraph(paragraph, paragraphIndex)
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Add Savings Calculator to Introduction Section */}
+            {index === 0 && (
+              <div className="mb-12">
+                <SavingsCalculator />
+              </div>
+            )}
 
             {/* Modern Comparison Table for Introduction Section */}
             {index === 0 && section.content.comparison && (

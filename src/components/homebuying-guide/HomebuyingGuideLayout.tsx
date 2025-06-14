@@ -41,20 +41,31 @@ export const HomebuyingGuideLayout = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Fixed Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-40">
+      {/* Modern Fixed Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200/50 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-medium text-gray-900">Complete Guide to Buying a Home Without an Agent</h2>
-            <span className="text-sm text-gray-500">{Math.round(progress)}% Complete</span>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-gray-900">No Agent Buyer Guide</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">{Math.round(progress)}% Complete</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xs font-bold">{activeSection + 1}</span>
+              </div>
+            </div>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress 
+            value={progress} 
+            className="h-2 bg-gray-100" 
+            style={{
+              background: 'linear-gradient(to right, rgb(147 51 234), rgb(79 70 229))'
+            }}
+          />
         </div>
       </div>
 
       <GuideHeroSection />
       
-      <div className="container mx-auto px-4 max-w-6xl py-16">
+      <div className="container mx-auto px-4 max-w-7xl">
         <GuideTableOfContents 
           sections={guideSections}
           activeSection={activeSection}
@@ -62,7 +73,7 @@ export const HomebuyingGuideLayout = () => {
         />
 
         {/* Guide Content */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {guideSections.map((section, index) => (
             <GuideSection 
               key={section.id}

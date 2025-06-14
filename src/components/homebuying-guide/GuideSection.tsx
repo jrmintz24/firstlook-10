@@ -27,63 +27,82 @@ interface GuideSectionProps {
   index: number;
 }
 
-const getCalloutIcon = (text: string) => {
-  if (text.toLowerCase().includes('money') || text.toLowerCase().includes('cost') || text.toLowerCase().includes('save')) {
-    return DollarSign;
-  }
-  if (text.toLowerCase().includes('time') || text.toLowerCase().includes('quick') || text.toLowerCase().includes('fast')) {
-    return Clock;
-  }
-  if (text.toLowerCase().includes('tip') || text.toLowerCase().includes('remember') || text.toLowerCase().includes('pro')) {
-    return Lightbulb;
-  }
-  if (text.toLowerCase().includes('important') || text.toLowerCase().includes('warning') || text.toLowerCase().includes('careful')) {
-    return AlertCircle;
-  }
-  return Sparkles;
-};
-
 const formatContentParagraph = (paragraph: string, index: number) => {
-  // Check if this is a heading (starts with a topic followed by colon)
+  // Check if this is a major heading (starts with a topic followed by colon)
   const headingMatch = paragraph.match(/^([^:]+):\s*(.+)$/);
   
   if (headingMatch) {
     const [, heading, content] = headingMatch;
-    const IconComponent = getCalloutIcon(heading);
     
-    return (
-      <div key={index} className="mb-8">
-        <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <IconComponent className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2 text-lg">{heading}</h4>
-            <p className="text-gray-700 leading-relaxed">{content}</p>
+    // Only create callout boxes for very specific important headings
+    const isImportantCallout = heading.toLowerCase().includes('firstlook') || 
+                              heading.toLowerCase().includes('important') || 
+                              heading.toLowerCase().includes('warning') ||
+                              heading.toLowerCase().includes('money') ||
+                              heading.toLowerCase().includes('save');
+    
+    if (isImportantCallout) {
+      const getIcon = () => {
+        if (heading.toLowerCase().includes('firstlook')) return Users;
+        if (heading.toLowerCase().includes('money') || heading.toLowerCase().includes('save')) return DollarSign;
+        if (heading.toLowerCase().includes('important') || heading.toLowerCase().includes('warning')) return AlertCircle;
+        return Lightbulb;
+      };
+      
+      const IconComponent = getIcon();
+      
+      return (
+        <div key={index} className="mb-8">
+          <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <IconComponent className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2 text-lg">{heading}</h4>
+              <p className="text-gray-700 leading-relaxed">{formatTextContent(content)}</p>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Check for FirstLook mentions and highlight them
-  if (paragraph.includes('FirstLook') || paragraph.includes('How FirstLook')) {
-    return (
-      <div key={index} className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
-        <div className="flex items-start gap-3">
-          <Users className="w-6 h-6 text-purple-600 mt-1 flex-shrink-0" />
-          <p className="text-gray-700 leading-relaxed font-medium">{paragraph}</p>
+      );
+    } else {
+      // Regular heading without callout box
+      return (
+        <div key={index} className="mb-6">
+          <h4 className="font-bold text-gray-900 mb-3 text-xl">{heading}</h4>
+          <p className="text-gray-700 leading-relaxed text-lg font-light">{formatTextContent(content)}</p>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
-  // Regular paragraph with better spacing
+  // Regular paragraph with better spacing and formatting
   return (
     <p key={index} className="text-gray-700 leading-relaxed mb-6 text-lg font-light">
-      {paragraph}
+      {formatTextContent(paragraph)}
     </p>
   );
+};
+
+const formatTextContent = (text: string) => {
+  // Split text into parts and apply formatting
+  return text.split(/(\b(?:FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors)\b|\$[0-9,]+|\d+%|[A-Z]{2,})/g).map((part, index) => {
+    // Bold important terms and acronyms
+    if (/^(FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors)$/.test(part)) {
+      return <strong key={index}>{part}</strong>;
+    }
+    
+    // Bold money amounts and percentages
+    if (/^\$[0-9,]+$/.test(part) || /^\d+%$/.test(part)) {
+      return <strong key={index}>{part}</strong>;
+    }
+    
+    // Italicize phrases that need emphasis
+    if (part.includes('must-have') || part.includes('nice-to-have') || part.includes('coming soon') || part.includes('off-market')) {
+      return <em key={index}>{part}</em>;
+    }
+    
+    return part;
+  });
 };
 
 export const GuideSection = ({ section, index }: GuideSectionProps) => {

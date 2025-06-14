@@ -5,6 +5,7 @@ import { CheckCircle, ArrowRight, Sparkles, AlertCircle, DollarSign, Clock, User
 import { SavingsCalculator } from "./SavingsCalculator";
 import { InlineTooltip } from "./InlineTooltip";
 import { ReadTimeEstimate } from "./ReadTimeEstimate";
+import { DCAnecdote } from "./DCAnecdote";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -132,10 +133,91 @@ const formatTextContent = (text: string) => {
   });
 };
 
+// DC-specific anecdotes for each section
+const dcAnecdotes: { [key: number]: { story: string; buyer: string; neighborhood?: string; savings?: string } } = {
+  0: {
+    story: "I was tired of aggressive agents pushing me into homes I couldn't afford. FirstLook let me explore DC neighborhoods at my own pace and saved me over $12,000 in agent fees.",
+    buyer: "Sarah M.",
+    neighborhood: "Dupont Circle",
+    savings: "$12,400"
+  },
+  1: {
+    story: "The DC market moves fast, but FirstLook's tools helped me get pre-approved and understand what I could actually afford before I started touring. No pressure, just facts.",
+    buyer: "Marcus T.",
+    neighborhood: "Capitol Hill"
+  },
+  2: {
+    story: "I found my dream condo on Zillow but FirstLook made it easy to see it the same day. Their local insights about the building's history were invaluable.",
+    buyer: "Jennifer L.",
+    neighborhood: "Logan Circle"
+  },
+  3: {
+    story: "FirstLook's agent met me at three different properties in one afternoon. Professional, knowledgeable, and no pressure to make offers I wasn't ready for.",
+    buyer: "David K.",
+    neighborhood: "Shaw"
+  },
+  6: {
+    story: "When I was ready to make an offer, FirstLook's flat-fee service helped me navigate multiple counteroffers and ultimately win my home for $8,000 under asking.",
+    buyer: "Amanda R.",
+    neighborhood: "H Street Corridor",
+    savings: "$8,000 under asking"
+  }
+};
+
 export const GuideSection = ({ section, index }: GuideSectionProps) => {
   const Icon = section.icon;
   const isMobile = useIsMobile();
   const [isContentExpanded, setIsContentExpanded] = useState(!isMobile);
+
+  const getConditionalCTA = () => {
+    switch (index) {
+      case 0:
+        return {
+          title: "Ready to get started?",
+          description: "FirstLook makes it easy to tour homes without agent pressure and get professional support only when you need it.",
+          buttonText: "Create Free Account",
+          link: "/buyer-auth",
+          gradient: "from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+        };
+      case 1:
+        return {
+          title: "Need help with financing?",
+          description: "Connect with FirstLook's network of trusted lenders who understand independent buyers and DC programs.",
+          buttonText: "Find Financing Options",
+          link: "/subscriptions",
+          gradient: "from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+        };
+      case 2:
+        return {
+          title: "Start your home search",
+          description: "Use FirstLook's curated search tools to find homes that match your criteria in DC's competitive market.",
+          buttonText: "Browse DC Homes",
+          link: "/buyer-auth",
+          gradient: "from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+        };
+      case 3:
+        return {
+          title: "Need help touring homes?",
+          description: "FirstLook provides safe, professional home tours without the pressure of traditional agents.",
+          buttonText: "Schedule Your First Tour",
+          link: "/single-home-tour",
+          gradient: "from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+        };
+      case 6:
+        return {
+          title: "Need help with offers?",
+          description: "FirstLook offers flat-fee offer writing and negotiation support to help you win the home you want.",
+          buttonText: "View Offer Support",
+          link: "/subscriptions",
+          gradient: "from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+        };
+      default:
+        return null;
+    }
+  };
+
+  const conditionalCTA = getConditionalCTA();
+  const anecdote = dcAnecdotes[index];
 
   return (
     <div data-section={section.id} className="mb-24">
@@ -192,6 +274,18 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
                     </div>
                   </div>
 
+                  {/* DC Anecdote */}
+                  {anecdote && (
+                    <div className="mb-12">
+                      <DCAnecdote 
+                        story={anecdote.story}
+                        buyer={anecdote.buyer}
+                        neighborhood={anecdote.neighborhood}
+                        savings={anecdote.savings}
+                      />
+                    </div>
+                  )}
+
                   {/* Detailed Content */}
                   <div className="max-w-none mb-12">
                     {section.content.content.map((paragraph, paragraphIndex) => 
@@ -218,6 +312,18 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
                     ))}
                   </div>
                 </div>
+
+                {/* DC Anecdote */}
+                {anecdote && (
+                  <div className="mb-12">
+                    <DCAnecdote 
+                      story={anecdote.story}
+                      buyer={anecdote.buyer}
+                      neighborhood={anecdote.neighborhood}
+                      savings={anecdote.savings}
+                    />
+                  </div>
+                )}
 
                 {/* Detailed Content with better formatting */}
                 <div className="max-w-none mb-12">
@@ -270,65 +376,21 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
               </div>
             )}
 
-            {/* Modern Section CTAs */}
-            {index === 0 && (
-              <div className="p-8 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200/50">
+            {/* Conditional Section CTAs */}
+            {conditionalCTA && (
+              <div className={`p-8 bg-gradient-to-br ${conditionalCTA.gradient.includes('purple') ? 'from-purple-50 to-indigo-50 border-purple-200/50' : conditionalCTA.gradient.includes('green') ? 'from-green-50 to-emerald-50 border-green-200/50' : 'from-blue-50 to-cyan-50 border-blue-200/50'} rounded-2xl border`}>
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${conditionalCTA.gradient.split(' hover:')[0]} rounded-xl flex items-center justify-center flex-shrink-0`}>
                     <ArrowRight className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-2 text-lg">Ready to get started?</h4>
+                    <h4 className="font-medium text-gray-900 mb-2 text-lg">{conditionalCTA.title}</h4>
                     <p className="text-gray-600 mb-4 font-light">
-                      FirstLook makes it easy to tour homes without agent pressure and get professional support only when you need it.
+                      {conditionalCTA.description}
                     </p>
-                    <Link to="/buyer-auth">
-                      <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-medium">
-                        Create Free Account
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {index === 3 && (
-              <div className="p-8 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-200/50">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <ArrowRight className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-2 text-lg">Need help touring homes?</h4>
-                    <p className="text-gray-600 mb-4 font-light">
-                      FirstLook provides safe, professional home tours without the pressure of traditional agents.
-                    </p>
-                    <Link to="/single-home-tour">
-                      <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-medium">
-                        Schedule Your First Tour
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {index === 6 && (
-              <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200/50">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <ArrowRight className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-2 text-lg">Need help with offers?</h4>
-                    <p className="text-gray-600 mb-4 font-light">
-                      FirstLook offers flat-fee offer writing and negotiation support to help you win the home you want.
-                    </p>
-                    <Link to="/subscriptions">
-                      <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-medium">
-                        View Offer Support
+                    <Link to={conditionalCTA.link}>
+                      <Button className={`bg-gradient-to-r ${conditionalCTA.gradient} text-white rounded-xl font-medium`}>
+                        {conditionalCTA.buttonText}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>

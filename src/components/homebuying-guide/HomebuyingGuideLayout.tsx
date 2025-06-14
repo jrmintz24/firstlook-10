@@ -6,11 +6,17 @@ import { GuideHeroSection } from "./GuideHeroSection";
 import { GuideFinalCTA } from "./GuideFinalCTA";
 import { GuideSection } from "./GuideSection";
 import { MobileStickyCTA } from "./MobileStickyCTA";
+import { DownloadGuideButton } from "./DownloadGuideButton";
 import { guideSections } from "./guideSections";
+import { useScrollDepthTracking } from "@/hooks/useScrollDepthTracking";
 
 export const HomebuyingGuideLayout = () => {
   const [activeSection, setActiveSection] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  // Track scroll depth and engagement
+  const sectionIds = guideSections.map(section => section.id);
+  useScrollDepthTracking(sectionIds);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,7 +52,10 @@ export const HomebuyingGuideLayout = () => {
       <div className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200/50 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-gray-900">No Agent Buyer Guide</h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-sm font-medium text-gray-900">No Agent Buyer Guide</h2>
+              <DownloadGuideButton />
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">{Math.round(progress)}% Complete</span>
               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">

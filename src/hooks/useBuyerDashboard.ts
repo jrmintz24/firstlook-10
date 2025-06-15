@@ -89,6 +89,7 @@ export const useBuyerDashboard = () => {
     handleRescheduleShowing,
     handleConfirmShowing,
     handleAgreementSign,
-    fetchUserData
+    fetchUserData,
+    fetchShowingRequests
   };
 };

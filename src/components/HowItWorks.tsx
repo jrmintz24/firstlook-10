@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Key, Star, ArrowRight } from "lucide-react";
@@ -17,21 +16,21 @@ const HowItWorks = () => {
       title: "Choose Your Time",
       description: "Book a time that actually works for you. Need to reschedule? No problem - it's your tour.",
       badge: "2",
-      color: "from-green-500 to-emerald-500"
+      color: "from-blue-500 to-blue-600"
     },
     {
       icon: Key,
       title: "Tour With Confidence",
       description: "Meet your licensed DC professional and explore homes at your own pace. Ask questions, take your time.",
       badge: "3",
-      color: "from-purple-500 to-indigo-500"
+      color: "from-blue-500 to-blue-600"
     },
     {
       icon: Star,
       title: "Move Forward (Or Don't)",
       description: "Loved a home? Get help with offers. Not feeling it? No worries. Zero pressure, always.",
       badge: "4",
-      color: "from-orange-500 to-red-500"
+      color: "from-blue-500 to-blue-600"
     }
   ];
 
@@ -52,7 +51,7 @@ const HowItWorks = () => {
             const IconComponent = step.icon;
             return (
               <div key={index} className="relative">
-                <Card className="text-center border-0 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 bg-white rounded-3xl group">
+                <Card className="text-center border-0 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 bg-white rounded-3xl group h-full">
                   <CardHeader className="pb-4 p-8">
                     <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                       <span className="text-white font-bold text-lg">{step.badge}</span>
@@ -60,10 +59,10 @@ const HowItWorks = () => {
                     <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
                       <IconComponent className="h-8 w-8 text-gray-700" />
                     </div>
-                    <CardTitle className="text-xl font-semibold text-gray-900 leading-tight">{step.title}</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-gray-900 leading-tight min-h-[3rem] flex items-center justify-center">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="px-8 pb-8">
-                    <CardDescription className="text-gray-600 leading-relaxed font-light">
+                    <CardDescription className="text-gray-600 leading-relaxed font-light min-h-[4.5rem] flex items-center">
                       {step.description}
                     </CardDescription>
                   </CardContent>

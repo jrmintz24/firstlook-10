@@ -210,6 +210,7 @@ const BuyerDashboard = () => {
               onRequestShowing={handleRequestShowing}
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
+              onComplete={fetchShowingRequests}
             />
           </TabsContent>
 
@@ -226,6 +227,7 @@ const BuyerDashboard = () => {
               onRescheduleShowing={handleRescheduleShowing}
               onConfirmShowing={handleConfirmShowingWithModal}
               agreements={agreements}
+              onComplete={fetchShowingRequests}
             />
           </TabsContent>
 
@@ -241,6 +243,7 @@ const BuyerDashboard = () => {
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
               showActions={false}
+              onComplete={fetchShowingRequests}
             />
           </TabsContent>
 

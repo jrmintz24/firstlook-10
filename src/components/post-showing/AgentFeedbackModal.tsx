@@ -10,6 +10,7 @@ import { usePostShowingWorkflow, type AgentFeedback } from "@/hooks/usePostShowi
 interface AgentFeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onComplete?: () => void;
   showing: {
     id: string;
     property_address: string;
@@ -18,7 +19,7 @@ interface AgentFeedbackModalProps {
   agentId: string;
 }
 
-const AgentFeedbackModal = ({ isOpen, onClose, showing, agentId }: AgentFeedbackModalProps) => {
+const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: AgentFeedbackModalProps) => {
   const [attended, setAttended] = useState<boolean | null>(null);
   const [buyerInterestLevel, setBuyerInterestLevel] = useState(0);
   const [buyerSeriousnessRating, setBuyerSeriousnessRating] = useState(0);
@@ -52,6 +53,7 @@ const AgentFeedbackModal = ({ isOpen, onClose, showing, agentId }: AgentFeedback
     }
 
     onClose();
+    onComplete?.();
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (

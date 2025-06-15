@@ -31,6 +31,7 @@ interface ShowingRequestCardProps {
   onConfirm?: (id: string) => void;
   showActions?: boolean;
   userType?: 'buyer' | 'agent';
+  onComplete?: () => void;
 }
 
 const ShowingRequestCard = ({ 
@@ -39,7 +40,8 @@ const ShowingRequestCard = ({
   onReschedule, 
   onConfirm, 
   showActions = true,
-  userType = 'buyer'
+  userType = 'buyer',
+  onComplete
 }: ShowingRequestCardProps) => {
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
@@ -160,9 +162,10 @@ const ShowingRequestCard = ({
             )}
             
             {/* Show checkout button for active showings */}
-            <ShowingCheckoutButton 
+            <ShowingCheckoutButton
               showing={showing}
               userType={userType}
+              onComplete={onComplete}
             />
             
             <Button

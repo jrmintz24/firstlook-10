@@ -16,9 +16,10 @@ interface ShowingCheckoutButtonProps {
     status: string;
   };
   userType: 'buyer' | 'agent';
+  onComplete?: () => void;
 }
 
-const ShowingCheckoutButton = ({ showing, userType }: ShowingCheckoutButtonProps) => {
+const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckoutButtonProps) => {
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
 
@@ -47,6 +48,7 @@ const ShowingCheckoutButton = ({ showing, userType }: ShowingCheckoutButtonProps
         <BuyerFeedbackModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
+          onComplete={onComplete}
           showing={showing}
           buyerId={user?.id || ""}
         />
@@ -56,6 +58,7 @@ const ShowingCheckoutButton = ({ showing, userType }: ShowingCheckoutButtonProps
         <AgentFeedbackModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
+          onComplete={onComplete}
           showing={showing}
           agentId={user?.id || ""}
         />

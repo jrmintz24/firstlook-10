@@ -5,13 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home, Shield, Gift, Handshake, DollarSign, AlertCircle, CreditCard, Calendar, Users, MapPin, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const FAQ = () => {
+  useEffect(() => {
+    document.title = 'FAQs | FirstLook';
+  }, []);
+
   const generalFAQs = [
     {
       question: "What is FirstLook and how does it work?",
-      answer: "FirstLook lets you tour homes on your schedule—no agent commitment, no pressure, no sharing your personal info. You browse, book, and tour independently, with support available only when you ask for it.",
+      answer: "FirstLook is a modern home touring platform built for buyers who want to tour homes without agent pressure. We connect you with licensed local showing partners on your terms, not theirs. You browse, book, and tour independently, with support available only when you ask for it.",
       icon: Home
+    },
+    {
+      question: "Do I need to sign a contract or commit to an agent?",
+      answer: "Nope. There are no contracts, no commitments, and no pushy follow-up calls. Tour the home. Ask questions. Walk away—or move forward. It's your call.",
+      icon: Shield
     }
   ];
 
@@ -35,14 +45,24 @@ const FAQ = () => {
 
   const touringExperienceFAQs = [
     {
-      question: "How do I schedule a tour?",
-      answer: "Simply select a property, pick your preferred time, and book instantly—no phone tag, no back-and-forth, just confirmation in minutes.",
+      question: "How fast can I book a tour?",
+      answer: "Most FirstLook users can book a showing within 2–12 hours, sometimes same-day. We work with a network of on-call local pros who know the neighborhoods you're looking in.",
       icon: Calendar
+    },
+    {
+      question: "Can I tour a home without the listing agent?",
+      answer: "Yes. We connect you with a vetted, third-party licensed showing partner who represents you—not the seller.",
+      icon: Home
     },
     {
       question: "Who shows the home during my tour?",
       answer: "A verified, DC-licensed local pro will greet you and give access. They're there to help if you need, but will always respect your space and privacy.",
       icon: Home
+    },
+    {
+      question: "What happens during the tour?",
+      answer: "You'll walk the home just like you would with any agent—but without the awkward pitch. Ask questions, take your time, and explore freely.",
+      icon: Users
     },
     {
       question: "Can I bring friends or family on a tour?",
@@ -58,13 +78,18 @@ const FAQ = () => {
 
   const costValueFAQs = [
     {
-      question: "How much does FirstLook cost?",
-      answer: "Your first tour is free. After that, simply pay per tour—no subscriptions, no hidden fees, and absolutely no 6% commissions.",
+      question: "Is my first tour really free?",
+      answer: "Yes. Your first tour is on us—no strings attached.",
+      icon: Gift
+    },
+    {
+      question: "What does it cost after that?",
+      answer: "Subscribe for $69.95/month for unlimited VIP tours + access to our buyer concierge, or book pay-as-you-go tours at $49 (single home) or $74.95 (multi-home session).",
       icon: DollarSign
     },
     {
-      question: "How do you save me money compared to traditional agents?",
-      answer: "By removing the 6% commission structure and letting you pay only for the tours and services you actually use, FirstLook puts thousands back in your pocket.",
+      question: "How much could I save using FirstLook?",
+      answer: "Traditional buyer agents often collect 2.5%–3% of the purchase price—baked into the sale. On a $600,000 home, that's $15,000–$18,000. With FirstLook, you stay in control and avoid that full commission unless you choose to bring in an agent.",
       icon: Gift
     },
     {
@@ -81,14 +106,24 @@ const FAQ = () => {
       icon: Shield
     },
     {
-      question: "What if I want to make an offer on a home?",
-      answer: "When you're ready, we offer expert offer-writing support for a flat fee, or you can bring in your own agent—your choice, no pressure.",
+      question: "What if I want help writing an offer?",
+      answer: "We offer flat-rate contract support ($499 per offer or $249 for paperwork-only). You'll get access to a licensed pro who can walk you through it.",
       icon: Handshake
+    },
+    {
+      question: "Can I work with the person who showed me the home?",
+      answer: "Yes, but only if you choose to. Your contact info is never shared unless you explicitly request it.",
+      icon: Users
     },
     {
       question: "Can I use FirstLook and still work with my own agent?",
       answer: "Yes! You're never locked in. Use FirstLook to tour homes, then bring in your own agent at any stage if you wish.",
       icon: Users
+    },
+    {
+      question: "Can I still use a traditional agent if I change my mind?",
+      answer: "Of course. FirstLook is about control and flexibility—if a traditional buyer's agent makes sense later, we'll help match you.",
+      icon: Handshake
     }
   ];
 
@@ -102,6 +137,11 @@ const FAQ = () => {
       question: "What if I need help during a tour?",
       answer: "Local pros are always available for questions or support, but never pushy. You can also reach us directly via chat or support.",
       icon: HelpCircle
+    },
+    {
+      question: "What if I need help beyond touring?",
+      answer: "You'll get access to a licensed concierge via live call or message anytime you need help. We support you from browsing to closing—with none of the pressure.",
+      icon: HelpCircle
     }
   ];
 
@@ -112,8 +152,8 @@ const FAQ = () => {
       icon: Calendar
     },
     {
-      question: "Do you serve areas outside DC?",
-      answer: "We're currently focused on Washington, DC, but let us know if you want to see FirstLook in your city!",
+      question: "Do you operate in my area?",
+      answer: "We're currently live in the DC metro area (including Northern Virginia and parts of Maryland). More cities launching soon!",
       icon: MapPin
     },
     {
@@ -132,7 +172,7 @@ const FAQ = () => {
     { title: "General", faqs: generalFAQs, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
     { title: "Privacy & Control", faqs: privacyControlFAQs, iconBg: "bg-green-100", iconColor: "text-green-600" },
     { title: "Touring & Experience", faqs: touringExperienceFAQs, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
-    { title: "Cost & Value", faqs: costValueFAQs, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
+    { title: "Pricing & Savings", faqs: costValueFAQs, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
     { title: "Differentiators", faqs: differentiatorsFAQs, iconBg: "bg-red-100", iconColor: "text-red-600" },
     { title: "Safety & Support", faqs: safetySupportFAQs, iconBg: "bg-indigo-100", iconColor: "text-indigo-600" },
     { title: "Other Practical Questions", faqs: practicalFAQs, iconBg: "bg-gray-100", iconColor: "text-gray-600" }
@@ -157,7 +197,7 @@ const FAQ = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
         {faqSections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="max-w-4xl mx-auto mb-16">
+          <div key={sectionIndex} className="max-w-4xl mx-auto mb-16" id={section.title.toLowerCase().replace(/\s+/g, '-')}>
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-6">
                 <div className={`w-10 h-10 ${section.iconBg} rounded-xl flex items-center justify-center`}>

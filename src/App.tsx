@@ -1,4 +1,3 @@
-
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -26,6 +25,7 @@ import AgentLanding from './pages/AgentLanding'
 import SingleHomeTour from './pages/SingleHomeTour'
 import TourSession from './pages/TourSession'
 import NotFound from './pages/NotFound'
+import ScrollToTop from './components/ScrollToTop'
 
 const queryClient = new QueryClient()
 
@@ -37,6 +37,7 @@ function App() {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Navigation />
             <Routes>
               <Route path="/" element={<Index />} />

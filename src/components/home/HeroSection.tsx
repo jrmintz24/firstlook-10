@@ -20,20 +20,20 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
     <div className="py-20 relative overflow-hidden bg-white">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-6 tracking-tight leading-none">
+          <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-8 tracking-tight leading-none">
             FirstLook
           </h1>
           
-          <h2 className="text-3xl md:text-5xl font-light text-gray-700 mb-6 leading-tight tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-light text-gray-700 mb-8 leading-tight tracking-tight">
             Your Home Journey, <span className="font-semibold text-gray-900">On Your Terms</span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-gray-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
             Instant, commitment-free home tours – first one's on us.<br />
             <span className="text-gray-700 font-medium">No agent pressure. Full control. Save thousands.</span>
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Button 
               size="lg" 
               className="bg-gray-900 hover:bg-black text-white px-12 py-6 text-xl font-semibold shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"

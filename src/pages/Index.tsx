@@ -70,11 +70,6 @@ export default function Index() {
         <ValuePropositionSection />
       </div>
 
-      {/* Industry Changes Section - reduced spacing */}
-      <div className="-mt-8">
-        <IndustryChangesSection onRequestShowing={handleRequestShowing} />
-      </div>
-
       {/* How It Works - reduced spacing */}
       <div className="-mt-8">
         <HowItWorks />
@@ -85,7 +80,12 @@ export default function Index() {
         <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
       </div>
 
-      {/* Trust Indicators - moved down after Problem/Solution */}
+      {/* Industry Changes Section - moved to after Problem/Solution */}
+      <div className="-mt-8">
+        <IndustryChangesSection onRequestShowing={handleRequestShowing} />
+      </div>
+
+      {/* Trust Indicators - moved down after Industry Changes */}
       <div className="-mt-8">
         <TrustIndicators />
       </div>

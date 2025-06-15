@@ -1,6 +1,5 @@
 
-import { problemPoints } from "@/data/problemPoints";
-import { Clock, Users, Shield, Heart, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { CheckCircle2, X } from "lucide-react";
 
 interface ProblemSolutionSectionProps {
   onRequestShowing: () => void;
@@ -10,32 +9,34 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
   const stories = [
     {
       name: "Sarah's Saturday",
+      subtitle: "Two different realities.",
       oldWay: {
         icon: X,
         title: "The Traditional Trap",
-        story: "Sarah wanted to see 5 homes this weekend. First, she had to sign a buyer agreement with an agent she'd never met. Then wait 3 days for the agent's availability. She ended up seeing only 2 homes, felt pressured to make offers on both, and never heard back when she had questions.",
-        pain: "Locked in before you know if they're right for you"
+        story: "Sarah wanted to tour 4 homes over the weekend. But before she could even get started, she had to sign a buyer agreement with an agent she'd never met—just to schedule a showing. Then she waited 3 days for their availability. In the end, she saw only 2 homes, felt rushed, and was nudged toward writing offers she wasn't ready for. When she emailed with follow-up questions? Crickets.",
+        pain: "She committed to an agent before she knew if they were a good fit. No flexibility. No freedom. No follow-through."
       },
       newWay: {
         icon: CheckCircle2,
         title: "The FirstLook Way",
-        story: "Sarah booked all 5 showings in under 10 minutes, toured them on her schedule with professional guides, asked questions freely, and only connected with an agent when she found 'the one.' No pressure, no commitments until she was ready.",
-        benefit: "Experience first, commit when you're confident"
+        story: "Sarah opened FirstLook on Friday. She picked 4 homes, booked tours in under 10 minutes, and visited all of them on her schedule the next day. Each tour was hosted by a vetted local pro—no pressure, just answers. When she finally found \"the one,\" then she chose to connect with an agent she liked.",
+        benefit: "She got to experience homes first—then decide when (and if) to commit. Freedom to explore. Support when it matters."
       }
     },
     {
       name: "Mike's Surprise",
+      subtitle: "Two very different price tags.",
       oldWay: {
         icon: X,
-        title: "Hidden Cost Shock",
-        story: "Mike thought agent services were 'free' until closing day when he realized the seller's 6% commission (built into the price) meant he paid an extra $18,000 on his $300k condo for services he barely used.",
-        pain: "\"Free\" services that cost thousands in hidden fees"
+        title: "The Hidden Cost of \"Free\"",
+        story: "Mike thought working with a buyer's agent was free. But at closing, he realized the seller paid 3% in commission to the buyer's agent—baked into the sale price. That meant on his $300K condo, $9,000 went to an agent he barely interacted with. He never negotiated the fee, never approved the terms—and never got a breakdown of where that money went.",
+        pain: "\"Free\" turned out to be one of the most expensive parts of buying."
       },
       newWay: {
         icon: CheckCircle2,
-        title: "Transparent Pricing",
-        story: "Mike paid $0 for his first tour, $99 for additional showings, and saved over $15,000 by handling most of the process himself with FirstLook's support tools and optional expert help.",
-        benefit: "Pay only for what you actually need and use"
+        title: "Transparent with FirstLook",
+        story: "Mike toured his first home for $0. He booked a few more for $99, and when he was ready to make an offer, he used FirstLook's expert help for a flat $499. All-in? He saved over $8,000, stayed in control, and only paid for what he actually needed.",
+        benefit: "No bloated fees. No forced commitments. Just smart homebuying."
       }
     }
   ];
@@ -47,10 +48,10 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
           {/* Header */}
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight">
-              You Shouldn't Have to <span className="font-medium">Marry Your Agent</span> Before the First Date
+              🧡 You Shouldn't Have to <span className="font-medium">Marry Your Agent</span> Before the First Date
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-              Real stories from real buyers who discovered there's a better way to house hunt
+              Real stories from real buyers who discovered there's a better way to house hunt.
             </p>
           </div>
           
@@ -59,8 +60,8 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
             {stories.map((story, index) => (
               <div key={index} className="max-w-5xl mx-auto">
                 <div className="text-center mb-12">
-                  <h3 className="text-2xl font-medium text-gray-900 mb-2">{story.name}</h3>
-                  <p className="text-gray-500 text-sm uppercase tracking-wide">Two different experiences</p>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-2">🎀 {story.name}</h3>
+                  <p className="text-gray-500 text-sm uppercase tracking-wide">{story.subtitle}</p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -70,23 +71,11 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
                       <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                         <story.oldWay.icon className="w-5 h-5 text-red-600" />
                       </div>
-                      <h4 className="text-lg font-semibold text-red-900">{story.oldWay.title}</h4>
+                      <h4 className="text-lg font-semibold text-red-900">❌ {story.oldWay.title}</h4>
                     </div>
                     <p className="text-red-800 mb-6 leading-relaxed">{story.oldWay.story}</p>
                     <div className="bg-red-100 rounded-xl p-4">
                       <p className="text-sm font-medium text-red-700">{story.oldWay.pain}</p>
-                    </div>
-                  </div>
-
-                  {/* Arrow */}
-                  <div className="lg:hidden flex justify-center py-4">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <ArrowRight className="w-4 h-4 text-gray-600" />
-                    </div>
-                  </div>
-                  <div className="hidden lg:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                    <div className="w-12 h-12 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center shadow-sm">
-                      <ArrowRight className="w-5 h-5 text-gray-600" />
                     </div>
                   </div>
 
@@ -96,7 +85,7 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <story.newWay.icon className="w-5 h-5 text-green-600" />
                       </div>
-                      <h4 className="text-lg font-semibold text-green-900">{story.newWay.title}</h4>
+                      <h4 className="text-lg font-semibold text-green-900">✅ {story.newWay.title}</h4>
                     </div>
                     <p className="text-green-800 mb-6 leading-relaxed">{story.newWay.story}</p>
                     <div className="bg-green-100 rounded-xl p-4">

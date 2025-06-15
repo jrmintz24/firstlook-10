@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, BookOpen } from "lucide-react";
@@ -36,11 +35,10 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
             <Button 
               size="lg" 
-              className="bg-gray-900 hover:bg-black text-white px-12 py-6 text-xl font-semibold shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl group"
+              className="bg-gray-900 hover:bg-black text-white px-12 py-6 text-xl font-semibold shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
               onClick={onRequestShowing}
             >
               <span>Start Your Free Tour</span>
-              <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
             </Button>
             <Button 
               variant="outline" 

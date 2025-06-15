@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle } 
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
+import PostShowingCommunication from "@/components/post-showing/PostShowingCommunication";
 
 interface ShowingRequest {
   id: string;
@@ -185,6 +185,16 @@ const ShowingRequestCard = ({
             </Button>
           </div>
         )}
+
+        {/* Post-showing communication */}
+        <PostShowingCommunication
+          showingId={showing.id}
+          userType={userType}
+          showingStatus={showing.status}
+          agentName={showing.assigned_agent_name || undefined}
+          propertyAddress={showing.property_address}
+          onActionTaken={onComplete}
+        />
       </CardContent>
     </Card>
   );

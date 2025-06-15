@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,16 +82,24 @@ export const useBuyerShowings = (currentUser: any, profile: any) => {
   }, [currentUser]);
 
   const pendingRequests = showingRequests.filter(
-    request => request.status === 'pending' || request.status === 'assigned'
+    request => ['pending', 'assigned', 'under_review'].includes(request.status)
   );
 
   const activeShowings = showingRequests.filter(
-    request => request.status === 'confirmed' || request.status === 'agent_confirmed' || request.status === 'in_progress'
+    request => ['confirmed', 'agent_confirmed', 'in_progress', 'scheduled'].includes(request.status)
   );
 
   const completedShowings = showingRequests.filter(
-    request => request.status === 'completed' || request.status === 'cancelled'
+    request => ['completed', 'cancelled'].includes(request.status)
   );
+
+  console.log('Showing status breakdown:', {
+    total: showingRequests.length,
+    pending: pendingRequests.length,
+    active: activeShowings.length,
+    completed: completedShowings.length,
+    statuses: showingRequests.map(r => ({ id: r.id, status: r.status }))
+  });
 
   const handleCancelShowing = async (id: string) => {
     try {

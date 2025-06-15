@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
@@ -14,11 +15,15 @@ interface WorkflowTrigger {
 }
 
 async function markShowingCompletedIfReady(supabase: any, showing_request_id: string) {
+  console.log('Checking if showing should be marked completed:', showing_request_id);
+  
   const { data: attendance } = await supabase
     .from('showing_attendance')
     .select('buyer_checked_out, agent_checked_out')
     .eq('showing_request_id', showing_request_id)
     .maybeSingle();
+
+  console.log('Attendance data:', attendance);
 
   const bothCheckedOut = attendance?.buyer_checked_out && attendance?.agent_checked_out;
 
@@ -36,12 +41,29 @@ async function markShowingCompletedIfReady(supabase: any, showing_request_id: st
 
   const bothFeedback = buyerFb && agentFb;
 
+  console.log('Completion check:', { bothCheckedOut, bothFeedback, buyerFb: !!buyerFb, agentFb: !!agentFb });
+
+  // Mark as completed if both parties checked out OR if both provided feedback
   if (bothCheckedOut || bothFeedback) {
-    await supabase
+    console.log('Marking showing as completed');
+    const { error } = await supabase
       .from('showing_requests')
-      .update({ status: 'completed' })
+      .update({ 
+        status: 'completed',
+        status_updated_at: new Date().toISOString()
+      })
       .eq('id', showing_request_id);
+
+    if (error) {
+      console.error('Error marking showing completed:', error);
+    } else {
+      console.log('Successfully marked showing as completed');
+    }
+
+    return true;
   }
+
+  return false;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -111,13 +133,13 @@ async function triggerPostShowingWorkflow(supabase: any, showing_request_id: str
   }
 
   // Check if attendance record exists
-  const { data: attendance } = await supabase
+  const { data: existingAttendance } = await supabase
     .from('showing_attendance')
     .select('*')
     .eq('showing_request_id', showing_request_id)
     .maybeSingle();
 
-  if (!attendance) {
+  if (!existingAttendance) {
     // Create attendance record
     await supabase
       .from('showing_attendance')
@@ -183,13 +205,16 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
       .update(updateData)
       .eq('showing_request_id', showing_request_id);
   } else {
-    // Insert new record
+    // Insert new record with defaults
+    const insertData = {
+      showing_request_id,
+      buyer_checked_out: false,
+      agent_checked_out: false,
+      ...updateData
+    };
     result = await supabase
       .from('showing_attendance')
-      .insert({
-        showing_request_id,
-        ...updateData
-      });
+      .insert(insertData);
   }
 
   if (result.error) {
@@ -197,26 +222,30 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
     throw result.error;
   }
 
-  // Check if both parties have checked out
+  // Check if showing should be marked as completed
+  const completed = await markShowingCompletedIfReady(supabase, showing_request_id);
+
+  // Get updated attendance data
   const { data: attendance } = await supabase
     .from('showing_attendance')
     .select('*')
     .eq('showing_request_id', showing_request_id)
     .single();
 
-  if (attendance?.buyer_checked_out && attendance?.agent_checked_out) {
-    console.log('Both parties checked out');
-    await markShowingCompletedIfReady(supabase, showing_request_id);
-  }
-
   return new Response(
-    JSON.stringify({ success: true, attendance }),
+    JSON.stringify({ 
+      success: true, 
+      attendance,
+      completed 
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
 
 async function submitBuyerFeedback(supabase: any, showing_request_id: string, feedback: any) {
   const { buyer_id, agent_id, property_rating, agent_rating, property_comments, agent_comments } = feedback;
+
+  console.log('Submitting buyer feedback:', { showing_request_id, buyer_id });
 
   // Check if feedback already exists
   const { data: existingFeedback } = await supabase
@@ -254,18 +283,28 @@ async function submitBuyerFeedback(supabase: any, showing_request_id: string, fe
       });
   }
 
-  if (result.error) throw result.error;
+  if (result.error) {
+    console.error('Error submitting buyer feedback:', result.error);
+    throw result.error;
+  }
 
-  await markShowingCompletedIfReady(supabase, showing_request_id);
+  // Check if showing should be marked as completed
+  const completed = await markShowingCompletedIfReady(supabase, showing_request_id);
 
   return new Response(
-    JSON.stringify({ success: true, message: 'Buyer feedback submitted' }),
+    JSON.stringify({ 
+      success: true, 
+      message: 'Buyer feedback submitted',
+      completed 
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
 
 async function submitAgentFeedback(supabase: any, showing_request_id: string, feedback: any) {
   const { agent_id, buyer_id, buyer_interest_level, buyer_seriousness_rating, notes, recommend_buyer } = feedback;
+
+  console.log('Submitting agent feedback:', { showing_request_id, agent_id });
 
   // Check if feedback already exists
   const { data: existingFeedback } = await supabase
@@ -303,12 +342,20 @@ async function submitAgentFeedback(supabase: any, showing_request_id: string, fe
       });
   }
 
-  if (result.error) throw result.error;
+  if (result.error) {
+    console.error('Error submitting agent feedback:', result.error);
+    throw result.error;
+  }
 
-  await markShowingCompletedIfReady(supabase, showing_request_id);
+  // Check if showing should be marked as completed
+  const completed = await markShowingCompletedIfReady(supabase, showing_request_id);
 
   return new Response(
-    JSON.stringify({ success: true, message: 'Agent feedback submitted' }),
+    JSON.stringify({ 
+      success: true, 
+      message: 'Agent feedback submitted',
+      completed 
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }

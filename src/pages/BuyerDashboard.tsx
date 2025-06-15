@@ -47,7 +47,8 @@ const BuyerDashboard = () => {
     handleRescheduleShowing,
     handleConfirmShowing,
     handleAgreementSign,
-    fetchUserData
+    fetchUserData,
+    fetchShowingRequests
   } = useBuyerDashboard();
 
   const handleRequestShowing = async () => {

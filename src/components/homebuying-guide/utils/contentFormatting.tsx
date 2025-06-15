@@ -22,24 +22,24 @@ export const formatTextContent = (text: string) => {
     if (tooltipContent) {
       return (
         <InlineTooltip key={index} content={tooltipContent}>
-          <strong>{part}</strong>
+          <strong className="text-gray-900 font-semibold">{part}</strong>
         </InlineTooltip>
       );
     }
     
     // Bold important terms and acronyms
     if (/^(FirstLook|MLS|DC|FHA|VA|HPAP|DC Open Doors)$/.test(part)) {
-      return <strong key={index}>{part}</strong>;
+      return <strong key={index} className="text-gray-900 font-semibold">{part}</strong>;
     }
     
     // Bold money amounts and percentages
     if (/^\$[0-9,]+$/.test(part) || /^\d+%$/.test(part)) {
-      return <strong key={index}>{part}</strong>;
+      return <strong key={index} className="text-green-600 font-bold">{part}</strong>;
     }
     
     // Italicize phrases that need emphasis
     if (part.includes('must-have') || part.includes('nice-to-have') || part.includes('coming soon') || part.includes('off-market')) {
-      return <em key={index}>{part}</em>;
+      return <em key={index} className="text-purple-600 font-medium">{part}</em>;
     }
     
     return part;
@@ -74,8 +74,8 @@ export const formatContentParagraph = (paragraph: string, index: number) => {
     } else {
       // Regular heading without callout box
       return (
-        <div key={index} className="mb-4 md:mb-6">
-          <h4 className="font-bold text-gray-900 mb-2 md:mb-3 text-lg md:text-xl">{heading}</h4>
+        <div key={index} className="mb-6 md:mb-8">
+          <h4 className="font-bold text-gray-900 mb-3 md:mb-4 text-xl md:text-2xl tracking-wide">{heading}</h4>
           <p className="text-gray-700 leading-relaxed text-base md:text-lg font-light">{formatTextContent(content)}</p>
         </div>
       );
@@ -84,7 +84,7 @@ export const formatContentParagraph = (paragraph: string, index: number) => {
 
   // Regular paragraph with better spacing and formatting
   return (
-    <p key={index} className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-base md:text-lg font-light">
+    <p key={index} className="text-gray-700 leading-relaxed mb-6 md:mb-8 text-base md:text-lg font-light">
       {formatTextContent(paragraph)}
     </p>
   );
@@ -100,14 +100,14 @@ const CalloutBox = ({ heading, content, getIcon }: { heading: string; content: s
   if (!IconComponent) return null;
 
   return (
-    <div className="mb-6 md:mb-8">
-      <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 mb-4">
-        <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
-          <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-white" />
+    <div className="mb-8 md:mb-10">
+      <div className="flex items-start gap-4 md:gap-5 p-6 md:p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1">
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg hover:scale-110 transition-transform duration-300">
+          <IconComponent className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </div>
         <div>
-          <h4 className="font-semibold text-gray-900 mb-2 text-base md:text-lg">{heading}</h4>
-          <p className="text-gray-700 leading-relaxed text-sm md:text-base">{formatTextContent(content)}</p>
+          <h4 className="font-bold text-gray-900 mb-3 text-lg md:text-xl tracking-wide">{heading}</h4>
+          <p className="text-gray-700 leading-relaxed text-base md:text-lg font-light">{formatTextContent(content)}</p>
         </div>
       </div>
     </div>

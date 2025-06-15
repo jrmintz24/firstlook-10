@@ -60,7 +60,9 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
             {stories.map((story, index) => (
               <div key={index} className="max-w-5xl mx-auto">
                 <div className="text-center mb-12">
-                  <h3 className="text-2xl font-medium text-gray-900 mb-2">🎀 {story.name}</h3>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-2">
+                    {index === 0 ? "🎀" : "🧾"} {story.name}
+                  </h3>
                   <p className="text-gray-500 text-sm uppercase tracking-wide">{story.subtitle}</p>
                 </div>
 
@@ -71,7 +73,7 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
                       <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                         <story.oldWay.icon className="w-5 h-5 text-red-600" />
                       </div>
-                      <h4 className="text-lg font-semibold text-red-900">❌ {story.oldWay.title}</h4>
+                      <h4 className="text-lg font-semibold text-red-900">{story.oldWay.title}</h4>
                     </div>
                     <p className="text-red-800 mb-6 leading-relaxed">{story.oldWay.story}</p>
                     <div className="bg-red-100 rounded-xl p-4">
@@ -85,7 +87,7 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <story.newWay.icon className="w-5 h-5 text-green-600" />
                       </div>
-                      <h4 className="text-lg font-semibold text-green-900">✅ {story.newWay.title}</h4>
+                      <h4 className="text-lg font-semibold text-green-900">{story.newWay.title}</h4>
                     </div>
                     <p className="text-green-800 mb-6 leading-relaxed">{story.newWay.story}</p>
                     <div className="bg-green-100 rounded-xl p-4">

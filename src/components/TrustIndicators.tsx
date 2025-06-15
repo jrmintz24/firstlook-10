@@ -30,7 +30,7 @@ const TrustIndicators = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 max-w-5xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight">
-            Loved by <span className="font-medium">DC Homebuyers Who Want Control</span>
+            Loved by <span className="font-medium">Homebuyers Who Want Control</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
             Home tours—your way, on your terms. Here's how FirstLook delivers:

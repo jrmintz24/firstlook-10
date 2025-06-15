@@ -65,33 +65,33 @@ export default function Index() {
       {/* Hero Section */}
       <HeroSection onRequestShowing={handleRequestShowing} />
 
-      {/* Value Proposition Section - reduced top padding */}
-      <div className="-mt-8">
+      {/* Value Proposition Section - improved spacing */}
+      <div className="mt-0">
         <ValuePropositionSection />
       </div>
 
-      {/* How It Works - reduced spacing */}
-      <div className="-mt-8">
+      {/* How It Works - improved spacing */}
+      <div className="mt-0">
         <HowItWorks />
       </div>
 
-      {/* Problem/Solution Section - moved up before Trust Indicators */}
-      <div className="-mt-8">
+      {/* Problem/Solution Section - improved spacing */}
+      <div className="mt-0">
         <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
       </div>
 
-      {/* Industry Changes Section - moved to after Problem/Solution */}
-      <div className="-mt-8">
+      {/* Industry Changes Section - improved spacing */}
+      <div className="mt-0">
         <IndustryChangesSection onRequestShowing={handleRequestShowing} />
       </div>
 
-      {/* Trust Indicators - moved down after Industry Changes */}
-      <div className="-mt-8">
+      {/* Trust Indicators - improved spacing */}
+      <div className="mt-0">
         <TrustIndicators />
       </div>
 
-      {/* Final CTA - reduced spacing */}
-      <div className="-mt-8">
+      {/* Final CTA - improved spacing */}
+      <div className="mt-0">
         <FinalCTASection onRequestShowing={handleRequestShowing} />
       </div>
 

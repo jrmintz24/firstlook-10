@@ -80,7 +80,7 @@ export const useAuthForm = (
           await signIn(formData.email, formData.password);
           
           // Wait a moment for the session to be established
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           const { data } = await supabase.auth.getUser();
           if (data.user) {
@@ -95,7 +95,9 @@ export const useAuthForm = (
             onSuccess();
             
             // Use window.location.href for reliable redirect
-            window.location.href = redirectPath;
+            setTimeout(() => {
+              window.location.href = redirectPath;
+            }, 100);
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";

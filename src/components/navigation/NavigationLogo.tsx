@@ -14,6 +14,7 @@ const NavigationLogo = ({ onLogoClick }: NavigationLogoProps) => {
     if (!user) return "/";
     
     const userType = user.user_metadata?.user_type;
+    console.log('NavigationLogo user type:', userType);
     switch (userType) {
       case 'agent':
         return '/agent-dashboard';

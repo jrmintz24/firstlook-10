@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
@@ -116,7 +115,7 @@ async function triggerPostShowingWorkflow(supabase: any, showing_request_id: str
     .from('showing_attendance')
     .select('*')
     .eq('showing_request_id', showing_request_id)
-    .single();
+    .maybeSingle();
 
   if (!attendance) {
     // Create attendance record
@@ -151,7 +150,16 @@ async function triggerPostShowingWorkflow(supabase: any, showing_request_id: str
 async function checkAttendance(supabase: any, showing_request_id: string, data: any) {
   const { user_type, attended, checked_out } = data;
   
-  const updateData: any = {};
+  console.log('Checking attendance for:', { showing_request_id, user_type, attended, checked_out });
+
+  // First, check if attendance record exists
+  const { data: existingRecord } = await supabase
+    .from('showing_attendance')
+    .select('*')
+    .eq('showing_request_id', showing_request_id)
+    .maybeSingle();
+
+  let updateData: any = {};
   
   if (user_type === 'buyer') {
     if (attended !== undefined) updateData.buyer_attended = attended;
@@ -167,16 +175,27 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
     }
   }
 
-  const { error } = await supabase
-    .from('showing_attendance')
-    .upsert({
-      showing_request_id,
-      ...updateData
-    }, {
-      onConflict: 'showing_request_id'
-    });
+  let result;
+  if (existingRecord) {
+    // Update existing record
+    result = await supabase
+      .from('showing_attendance')
+      .update(updateData)
+      .eq('showing_request_id', showing_request_id);
+  } else {
+    // Insert new record
+    result = await supabase
+      .from('showing_attendance')
+      .insert({
+        showing_request_id,
+        ...updateData
+      });
+  }
 
-  if (error) throw error;
+  if (result.error) {
+    console.error('Error updating attendance:', result.error);
+    throw result.error;
+  }
 
   // Check if both parties have checked out
   const { data: attendance } = await supabase
@@ -199,21 +218,43 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
 async function submitBuyerFeedback(supabase: any, showing_request_id: string, feedback: any) {
   const { buyer_id, agent_id, property_rating, agent_rating, property_comments, agent_comments } = feedback;
 
-  const { error } = await supabase
+  // Check if feedback already exists
+  const { data: existingFeedback } = await supabase
     .from('buyer_feedback')
-    .upsert({
-      showing_request_id,
-      buyer_id,
-      agent_id,
-      property_rating,
-      agent_rating,
-      property_comments,
-      agent_comments
-    }, {
-      onConflict: 'showing_request_id,buyer_id'
-    });
+    .select('id')
+    .eq('showing_request_id', showing_request_id)
+    .eq('buyer_id', buyer_id)
+    .maybeSingle();
 
-  if (error) throw error;
+  let result;
+  if (existingFeedback) {
+    // Update existing feedback
+    result = await supabase
+      .from('buyer_feedback')
+      .update({
+        agent_id,
+        property_rating,
+        agent_rating,
+        property_comments,
+        agent_comments
+      })
+      .eq('id', existingFeedback.id);
+  } else {
+    // Insert new feedback
+    result = await supabase
+      .from('buyer_feedback')
+      .insert({
+        showing_request_id,
+        buyer_id,
+        agent_id,
+        property_rating,
+        agent_rating,
+        property_comments,
+        agent_comments
+      });
+  }
+
+  if (result.error) throw result.error;
 
   await markShowingCompletedIfReady(supabase, showing_request_id);
 
@@ -226,21 +267,43 @@ async function submitBuyerFeedback(supabase: any, showing_request_id: string, fe
 async function submitAgentFeedback(supabase: any, showing_request_id: string, feedback: any) {
   const { agent_id, buyer_id, buyer_interest_level, buyer_seriousness_rating, notes, recommend_buyer } = feedback;
 
-  const { error } = await supabase
+  // Check if feedback already exists
+  const { data: existingFeedback } = await supabase
     .from('agent_feedback')
-    .upsert({
-      showing_request_id,
-      agent_id,
-      buyer_id,
-      buyer_interest_level,
-      buyer_seriousness_rating,
-      notes,
-      recommend_buyer
-    }, {
-      onConflict: 'showing_request_id,agent_id'
-    });
+    .select('id')
+    .eq('showing_request_id', showing_request_id)
+    .eq('agent_id', agent_id)
+    .maybeSingle();
 
-  if (error) throw error;
+  let result;
+  if (existingFeedback) {
+    // Update existing feedback
+    result = await supabase
+      .from('agent_feedback')
+      .update({
+        buyer_id,
+        buyer_interest_level,
+        buyer_seriousness_rating,
+        notes,
+        recommend_buyer
+      })
+      .eq('id', existingFeedback.id);
+  } else {
+    // Insert new feedback
+    result = await supabase
+      .from('agent_feedback')
+      .insert({
+        showing_request_id,
+        agent_id,
+        buyer_id,
+        buyer_interest_level,
+        buyer_seriousness_rating,
+        notes,
+        recommend_buyer
+      });
+  }
+
+  if (result.error) throw result.error;
 
   await markShowingCompletedIfReady(supabase, showing_request_id);
 

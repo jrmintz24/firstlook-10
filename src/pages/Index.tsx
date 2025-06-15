@@ -80,14 +80,14 @@ export default function Index() {
         <HowItWorks />
       </div>
 
-      {/* Problem/Solution Section - reduced spacing */}
-      <div className="-mt-8">
-        <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
-      </div>
-
-      {/* Trust Indicators - reduced spacing */}
+      {/* Trust Indicators - moved up before Problem/Solution */}
       <div className="-mt-8">
         <TrustIndicators />
+      </div>
+
+      {/* Problem/Solution Section - moved down after Trust Indicators */}
+      <div className="-mt-8">
+        <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
       </div>
 
       {/* Final CTA - reduced spacing */}

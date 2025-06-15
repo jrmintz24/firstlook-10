@@ -2,8 +2,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, UserPlus } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
+import ShowingCheckoutButton from "./ShowingCheckoutButton";
 
 interface ShowingRequest {
   id: string;
@@ -28,9 +29,18 @@ interface AgentRequestCardProps {
   onSendMessage: () => void;
   onConfirm?: (request: ShowingRequest) => void;
   showAssignButton: boolean;
+  onComplete?: () => void;
 }
 
-const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, onConfirm, showAssignButton }: AgentRequestCardProps) => {
+const AgentRequestCard = ({ 
+  request, 
+  onAssign, 
+  onUpdateStatus, 
+  onSendMessage, 
+  onConfirm, 
+  showAssignButton,
+  onComplete 
+}: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
 
@@ -133,7 +143,7 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, on
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           {showAssignButton && request.status === 'pending' && (
             <Button
               onClick={() => onConfirm && onConfirm(request)}
@@ -144,14 +154,13 @@ const AgentRequestCard = ({ request, onAssign, onUpdateStatus, onSendMessage, on
             </Button>
           )}
 
-          {!showAssignButton && ['submitted', 'under_review', 'agent_assigned', 'agent_confirmed', 'confirmed', 'scheduled'].includes(request.status) && (
-            <Button
-              variant="outline"
-              onClick={() => onUpdateStatus(request.status)}
-              className="border-purple-200 text-purple-700 hover:bg-purple-50"
-            >
-              Update Status
-            </Button>
+          {/* Show checkout button for active showings */}
+          {!showAssignButton && ['confirmed', 'scheduled'].includes(request.status) && (
+            <ShowingCheckoutButton
+              showing={request}
+              userType="agent"
+              onComplete={onComplete}
+            />
           )}
 
           {!showAssignButton && (

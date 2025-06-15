@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Star } from "lucide-react";
 import { usePostShowingWorkflow, type AgentFeedback } from "@/hooks/usePostShowingWorkflow";
 
-interface AgentFeedbackModalProps {
+interface AgentFeedbackSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete?: () => void;
@@ -19,7 +19,7 @@ interface AgentFeedbackModalProps {
   agentId: string;
 }
 
-const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: AgentFeedbackModalProps) => {
+const AgentFeedbackSheet = ({ isOpen, onClose, onComplete, showing, agentId }: AgentFeedbackSheetProps) => {
   const [attended, setAttended] = useState<boolean | null>(null);
   const [buyerInterestLevel, setBuyerInterestLevel] = useState(0);
   const [buyerSeriousnessRating, setBuyerSeriousnessRating] = useState(0);
@@ -31,7 +31,6 @@ const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: A
   const handleSubmit = async () => {
     if (attended === null) return;
 
-    // Record attendance
     await checkAttendance(showing.id, {
       user_type: 'agent',
       attended,
@@ -39,7 +38,6 @@ const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: A
     });
 
     if (attended && showing.user_id) {
-      // Submit feedback if attended
       const feedback: AgentFeedback = {
         agent_id: agentId,
         buyer_id: showing.user_id,
@@ -74,18 +72,16 @@ const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: A
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Complete Showing</DialogTitle>
-        </DialogHeader>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Complete Showing</SheetTitle>
+          <SheetDescription>
+            Provide feedback for the showing at {showing.property_address}
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-lg font-medium mb-2">How was the showing at:</h3>
-            <p className="text-gray-600">{showing.property_address}</p>
-          </div>
-          
+        <div className="space-y-6 mt-6">
           <div className="flex justify-center gap-4">
             <Button
               variant={attended === true ? "default" : "outline"}
@@ -105,19 +101,17 @@ const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: A
 
           {attended && (
             <div className="space-y-6 border-t pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <StarRating
-                  rating={buyerInterestLevel}
-                  onRatingChange={setBuyerInterestLevel}
-                  label="Buyer's interest level in this property"
-                />
-                
-                <StarRating
-                  rating={buyerSeriousnessRating}
-                  onRatingChange={setBuyerSeriousnessRating}
-                  label="Buyer's overall seriousness as a client"
-                />
-              </div>
+              <StarRating
+                rating={buyerInterestLevel}
+                onRatingChange={setBuyerInterestLevel}
+                label="Buyer's interest level in this property"
+              />
+              
+              <StarRating
+                rating={buyerSeriousnessRating}
+                onRatingChange={setBuyerSeriousnessRating}
+                label="Buyer's overall seriousness as a client"
+              />
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Additional notes</label>
@@ -154,9 +148,9 @@ const AgentFeedbackModal = ({ isOpen, onClose, onComplete, showing, agentId }: A
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 
-export default AgentFeedbackModal;
+export default AgentFeedbackSheet;

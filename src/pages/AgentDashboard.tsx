@@ -8,15 +8,13 @@ import { Link } from "react-router-dom";
 import { User, UserPlus, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
-import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
-import { isActiveShowing, canRequestAssignment, isPendingRequest, type ShowingStatus } from "@/utils/showingStatus";
+import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [showStatusModal, setShowStatusModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   
   const { 
@@ -24,7 +22,6 @@ const AgentDashboard = () => {
     showingRequests, 
     loading, 
     authLoading,
-    handleStatusUpdate,
     fetchAgentData
   } = useAgentDashboard();
 
@@ -32,14 +29,6 @@ const AgentDashboard = () => {
 
   const handleSendMessage = (requestId: string) => {
     console.log('Message functionality temporarily disabled until database types are updated');
-  };
-
-  const handleUpdateStatus = async (requestId: string, newStatus: string, estimatedDate?: string) => {
-    const success = await handleStatusUpdate(requestId, newStatus, estimatedDate);
-    if (success) {
-      setShowStatusModal(false);
-      setSelectedRequest(null);
-    }
   };
 
   const handleConfirmShowing = (request: any) => {
@@ -59,6 +48,10 @@ const AgentDashboard = () => {
       setSelectedRequest(null);
       fetchAgentData();
     }
+  };
+
+  const handleComplete = () => {
+    fetchAgentData();
   };
 
   // Organize requests by categories
@@ -189,13 +182,11 @@ const AgentDashboard = () => {
                     key={request.id}
                     request={request}
                     onAssign={() => {}}
-                    onUpdateStatus={(status, estimatedDate) => {
-                      setSelectedRequest(request);
-                      setShowStatusModal(true);
-                    }}
+                    onUpdateStatus={() => {}}
                     onSendMessage={() => handleSendMessage(request.id)}
                     onConfirm={handleConfirmShowing}
                     showAssignButton={true}
+                    onComplete={handleComplete}
                   />
                 ))}
               </div>
@@ -223,12 +214,10 @@ const AgentDashboard = () => {
                     key={request.id}
                     request={request}
                     onAssign={() => {}}
-                    onUpdateStatus={(status, estimatedDate) => {
-                      setSelectedRequest(request);
-                      setShowStatusModal(true);
-                    }}
+                    onUpdateStatus={() => {}}
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={false}
+                    onComplete={handleComplete}
                   />
                 ))}
               </div>
@@ -256,12 +245,10 @@ const AgentDashboard = () => {
                     key={request.id}
                     request={request}
                     onAssign={() => {}}
-                    onUpdateStatus={(status, estimatedDate) => {
-                      setSelectedRequest(request);
-                      setShowStatusModal(true);
-                    }}
+                    onUpdateStatus={() => {}}
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={false}
+                    onComplete={handleComplete}
                   />
                 ))}
               </div>
@@ -291,6 +278,7 @@ const AgentDashboard = () => {
                       onUpdateStatus={() => {}}
                       onSendMessage={() => handleSendMessage(request.id)}
                       showAssignButton={false}
+                      onComplete={handleComplete}
                     />
                   ))}
               </div>
@@ -300,27 +288,15 @@ const AgentDashboard = () => {
       </div>
 
       {selectedRequest && (
-        <>
-          <AgentConfirmationModal
-            isOpen={showConfirmationModal}
-            onClose={() => {
-              setShowConfirmationModal(false);
-              setSelectedRequest(null);
-            }}
-            request={selectedRequest}
-            onConfirm={handleAgentConfirmation}
-          />
-
-          <StatusUpdateModal
-            isOpen={showStatusModal}
-            onClose={() => {
-              setShowStatusModal(false);
-              setSelectedRequest(null);
-            }}
-            request={selectedRequest}
-            onUpdateStatus={handleUpdateStatus}
-          />
-        </>
+        <AgentConfirmationModal
+          isOpen={showConfirmationModal}
+          onClose={() => {
+            setShowConfirmationModal(false);
+            setSelectedRequest(null);
+          }}
+          request={selectedRequest}
+          onConfirm={handleAgentConfirmation}
+        />
       )}
     </div>
   );

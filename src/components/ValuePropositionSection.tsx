@@ -25,7 +25,7 @@ const ValuePropositionSection = () => {
     },
     {
       icon: MapPin,
-      label: "Local Experts On-Call",
+      label: "Local Experts",
       description: "Verified, DC-licensed pros are ready to answer questions—only if you need them.",
       color: "from-purple-500 to-indigo-500"
     }

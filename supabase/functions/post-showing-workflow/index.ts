@@ -273,7 +273,23 @@ async function sendFollowUpNudge(supabase: any, showing_request_id: string) {
 
 async function scheduleWorkflowTriggers(supabase: any, showing_request_id: string, data: any) {
   const { scheduled_end_time } = data;
-  
+
+  // Avoid creating duplicate workflow triggers
+  const { data: existing } = await supabase
+    .from('workflow_triggers')
+    .select('id')
+    .eq('showing_request_id', showing_request_id)
+    .eq('trigger_type', 'post_showing_workflow')
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    return new Response(
+      JSON.stringify({ success: true, message: 'Workflow trigger already scheduled' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   // Schedule post-showing workflow for 30 minutes after scheduled end
   const workflowTime = new Date(scheduled_end_time);
   workflowTime.setMinutes(workflowTime.getMinutes() + 30);

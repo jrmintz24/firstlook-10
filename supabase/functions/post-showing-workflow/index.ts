@@ -14,6 +14,37 @@ interface WorkflowTrigger {
   payload?: any;
 }
 
+async function markShowingCompletedIfReady(supabase: any, showing_request_id: string) {
+  const { data: attendance } = await supabase
+    .from('showing_attendance')
+    .select('buyer_checked_out, agent_checked_out')
+    .eq('showing_request_id', showing_request_id)
+    .maybeSingle();
+
+  const bothCheckedOut = attendance?.buyer_checked_out && attendance?.agent_checked_out;
+
+  const { data: buyerFb } = await supabase
+    .from('buyer_feedback')
+    .select('id')
+    .eq('showing_request_id', showing_request_id)
+    .maybeSingle();
+
+  const { data: agentFb } = await supabase
+    .from('agent_feedback')
+    .select('id')
+    .eq('showing_request_id', showing_request_id)
+    .maybeSingle();
+
+  const bothFeedback = buyerFb && agentFb;
+
+  if (bothCheckedOut || bothFeedback) {
+    await supabase
+      .from('showing_requests')
+      .update({ status: 'completed' })
+      .eq('id', showing_request_id);
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -147,7 +178,7 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
 
   if (error) throw error;
 
-  // Check if both parties have checked out to trigger immediate workflow
+  // Check if both parties have checked out
   const { data: attendance } = await supabase
     .from('showing_attendance')
     .select('*')
@@ -155,8 +186,8 @@ async function checkAttendance(supabase: any, showing_request_id: string, data: 
     .single();
 
   if (attendance?.buyer_checked_out && attendance?.agent_checked_out) {
-    // Both checked out - trigger immediate workflow
-    console.log('Both parties checked out, triggering immediate workflow');
+    console.log('Both parties checked out');
+    await markShowingCompletedIfReady(supabase, showing_request_id);
   }
 
   return new Response(
@@ -184,6 +215,8 @@ async function submitBuyerFeedback(supabase: any, showing_request_id: string, fe
 
   if (error) throw error;
 
+  await markShowingCompletedIfReady(supabase, showing_request_id);
+
   return new Response(
     JSON.stringify({ success: true, message: 'Buyer feedback submitted' }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -208,6 +241,8 @@ async function submitAgentFeedback(supabase: any, showing_request_id: string, fe
     });
 
   if (error) throw error;
+
+  await markShowingCompletedIfReady(supabase, showing_request_id);
 
   return new Response(
     JSON.stringify({ success: true, message: 'Agent feedback submitted' }),

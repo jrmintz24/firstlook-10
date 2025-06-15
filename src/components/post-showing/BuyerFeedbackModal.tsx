@@ -9,6 +9,7 @@ import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowi
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onComplete?: () => void;
   showing: {
     id: string;
     property_address: string;
@@ -18,7 +19,7 @@ interface BuyerFeedbackModalProps {
   buyerId: string;
 }
 
-const BuyerFeedbackModal = ({ isOpen, onClose, showing, buyerId }: BuyerFeedbackModalProps) => {
+const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: BuyerFeedbackModalProps) => {
   const [step, setStep] = useState<'attendance' | 'feedback' | 'actions'>('attendance');
   const [attended, setAttended] = useState<boolean | null>(null);
   const [propertyRating, setPropertyRating] = useState(0);
@@ -82,6 +83,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, showing, buyerId }: BuyerFeedback
     }
 
     onClose();
+    onComplete?.();
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (

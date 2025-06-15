@@ -35,6 +35,7 @@ interface ShowingListTabProps {
   onConfirmShowing?: (showing: ShowingRequest) => void;
   agreements?: Record<string, boolean>;
   showActions?: boolean;
+  onComplete?: () => void;
 }
 
 const ShowingListTab = ({
@@ -49,7 +50,8 @@ const ShowingListTab = ({
   onRescheduleShowing,
   onConfirmShowing,
   agreements = {},
-  showActions = true
+  showActions = true,
+  onComplete
 }: ShowingListTabProps) => {
   return (
     <div className="space-y-6">
@@ -83,6 +85,7 @@ const ShowingListTab = ({
               onReschedule={onRescheduleShowing}
               onConfirm={onConfirmShowing && !agreements[showing.id] ? () => onConfirmShowing(showing) : undefined}
               showActions={showActions}
+              onComplete={onComplete}
             />
           ))}
         </div>

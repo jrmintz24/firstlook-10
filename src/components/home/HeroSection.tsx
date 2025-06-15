@@ -25,11 +25,12 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           </h1>
           
           <h2 className="text-3xl md:text-4xl font-light text-gray-600 mb-3 leading-relaxed tracking-tight">
-            Tour homes on your schedule—<span className="font-bold">no agent agreement required</span>
+            Your Home Journey, <span className="font-bold">On Your Terms</span>
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed font-light">
-            Discover a modern homebuying experience built for you.
+            Instant, commitment-free home tours – first one's on us.<br />
+            No agent pressure. Full control. Save thousands.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">

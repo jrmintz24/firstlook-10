@@ -36,7 +36,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Button 
               size="lg" 
-              className="bg-gray-900 hover:bg-black text-white px-12 py-6 text-xl font-semibold shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
+              className="bg-gray-900 hover:bg-black text-white px-10 py-4 text-lg font-semibold shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl min-w-[280px] h-[60px]"
               onClick={onRequestShowing}
             >
               <span>Start Your Free Tour</span>
@@ -44,7 +44,7 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="px-12 py-6 text-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 hover:scale-105 transition-all duration-300 font-medium rounded-2xl shadow-md hover:shadow-lg"
+              className="px-10 py-4 text-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 hover:scale-105 transition-all duration-300 font-semibold rounded-2xl shadow-md hover:shadow-lg min-w-[280px] h-[60px]"
               onClick={scrollToHowItWorks}
             >
               How It Works

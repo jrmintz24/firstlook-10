@@ -173,7 +173,7 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
     case 'no_show':
       return '';
     default:
-      return '';
+      return 'Agents typically respond within 2-4 hours';
   }
 };
 

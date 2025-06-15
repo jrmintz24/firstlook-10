@@ -1,6 +1,7 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
@@ -60,7 +61,6 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
               >
                 <BookOpen className="mr-3 h-5 w-5 group-hover:text-gray-900 transition-colors duration-200" />
                 Read Our Complete Homebuying Guide
-                <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
             </Link>
           </div>

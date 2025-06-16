@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, MessageCircle } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 

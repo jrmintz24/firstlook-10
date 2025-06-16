@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -26,8 +27,15 @@ import SingleHomeTour from './pages/SingleHomeTour'
 import TourSession from './pages/TourSession'
 import NotFound from './pages/NotFound'
 import ScrollToTop from './components/ScrollToTop'
+import { useAnalytics } from './hooks/useAnalytics'
 
 const queryClient = new QueryClient()
+
+// Analytics wrapper component
+const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
+  useAnalytics();
+  return <>{children}</>;
+};
 
 function App() {
   return (
@@ -37,67 +45,69 @@ function App() {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ScrollToTop />
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
+            <AnalyticsWrapper>
+              <ScrollToTop />
+              <Navigation />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Authentication Pages */}
-              <Route path="/buyer-auth" element={<BuyerAuth />} />
-              <Route path="/agent-auth" element={<AgentAuth />} />
-              <Route path="/admin-auth" element={<AdminAuth />} />
+                {/* Authentication Pages */}
+                <Route path="/buyer-auth" element={<BuyerAuth />} />
+                <Route path="/agent-auth" element={<AgentAuth />} />
+                <Route path="/admin-auth" element={<AdminAuth />} />
 
-              {/* Dashboards */}
-              <Route
-                path="/buyer-dashboard"
-                element={
-                  <ProtectedRoute>
-                    <BuyerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/agent-dashboard"
-                element={
-                  <ProtectedRoute>
-                    <AgentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Dashboards */}
+                <Route
+                  path="/buyer-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <BuyerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/agent-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AgentDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Informational Pages */}
-              <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/subscriptions" element={<Subscriptions />} />
-              <Route path="/agents" element={<AgentLanding />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/single-home-tour" element={<SingleHomeTour />} />
-              <Route path="/tour-session" element={<TourSession />} />
+                {/* Informational Pages */}
+                <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/subscriptions" element={<Subscriptions />} />
+                <Route path="/agents" element={<AgentLanding />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/single-home-tour" element={<SingleHomeTour />} />
+                <Route path="/tour-session" element={<TourSession />} />
 
-              {/* Legacy Dashboard Route */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Legacy Dashboard Route */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AnalyticsWrapper>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

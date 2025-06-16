@@ -5,6 +5,7 @@ import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useMessages } from "@/hooks/useMessages";
+import { trackPropertyRequest, trackSubscription, trackShowingBooking, trackNavigation } from "@/utils/analytics";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -45,6 +46,9 @@ export const useBuyerDashboardLogic = () => {
   const { unreadCount, sendMessage } = useMessages(currentUser?.id || '');
 
   const handleRequestShowing = async () => {
+    // Track property request initiation
+    trackPropertyRequest('dashboard_request', 'buyer');
+    
     const currentEligibility = await checkEligibility() as EligibilityResult | null;
     
     if (!currentEligibility?.eligible) {
@@ -70,6 +74,10 @@ export const useBuyerDashboardLogic = () => {
       eligibilityReason: eligibility?.reason,
       timestamp: new Date().toISOString()
     });
+    
+    // Track subscription start
+    trackSubscription('start', 'premium');
+    
     setShowSubscribeModal(true);
   };
 
@@ -79,6 +87,9 @@ export const useBuyerDashboardLogic = () => {
       email: user?.email,
       timestamp: new Date().toISOString()
     });
+    
+    // Track subscription completion
+    trackSubscription('complete', 'premium');
     
     await refreshStatus();
     await fetchUserData();
@@ -90,11 +101,17 @@ export const useBuyerDashboardLogic = () => {
   };
 
   const handleConfirmShowingWithModal = (showing: any) => {
+    // Track showing confirmation
+    trackShowingBooking('confirmed');
+    
     handleConfirmShowing(showing);
     setShowAgreementModal(true);
   };
 
   const handleAgreementSignWithModal = async (name: string) => {
+    // Track agreement signing
+    trackShowingBooking('agreement_signed');
+    
     await handleAgreementSign(name);
     setShowAgreementModal(false);
   };
@@ -107,6 +124,9 @@ export const useBuyerDashboardLogic = () => {
   };
 
   const handleStatClick = (targetTab: string) => {
+    // Track navigation between dashboard tabs
+    trackNavigation(targetTab, activeTab);
+    
     setActiveTab(targetTab);
   };
 

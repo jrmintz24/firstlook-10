@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,6 @@ import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import QuickStatsGrid from "@/components/dashboard/QuickStatsGrid";
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
@@ -17,6 +17,11 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
 import MessagesTab from "@/components/messaging/MessagesTab";
 import { useMessages } from "@/hooks/useMessages";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
+import SmartReminders from "@/components/dashboard/SmartReminders";
+import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
+import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -53,7 +58,7 @@ const BuyerDashboard = () => {
   } = useBuyerDashboard();
 
   const currentUser = user || session?.user;
-  const { unreadCount } = useMessages(currentUser?.id || '');
+  const { unreadCount, sendMessage } = useMessages(currentUser?.id || '');
 
   const handleRequestShowing = async () => {
     // Check eligibility before opening the form
@@ -114,6 +119,14 @@ const BuyerDashboard = () => {
     setShowAgreementModal(false);
   };
 
+  const handleSendMessage = async (requestId: string) => {
+    // This would open a send message modal - placeholder for now
+    toast({
+      title: "Coming Soon",
+      description: "Direct messaging will be available soon!",
+    });
+  };
+
   // Convert agreements object to array format for ShowingListTab
   const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
     id: showing_request_id,
@@ -150,6 +163,7 @@ const BuyerDashboard = () => {
   }
 
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
+  const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
 
   // Create enhanced buyer-specific stats with more relevant information
   const buyerStats = [
@@ -162,7 +176,8 @@ const BuyerDashboard = () => {
       trend: pendingRequests.length > 0 ? {
         value: "Action needed",
         direction: 'neutral' as const
-      } : undefined
+      } : undefined,
+      actionable: true
     },
     {
       value: activeShowings.length,
@@ -173,6 +188,11 @@ const BuyerDashboard = () => {
       trend: activeShowings.length > 0 ? {
         value: "This week",
         direction: 'up' as const
+      } : undefined,
+      progress: activeShowings.length > 0 ? {
+        current: activeShowings.filter(s => s.status === 'scheduled').length,
+        max: activeShowings.length,
+        color: 'bg-blue-500'
       } : undefined
     },
     {
@@ -184,27 +204,46 @@ const BuyerDashboard = () => {
       trend: unreadCount > 0 ? {
         value: "Needs response",
         direction: 'neutral' as const
-      } : undefined
+      } : undefined,
+      actionable: true
     },
     {
-      value: completedShowings.length,
+      value: completedShowings.filter(s => s.status === 'completed').length,
       label: "Tours Completed",
-      subtitle: completedShowings.length > 0 ? "Properties viewed" : "Start exploring",
+      subtitle: completedShowings.filter(s => s.status === 'completed').length > 0 ? "Properties viewed" : "Start exploring",
       icon: MapPin,
       iconColor: "text-green-500",
-      trend: completedShowings.length > 0 ? {
+      trend: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
         value: "Great progress!",
         direction: 'up' as const
+      } : undefined,
+      progress: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
+        current: completedShowings.filter(s => s.status === 'completed').length,
+        max: Math.max(5, completedShowings.filter(s => s.status === 'completed').length),
+        color: 'bg-green-500'
       } : undefined
     }
   ];
+
+  const handleStatClick = (statIndex: number) => {
+    switch (statIndex) {
+      case 0: // Pending tours
+        // Switch to pending tab
+        break;
+      case 2: // Messages
+        // Switch to messages tab
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />
 
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        <QuickStatsGrid stats={buyerStats} />
+        <EnhancedStatsGrid stats={buyerStats} onStatClick={handleStatClick} />
 
         {/* Show subscription status or upgrade CTA */}
         {isSubscribed ? (
@@ -249,13 +288,59 @@ const BuyerDashboard = () => {
           </div>
         )}
 
+        {/* Enhanced Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Activity Feed - Takes up 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <ActivityFeed 
+              showingRequests={allShowings} 
+              userType="buyer" 
+              currentUserId={currentUser?.id}
+            />
+          </div>
+          
+          {/* Smart Reminders */}
+          <div>
+            <SmartReminders 
+              showingRequests={allShowings} 
+              userType="buyer" 
+              onSendMessage={handleSendMessage}
+            />
+          </div>
+        </div>
+
+        {/* Progress Tracker and Insights */}
+        {activeShowings.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <TourProgressTracker 
+              showing={activeShowings[0]} 
+              userType="buyer" 
+            />
+            <TourHistoryInsights 
+              completedShowings={completedShowings}
+              userType="buyer"
+              onRequestShowing={handleRequestShowing}
+            />
+          </div>
+        )}
+
+        {/* Tour History Insights for users with no active showings */}
+        {activeShowings.length === 0 && (
+          <div className="mb-8">
+            <TourHistoryInsights 
+              completedShowings={completedShowings}
+              userType="buyer"
+              onRequestShowing={handleRequestShowing}
+            />
+          </div>
+        )}
+
         {/* Main Content */}
         <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-4 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
             <TabsTrigger value="pending" className="rounded-lg font-medium">Pending Requests</TabsTrigger>
             <TabsTrigger value="upcoming" className="rounded-lg font-medium">Confirmed Showings</TabsTrigger>
             <TabsTrigger value="history" className="rounded-lg font-medium">Showing History</TabsTrigger>
-            <TabsTrigger value="messages" className="rounded-lg font-medium">Messages</TabsTrigger>
             <TabsTrigger value="profile" className="rounded-lg font-medium">Profile</TabsTrigger>
           </TabsList>
 
@@ -308,16 +393,6 @@ const BuyerDashboard = () => {
               onComplete={fetchShowingRequests}
               currentUserId={currentUser?.id}
             />
-          </TabsContent>
-
-          <TabsContent value="messages">
-            {currentUser?.id ? (
-              <MessagesTab userId={currentUser.id} userType="buyer" />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Please sign in to view messages</p>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="profile">

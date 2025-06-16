@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import MessagesTab from "@/components/messaging/MessagesTab";
 import { useMessages } from "@/hooks/useMessages";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
+import SmartReminders from "@/components/dashboard/SmartReminders";
+import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
+import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -201,7 +205,8 @@ const AgentDashboard = () => {
       trend: availableRequests.length > 0 ? {
         value: "Opportunities",
         direction: 'up' as const
-      } : undefined
+      } : undefined,
+      actionable: true
     },
     {
       value: thisWeekShowings.length,
@@ -212,6 +217,11 @@ const AgentDashboard = () => {
       trend: thisWeekShowings.length > 0 ? {
         value: "Busy week!",
         direction: 'up' as const
+      } : undefined,
+      progress: thisWeekShowings.length > 0 ? {
+        current: thisWeekShowings.filter(s => s.status === 'scheduled').length,
+        max: thisWeekShowings.length,
+        color: 'bg-blue-500'
       } : undefined
     },
     {
@@ -223,7 +233,8 @@ const AgentDashboard = () => {
       trend: unreadCount > 0 ? {
         value: "Response needed",
         direction: 'neutral' as const
-      } : undefined
+      } : undefined,
+      actionable: true
     },
     {
       value: completedShowings.filter(s => s.status === 'completed').length,
@@ -234,9 +245,29 @@ const AgentDashboard = () => {
       trend: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
         value: "Great work!",
         direction: 'up' as const
+      } : undefined,
+      progress: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
+        current: completedShowings.filter(s => s.status === 'completed').length,
+        max: Math.max(10, completedShowings.filter(s => s.status === 'completed').length),
+        color: 'bg-green-500'
       } : undefined
     }
   ];
+
+  const handleStatClick = (statIndex: number) => {
+    switch (statIndex) {
+      case 0: // Available requests
+        // Switch to available tab
+        break;
+      case 2: // Messages
+        // Switch to messages tab
+        break;
+      default:
+        break;
+    }
+  };
+
+  const allShowings = [...availableRequests, ...activeShowings, ...completedShowings];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -262,8 +293,53 @@ const AgentDashboard = () => {
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        {/* Quick Stats */}
-        <QuickStatsGrid stats={agentStats} />
+        {/* Enhanced Stats */}
+        <EnhancedStatsGrid stats={agentStats} onStatClick={handleStatClick} />
+
+        {/* Enhanced Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Activity Feed - Takes up 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <ActivityFeed 
+              showingRequests={allShowings} 
+              userType="agent" 
+              currentUserId={profile?.id}
+            />
+          </div>
+          
+          {/* Smart Reminders */}
+          <div>
+            <SmartReminders 
+              showingRequests={allShowings} 
+              userType="agent" 
+              onSendMessage={handleSendMessage}
+            />
+          </div>
+        </div>
+
+        {/* Progress Tracker and Insights */}
+        {activeShowings.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <TourProgressTracker 
+              showing={activeShowings[0]} 
+              userType="agent" 
+            />
+            <TourHistoryInsights 
+              completedShowings={completedShowings}
+              userType="agent"
+            />
+          </div>
+        )}
+
+        {/* Tour History Insights for agents with no active showings */}
+        {activeShowings.length === 0 && (
+          <div className="mb-8">
+            <TourHistoryInsights 
+              completedShowings={completedShowings}
+              userType="agent"
+            />
+          </div>
+        )}
 
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">

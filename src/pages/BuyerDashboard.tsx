@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
@@ -7,6 +8,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
+import MessagesTab from "@/components/messaging/MessagesTab";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import { Link } from "react-router-dom";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
@@ -243,6 +245,20 @@ const BuyerDashboard = () => {
               </Button>
             </div>
           )}
+        </div>
+      )
+    },
+    {
+      id: "messages",
+      label: "Messages",
+      count: unreadCount,
+      content: currentUser?.id ? (
+        <MessagesTab userId={currentUser.id} userType="buyer" />
+      ) : (
+        <div className="text-center py-12">
+          <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">Sign in to view messages</h3>
+          <p className="text-gray-500">Your conversations with agents will appear here</p>
         </div>
       )
     },

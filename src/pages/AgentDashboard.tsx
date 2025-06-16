@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { User, UserPlus, Clock, CheckCircle, AlertCircle, Calendar, MessageCircle, TrendingUp, Users } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
@@ -21,6 +20,9 @@ import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
 import SmartReminders from "@/components/dashboard/SmartReminders";
 import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -269,192 +271,179 @@ const AgentDashboard = () => {
 
   const allShowings = [...availableRequests, ...activeShowings, ...completedShowings];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
-        <div className="container mx-auto px-3 sm:px-4 py-4">
+  // Dashboard sections for the new layout
+  const dashboardSections = [
+    {
+      id: "available",
+      label: "Available",
+      count: availableRequests.length,
+      content: (
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <Link to="/" className="text-xl sm:text-2xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                FirstLook
-              </Link>
-              <p className="text-gray-600 mt-1 font-medium text-sm sm:text-base">Agent Dashboard</p>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="px-2 sm:px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs sm:text-sm font-medium">Agent</div>
-              <div className="hidden sm:flex items-center gap-2 text-gray-600">
-                <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="font-medium text-sm sm:text-base">Welcome, {profile.first_name}!</span>
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
+            <p className="text-gray-600">Accept and confirm showing requests</p>
           </div>
+
+          {availableRequests.length === 0 ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
+                <p className="text-gray-500">All current requests have been accepted by agents.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {availableRequests.map((request) => (
+                <AgentRequestCard
+                  key={request.id}
+                  request={request}
+                  onAssign={() => {}}
+                  onUpdateStatus={() => {}}
+                  onSendMessage={() => handleSendMessage(request.id)}
+                  onConfirm={handleConfirmShowing}
+                  showAssignButton={true}
+                  onComplete={handleComplete}
+                  currentAgentId={profile.id}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        {/* Enhanced Stats */}
-        <EnhancedStatsGrid stats={agentStats} onStatClick={handleStatClick} />
-
-        {/* Enhanced Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Activity Feed - Takes up 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <ActivityFeed 
-              showingRequests={allShowings} 
-              userType="agent" 
-              currentUserId={profile?.id}
-            />
+      )
+    },
+    {
+      id: "active",
+      label: "Active",
+      count: activeShowings.length,
+      content: (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-800">Active Showings</h2>
+            <p className="text-gray-600">Confirmed and scheduled showings</p>
           </div>
+
+          {activeShowings.length === 0 ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No active showings</h3>
+                <p className="text-gray-500">Confirmed showings will appear here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {activeShowings.map((request) => (
+                <AgentRequestCard
+                  key={request.id}
+                  request={request}
+                  onAssign={() => {}}
+                  onUpdateStatus={() => {}}
+                  onSendMessage={() => handleSendMessage(request.id)}
+                  showAssignButton={false}
+                  onComplete={handleComplete}
+                  currentAgentId={profile.id}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      id: "messages",
+      label: "Messages",
+      count: unreadCount,
+      content: profile?.id ? (
+        <MessagesTab userId={profile.id} userType="agent" />
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Please sign in to view messages</p>
+        </div>
+      )
+    },
+    {
+      id: "history",
+      label: "History",
+      count: completedShowings.length,
+      content: (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">Showing History</h2>
           
-          {/* Smart Reminders */}
-          <div>
-            <SmartReminders 
-              showingRequests={allShowings} 
-              userType="agent" 
-              onSendMessage={handleSendMessage}
-            />
-          </div>
+          {completedShowings.length === 0 ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No completed showings yet</h3>
+                <p className="text-gray-500">Your completed and cancelled showings will appear here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {completedShowings.map((request) => (
+                <AgentRequestCard
+                  key={request.id}
+                  request={request}
+                  onAssign={() => {}}
+                  onUpdateStatus={() => {}}
+                  onSendMessage={() => handleSendMessage(request.id)}
+                  showAssignButton={false}
+                  onComplete={handleComplete}
+                  currentAgentId={profile.id}
+                />
+              ))}
+            </div>
+          )}
         </div>
+      )
+    }
+  ];
 
-        {/* Progress Tracker and Insights */}
-        {activeShowings.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <TourProgressTracker 
-              showing={activeShowings[0]} 
-              userType="agent" 
-            />
-            <TourHistoryInsights 
-              completedShowings={completedShowings}
-              userType="agent"
-            />
-          </div>
-        )}
+  // Header component
+  const header = (
+    <DashboardHeader 
+      displayName={profile?.first_name || 'Agent'} 
+      onRequestShowing={() => {}} // Agents don't request showings
+      userType="agent"
+    />
+  );
 
-        {/* Tour History Insights for agents with no active showings */}
-        {activeShowings.length === 0 && (
-          <div className="mb-8">
-            <TourHistoryInsights 
-              completedShowings={completedShowings}
-              userType="agent"
-            />
-          </div>
-        )}
+  // Stats component  
+  const stats = <EnhancedStatsGrid stats={agentStats} onStatClick={handleStatClick} />;
 
-        {/* Main Content */}
-        <Tabs defaultValue="available" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
-            <TabsTrigger value="available" className="rounded-lg font-medium">Available ({availableRequests.length})</TabsTrigger>
-            <TabsTrigger value="active" className="rounded-lg font-medium">Active Showings ({activeShowings.length})</TabsTrigger>
-            <TabsTrigger value="messages" className="rounded-lg font-medium">Messages</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-lg font-medium">History ({completedShowings.length})</TabsTrigger>
-          </TabsList>
+  // Main content (activity feed or progress tracker)
+  const mainContent = activeShowings.length > 0 ? (
+    <TourProgressTracker 
+      showing={activeShowings[0]} 
+      userType="agent" 
+    />
+  ) : (
+    <ActivityFeed 
+      showingRequests={allShowings} 
+      userType="agent" 
+      currentUserId={profile?.id}
+    />
+  );
 
-          <TabsContent value="available" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
-              <p className="text-gray-600">Accept and confirm showing requests</p>
-            </div>
+  // Sidebar content
+  const sidebar = (
+    <UpdatesPanel 
+      showingRequests={allShowings} 
+      userType="agent" 
+      onSendMessage={handleSendMessage}
+    />
+  );
 
-            {availableRequests.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
-                  <p className="text-gray-500">All current requests have been accepted by agents.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6">
-                {availableRequests.map((request) => (
-                  <AgentRequestCard
-                    key={request.id}
-                    request={request}
-                    onAssign={() => {}}
-                    onUpdateStatus={() => {}}
-                    onSendMessage={() => handleSendMessage(request.id)}
-                    onConfirm={handleConfirmShowing}
-                    showAssignButton={true}
-                    onComplete={handleComplete}
-                    currentAgentId={profile.id}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="active" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Active Showings</h2>
-              <p className="text-gray-600">Confirmed and scheduled showings</p>
-            </div>
-
-            {activeShowings.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No active showings</h3>
-                  <p className="text-gray-500">Confirmed showings will appear here.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6">
-                {activeShowings.map((request) => (
-                  <AgentRequestCard
-                    key={request.id}
-                    request={request}
-                    onAssign={() => {}}
-                    onUpdateStatus={() => {}}
-                    onSendMessage={() => handleSendMessage(request.id)}
-                    showAssignButton={false}
-                    onComplete={handleComplete}
-                    currentAgentId={profile.id}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="messages" className="space-y-6">
-            {profile?.id ? (
-              <MessagesTab userId={profile.id} userType="agent" />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Please sign in to view messages</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="history" className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Showing History</h2>
-            
-            {completedShowings.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No completed showings yet</h3>
-                  <p className="text-gray-500">Your completed and cancelled showings will appear here.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6">
-                {completedShowings.map((request) => (
-                  <AgentRequestCard
-                    key={request.id}
-                    request={request}
-                    onAssign={() => {}}
-                    onUpdateStatus={() => {}}
-                    onSendMessage={() => handleSendMessage(request.id)}
-                    showAssignButton={false}
-                    onComplete={handleComplete}
-                    currentAgentId={profile.id}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+  return (
+    <>
+      <DashboardLayout
+        header={header}
+        stats={stats}
+        mainContent={mainContent}
+        sidebar={sidebar}
+        sections={dashboardSections}
+        defaultSection="available"
+      />
 
       {selectedRequest && (
         <AgentConfirmationModal
@@ -476,7 +465,7 @@ const AgentDashboard = () => {
         }}
         onSend={sendMessage}
       />
-    </div>
+    </>
   );
 };
 

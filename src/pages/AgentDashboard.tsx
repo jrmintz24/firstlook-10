@@ -104,7 +104,7 @@ const AgentDashboard = () => {
     fetchAgentData();
   };
 
-  // Organize requests by categories
+  // Organize requests by categories - declare once only
   const availableRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
   );

@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
@@ -99,7 +98,6 @@ const ShowingListTab = ({
                   onConfirmShowing(foundShowing);
                 }
               } : undefined}
-              agreements={agreements}
               showActions={showActions}
               userType={userType}
               onComplete={onComplete}

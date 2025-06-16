@@ -58,11 +58,11 @@ function App() {
                 <Route path="/agent-auth" element={<AgentAuth />} />
                 <Route path="/admin-auth" element={<AdminAuth />} />
 
-                {/* Dashboards */}
+                {/* Dashboards with specific user type requirements */}
                 <Route
                   path="/buyer-dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredUserType="buyer">
                       <BuyerDashboard />
                     </ProtectedRoute>
                   }
@@ -70,7 +70,7 @@ function App() {
                 <Route
                   path="/agent-dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredUserType="agent">
                       <AgentDashboard />
                     </ProtectedRoute>
                   }
@@ -78,7 +78,7 @@ function App() {
                 <Route
                   path="/admin-dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredUserType="admin">
                       <AdminDashboard />
                     </ProtectedRoute>
                   }

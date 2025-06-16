@@ -1,12 +1,18 @@
+
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
   redirectTo?: string
+  requiredUserType?: string
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, redirectTo = '/login' }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  redirectTo = '/buyer-auth', 
+  requiredUserType 
+}) => {
   const { user, loading } = useAuth()
   const location = useLocation()
 
@@ -20,6 +26,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, redire
 
   if (!user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />
+  }
+
+  // Check for specific user type requirement
+  if (requiredUserType && user.user_metadata?.user_type !== requiredUserType) {
+    console.log('User type mismatch:', {
+      required: requiredUserType,
+      actual: user.user_metadata?.user_type
+    });
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>

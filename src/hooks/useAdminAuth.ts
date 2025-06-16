@@ -31,6 +31,11 @@ export const useAdminAuth = () => {
     console.log('Verifying admin access for user:', currentUser.id);
 
     try {
+      // First check user metadata for quick verification
+      const userType = currentUser.user_metadata?.user_type;
+      console.log('User type from metadata:', userType);
+
+      // Then verify with database profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -39,8 +44,19 @@ export const useAdminAuth = () => {
 
       console.log('Admin profile fetch result:', { profileData, profileError });
 
-      if (profileError || !profileData || profileData.user_type !== "admin") {
-        console.error('Access denied - not admin:', { profileError, profileData });
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        toast({
+          title: "Access Error",
+          description: "Unable to verify admin access. Please try again.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return false;
+      }
+
+      if (!profileData || profileData.user_type !== "admin") {
+        console.error('Access denied - not admin:', { profileData });
         toast({
           title: "Access Denied",
           description: "Admin account required to view this page",
@@ -51,6 +67,7 @@ export const useAdminAuth = () => {
       }
 
       setProfile(profileData);
+      console.log('Admin access verified successfully');
       return true;
     } catch (error) {
       console.error('Exception in admin verification:', error);
@@ -59,6 +76,7 @@ export const useAdminAuth = () => {
         description: "An unexpected error occurred while verifying access",
         variant: "destructive",
       });
+      navigate("/");
       return false;
     } finally {
       setLoading(false);
@@ -70,12 +88,14 @@ export const useAdminAuth = () => {
       console.log('Auth still loading...');
       return;
     }
+    
     if (!user && !session) {
-      console.log('No user or session found');
+      console.log('No user or session found, redirecting to home');
       setLoading(false);
       navigate("/");
       return;
     }
+
     console.log('Starting admin verification...');
     verifyAdminAccess();
   }, [user, session, authLoading, navigate]);

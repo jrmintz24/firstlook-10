@@ -1,7 +1,5 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -15,13 +13,12 @@ import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
-import MessagesTab from "@/components/messaging/MessagesTab";
 import { useMessages } from "@/hooks/useMessages";
-import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
-import SmartReminders from "@/components/dashboard/SmartReminders";
-import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
+import FocusedStatsGrid from "@/components/dashboard/FocusedStatsGrid";
+import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -61,7 +58,6 @@ const BuyerDashboard = () => {
   const { unreadCount, sendMessage } = useMessages(currentUser?.id || '');
 
   const handleRequestShowing = async () => {
-    // Check eligibility before opening the form
     const currentEligibility = await checkEligibility() as EligibilityResult | null;
     
     if (!currentEligibility?.eligible) {
@@ -73,7 +69,6 @@ const BuyerDashboard = () => {
         });
         return;
       } else if (currentEligibility?.reason === 'free_showing_used') {
-        // Don't show the old toast, user will see the updated UI notification
         return;
       }
     }
@@ -98,7 +93,6 @@ const BuyerDashboard = () => {
       timestamp: new Date().toISOString()
     });
     
-    // Refresh subscription status and dashboard data
     await refreshStatus();
     await fetchUserData();
     
@@ -108,7 +102,6 @@ const BuyerDashboard = () => {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleConfirmShowingWithModal = (showing: any) => {
     handleConfirmShowing(showing);
     setShowAgreementModal(true);
@@ -120,21 +113,18 @@ const BuyerDashboard = () => {
   };
 
   const handleSendMessage = async (requestId: string) => {
-    // This would open a send message modal - placeholder for now
     toast({
       title: "Coming Soon",
       description: "Direct messaging will be available soon!",
     });
   };
 
-  // Convert agreements object to array format for ShowingListTab
   const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
     id: showing_request_id,
     showing_request_id,
     signed
   }));
 
-  // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -148,7 +138,6 @@ const BuyerDashboard = () => {
     );
   }
 
-  // This should rarely happen now since we redirect above
   if (!user && !session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -165,186 +154,49 @@ const BuyerDashboard = () => {
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
   const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
 
-  // Create enhanced buyer-specific stats with more relevant information
-  const buyerStats = [
+  // Create focused buyer stats (only 3 most important)
+  const focusedStats = [
     {
-      value: pendingRequests.length,
-      label: "Pending Tours",
-      subtitle: pendingRequests.length > 0 ? "Awaiting confirmation" : "All tours confirmed",
-      icon: Clock,
-      iconColor: "text-amber-500",
-      trend: pendingRequests.length > 0 ? {
-        value: "Action needed",
-        direction: 'neutral' as const
-      } : undefined,
+      value: pendingRequests.length + activeShowings.length,
+      label: "Active Tours",
+      subtitle: pendingRequests.length > 0 ? "Awaiting confirmation" : activeShowings.length > 0 ? "Ready to tour" : "No active tours",
+      icon: Calendar,
+      iconColor: "text-blue-500",
+      status: pendingRequests.length > 0 ? 'urgent' as const : 'normal' as const,
       actionable: true
     },
     {
-      value: activeShowings.length,
-      label: "Confirmed Tours",
-      subtitle: activeShowings.length > 0 ? "Ready to tour" : "No upcoming tours",
-      icon: Calendar,
-      iconColor: "text-blue-500",
-      trend: activeShowings.length > 0 ? {
-        value: "This week",
-        direction: 'up' as const
-      } : undefined,
-      progress: activeShowings.length > 0 ? {
-        current: activeShowings.filter(s => s.status === 'scheduled').length,
-        max: activeShowings.length,
-        color: 'bg-blue-500'
-      } : undefined
-    },
-    {
       value: unreadCount > 0 ? unreadCount : "0",
-      label: "New Messages",
-      subtitle: unreadCount > 0 ? "From your agents" : "All caught up",
+      label: "Messages",
+      subtitle: unreadCount > 0 ? "Needs attention" : "All caught up",
       icon: MessageCircle,
       iconColor: "text-purple-500",
-      trend: unreadCount > 0 ? {
-        value: "Needs response",
-        direction: 'neutral' as const
-      } : undefined,
+      status: unreadCount > 0 ? 'urgent' as const : 'normal' as const,
       actionable: true
     },
     {
       value: completedShowings.filter(s => s.status === 'completed').length,
-      label: "Tours Completed",
-      subtitle: completedShowings.filter(s => s.status === 'completed').length > 0 ? "Properties viewed" : "Start exploring",
-      icon: MapPin,
+      label: "Completed",
+      subtitle: "Properties viewed",
+      icon: CheckCircle,
       iconColor: "text-green-500",
-      trend: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
-        value: "Great progress!",
-        direction: 'up' as const
-      } : undefined,
-      progress: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
-        current: completedShowings.filter(s => s.status === 'completed').length,
-        max: Math.max(5, completedShowings.filter(s => s.status === 'completed').length),
-        color: 'bg-green-500'
-      } : undefined
+      status: 'success' as const
     }
   ];
 
   const handleStatClick = (statIndex: number) => {
-    switch (statIndex) {
-      case 0: // Pending tours
-        // Switch to pending tab
-        break;
-      case 2: // Messages
-        // Switch to messages tab
-        break;
-      default:
-        break;
-    }
+    // Handle stat clicks for navigation
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />
-
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        <EnhancedStatsGrid stats={buyerStats} onStatClick={handleStatClick} />
-
-        {/* Show subscription status or upgrade CTA */}
-        {isSubscribed ? (
-          <div className="mb-6 p-6 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-purple-50">
-                <Crown className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">FirstLook Premium Member</h3>
-                <p className="text-sm text-gray-600">
-                  You have unlimited access to home tours and VIP priority scheduling! 
-                  {subscriptionTier && ` (${subscriptionTier} Plan)`}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : eligibility && !eligibility.eligible && (
-          <div className="mb-6 p-6 bg-white/80 backdrop-blur-sm border border-orange-200/50 rounded-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-orange-50 mt-1">
-                  <AlertCircle className="h-6 w-6 text-orange-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-2">Showing Limit Reached</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {eligibility.reason === 'active_showing_exists' 
-                      ? "You have an active showing scheduled. Complete or cancel it to book another, or upgrade to FirstLook Premium for unlimited access."
-                      : "You've used your free showing. Upgrade to a FirstLook Premium membership for unlimited home tours and VIP priority scheduling."}
-                  </p>
-                  <Button 
-                    onClick={handleUpgradeClick}
-                    className="bg-gray-900 hover:bg-black text-white font-medium rounded-xl"
-                  >
-                    <Crown className="mr-2 h-4 w-4" />
-                    Upgrade to Premium
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Enhanced Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Activity Feed - Takes up 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <ActivityFeed 
-              showingRequests={allShowings} 
-              userType="buyer" 
-              currentUserId={currentUser?.id}
-            />
-          </div>
-          
-          {/* Smart Reminders */}
-          <div>
-            <SmartReminders 
-              showingRequests={allShowings} 
-              userType="buyer" 
-              onSendMessage={handleSendMessage}
-            />
-          </div>
-        </div>
-
-        {/* Progress Tracker and Insights */}
-        {activeShowings.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <TourProgressTracker 
-              showing={activeShowings[0]} 
-              userType="buyer" 
-            />
-            <TourHistoryInsights 
-              completedShowings={completedShowings}
-              userType="buyer"
-              onRequestShowing={handleRequestShowing}
-            />
-          </div>
-        )}
-
-        {/* Tour History Insights for users with no active showings */}
-        {activeShowings.length === 0 && (
-          <div className="mb-8">
-            <TourHistoryInsights 
-              completedShowings={completedShowings}
-              userType="buyer"
-              onRequestShowing={handleRequestShowing}
-            />
-          </div>
-        )}
-
-        {/* Main Content */}
-        <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
-            <TabsTrigger value="pending" className="rounded-lg font-medium">Pending Requests</TabsTrigger>
-            <TabsTrigger value="upcoming" className="rounded-lg font-medium">Confirmed Showings</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-lg font-medium">Showing History</TabsTrigger>
-            <TabsTrigger value="profile" className="rounded-lg font-medium">Profile</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending">
+  // Dashboard sections for tabs
+  const dashboardSections = [
+    {
+      id: "active",
+      label: "Active Tours",
+      count: pendingRequests.length + activeShowings.length,
+      content: (
+        <div className="space-y-6">
+          {pendingRequests.length > 0 && (
             <ShowingListTab
               title="Pending Requests"
               showings={pendingRequests}
@@ -358,9 +210,9 @@ const BuyerDashboard = () => {
               onComplete={fetchShowingRequests}
               currentUserId={currentUser?.id}
             />
-          </TabsContent>
-
-          <TabsContent value="upcoming">
+          )}
+          
+          {activeShowings.length > 0 && (
             <ShowingListTab
               title="Confirmed Showings"
               showings={activeShowings}
@@ -376,34 +228,142 @@ const BuyerDashboard = () => {
               onComplete={fetchShowingRequests}
               currentUserId={currentUser?.id}
             />
-          </TabsContent>
+          )}
 
-          <TabsContent value="history">
-            <ShowingListTab
-              title="Showing History"
-              showings={completedShowings}
-              emptyIcon={Star}
-              emptyTitle="No completed showings yet"
-              emptyDescription="Your showing history will appear here once you complete your first showing."
-              emptyButtonText="Request Your Free Showing"
-              onRequestShowing={handleRequestShowing}
-              onCancelShowing={handleCancelShowing}
-              onRescheduleShowing={handleRescheduleShowing}
-              showActions={false}
-              onComplete={fetchShowingRequests}
-              currentUserId={currentUser?.id}
-            />
-          </TabsContent>
+          {pendingRequests.length === 0 && activeShowings.length === 0 && (
+            <div className="text-center py-12">
+              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No active tours</h3>
+              <p className="text-gray-500 mb-6">Ready to find your dream home?</p>
+              <Button 
+                onClick={handleRequestShowing}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                Request Your Free Showing
+              </Button>
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      id: "history",
+      label: "History",
+      count: completedShowings.length,
+      content: (
+        <ShowingListTab
+          title="Showing History"
+          showings={completedShowings}
+          emptyIcon={Star}
+          emptyTitle="No completed showings yet"
+          emptyDescription="Your showing history will appear here once you complete your first showing."
+          emptyButtonText="Request Your Free Showing"
+          onRequestShowing={handleRequestShowing}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleRescheduleShowing}
+          showActions={false}
+          onComplete={fetchShowingRequests}
+          currentUserId={currentUser?.id}
+        />
+      )
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      content: (
+        <ProfileTab 
+          profile={profile}
+          userEmail={currentUser?.email}
+          displayName={displayName}
+        />
+      )
+    }
+  ];
 
-          <TabsContent value="profile">
-            <ProfileTab 
-              profile={profile}
-              userEmail={currentUser?.email}
-              displayName={displayName}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+  // Header component
+  const header = <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />;
+
+  // Stats component
+  const stats = (
+    <div>
+      <FocusedStatsGrid stats={focusedStats} onStatClick={handleStatClick} />
+      
+      {/* Subscription status */}
+      {isSubscribed ? (
+        <div className="mb-6 p-4 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-purple-50">
+              <Crown className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900">FirstLook Premium</h3>
+              <p className="text-sm text-gray-600">Unlimited tours • VIP priority</p>
+            </div>
+          </div>
+        </div>
+      ) : eligibility && !eligibility.eligible && (
+        <div className="mb-6 p-4 bg-white/80 backdrop-blur-sm border border-orange-200/50 rounded-xl">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-orange-50 mt-1">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900 mb-1">Showing Limit Reached</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  {eligibility.reason === 'active_showing_exists' 
+                    ? "Complete your current showing to book another, or upgrade for unlimited access."
+                    : "You've used your free showing. Upgrade for unlimited tours."}
+                </p>
+                <Button 
+                  onClick={handleUpgradeClick}
+                  size="sm"
+                  className="bg-gray-900 hover:bg-black text-white font-medium rounded-lg"
+                >
+                  <Crown className="mr-1 h-3 w-3" />
+                  Upgrade to Premium
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Main content (tour progress for active showings)
+  const mainContent = activeShowings.length > 0 ? (
+    <TourProgressTracker 
+      showing={activeShowings[0]} 
+      userType="buyer" 
+    />
+  ) : (
+    <TourHistoryInsights 
+      completedShowings={completedShowings}
+      userType="buyer"
+      onRequestShowing={handleRequestShowing}
+    />
+  );
+
+  // Sidebar content
+  const sidebar = (
+    <UpdatesPanel 
+      showingRequests={allShowings} 
+      userType="buyer" 
+      onSendMessage={handleSendMessage}
+    />
+  );
+
+  return (
+    <>
+      <DashboardLayout
+        header={header}
+        stats={stats}
+        mainContent={mainContent}
+        sidebar={sidebar}
+        sections={dashboardSections}
+        defaultSection="active"
+      />
 
       <ErrorBoundary>
         <PropertyRequestForm
@@ -425,7 +385,7 @@ const BuyerDashboard = () => {
         onClose={() => setShowSubscribeModal(false)}
         onSubscriptionComplete={handleSubscriptionComplete}
       />
-    </div>
+    </>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Calendar, Star, Crown } from "lucide-react";
+import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -16,6 +16,7 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
 import MessagesTab from "@/components/messaging/MessagesTab";
+import { useMessages } from "@/hooks/useMessages";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -50,6 +51,9 @@ const BuyerDashboard = () => {
     fetchUserData,
     fetchShowingRequests
   } = useBuyerDashboard();
+
+  const currentUser = user || session?.user;
+  const { unreadCount } = useMessages(currentUser?.id || '');
 
   const handleRequestShowing = async () => {
     // Check eligibility before opening the form
@@ -145,19 +149,46 @@ const BuyerDashboard = () => {
     );
   }
 
-  const currentUser = user || session?.user;
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
+
+  // Create buyer-specific stats
+  const buyerStats = [
+    {
+      value: pendingRequests.length,
+      label: "Pending Requests",
+      icon: Clock,
+      gradient: "bg-gradient-to-br from-orange-50 to-yellow-50",
+      textColor: "text-orange-600"
+    },
+    {
+      value: activeShowings.length,
+      label: "Upcoming Tours",
+      icon: Calendar,
+      gradient: "bg-gradient-to-br from-blue-50 to-cyan-50",
+      textColor: "text-blue-600"
+    },
+    {
+      value: unreadCount > 0 ? unreadCount : "0",
+      label: "Unread Messages",
+      icon: MessageCircle,
+      gradient: "bg-gradient-to-br from-purple-50 to-pink-50",
+      textColor: "text-purple-600"
+    },
+    {
+      value: completedShowings.length,
+      label: "Properties Toured",
+      icon: MapPin,
+      gradient: "bg-gradient-to-br from-green-50 to-emerald-50",
+      textColor: "text-green-600"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />
 
       <div className="container mx-auto px-4 py-8">
-        <QuickStatsGrid 
-          pendingCount={pendingRequests.length}
-          activeCount={activeShowings.length}
-          completedCount={completedShowings.length}
-        />
+        <QuickStatsGrid stats={buyerStats} />
 
         {/* Show subscription status or upgrade CTA */}
         {isSubscribed ? (

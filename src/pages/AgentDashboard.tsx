@@ -4,16 +4,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { User, UserPlus, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { User, UserPlus, Clock, CheckCircle, AlertCircle, Calendar, MessageCircle, TrendingUp, Users } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import SendMessageModal from "@/components/dashboard/SendMessageModal";
+import QuickStatsGrid from "@/components/dashboard/QuickStatsGrid";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import MessagesTab from "@/components/messaging/MessagesTab";
+import { useMessages } from "@/hooks/useMessages";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +34,7 @@ const AgentDashboard = () => {
 
   const { confirmShowing, loading: confirmationLoading } = useAgentConfirmation();
   const { toast } = useToast();
+  const { unreadCount } = useMessages(profile?.id || '');
 
   const handleSendMessage = (requestId: string) => {
     setMessageRequestId(requestId);
@@ -121,6 +124,15 @@ const AgentDashboard = () => {
     isActiveShowing(req.status as ShowingStatus)
   );
 
+  const completedShowings = showingRequests.filter(req => req.status === 'completed');
+  const thisWeekShowings = activeShowings.filter(req => {
+    if (!req.preferred_date) return false;
+    const showingDate = new Date(req.preferred_date);
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return showingDate >= now && showingDate <= weekFromNow;
+  });
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
@@ -148,6 +160,38 @@ const AgentDashboard = () => {
     );
   }
 
+  // Create agent-specific stats
+  const agentStats = [
+    {
+      value: availableRequests.length,
+      label: "Available Requests",
+      icon: UserPlus,
+      gradient: "bg-gradient-to-br from-orange-50 to-yellow-50",
+      textColor: "text-orange-600"
+    },
+    {
+      value: thisWeekShowings.length,
+      label: "This Week's Tours",
+      icon: Calendar,
+      gradient: "bg-gradient-to-br from-blue-50 to-cyan-50",
+      textColor: "text-blue-600"
+    },
+    {
+      value: unreadCount > 0 ? unreadCount : "0",
+      label: "Unread Messages",
+      icon: MessageCircle,
+      gradient: "bg-gradient-to-br from-purple-50 to-pink-50",
+      textColor: "text-purple-600"
+    },
+    {
+      value: completedShowings.length,
+      label: "Completed Tours",
+      icon: TrendingUp,
+      gradient: "bg-gradient-to-br from-green-50 to-emerald-50",
+      textColor: "text-green-600"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       {/* Header */}
@@ -173,34 +217,7 @@ const AgentDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">{availableRequests.length}</div>
-              <div className="text-gray-600">Available Requests</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{myRequests.length}</div>
-              <div className="text-gray-600">My Requests</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">{activeShowings.length}</div>
-              <div className="text-gray-600">Active Showings</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {showingRequests.filter(req => req.status === 'completed').length}
-              </div>
-              <div className="text-gray-600">Completed</div>
-            </CardContent>
-          </Card>
-        </div>
+        <QuickStatsGrid stats={agentStats} />
 
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">
@@ -319,7 +336,7 @@ const AgentDashboard = () => {
           <TabsContent value="history" className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Showing History</h2>
             
-            {showingRequests.filter(req => req.status === 'completed').length === 0 ? (
+            {completedShowings.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
                   <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -329,19 +346,17 @@ const AgentDashboard = () => {
               </Card>
             ) : (
               <div className="grid gap-6">
-                {showingRequests
-                  .filter(req => req.status === 'completed')
-                  .map((request) => (
-                    <AgentRequestCard
-                      key={request.id}
-                      request={request}
-                      onAssign={() => {}}
-                      onUpdateStatus={() => {}}
-                      onSendMessage={() => handleSendMessage(request.id)}
-                      showAssignButton={false}
-                      onComplete={handleComplete}
-                    />
-                  ))}
+                {completedShowings.map((request) => (
+                  <AgentRequestCard
+                    key={request.id}
+                    request={request}
+                    onAssign={() => {}}
+                    onUpdateStatus={() => {}}
+                    onSendMessage={() => handleSendMessage(request.id)}
+                    showAssignButton={false}
+                    onComplete={handleComplete}
+                  />
+                ))}
               </div>
             )}
           </TabsContent>

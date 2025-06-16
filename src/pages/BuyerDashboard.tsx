@@ -30,6 +30,7 @@ const BuyerDashboard = () => {
     // Data
     profile,
     selectedShowing,
+    agreements,
     loading,
     authLoading,
     user,
@@ -92,7 +93,7 @@ const BuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
-    agreements: {},
+    agreements,
     currentUser,
     profile,
     displayName,

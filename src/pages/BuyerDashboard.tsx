@@ -88,12 +88,19 @@ const BuyerDashboard = () => {
   // Generate focused buyer stats
   const focusedStats = generateBuyerStats(pendingRequests, activeShowings, completedShowings, unreadCount);
 
+  // Transform agreements to expected array format
+  const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
+    id: showing_request_id,
+    showing_request_id,
+    signed
+  }));
+
   // Generate dashboard sections
   const dashboardSections = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
     completedShowings,
-    agreements,
+    agreements: agreementsArray,
     currentUser,
     profile,
     displayName,

@@ -8,14 +8,19 @@ import { Link } from "react-router-dom";
 import { User, UserPlus, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
+import SendMessageModal from "@/components/dashboard/SendMessageModal";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageRequestId, setMessageRequestId] = useState<string>('');
   
   const { 
     profile, 
@@ -26,9 +31,54 @@ const AgentDashboard = () => {
   } = useAgentDashboard();
 
   const { confirmShowing, loading: confirmationLoading } = useAgentConfirmation();
+  const { toast } = useToast();
 
   const handleSendMessage = (requestId: string) => {
-    console.log('Message functionality temporarily disabled until database types are updated');
+    setMessageRequestId(requestId);
+    setShowMessageModal(true);
+  };
+
+  const sendMessage = async (message: string) => {
+    if (!profile) {
+      toast({
+        title: "Error",
+        description: "Profile not found. Please refresh and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Find the request to get buyer information
+      const request = showingRequests.find(req => req.id === messageRequestId);
+      if (!request) {
+        throw new Error("Request not found");
+      }
+
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          showing_request_id: messageRequestId,
+          sender_id: profile.id,
+          receiver_id: request.user_id,
+          content: message
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent to the buyer.",
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const handleConfirmShowing = (request: any) => {
@@ -97,6 +147,23 @@ const AgentDashboard = () => {
       </div>
     );
   }
+
+  // Organize requests by categories
+  const availableRequests = showingRequests.filter(req => 
+    req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
+  );
+  
+  const myRequests = showingRequests.filter(
+    req => profile && (
+      req.assigned_agent_email === (profile as { email?: string }).email ||
+      req.requested_agent_name?.includes(profile.first_name) ||
+      req.assigned_agent_email === profile.id
+    )
+  );
+  
+  const activeShowings = showingRequests.filter(req => 
+    isActiveShowing(req.status as ShowingStatus)
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -298,6 +365,15 @@ const AgentDashboard = () => {
           onConfirm={handleAgentConfirmation}
         />
       )}
+
+      <SendMessageModal
+        isOpen={showMessageModal}
+        onClose={() => {
+          setShowMessageModal(false);
+          setMessageRequestId('');
+        }}
+        onSend={sendMessage}
+      />
     </div>
   );
 };

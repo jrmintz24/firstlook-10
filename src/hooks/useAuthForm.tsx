@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthFormData {
@@ -11,10 +12,6 @@ interface AuthFormData {
   phone: string;
   licenseNumber: string;
 }
-
-const getRedirectUrl = () => {
-  return window.location.origin;
-};
 
 export const useAuthForm = (
   userType: 'buyer' | 'agent' | 'admin',
@@ -31,6 +28,7 @@ export const useAuthForm = (
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signUp, signIn, signInWithProvider } = useAuth();
+  const navigate = useNavigate();
 
   const handleSocialLogin = async (
     provider: 'google' | 'github' | 'discord' | 'facebook'
@@ -83,8 +81,8 @@ export const useAuthForm = (
         try {
           await signIn(formData.email, formData.password);
           
-          // Wait a moment for the session to be established
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait for the session to be established
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           const { data } = await supabase.auth.getUser();
           if (data.user) {
@@ -98,10 +96,8 @@ export const useAuthForm = (
             
             onSuccess();
             
-            // Use window.location.href for reliable redirect
-            setTimeout(() => {
-              window.location.href = `${getRedirectUrl()}${redirectPath}`;
-            }, 100);
+            // Use React Router navigate instead of window.location.href
+            navigate(redirectPath, { replace: true });
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";

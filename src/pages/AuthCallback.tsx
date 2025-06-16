@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -8,7 +9,8 @@ export const AuthCallback: React.FC = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/dashboard')
+        // Use navigate instead of window.location for smoother transition
+        navigate('/dashboard', { replace: true })
       }
     })
 

@@ -11,12 +11,12 @@ export const useNavigation = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Force navigation to home page immediately after sign out
-      window.location.href = "/";
+      // Use React Router navigate instead of window.location.href
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Error signing out:", error);
-      // Even if there's an error, redirect to home
-      window.location.href = "/";
+      // If there's an error, still try to navigate
+      navigate("/", { replace: true });
     }
   };
 

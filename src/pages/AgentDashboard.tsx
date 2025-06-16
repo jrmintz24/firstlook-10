@@ -135,7 +135,7 @@ const AgentDashboard = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <div className="text-center">
           <div className="text-lg mb-4">Loading agent dashboard...</div>
           <div className="text-sm text-gray-600">
@@ -148,7 +148,7 @@ const AgentDashboard = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <div className="text-center">
           <div className="text-lg mb-4">Access Denied</div>
           <div className="text-sm text-gray-600 mb-4">You need to be an agent to access this dashboard.</div>
@@ -160,55 +160,51 @@ const AgentDashboard = () => {
     );
   }
 
-  // Create agent-specific stats
+  // Create agent-specific stats with Apple-esque styling
   const agentStats = [
     {
       value: availableRequests.length,
       label: "Available Requests",
       icon: UserPlus,
-      gradient: "bg-gradient-to-br from-orange-50 to-yellow-50",
-      textColor: "text-orange-600"
+      iconColor: "text-orange-500"
     },
     {
       value: thisWeekShowings.length,
       label: "This Week's Tours",
       icon: Calendar,
-      gradient: "bg-gradient-to-br from-blue-50 to-cyan-50",
-      textColor: "text-blue-600"
+      iconColor: "text-blue-500"
     },
     {
       value: unreadCount > 0 ? unreadCount : "0",
       label: "Unread Messages",
       icon: MessageCircle,
-      gradient: "bg-gradient-to-br from-purple-50 to-pink-50",
-      textColor: "text-purple-600"
+      iconColor: "text-purple-500"
     },
     {
       value: completedShowings.length,
       label: "Completed Tours",
       icon: TrendingUp,
-      gradient: "bg-gradient-to-br from-green-50 to-emerald-50",
-      textColor: "text-green-600"
+      iconColor: "text-green-500"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <Link to="/" className="text-2xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 FirstLook
               </Link>
-              <p className="text-gray-600 mt-1">Agent Dashboard</p>
+              <p className="text-gray-600 mt-1 font-medium">Agent Dashboard</p>
             </div>
             <div className="flex items-center gap-4">
-              <Badge className="bg-blue-100 text-blue-800">Agent</Badge>
+              <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Agent</div>
               <div className="flex items-center gap-2 text-gray-600">
                 <User className="h-5 w-5" />
-                <span>Welcome, {profile.first_name}!</span>
+                <span className="font-medium">Welcome, {profile.first_name}!</span>
               </div>
             </div>
           </div>
@@ -221,12 +217,12 @@ const AgentDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="available">Available ({availableRequests.length})</TabsTrigger>
-            <TabsTrigger value="mine">My Requests ({myRequests.length})</TabsTrigger>
-            <TabsTrigger value="active">Active Showings ({activeShowings.length})</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
+            <TabsTrigger value="available" className="rounded-lg font-medium">Available ({availableRequests.length})</TabsTrigger>
+            <TabsTrigger value="mine" className="rounded-lg font-medium">My Requests ({myRequests.length})</TabsTrigger>
+            <TabsTrigger value="active" className="rounded-lg font-medium">Active Showings ({activeShowings.length})</TabsTrigger>
+            <TabsTrigger value="messages" className="rounded-lg font-medium">Messages</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-lg font-medium">History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="available" className="space-y-6">

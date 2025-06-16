@@ -124,7 +124,7 @@ const BuyerDashboard = () => {
   // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Loading your dashboard...</div>
           <div className="text-sm text-gray-600">
@@ -138,7 +138,7 @@ const BuyerDashboard = () => {
   // This should rarely happen now since we redirect above
   if (!user && !session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg mb-4">Please sign in to view your dashboard</div>
           <Link to="/">
@@ -151,40 +151,36 @@ const BuyerDashboard = () => {
 
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
 
-  // Create buyer-specific stats
+  // Create buyer-specific stats with Apple-esque styling
   const buyerStats = [
     {
       value: pendingRequests.length,
       label: "Pending Requests",
       icon: Clock,
-      gradient: "bg-gradient-to-br from-orange-50 to-yellow-50",
-      textColor: "text-orange-600"
+      iconColor: "text-orange-500"
     },
     {
       value: activeShowings.length,
       label: "Upcoming Tours",
       icon: Calendar,
-      gradient: "bg-gradient-to-br from-blue-50 to-cyan-50",
-      textColor: "text-blue-600"
+      iconColor: "text-blue-500"
     },
     {
       value: unreadCount > 0 ? unreadCount : "0",
       label: "Unread Messages",
       icon: MessageCircle,
-      gradient: "bg-gradient-to-br from-purple-50 to-pink-50",
-      textColor: "text-purple-600"
+      iconColor: "text-purple-500"
     },
     {
       value: completedShowings.length,
       label: "Properties Toured",
       icon: MapPin,
-      gradient: "bg-gradient-to-br from-green-50 to-emerald-50",
-      textColor: "text-green-600"
+      iconColor: "text-green-500"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />
 
       <div className="container mx-auto px-4 py-8">
@@ -192,12 +188,14 @@ const BuyerDashboard = () => {
 
         {/* Show subscription status or upgrade CTA */}
         {isSubscribed ? (
-          <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Crown className="h-6 w-6 text-purple-600" />
+          <div className="mb-6 p-6 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-purple-50">
+                <Crown className="h-6 w-6 text-purple-600" />
+              </div>
               <div>
-                <h3 className="font-semibold text-purple-900">FirstLook Premium Member</h3>
-                <p className="text-sm text-purple-700">
+                <h3 className="font-semibold text-gray-900">FirstLook Premium Member</h3>
+                <p className="text-sm text-gray-600">
                   You have unlimited access to home tours and VIP priority scheduling! 
                   {subscriptionTier && ` (${subscriptionTier} Plan)`}
                 </p>
@@ -205,20 +203,22 @@ const BuyerDashboard = () => {
             </div>
           </div>
         ) : eligibility && !eligibility.eligible && (
-          <div className="mb-6 p-6 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg">
+          <div className="mb-6 p-6 bg-white/80 backdrop-blur-sm border border-orange-200/50 rounded-2xl">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-orange-600 mt-1 flex-shrink-0" />
+                <div className="p-2 rounded-xl bg-orange-50 mt-1">
+                  <AlertCircle className="h-6 w-6 text-orange-500" />
+                </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-orange-900 mb-2">Showing Limit Reached</h3>
-                  <p className="text-sm text-orange-700 mb-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Showing Limit Reached</h3>
+                  <p className="text-sm text-gray-600 mb-4">
                     {eligibility.reason === 'active_showing_exists' 
                       ? "You have an active showing scheduled. Complete or cancel it to book another, or upgrade to FirstLook Premium for unlimited access."
                       : "You've used your free showing. Upgrade to a FirstLook Premium membership for unlimited home tours and VIP priority scheduling."}
                   </p>
                   <Button 
                     onClick={handleUpgradeClick}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    className="bg-gray-900 hover:bg-black text-white font-medium rounded-xl"
                   >
                     <Crown className="mr-2 h-4 w-4" />
                     Upgrade to Premium
@@ -231,12 +231,12 @@ const BuyerDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="pending">Pending Requests</TabsTrigger>
-            <TabsTrigger value="upcoming">Confirmed Showings</TabsTrigger>
-            <TabsTrigger value="history">Showing History</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
+            <TabsTrigger value="pending" className="rounded-lg font-medium">Pending Requests</TabsTrigger>
+            <TabsTrigger value="upcoming" className="rounded-lg font-medium">Confirmed Showings</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-lg font-medium">Showing History</TabsTrigger>
+            <TabsTrigger value="messages" className="rounded-lg font-medium">Messages</TabsTrigger>
+            <TabsTrigger value="profile" className="rounded-lg font-medium">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending">

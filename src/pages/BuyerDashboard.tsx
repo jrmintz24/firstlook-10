@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
@@ -7,7 +8,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
-import MessagesTab from "@/components/messaging/MessagesTab";
+import MessagingInterface from "@/components/messaging/MessagingInterface";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import { Link } from "react-router-dom";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
@@ -15,7 +16,6 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "@/hooks/useMessages";
-import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
 import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
 import FocusedStatsGrid from "@/components/dashboard/FocusedStatsGrid";
 import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
@@ -253,7 +253,7 @@ const BuyerDashboard = () => {
       label: "Messages",
       count: unreadCount,
       content: currentUser?.id ? (
-        <MessagesTab userId={currentUser.id} userType="buyer" />
+        <MessagingInterface userId={currentUser.id} userType="buyer" />
       ) : (
         <div className="text-center py-12">
           <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />

@@ -81,13 +81,15 @@ export const useAuthForm = (
         try {
           await signIn(formData.email, formData.password);
           
-          // Wait for the session to be established
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Wait a bit for auth state to update
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           const { data } = await supabase.auth.getUser();
           if (data.user) {
             const type = (data.user.user_metadata?.user_type as string) ?? userType;
             const redirectPath = getDashboardRedirect(type);
+            
+            console.log('useAuthForm - Login successful, redirecting to:', redirectPath);
             
             toast({
               title: "Success!",
@@ -96,7 +98,7 @@ export const useAuthForm = (
             
             onSuccess();
             
-            // Use React Router navigate instead of window.location.href
+            // Use React Router navigate with replace to prevent back navigation issues
             navigate(redirectPath, { replace: true });
           }
         } catch (error) {

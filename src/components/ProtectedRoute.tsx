@@ -13,8 +13,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo = '/buyer-auth', 
   requiredUserType 
 }) => {
-  const { user, loading } = useAuth()
+  const { user, session, loading } = useAuth()
   const location = useLocation()
+
+  console.log('ProtectedRoute - Loading:', loading, 'User:', user?.email, 'Required type:', requiredUserType, 'User type:', user?.user_metadata?.user_type);
 
   if (loading) {
     return (
@@ -24,7 +26,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     )
   }
 
-  if (!user) {
+  // Check for both user and session to ensure we have a valid auth state
+  if (!user || !session) {
+    console.log('ProtectedRoute - No user or session, redirecting to:', redirectTo);
     return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
@@ -34,7 +38,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       required: requiredUserType,
       actual: user.user_metadata?.user_type
     });
-    return <Navigate to="/" replace />
+    // Redirect to appropriate dashboard based on user type
+    const userType = user.user_metadata?.user_type;
+    if (userType === 'admin') {
+      return <Navigate to="/admin-dashboard" replace />
+    } else if (userType === 'agent') {
+      return <Navigate to="/agent-dashboard" replace />
+    } else {
+      return <Navigate to="/buyer-dashboard" replace />
+    }
   }
 
   return <>{children}</>

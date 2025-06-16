@@ -33,26 +33,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
+    let mounted = true;
+
     // Listen for auth changes first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.email, session?.user?.user_metadata?.user_type)
+      if (!mounted) return;
+      
+      console.log('AuthContext - Auth state changed:', _event, session?.user?.email, session?.user?.user_metadata?.user_type)
       setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
+      
+      if (initialized) {
+        setLoading(false)
+      }
     })
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email, session?.user?.user_metadata?.user_type)
+      if (!mounted) return;
+      
+      console.log('AuthContext - Initial session:', session?.user?.email, session?.user?.user_metadata?.user_type)
       setSession(session)
       setUser(session?.user ?? null)
+      setInitialized(true)
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    }
+  }, [initialized])
 
   const signIn = async (email: string, password: string): Promise<void> => {
     const { error } = await supabase.auth.signInWithPassword({

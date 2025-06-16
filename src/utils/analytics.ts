@@ -1,4 +1,3 @@
-
 // Google Analytics utility functions
 declare global {
   interface Window {
@@ -7,7 +6,7 @@ declare global {
   }
 }
 
-export const GA_TRACKING_ID = 'GA_TRACKING_ID'; // Replace with your actual GA4 tracking ID
+export const GA_TRACKING_ID = 'G-0C8K5ZT5MJ'; // Your actual GA4 tracking ID
 
 // Initialize Google Analytics
 export const initGA = () => {

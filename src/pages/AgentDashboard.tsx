@@ -148,23 +148,6 @@ const AgentDashboard = () => {
     );
   }
 
-  // Organize requests by categories
-  const availableRequests = showingRequests.filter(req => 
-    req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
-  );
-  
-  const myRequests = showingRequests.filter(
-    req => profile && (
-      req.assigned_agent_email === (profile as { email?: string }).email ||
-      req.requested_agent_name?.includes(profile.first_name) ||
-      req.assigned_agent_email === profile.id
-    )
-  );
-  
-  const activeShowings = showingRequests.filter(req => 
-    isActiveShowing(req.status as ShowingStatus)
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       {/* Header */}

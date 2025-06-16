@@ -8,6 +8,7 @@ import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
 import PostShowingCommunication from "@/components/post-showing/PostShowingCommunication";
 import MessageIndicator from "@/components/messaging/MessageIndicator";
+import TourProgressTracker from "./TourProgressTracker";
 
 interface ShowingRequest {
   id: string;
@@ -81,6 +82,13 @@ const ShowingRequestCard = ({
               <MapPin className="h-4 w-4 text-purple-500" />
               {showing.property_address}
             </h3>
+
+            {/* Tour Progress Tracker - only show for active showings */}
+            {['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
+              <div className="mb-4">
+                <TourProgressTracker showing={showing} userType={userType} />
+              </div>
+            )}
 
             {/* Status Description */}
             <div className="bg-blue-50 p-3 rounded-lg mb-4">

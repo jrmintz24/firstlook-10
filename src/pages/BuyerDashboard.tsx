@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
@@ -21,6 +20,7 @@ import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
 import FocusedStatsGrid from "@/components/dashboard/FocusedStatsGrid";
 import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -347,17 +347,15 @@ const BuyerDashboard = () => {
     </div>
   );
 
-  // Main content (tour progress for active showings)
-  const mainContent = activeShowings.length > 0 ? (
-    <TourProgressTracker 
-      showing={activeShowings[0]} 
-      userType="buyer" 
-    />
-  ) : (
-    <TourHistoryInsights 
-      completedShowings={completedShowings}
+  // Main content (welcome dashboard instead of progress tracker)
+  const mainContent = (
+    <WelcomeDashboard 
       userType="buyer"
+      displayName={displayName}
       onRequestShowing={handleRequestShowing}
+      hasActiveShowings={activeShowings.length > 0}
+      completedCount={completedShowings.filter(s => s.status === 'completed').length}
+      pendingCount={pendingRequests.length}
     />
   );
 

@@ -23,6 +23,7 @@ import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
+import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -411,17 +412,14 @@ const AgentDashboard = () => {
   // Stats component  
   const stats = <EnhancedStatsGrid stats={agentStats} onStatClick={handleStatClick} />;
 
-  // Main content (activity feed or progress tracker)
-  const mainContent = activeShowings.length > 0 ? (
-    <TourProgressTracker 
-      showing={activeShowings[0]} 
-      userType="agent" 
-    />
-  ) : (
-    <ActivityFeed 
-      showingRequests={allShowings} 
-      userType="agent" 
-      currentUserId={profile?.id}
+  // Main content (welcome dashboard instead of progress tracker)
+  const mainContent = (
+    <WelcomeDashboard 
+      userType="agent"
+      displayName={profile?.first_name || 'Agent'}
+      hasActiveShowings={activeShowings.length > 0}
+      completedCount={completedShowings.filter(s => s.status === 'completed').length}
+      pendingCount={availableRequests.length}
     />
   );
 

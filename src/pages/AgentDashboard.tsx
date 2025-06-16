@@ -160,31 +160,51 @@ const AgentDashboard = () => {
     );
   }
 
-  // Create agent-specific stats with Apple-esque styling
+  // Create enhanced agent-specific stats with more relevant information
   const agentStats = [
     {
       value: availableRequests.length,
-      label: "Available Requests",
+      label: "New Requests",
+      subtitle: availableRequests.length > 0 ? "Ready to accept" : "No new requests",
       icon: UserPlus,
-      iconColor: "text-orange-500"
+      iconColor: "text-orange-500",
+      trend: availableRequests.length > 0 ? {
+        value: "Opportunities",
+        direction: 'up' as const
+      } : undefined
     },
     {
       value: thisWeekShowings.length,
-      label: "This Week's Tours",
+      label: "This Week",
+      subtitle: thisWeekShowings.length > 0 ? "Scheduled tours" : "No tours scheduled",
       icon: Calendar,
-      iconColor: "text-blue-500"
+      iconColor: "text-blue-500",
+      trend: thisWeekShowings.length > 0 ? {
+        value: "Busy week!",
+        direction: 'up' as const
+      } : undefined
     },
     {
       value: unreadCount > 0 ? unreadCount : "0",
-      label: "Unread Messages",
+      label: "Messages",
+      subtitle: unreadCount > 0 ? "From clients" : "All caught up",
       icon: MessageCircle,
-      iconColor: "text-purple-500"
+      iconColor: "text-purple-500",
+      trend: unreadCount > 0 ? {
+        value: "Response needed",
+        direction: 'neutral' as const
+      } : undefined
     },
     {
       value: completedShowings.length,
-      label: "Completed Tours",
+      label: "Tours Completed",
+      subtitle: completedShowings.length > 0 ? "This month" : "Get started",
       icon: TrendingUp,
-      iconColor: "text-green-500"
+      iconColor: "text-green-500",
+      trend: completedShowings.length > 0 ? {
+        value: "Great work!",
+        direction: 'up' as const
+      } : undefined
     }
   ];
 
@@ -192,26 +212,26 @@ const AgentDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <Link to="/" className="text-2xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <Link to="/" className="text-xl sm:text-2xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 FirstLook
               </Link>
-              <p className="text-gray-600 mt-1 font-medium">Agent Dashboard</p>
+              <p className="text-gray-600 mt-1 font-medium text-sm sm:text-base">Agent Dashboard</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">Agent</div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <User className="h-5 w-5" />
-                <span className="font-medium">Welcome, {profile.first_name}!</span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="px-2 sm:px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs sm:text-sm font-medium">Agent</div>
+              <div className="hidden sm:flex items-center gap-2 text-gray-600">
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="font-medium text-sm sm:text-base">Welcome, {profile.first_name}!</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Quick Stats */}
         <QuickStatsGrid stats={agentStats} />
 

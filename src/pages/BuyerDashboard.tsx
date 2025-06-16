@@ -151,31 +151,51 @@ const BuyerDashboard = () => {
 
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
 
-  // Create buyer-specific stats with Apple-esque styling
+  // Create enhanced buyer-specific stats with more relevant information
   const buyerStats = [
     {
       value: pendingRequests.length,
-      label: "Pending Requests",
+      label: "Pending Tours",
+      subtitle: pendingRequests.length > 0 ? "Awaiting confirmation" : "All tours confirmed",
       icon: Clock,
-      iconColor: "text-orange-500"
+      iconColor: "text-amber-500",
+      trend: pendingRequests.length > 0 ? {
+        value: "Action needed",
+        direction: 'neutral' as const
+      } : undefined
     },
     {
       value: activeShowings.length,
-      label: "Upcoming Tours",
+      label: "Confirmed Tours",
+      subtitle: activeShowings.length > 0 ? "Ready to tour" : "No upcoming tours",
       icon: Calendar,
-      iconColor: "text-blue-500"
+      iconColor: "text-blue-500",
+      trend: activeShowings.length > 0 ? {
+        value: "This week",
+        direction: 'up' as const
+      } : undefined
     },
     {
       value: unreadCount > 0 ? unreadCount : "0",
-      label: "Unread Messages",
+      label: "New Messages",
+      subtitle: unreadCount > 0 ? "From your agents" : "All caught up",
       icon: MessageCircle,
-      iconColor: "text-purple-500"
+      iconColor: "text-purple-500",
+      trend: unreadCount > 0 ? {
+        value: "Needs response",
+        direction: 'neutral' as const
+      } : undefined
     },
     {
       value: completedShowings.length,
-      label: "Properties Toured",
+      label: "Tours Completed",
+      subtitle: completedShowings.length > 0 ? "Properties viewed" : "Start exploring",
       icon: MapPin,
-      iconColor: "text-green-500"
+      iconColor: "text-green-500",
+      trend: completedShowings.length > 0 ? {
+        value: "Great progress!",
+        direction: 'up' as const
+      } : undefined
     }
   ];
 
@@ -183,7 +203,7 @@ const BuyerDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         <QuickStatsGrid stats={buyerStats} />
 
         {/* Show subscription status or upgrade CTA */}

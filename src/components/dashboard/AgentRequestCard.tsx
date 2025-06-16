@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 
@@ -43,14 +43,17 @@ const AgentRequestCard = ({
 }: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
+  
+  // Check if agent has access to buyer contact info (only after being assigned)
+  const hasContactAccess = !showAssignButton && request.assigned_agent_name;
 
   return (
-    <Card className="shadow-lg border-0">
-      <CardContent className="p-6">
+    <Card className="group shadow-sm border border-gray-100/80 hover:shadow-lg hover:border-gray-200/80 transition-all duration-300">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              <Badge className={`${statusInfo.bgColor} ${statusInfo.color} border-0`}>
+              <Badge className={`${statusInfo.bgColor} ${statusInfo.color} border-0 text-xs`}>
                 <span className="mr-1">{statusInfo.icon}</span>
                 {statusInfo.label}
               </Badge>
@@ -61,13 +64,26 @@ const AgentRequestCard = ({
               )}
             </div>
             
-            <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-purple-500" />
-              {request.property_address}
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-purple-500 flex-shrink-0" />
+              <span className="truncate">{request.property_address}</span>
             </h3>
 
+            {/* Privacy-Protected Buyer Information */}
+            {!hasContactAccess && showAssignButton && (
+              <div className="bg-amber-50/80 border border-amber-200/50 p-3 rounded-lg mb-4">
+                <div className="flex items-center gap-2 text-amber-700 text-sm">
+                  <EyeOff className="h-4 w-4" />
+                  <span className="font-medium">Buyer Contact Protected</span>
+                </div>
+                <div className="text-amber-600 text-xs mt-1">
+                  Accept this request to access buyer contact information
+                </div>
+              </div>
+            )}
+
             {/* Status Description */}
-            <div className="bg-blue-50 p-3 rounded-lg mb-4">
+            <div className="bg-blue-50/80 border border-blue-200/50 p-3 rounded-lg mb-4">
               <div className="text-sm font-medium text-blue-800 mb-1">Current Status</div>
               <div className="text-blue-600 text-sm mb-2">{statusInfo.description}</div>
               <div className="text-blue-500 text-xs">{timeline}</div>
@@ -75,10 +91,10 @@ const AgentRequestCard = ({
 
             {/* Date/Time Info */}
             {request.preferred_date && (
-              <div className="flex items-center gap-6 text-gray-600 mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-600 mb-3">
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(request.preferred_date).toLocaleDateString('en-US', { 
+                  <Calendar className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm">{new Date(request.preferred_date).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     month: 'long', 
                     day: 'numeric' 
@@ -86,8 +102,8 @@ const AgentRequestCard = ({
                 </div>
                 {request.preferred_time && (
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{request.preferred_time}</span>
+                    <Clock className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm">{request.preferred_time}</span>
                   </div>
                 )}
               </div>
@@ -96,7 +112,7 @@ const AgentRequestCard = ({
             {/* Estimated Confirmation Date */}
             {request.estimated_confirmation_date && (
               <div className="flex items-center gap-2 text-green-600 mb-3">
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm">
                   Expected confirmation by {new Date(request.estimated_confirmation_date).toLocaleDateString()}
                 </span>
@@ -104,14 +120,14 @@ const AgentRequestCard = ({
             )}
 
             {/* Agent Information */}
-            {request.assigned_agent_name && (
-              <div className="bg-green-50 p-3 rounded-lg mb-4">
+            {request.assigned_agent_name && hasContactAccess && (
+              <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
                   <User className="h-4 w-4" />
                   Assigned Agent
                 </div>
                 <div className="text-green-700 font-medium">{request.assigned_agent_name}</div>
-                <div className="flex items-center gap-4 mt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
                   {request.assigned_agent_phone && (
                     <div className="flex items-center gap-1 text-green-600 text-sm">
                       <Phone className="h-3 w-3" />
@@ -121,7 +137,7 @@ const AgentRequestCard = ({
                   {request.assigned_agent_email && (
                     <div className="flex items-center gap-1 text-green-600 text-sm">
                       <Mail className="h-3 w-3" />
-                      <span>{request.assigned_agent_email}</span>
+                      <span className="truncate">{request.assigned_agent_email}</span>
                     </div>
                   )}
                 </div>
@@ -130,7 +146,7 @@ const AgentRequestCard = ({
 
             {/* Notes */}
             {request.message && (
-              <div className="bg-gray-50 p-3 rounded-lg mb-4">
+              <div className="bg-gray-50/80 border border-gray-200/50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-gray-800 mb-1">Client Notes</div>
                 <div className="text-gray-600 text-sm">{request.message}</div>
               </div>
@@ -143,11 +159,11 @@ const AgentRequestCard = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           {showAssignButton && request.status === 'pending' && (
             <Button
               onClick={() => onConfirm && onConfirm(request)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-sm w-full sm:w-auto"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Accept & Confirm
@@ -163,9 +179,14 @@ const AgentRequestCard = ({
             />
           )}
 
-          {!showAssignButton && (
-            <Button variant="outline" onClick={onSendMessage} className="border-purple-200 text-purple-700 hover:bg-purple-50">
-              Send Message
+          {hasContactAccess && (
+            <Button 
+              variant="outline" 
+              onClick={onSendMessage} 
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 text-sm w-full sm:w-auto"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Message Client
             </Button>
           )}
         </div>

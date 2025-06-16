@@ -10,6 +10,7 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
+  access_expires_at?: string | null;
 }
 
 interface MessageWithShowing extends Message {
@@ -49,10 +50,17 @@ export const useMessages = (userId: string | null) => {
 
       if (error) throw error;
 
-      setMessages(data || []);
+      // Filter out expired messages
+      const now = new Date();
+      const activeMessages = (data || []).filter(msg => {
+        if (!msg.access_expires_at) return true;
+        return new Date(msg.access_expires_at) > now;
+      });
+
+      setMessages(activeMessages);
       
       // Count unread messages (for now, consider all received messages as potentially unread)
-      const unread = data?.filter(msg => msg.receiver_id === userId).length || 0;
+      const unread = activeMessages?.filter(msg => msg.receiver_id === userId).length || 0;
       setUnreadCount(unread);
       
     } catch (error) {
@@ -82,6 +90,36 @@ export const useMessages = (userId: string | null) => {
     }
 
     try {
+      // Check if the showing allows messaging
+      const { data: showingData } = await supabase
+        .from('showing_requests')
+        .select('status, status_updated_at')
+        .eq('id', showingRequestId)
+        .single();
+
+      if (showingData?.status === 'cancelled') {
+        toast({
+          title: "Error",
+          description: "Cannot send messages for cancelled showings.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Check if messaging has expired (1 week after completion)
+      if (showingData?.status === 'completed' && showingData.status_updated_at) {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        if (new Date(showingData.status_updated_at) < weekAgo) {
+          toast({
+            title: "Error",
+            description: "Message access has expired.",
+            variant: "destructive"
+          });
+          return false;
+        }
+      }
+
       const { error } = await supabase
         .from('messages')
         .insert({

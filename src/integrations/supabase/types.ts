@@ -295,6 +295,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          access_expires_at: string | null
           content: string
           created_at: string
           id: string
@@ -303,6 +304,7 @@ export type Database = {
           showing_request_id: string | null
         }
         Insert: {
+          access_expires_at?: string | null
           content: string
           created_at?: string
           id?: string
@@ -311,6 +313,7 @@ export type Database = {
           showing_request_id?: string | null
         }
         Update: {
+          access_expires_at?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -680,6 +683,7 @@ export type Database = {
           assigned_agent_id: string | null
           assigned_agent_name: string | null
           assigned_agent_phone: string | null
+          buyer_consents_to_contact: boolean | null
           created_at: string
           estimated_confirmation_date: string | null
           id: string
@@ -702,6 +706,7 @@ export type Database = {
           assigned_agent_id?: string | null
           assigned_agent_name?: string | null
           assigned_agent_phone?: string | null
+          buyer_consents_to_contact?: boolean | null
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
@@ -724,6 +729,7 @@ export type Database = {
           assigned_agent_id?: string | null
           assigned_agent_name?: string | null
           assigned_agent_phone?: string | null
+          buyer_consents_to_contact?: boolean | null
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
@@ -885,6 +891,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_agent_access_buyer_contact: {
+        Args: { p_showing_request_id: string; p_agent_id: string }
+        Returns: boolean
+      }
       check_showing_eligibility: {
         Args: { user_uuid: string }
         Returns: Json

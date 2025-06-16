@@ -17,9 +17,11 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
+  buyer_consents_to_contact?: boolean | null;
 }
 
 interface AgentRequestCardProps {
@@ -30,6 +32,7 @@ interface AgentRequestCardProps {
   onConfirm?: (request: ShowingRequest) => void;
   showAssignButton: boolean;
   onComplete?: () => void;
+  currentAgentId?: string;
 }
 
 const AgentRequestCard = ({ 
@@ -39,13 +42,20 @@ const AgentRequestCard = ({
   onSendMessage, 
   onConfirm, 
   showAssignButton,
-  onComplete 
+  onComplete,
+  currentAgentId
 }: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
   
-  // Check if agent has access to buyer contact info (only after being assigned)
-  const hasContactAccess = !showAssignButton && request.assigned_agent_name;
+  // Agent can only see buyer contact info if showing is completed AND buyer consents
+  const canAccessBuyerContact = request.status === 'completed' && 
+    request.buyer_consents_to_contact === true && 
+    request.assigned_agent_id === currentAgentId;
+
+  // Agent can message if assigned and showing is not cancelled or completed with expired access
+  const canMessage = request.assigned_agent_id === currentAgentId && 
+    !['cancelled'].includes(request.status);
 
   return (
     <Card className="group shadow-sm border border-gray-100/80 hover:shadow-lg hover:border-gray-200/80 transition-all duration-300">
@@ -69,16 +79,34 @@ const AgentRequestCard = ({
               <span className="truncate">{request.property_address}</span>
             </h3>
 
-            {/* Privacy-Protected Buyer Information */}
-            {!hasContactAccess && showAssignButton && (
+            {/* Privacy Protection Notice */}
+            {!canAccessBuyerContact && (
               <div className="bg-amber-50/80 border border-amber-200/50 p-3 rounded-lg mb-4">
                 <div className="flex items-center gap-2 text-amber-700 text-sm">
                   <EyeOff className="h-4 w-4" />
                   <span className="font-medium">Buyer Contact Protected</span>
                 </div>
                 <div className="text-amber-600 text-xs mt-1">
-                  Accept this request to access buyer contact information
+                  {request.status === 'completed' 
+                    ? "Contact info available only if buyer consents to work with you"
+                    : showAssignButton 
+                      ? "Accept this request to begin messaging with buyer"
+                      : "Contact information protected until showing completion"}
                 </div>
+              </div>
+            )}
+
+            {/* Buyer Contact Information - Only shown if agent has access */}
+            {canAccessBuyerContact && (
+              <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
+                <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  Buyer Contact Information
+                </div>
+                <div className="text-green-700 text-sm">
+                  Buyer has consented to share contact information with you.
+                </div>
+                {/* Here you would show actual buyer contact details */}
               </div>
             )}
 
@@ -120,7 +148,7 @@ const AgentRequestCard = ({
             )}
 
             {/* Agent Information */}
-            {request.assigned_agent_name && hasContactAccess && (
+            {request.assigned_agent_name && (
               <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
                   <User className="h-4 w-4" />
@@ -179,7 +207,7 @@ const AgentRequestCard = ({
             />
           )}
 
-          {hasContactAccess && (
+          {canMessage && (
             <Button 
               variant="outline" 
               onClick={onSendMessage} 
@@ -188,6 +216,12 @@ const AgentRequestCard = ({
               <MessageCircle className="h-4 w-4 mr-2" />
               Message Client
             </Button>
+          )}
+
+          {request.status === 'cancelled' && (
+            <div className="text-xs text-gray-500 italic">
+              Messaging disabled for cancelled showings
+            </div>
           )}
         </div>
       </CardContent>

@@ -38,6 +38,34 @@ const AgentDashboard = () => {
   const { unreadCount } = useMessages(profile?.id || '');
 
   const handleSendMessage = (requestId: string) => {
+    // Check if messaging is allowed for this request
+    const request = showingRequests.find(req => req.id === requestId);
+    if (!request) return;
+    
+    // Don't allow messaging for cancelled showings
+    if (request.status === 'cancelled') {
+      toast({
+        title: "Messaging Unavailable",
+        description: "Cannot send messages for cancelled showings.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Don't allow messaging if completed more than a week ago
+    if (request.status === 'completed' && request.status_updated_at) {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      if (new Date(request.status_updated_at) < weekAgo) {
+        toast({
+          title: "Messaging Expired",
+          description: "Message access expires one week after showing completion.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     setMessageRequestId(requestId);
     setShowMessageModal(true);
   };
@@ -57,6 +85,11 @@ const AgentDashboard = () => {
       const request = showingRequests.find(req => req.id === messageRequestId);
       if (!request) {
         throw new Error("Request not found");
+      }
+
+      // Check if messaging is still allowed
+      if (request.status === 'cancelled') {
+        throw new Error("Cannot send messages for cancelled showings");
       }
 
       const { error } = await supabase
@@ -267,6 +300,7 @@ const AgentDashboard = () => {
                     onConfirm={handleConfirmShowing}
                     showAssignButton={true}
                     onComplete={handleComplete}
+                    currentAgentId={profile.id}
                   />
                 ))}
               </div>
@@ -298,6 +332,7 @@ const AgentDashboard = () => {
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={false}
                     onComplete={handleComplete}
+                    currentAgentId={profile.id}
                   />
                 ))}
               </div>
@@ -336,6 +371,7 @@ const AgentDashboard = () => {
                     onSendMessage={() => handleSendMessage(request.id)}
                     showAssignButton={false}
                     onComplete={handleComplete}
+                    currentAgentId={profile.id}
                   />
                 ))}
               </div>

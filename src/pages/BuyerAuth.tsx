@@ -9,13 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthForm } from "@/hooks/useAuthForm";
 import SignupForm from "@/components/auth/SignupForm";
 import LoginForm from "@/components/auth/LoginForm";
-import { Home, Sparkles, Shield, Clock } from "lucide-react";
+import { Home, Sparkles, Shield, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BuyerAuth = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'signup';
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [showBenefits, setShowBenefits] = useState(initialTab !== 'login');
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -24,8 +25,22 @@ const BuyerAuth = () => {
     const tab = searchParams.get('tab');
     if (tab === 'login' || tab === 'signup') {
       setActiveTab(tab);
+      // Hide benefits section for login users by default
+      setShowBenefits(tab !== 'login');
     }
   }, [searchParams]);
+
+  // Auto-scroll to form for login users
+  useEffect(() => {
+    if (initialTab === 'login') {
+      setTimeout(() => {
+        const authCard = document.getElementById('auth-card');
+        if (authCard) {
+          authCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [initialTab]);
 
   const buyerAuth = useAuthForm('buyer', () => {
     toast({
@@ -53,7 +68,7 @@ const BuyerAuth = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center space-x-2 mb-8">
               <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">F</span>
@@ -63,58 +78,92 @@ const BuyerAuth = () => {
               </span>
             </Link>
             <h1 className="text-3xl font-light text-gray-900 mb-4 tracking-tight">
-              Welcome Home Buyer!
+              {activeTab === 'login' ? 'Welcome Back!' : 'Welcome Home Buyer!'}
             </h1>
             <p className="text-gray-600 font-light leading-relaxed">
-              Join thousands discovering their dream homes with zero commitment
+              {activeTab === 'login' 
+                ? 'Sign in to continue your home search' 
+                : 'Join thousands discovering their dream homes with zero commitment'
+              }
             </p>
           </div>
 
-          {/* Benefits Cards */}
-          <div className="grid grid-cols-1 gap-4 mb-12">
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-gray-600" />
+          {/* Collapsible Benefits Section */}
+          {(showBenefits || activeTab === 'signup') && (
+            <div className="mb-8">
+              {activeTab === 'login' && (
+                <div className="text-center mb-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowBenefits(!showBenefits)}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    {showBenefits ? (
+                      <>
+                        <ChevronUp className="w-4 h-4 mr-2" />
+                        Hide Benefits
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4 mr-2" />
+                        Why Choose FirstLook?
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">100% Free First Tour</h3>
-                  <p className="text-sm text-gray-600 font-light">No upfront costs or commitments</p>
+              )}
+              
+              {showBenefits && (
+                <div className="grid grid-cols-1 gap-4 mb-8">
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">100% Free First Tour</h3>
+                        <p className="text-sm text-gray-600 font-light">No upfront costs or commitments</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Shield className="w-5 h-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">No Buyer Agreements</h3>
+                        <p className="text-sm text-gray-600 font-light">Tour homes without pressure</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">Available 7 Days a Week</h3>
+                        <p className="text-sm text-gray-600 font-light">See homes on your schedule</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-gray-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">No Buyer Agreements</h3>
-                  <p className="text-sm text-gray-600 font-light">Tour homes without pressure</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-gray-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Available 7 Days a Week</h3>
-                  <p className="text-sm text-gray-600 font-light">See homes on your schedule</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Auth Form */}
-          <Card className="bg-white border border-gray-200">
+          <Card id="auth-card" className="bg-white border border-gray-200">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-light text-gray-900 tracking-tight">
-                Get Started Today
+                {activeTab === 'login' ? 'Sign In' : 'Get Started Today'}
               </CardTitle>
               <CardDescription className="text-gray-600 font-light">
-                Create your account and start touring homes instantly
+                {activeTab === 'login' 
+                  ? 'Access your account to continue touring homes'
+                  : 'Create your account and start touring homes instantly'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>

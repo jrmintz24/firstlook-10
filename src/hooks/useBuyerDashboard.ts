@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +40,7 @@ export const useBuyerDashboard = () => {
 
   const currentUser = user || session?.user;
 
-  // Categorize requests properly - cancelled goes to history
+  // Categorize requests properly - cancelled tours are hidden from history
   const pendingRequests = showingRequests.filter(req => 
     ['pending', 'submitted', 'under_review', 'agent_assigned'].includes(req.status)
   );
@@ -50,9 +49,9 @@ export const useBuyerDashboard = () => {
     ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
   );
   
-  // History includes both completed AND cancelled requests
+  // History includes only completed requests, hiding cancelled ones
   const completedShowings = showingRequests.filter(req => 
-    req.status === 'completed' || req.status === 'cancelled'
+    req.status === 'completed'
   );
 
   const fetchUserData = async () => {

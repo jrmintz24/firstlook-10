@@ -1,8 +1,7 @@
 
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import EmptyStateCard from "./EmptyStateCard";
 import ShowingRequestCard from "./ShowingRequestCard";
 
 interface ShowingRequest {
@@ -17,9 +16,15 @@ interface ShowingRequest {
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
   assigned_agent_id?: string | null;
-  user_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
+  user_id?: string | null;
+}
+
+interface Agreement {
+  id: string;
+  showing_request_id: string;
+  signed: boolean;
 }
 
 interface ShowingListTabProps {
@@ -33,15 +38,18 @@ interface ShowingListTabProps {
   onCancelShowing: (id: string) => void;
   onRescheduleShowing: (id: string) => void;
   onConfirmShowing?: (showing: ShowingRequest) => void;
-  agreements?: Record<string, boolean>;
+  agreements?: Agreement[];
   showActions?: boolean;
+  userType?: 'buyer' | 'agent';
   onComplete?: () => void;
+  currentUserId?: string;
+  onSendMessage?: (showingId: string) => void;
 }
 
 const ShowingListTab = ({
   title,
   showings,
-  emptyIcon,
+  emptyIcon: EmptyIcon,
   emptyTitle,
   emptyDescription,
   emptyButtonText,
@@ -49,32 +57,33 @@ const ShowingListTab = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
-  agreements = {},
   showActions = true,
-  onComplete
+  userType = 'buyer',
+  onComplete,
+  currentUserId,
+  onSendMessage
 }: ShowingListTabProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        <Button 
-          onClick={onRequestShowing}
-          variant="outline"
-          className="border-purple-200 text-purple-700 hover:bg-purple-50"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {title.includes('Pending') ? 'Submit New Request' : 'Schedule Another Showing'}
-        </Button>
+        <p className="text-gray-600">{showings.length} showing{showings.length !== 1 ? 's' : ''}</p>
       </div>
 
       {showings.length === 0 ? (
-        <EmptyStateCard
-          icon={emptyIcon}
-          title={emptyTitle}
-          description={emptyDescription}
-          buttonText={emptyButtonText}
-          onButtonClick={onRequestShowing}
-        />
+        <Card className="text-center py-12">
+          <CardContent>
+            <EmptyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">{emptyTitle}</h3>
+            <p className="text-gray-500 mb-6">{emptyDescription}</p>
+            <Button 
+              onClick={onRequestShowing}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {emptyButtonText}
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-6">
           {showings.map((showing) => (
@@ -83,9 +92,12 @@ const ShowingListTab = ({
               showing={showing}
               onCancel={onCancelShowing}
               onReschedule={onRescheduleShowing}
-              onConfirm={onConfirmShowing && !agreements[showing.id] ? () => onConfirmShowing(showing) : undefined}
+              onConfirm={onConfirmShowing}
               showActions={showActions}
+              userType={userType}
               onComplete={onComplete}
+              currentUserId={currentUserId}
+              onSendMessage={onSendMessage ? () => onSendMessage(showing.id) : undefined}
             />
           ))}
         </div>

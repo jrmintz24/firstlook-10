@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +15,7 @@ import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useToast } from "@/hooks/use-toast";
+import MessagesTab from "@/components/messaging/MessagesTab";
 
 interface EligibilityResult {
   eligible: boolean;
@@ -193,10 +193,11 @@ const BuyerDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="pending">Pending Requests</TabsTrigger>
             <TabsTrigger value="upcoming">Confirmed Showings</TabsTrigger>
             <TabsTrigger value="history">Showing History</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
@@ -246,6 +247,16 @@ const BuyerDashboard = () => {
               showActions={false}
               onComplete={fetchShowingRequests}
             />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            {currentUser?.id ? (
+              <MessagesTab userId={currentUser.id} userType="buyer" />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Please sign in to view messages</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="profile">

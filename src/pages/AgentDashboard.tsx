@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import MessagesTab from "@/components/messaging/MessagesTab";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -204,10 +204,11 @@ const AgentDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="available">Available ({availableRequests.length})</TabsTrigger>
             <TabsTrigger value="mine">My Requests ({myRequests.length})</TabsTrigger>
             <TabsTrigger value="active">Active Showings ({activeShowings.length})</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
@@ -301,6 +302,16 @@ const AgentDashboard = () => {
                     onComplete={handleComplete}
                   />
                 ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="messages" className="space-y-6">
+            {profile?.id ? (
+              <MessagesTab userId={profile.id} userType="agent" />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Please sign in to view messages</p>
               </div>
             )}
           </TabsContent>

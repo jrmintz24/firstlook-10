@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
 import PostShowingCommunication from "@/components/post-showing/PostShowingCommunication";
+import MessageIndicator from "@/components/messaging/MessageIndicator";
 
 interface ShowingRequest {
   id: string;
@@ -32,6 +34,8 @@ interface ShowingRequestCardProps {
   showActions?: boolean;
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
+  currentUserId?: string;
+  onSendMessage?: () => void;
 }
 
 const ShowingRequestCard = ({ 
@@ -41,7 +45,9 @@ const ShowingRequestCard = ({
   onConfirm, 
   showActions = true,
   userType = 'buyer',
-  onComplete
+  onComplete,
+  currentUserId,
+  onSendMessage
 }: ShowingRequestCardProps) => {
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
@@ -82,6 +88,16 @@ const ShowingRequestCard = ({
               <div className="text-blue-600 text-sm mb-2">{statusInfo.description}</div>
               <div className="text-blue-500 text-xs">{timeline}</div>
             </div>
+
+            {/* Message Indicator */}
+            {currentUserId && (
+              <MessageIndicator
+                showingRequestId={showing.id}
+                userId={currentUserId}
+                onSendMessage={onSendMessage}
+                compact={false}
+              />
+            )}
 
             {/* Date/Time Info */}
             {showing.preferred_date && (

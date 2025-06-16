@@ -12,6 +12,10 @@ interface AuthFormData {
   licenseNumber: string;
 }
 
+const getRedirectUrl = () => {
+  return window.location.origin;
+};
+
 export const useAuthForm = (
   userType: 'buyer' | 'agent' | 'admin',
   onSuccess: () => void
@@ -96,7 +100,7 @@ export const useAuthForm = (
             
             // Use window.location.href for reliable redirect
             setTimeout(() => {
-              window.location.href = redirectPath;
+              window.location.href = `${getRedirectUrl()}${redirectPath}`;
             }, 100);
           }
         } catch (error) {

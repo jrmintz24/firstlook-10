@@ -2,6 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthError } from "@supabase/auth-js";
 
+const getRedirectUrl = () => {
+  // Use the current origin, which will be correct for both development and production
+  return window.location.origin;
+};
+
 export const signUp = async (
   email: string,
   password: string,
@@ -18,7 +23,7 @@ export const signUp = async (
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/${redirectPath}`,
+      emailRedirectTo: `${getRedirectUrl()}/${redirectPath}`,
       data: metadata
     }
   });
@@ -47,7 +52,7 @@ export const signInWithProvider = async (
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/${redirectPath}`,
+      redirectTo: `${getRedirectUrl()}/${redirectPath}`,
       queryParams: { user_type: userType }
     }
   });

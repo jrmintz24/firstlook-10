@@ -57,6 +57,7 @@ const ShowingListTab = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
+  agreements = [],
   showActions = true,
   userType = 'buyer',
   onComplete,
@@ -93,6 +94,7 @@ const ShowingListTab = ({
               onCancel={onCancelShowing}
               onReschedule={onRescheduleShowing}
               onConfirm={onConfirmShowing}
+              agreements={agreements}
               showActions={showActions}
               userType={userType}
               onComplete={onComplete}

@@ -110,6 +110,13 @@ const BuyerDashboard = () => {
     setShowAgreementModal(false);
   };
 
+  // Convert agreements object to array format for ShowingListTab
+  const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
+    id: showing_request_id,
+    showing_request_id,
+    signed
+  }));
+
   // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
     return (
@@ -213,6 +220,7 @@ const BuyerDashboard = () => {
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
               onComplete={fetchShowingRequests}
+              currentUserId={currentUser?.id}
             />
           </TabsContent>
 
@@ -228,8 +236,9 @@ const BuyerDashboard = () => {
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
               onConfirmShowing={handleConfirmShowingWithModal}
-              agreements={agreements}
+              agreements={agreementsArray}
               onComplete={fetchShowingRequests}
+              currentUserId={currentUser?.id}
             />
           </TabsContent>
 
@@ -246,6 +255,7 @@ const BuyerDashboard = () => {
               onRescheduleShowing={handleRescheduleShowing}
               showActions={false}
               onComplete={fetchShowingRequests}
+              currentUserId={currentUser?.id}
             />
           </TabsContent>
 

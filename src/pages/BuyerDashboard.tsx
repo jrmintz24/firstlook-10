@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Star, Crown, Clock, MessageCircle, MapPin, CheckCircle } from "lucide-react";
@@ -33,6 +32,7 @@ const BuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("active");
   const { toast } = useToast();
   const { eligibility, checkEligibility } = useShowingEligibility();
   const { isSubscribed, subscriptionTier, refreshStatus } = useSubscriptionStatus();
@@ -156,7 +156,7 @@ const BuyerDashboard = () => {
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
   const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
 
-  // Create focused buyer stats (only 3 most important)
+  // Create focused buyer stats (only 3 most important) with target tabs
   const focusedStats = [
     {
       value: pendingRequests.length + activeShowings.length,
@@ -165,7 +165,8 @@ const BuyerDashboard = () => {
       icon: Calendar,
       iconColor: "text-blue-500",
       status: pendingRequests.length > 0 ? 'urgent' as const : 'normal' as const,
-      actionable: true
+      actionable: true,
+      targetTab: "active"
     },
     {
       value: unreadCount > 0 ? unreadCount : "0",
@@ -174,7 +175,8 @@ const BuyerDashboard = () => {
       icon: MessageCircle,
       iconColor: "text-purple-500",
       status: unreadCount > 0 ? 'urgent' as const : 'normal' as const,
-      actionable: true
+      actionable: true,
+      targetTab: "messages"
     },
     {
       value: completedShowings.filter(s => s.status === 'completed').length,
@@ -182,12 +184,14 @@ const BuyerDashboard = () => {
       subtitle: "Properties viewed",
       icon: CheckCircle,
       iconColor: "text-green-500",
-      status: 'success' as const
+      status: 'success' as const,
+      actionable: true,
+      targetTab: "history"
     }
   ];
 
-  const handleStatClick = (statIndex: number) => {
-    // Handle stat clicks for navigation
+  const handleStatClick = (targetTab: string) => {
+    setActiveTab(targetTab);
   };
 
   // Dashboard sections for tabs
@@ -299,7 +303,7 @@ const BuyerDashboard = () => {
   // Header component
   const header = <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />;
 
-  // Stats component
+  // Stats component with click handler
   const stats = (
     <div>
       <FocusedStatsGrid stats={focusedStats} onStatClick={handleStatClick} />
@@ -377,6 +381,8 @@ const BuyerDashboard = () => {
         sidebar={sidebar}
         sections={dashboardSections}
         defaultSection="active"
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       <ErrorBoundary>

@@ -11,11 +11,12 @@ interface FocusedStat {
   status?: 'urgent' | 'normal' | 'success';
   actionable?: boolean;
   subtitle?: string;
+  targetTab?: string; // Add target tab identifier
 }
 
 interface FocusedStatsGridProps {
   stats: FocusedStat[];
-  onStatClick?: (statIndex: number) => void;
+  onStatClick?: (targetTab: string) => void;
 }
 
 const FocusedStatsGrid = ({ stats, onStatClick }: FocusedStatsGridProps) => {
@@ -47,13 +48,19 @@ const FocusedStatsGrid = ({ stats, onStatClick }: FocusedStatsGridProps) => {
     }
   };
 
+  const handleStatClick = (stat: FocusedStat) => {
+    if (stat.actionable && stat.targetTab && onStatClick) {
+      onStatClick(stat.targetTab);
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       {stats.map((stat, index) => (
         <Card 
           key={index} 
           className={getCardStyle(stat.status, stat.actionable)}
-          onClick={() => stat.actionable && onStatClick && onStatClick(index)}
+          onClick={() => handleStatClick(stat)}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">

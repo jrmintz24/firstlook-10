@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DashboardSection {
@@ -17,6 +17,8 @@ interface DashboardLayoutProps {
   sections: DashboardSection[];
   defaultSection?: string;
   showSectionTabs?: boolean;
+  onTabChange?: (tabId: string) => void;
+  activeTab?: string;
 }
 
 const DashboardLayout = ({ 
@@ -26,8 +28,21 @@ const DashboardLayout = ({
   sidebar, 
   sections, 
   defaultSection = sections[0]?.id,
-  showSectionTabs = true 
+  showSectionTabs = true,
+  onTabChange,
+  activeTab
 }: DashboardLayoutProps) => {
+  const [currentTab, setCurrentTab] = useState(defaultSection);
+  
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    if (onTabChange) {
+      onTabChange(value);
+    }
+  };
+
+  const tabValue = activeTab || currentTab;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {header}
@@ -50,7 +65,7 @@ const DashboardLayout = ({
 
         {/* Tabbed Sections */}
         {showSectionTabs && sections.length > 0 && (
-          <Tabs defaultValue={defaultSection} className="space-y-6">
+          <Tabs value={tabValue} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1" style={{ gridTemplateColumns: `repeat(${sections.length}, 1fr)` }}>
               {sections.map((section) => (
                 <TabsTrigger 

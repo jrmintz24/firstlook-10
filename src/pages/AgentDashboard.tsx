@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -107,24 +108,20 @@ const AgentDashboard = () => {
     fetchAgentData();
   };
 
-  // Organize requests by categories - declare once only
+  // Organize requests by categories - cancelled requests go to history
   const availableRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
-  );
-  
-  const myRequests = showingRequests.filter(
-    req => profile && (
-      req.assigned_agent_email === (profile as { email?: string }).email ||
-      req.requested_agent_name?.includes(profile.first_name) ||
-      req.assigned_agent_email === profile.id
-    )
   );
   
   const activeShowings = showingRequests.filter(req => 
     isActiveShowing(req.status as ShowingStatus)
   );
 
-  const completedShowings = showingRequests.filter(req => req.status === 'completed');
+  // History includes completed AND cancelled requests
+  const completedShowings = showingRequests.filter(req => 
+    req.status === 'completed' || req.status === 'cancelled'
+  );
+  
   const thisWeekShowings = activeShowings.filter(req => {
     if (!req.preferred_date) return false;
     const showingDate = new Date(req.preferred_date);
@@ -196,12 +193,12 @@ const AgentDashboard = () => {
       } : undefined
     },
     {
-      value: completedShowings.length,
+      value: completedShowings.filter(s => s.status === 'completed').length,
       label: "Tours Completed",
-      subtitle: completedShowings.length > 0 ? "This month" : "Get started",
+      subtitle: completedShowings.filter(s => s.status === 'completed').length > 0 ? "This month" : "Get started",
       icon: TrendingUp,
       iconColor: "text-green-500",
-      trend: completedShowings.length > 0 ? {
+      trend: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
         value: "Great work!",
         direction: 'up' as const
       } : undefined
@@ -237,12 +234,11 @@ const AgentDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="available" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-4 bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1">
             <TabsTrigger value="available" className="rounded-lg font-medium">Available ({availableRequests.length})</TabsTrigger>
-            <TabsTrigger value="mine" className="rounded-lg font-medium">My Requests ({myRequests.length})</TabsTrigger>
             <TabsTrigger value="active" className="rounded-lg font-medium">Active Showings ({activeShowings.length})</TabsTrigger>
             <TabsTrigger value="messages" className="rounded-lg font-medium">Messages</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-lg font-medium">History</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-lg font-medium">History ({completedShowings.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="available" className="space-y-6">
@@ -270,37 +266,6 @@ const AgentDashboard = () => {
                     onSendMessage={() => handleSendMessage(request.id)}
                     onConfirm={handleConfirmShowing}
                     showAssignButton={true}
-                    onComplete={handleComplete}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="mine" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">My Requests</h2>
-              <p className="text-gray-600">Requests assigned to or confirmed by you</p>
-            </div>
-
-            {myRequests.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No requests yet</h3>
-                  <p className="text-gray-500">Accept available requests to get started.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6">
-                {myRequests.map((request) => (
-                  <AgentRequestCard
-                    key={request.id}
-                    request={request}
-                    onAssign={() => {}}
-                    onUpdateStatus={() => {}}
-                    onSendMessage={() => handleSendMessage(request.id)}
-                    showAssignButton={false}
                     onComplete={handleComplete}
                   />
                 ))}
@@ -357,7 +322,7 @@ const AgentDashboard = () => {
                 <CardContent>
                   <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No completed showings yet</h3>
-                  <p className="text-gray-500">Your completed showings will appear here.</p>
+                  <p className="text-gray-500">Your completed and cancelled showings will appear here.</p>
                 </CardContent>
               </Card>
             ) : (

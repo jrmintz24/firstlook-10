@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
@@ -76,12 +77,15 @@ const ShowingListTab = ({
             <EmptyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">{emptyTitle}</h3>
             <p className="text-gray-500 mb-6">{emptyDescription}</p>
-            <Button 
-              onClick={onRequestShowing}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              {emptyButtonText}
-            </Button>
+            {/* Only show the button if it's not the history tab */}
+            {!title.toLowerCase().includes('history') && (
+              <Button 
+                onClick={onRequestShowing}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {emptyButtonText}
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

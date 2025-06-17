@@ -70,8 +70,9 @@ export const generateBuyerDashboardSections = ({
   fetchShowingRequests,
   onSendMessage
 }: BuyerDashboardSectionsProps) => {
-  return {
-    requested: {
+  return [
+    {
+      id: "requested",
       title: "Requested Tours",
       icon: Calendar,
       count: pendingRequests.length,
@@ -81,8 +82,8 @@ export const generateBuyerDashboardSections = ({
             <EmptyStateCard
               title="No Pending Requests"
               description="You don't have any tour requests pending. Ready to explore some properties?"
-              actionText="Request a Tour"
-              onAction={onRequestShowing}
+              buttonText="Request a Tour"
+              onButtonClick={onRequestShowing}
               icon={Calendar}
             />
           ) : (
@@ -92,7 +93,12 @@ export const generateBuyerDashboardSections = ({
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
-                onConfirm={onConfirmShowing}
+                onConfirm={(id: string) => {
+                  const showingToConfirm = pendingRequests.find(s => s.id === id);
+                  if (showingToConfirm) {
+                    onConfirmShowing(showingToConfirm);
+                  }
+                }}
                 currentUserId={currentUser?.id}
                 onSendMessage={onSendMessage}
                 onComplete={fetchShowingRequests}
@@ -102,7 +108,8 @@ export const generateBuyerDashboardSections = ({
         </div>
       )
     },
-    confirmed: {
+    {
+      id: "confirmed",
       title: "Confirmed Tours",
       icon: CheckCircle,
       count: activeShowings.length,
@@ -112,8 +119,8 @@ export const generateBuyerDashboardSections = ({
             <EmptyStateCard
               title="No Confirmed Tours"
               description="Once your tour requests are confirmed, they'll appear here."
-              actionText="Request a Tour"
-              onAction={onRequestShowing}
+              buttonText="Request a Tour"
+              onButtonClick={onRequestShowing}
               icon={CheckCircle}
             />
           ) : (
@@ -123,7 +130,12 @@ export const generateBuyerDashboardSections = ({
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
-                onConfirm={onConfirmShowing}
+                onConfirm={(id: string) => {
+                  const showingToConfirm = activeShowings.find(s => s.id === id);
+                  if (showingToConfirm) {
+                    onConfirmShowing(showingToConfirm);
+                  }
+                }}
                 currentUserId={currentUser?.id}
                 onSendMessage={onSendMessage}
                 onComplete={fetchShowingRequests}
@@ -133,7 +145,8 @@ export const generateBuyerDashboardSections = ({
         </div>
       )
     },
-    messages: {
+    {
+      id: "messages",
       title: "Messages",
       icon: MessageCircle,
       count: unreadCount,
@@ -148,7 +161,8 @@ export const generateBuyerDashboardSections = ({
         </Card>
       )
     },
-    history: {
+    {
+      id: "history",
       title: "Tour History",
       icon: Clock,
       count: completedShowings.length,
@@ -158,8 +172,8 @@ export const generateBuyerDashboardSections = ({
             <EmptyStateCard
               title="No Tour History"
               description="Your completed tours will appear here for your reference."
-              actionText="Request Your First Tour"
-              onAction={onRequestShowing}
+              buttonText="Request Your First Tour"
+              onButtonClick={onRequestShowing}
               icon={Clock}
             />
           ) : (
@@ -179,17 +193,18 @@ export const generateBuyerDashboardSections = ({
         </div>
       )
     },
-    profile: {
+    {
+      id: "profile",
       title: "Profile",
       icon: currentUser?.user_metadata?.avatar_url ? null : undefined,
       count: 0,
       content: (
         <ProfileTab
           profile={profile}
+          userEmail={currentUser?.email}
           displayName={displayName}
-          userType="buyer"
         />
       )
     }
-  };
+  ];
 };

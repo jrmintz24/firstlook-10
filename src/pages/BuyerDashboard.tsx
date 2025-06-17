@@ -117,6 +117,12 @@ const BuyerDashboard = () => {
     onSendMessage: handleSendMessage
   });
 
+  // Convert array to object for DashboardLayout
+  const sectionsObject = dashboardSections.reduce((acc, section) => {
+    acc[section.id] = section;
+    return acc;
+  }, {} as Record<string, any>);
+
   // Header component
   const header = <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />;
 
@@ -170,7 +176,7 @@ const BuyerDashboard = () => {
         stats={stats}
         mainContent={mainContent}
         sidebar={sidebar}
-        sections={dashboardSections}
+        sections={sectionsObject}
         defaultSection="requested"
         activeTab={activeTab}
         onTabChange={setActiveTab}

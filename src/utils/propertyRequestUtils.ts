@@ -15,7 +15,7 @@ export const convertTo24Hour = (time: string): string => {
 export const getPropertiesToSubmit = (formData: any): string[] => {
   return formData.selectedProperties.length > 0 
     ? formData.selectedProperties 
-    : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
+    : [formData.propertyAddress];
 };
 
 export const getPreferredOptions = (formData: any) => {

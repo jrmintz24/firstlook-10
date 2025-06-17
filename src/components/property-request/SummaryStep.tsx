@@ -44,7 +44,7 @@ const SummaryStep = ({ formData, onInputChange, onContinueToSubscriptions, onBac
                 ))}
               </ul>
             ) : (
-              <div className="ml-2">{formData.propertyAddress || `MLS ID: ${formData.mlsId}`}</div>
+              <div className="ml-2">{formData.propertyAddress}</div>
             )}
             {formData.preferredDate1 && formData.preferredTime1 && (
               <div><strong>Preferred Time:</strong> {formData.preferredDate1} at {formData.preferredTime1}</div>

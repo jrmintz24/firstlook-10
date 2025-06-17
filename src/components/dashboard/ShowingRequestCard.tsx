@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
@@ -16,7 +16,7 @@ interface ShowingRequest {
   preferred_date: string | null;
   preferred_time: string | null;
   message: string | null;
-  status: string; // Keep as string since Supabase returns string
+  status: string;
   created_at: string;
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
@@ -36,7 +36,7 @@ interface ShowingRequestCardProps {
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
   currentUserId?: string;
-  onSendMessage?: () => void;
+  onSendMessage?: (showingId: string) => void;
 }
 
 const ShowingRequestCard = ({ 
@@ -54,7 +54,7 @@ const ShowingRequestCard = ({
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
 
   return (
-    <Card className="shadow-lg border-0">
+    <Card className="shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         {/* Post-showing workflow trigger */}
         <PostShowingTrigger
@@ -178,7 +178,29 @@ const ShowingRequestCard = ({
 
         {/* Actions */}
         {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
+            {/* Chat Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onSendMessage?.(showing.id)}
+              className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chat
+            </Button>
+
+            {/* Reschedule Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onReschedule(showing.id)}
+              className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              <Edit className="w-4 h-4" />
+              Reschedule
+            </Button>
+
             {showing.status === 'confirmed' && onConfirm && (
               <Button variant="outline" size="sm" onClick={() => onConfirm(showing.id)} className="border-green-200 text-green-700 hover:bg-green-50">
                 Confirm & Sign
@@ -192,13 +214,6 @@ const ShowingRequestCard = ({
               onComplete={onComplete}
             />
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onReschedule(showing.id)}
-            >
-              Reschedule
-            </Button>
             <Button
               variant="outline"
               size="sm"

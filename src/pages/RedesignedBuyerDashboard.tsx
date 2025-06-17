@@ -151,6 +151,11 @@ const RedesignedBuyerDashboard = () => {
     console.log("Make offer clicked");
   };
 
+  const handleOpenChat = (showingId: string) => {
+    // For now, just show a toast - this could open a chat modal or navigate to chat
+    console.log('Opening chat for showing:', showingId);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
@@ -200,6 +205,7 @@ const RedesignedBuyerDashboard = () => {
                   onRescheduleShowing={() => {}}
                   onComplete={() => {}}
                   currentUserId={currentUser?.id}
+                  onSendMessage={handleOpenChat}
                 />
                 {pendingRequests.length > 3 && (
                   <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("requested")}>
@@ -227,6 +233,7 @@ const RedesignedBuyerDashboard = () => {
                   onConfirmShowing={handleConfirmShowingWithModal}
                   onComplete={() => {}}
                   currentUserId={currentUser?.id}
+                  onSendMessage={handleOpenChat}
                 />
                 {activeShowings.length > 3 && (
                   <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("confirmed")}>

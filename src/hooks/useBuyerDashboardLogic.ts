@@ -19,10 +19,7 @@ export const useBuyerDashboardLogic = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("active");
-  const { toast } = useToast();
-  const { eligibility, checkEligibility } = useShowingEligibility();
-  const { isSubscribed, subscriptionTier, refreshStatus } = useSubscriptionStatus();
+  const [activeTab, setActiveTab] = useState<string>("requested"); // Changed default from "active" to "requested"
   
   const {
     profile,
@@ -170,7 +167,11 @@ export const useBuyerDashboardLogic = () => {
     // Track navigation between dashboard tabs
     trackNavigation(targetTab, activeTab);
     
-    setActiveTab(targetTab);
+    // Only allow navigation to valid tabs (no longer including "messages")
+    const validTabs = ["requested", "confirmed", "history", "profile"];
+    if (validTabs.includes(targetTab)) {
+      setActiveTab(targetTab);
+    }
   };
 
   return {

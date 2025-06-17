@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { Link } from "react-router-dom";
@@ -148,10 +147,6 @@ const RedesignedBuyerDashboard = () => {
     console.log("Ask question clicked");
   };
 
-  const handleOpenInbox = () => {
-    setActiveTab("messages");
-  };
-
   const handleMakeOffer = () => {
     console.log("Make offer clicked");
   };
@@ -256,12 +251,12 @@ const RedesignedBuyerDashboard = () => {
             />
           </div>
 
-          {/* Right Column - Stats */}
+          {/* Right Column - Stats (removed messages section) */}
           <div className="xl:col-span-1">
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
-              onOpenInbox={handleOpenInbox}
+              onOpenInbox={() => {}} // Empty function since we handle this via ChatWidget now
             />
           </div>
         </div>
@@ -277,12 +272,12 @@ const RedesignedBuyerDashboard = () => {
         )}
       </div>
 
-      {/* Chat Widget */}
+      {/* Chat Widget - Updated to not use onOpenInbox */}
       {currentUser?.id && (
         <ChatWidget
           userId={currentUser.id}
           unreadCount={unreadCount || 0}
-          onOpenInbox={handleOpenInbox}
+          onOpenInbox={() => {}} // Empty function since messages tab no longer exists
         />
       )}
 

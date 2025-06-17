@@ -1,8 +1,7 @@
 
-import { AlertCircle, Calendar, Star, MessageCircle, Clock, CheckCircle } from "lucide-react";
+import { AlertCircle, Calendar, Star, Clock, CheckCircle } from "lucide-react";
 import ShowingListTab from "./ShowingListTab";
 import ProfileTab from "./ProfileTab";
-import MessagingInterface from "@/components/messaging/MessagingInterface";
 
 interface BuyerDashboardSectionsProps {
   pendingRequests: any[];
@@ -29,7 +28,6 @@ export const generateBuyerDashboardSections = ({
   currentUser,
   profile,
   displayName,
-  unreadCount,
   onRequestShowing,
   onCancelShowing,
   onRescheduleShowing,
@@ -84,20 +82,6 @@ export const generateBuyerDashboardSections = ({
           onComplete={fetchShowingRequests}
           currentUserId={currentUser?.id}
         />
-      )
-    },
-    {
-      id: "messages",
-      label: "Messages",
-      count: unreadCount,
-      content: currentUser?.id ? (
-        <MessagingInterface userId={currentUser.id} userType="buyer" />
-      ) : (
-        <div className="text-center py-12">
-          <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">Sign in to view messages</h3>
-          <p className="text-gray-500">Your conversations with agents will appear here</p>
-        </div>
       )
     },
     {

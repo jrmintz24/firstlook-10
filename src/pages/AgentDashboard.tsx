@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { User, UserPlus, Clock, CheckCircle, Calendar, MessageCircle, TrendingUp } from "lucide-react";
+import { User, UserPlus, Clock, CheckCircle, Calendar, MessageCircle, TrendingUp, Menu, X } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import SendMessageModal from "@/components/dashboard/SendMessageModal";
@@ -16,6 +15,7 @@ import AgentConversationsView from "@/components/messaging/AgentConversationsVie
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import ModernSidebar from "@/components/dashboard/ModernSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +24,8 @@ const AgentDashboard = () => {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageRequestId, setMessageRequestId] = useState<string>('');
   const [activeTab, setActiveTab] = useState('available');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const { 
     profile, 
@@ -247,9 +249,9 @@ const AgentDashboard = () => {
       count: availableRequests.length,
       content: (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-gray-900">Available Requests</h2>
-            <p className="text-gray-600">Accept and confirm showing requests</p>
+            <p className="text-gray-600 text-sm sm:text-base">Accept and confirm showing requests</p>
           </div>
 
           {availableRequests.length === 0 ? (
@@ -286,9 +288,9 @@ const AgentDashboard = () => {
       count: activeShowings.length,
       content: (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-gray-900">Active Showings</h2>
-            <p className="text-gray-600">Confirmed and scheduled showings</p>
+            <p className="text-gray-600 text-sm sm:text-base">Confirmed and scheduled showings</p>
           </div>
 
           {activeShowings.length === 0 ? (
@@ -369,36 +371,56 @@ const AgentDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Welcome Section with Stats */}
-        <div className="mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Mobile Header */}
+        {isMobile && (
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome back, {profile?.first_name || 'Agent'}!</h1>
-              <p className="text-gray-600 mt-1">Manage your property showings and grow your business</p>
+              <h1 className="text-xl font-bold text-gray-900">Welcome, {profile?.first_name || 'Agent'}!</h1>
+              <p className="text-sm text-gray-600 mt-1">Manage your property showings</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden"
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
+        )}
+
+        {/* Desktop Welcome Section */}
+        {!isMobile && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Welcome back, {profile?.first_name || 'Agent'}!</h1>
+                <p className="text-gray-600 mt-1">Manage your property showings and grow your business</p>
+              </div>
             </div>
           </div>
-          
-          <ModernStatsGrid stats={agentStats} onStatClick={handleStatClick} />
-        </div>
+        )}
+        
+        <ModernStatsGrid stats={agentStats} onStatClick={handleStatClick} />
 
-        {/* Main Content Grid - Side by Side Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content Grid */}
+        <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-4'} gap-6 mt-6`}>
           {/* Main Content - Tabbed Sections */}
-          <div className="lg:col-span-3">
+          <div className={isMobile ? '' : 'lg:col-span-3'}>
             <Card className="bg-white border-0 shadow-sm">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="border-b border-gray-100">
-                  <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none">
+                  <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none overflow-x-auto">
                     {dashboardSectionsArray.map((section) => (
                       <TabsTrigger 
                         key={section.id} 
                         value={section.id}
-                        className="relative px-6 py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
+                        className="relative px-4 sm:px-6 py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600 text-sm sm:text-base whitespace-nowrap"
                       >
                         {section.title}
                         {section.count !== undefined && section.count > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
+                          <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
                             {section.count}
                           </span>
                         )}
@@ -408,48 +430,96 @@ const AgentDashboard = () => {
                 </div>
 
                 {dashboardSectionsArray.map((section) => (
-                  <TabsContent key={section.id} value={section.id} className="p-6 mt-0">
+                  <TabsContent key={section.id} value={section.id} className="p-4 sm:p-6 mt-0">
                     {section.content}
                   </TabsContent>
                 ))}
               </Tabs>
             </Card>
           </div>
+
+          {/* Mobile Sidebar Overlay */}
+          {isMobile && sidebarOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)} />
+              <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-lg p-6 overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">Dashboard Info</h3>
+                  <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <ModernSidebar 
+                  quickStats={[
+                    { label: "Available", value: availableRequests.length, icon: UserPlus },
+                    { label: "In Progress", value: activeShowings.length, icon: Clock },
+                    { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
+                  ]}
+                  upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
+                    id: showing.id,
+                    title: showing.property_address,
+                    date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
+                    type: 'Property Showing'
+                  }))}
+                  activities={[
+                    ...availableRequests.slice(0, 2).map(req => ({
+                      id: req.id,
+                      type: 'update' as const,
+                      title: 'New Request Available',
+                      description: req.property_address,
+                      time: new Date(req.created_at).toLocaleDateString(),
+                      unread: true
+                    })),
+                    ...completedShowings.slice(0, 2).map(req => ({
+                      id: req.id,
+                      type: 'update' as const,
+                      title: 'Showing Completed',
+                      description: req.property_address,
+                      time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
+                      unread: false
+                    }))
+                  ]}
+                />
+              </div>
+            </div>
+          )}
           
-          {/* Right Sidebar */}
-          <div className="lg:col-span-1">
-            <ModernSidebar 
-              quickStats={[
-                { label: "Available", value: availableRequests.length, icon: UserPlus },
-                { label: "In Progress", value: activeShowings.length, icon: Clock },
-                { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
-              ]}
-              upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
-                id: showing.id,
-                title: showing.property_address,
-                date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
-                type: 'Property Showing'
-              }))}
-              activities={[
-                ...availableRequests.slice(0, 2).map(req => ({
-                  id: req.id,
-                  type: 'update' as const,
-                  title: 'New Request Available',
-                  description: req.property_address,
-                  time: new Date(req.created_at).toLocaleDateString(),
-                  unread: true
-                })),
-                ...completedShowings.slice(0, 2).map(req => ({
-                  id: req.id,
-                  type: 'update' as const,
-                  title: 'Showing Completed',
-                  description: req.property_address,
-                  time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
-                  unread: false
-                }))
-              ]}
-            />
-          </div>
+          {/* Desktop Sidebar */}
+          {!isMobile && (
+            <div className="lg:col-span-1">
+              <ModernSidebar 
+                quickStats={[
+                  { label: "Available", value: availableRequests.length, icon: UserPlus },
+                  { label: "In Progress", value: activeShowings.length, icon: Clock },
+                  { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
+                ]}
+                upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
+                  id: showing.id,
+                  title: showing.property_address,
+                  date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
+                  type: 'Property Showing'
+                }))}
+                activities={[
+                  ...availableRequests.slice(0, 2).map(req => ({
+                    id: req.id,
+                    type: 'update' as const,
+                    title: 'New Request Available',
+                    description: req.property_address,
+                    time: new Date(req.created_at).toLocaleDateString(),
+                    unread: true
+                  })),
+                  ...completedShowings.slice(0, 2).map(req => ({
+                    id: req.id,
+                    type: 'update' as const,
+                    title: 'Showing Completed',
+                    description: req.property_address,
+                    time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
+                    unread: false
+                  }))
+                ]}
+              />
+            </div>
+          )}
         </div>
       </div>
 

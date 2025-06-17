@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,7 @@ import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 
 const AgentDashboard = () => {
   const {
@@ -26,6 +26,7 @@ const AgentDashboard = () => {
     fetchAgentData
   } = useAgentDashboard();
 
+  const { confirmShowing } = useAgentConfirmation();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -49,13 +50,19 @@ const AgentDashboard = () => {
     setShowStatusModal(true);
   };
 
-  const handleConfirmSuccess = () => {
-    setShowConfirmModal(false);
-    setSelectedRequest(null);
-    fetchAgentData();
+  const handleConfirmSuccess = async (confirmationData: any) => {
+    if (!profile) return;
+    
+    const success = await confirmShowing(confirmationData, profile);
+    if (success) {
+      setShowConfirmModal(false);
+      setSelectedRequest(null);
+      fetchAgentData();
+    }
   };
 
-  const handleStatusUpdateSuccess = () => {
+  const handleStatusUpdateSuccess = (requestId: string, newStatus: string, estimatedDate?: string) => {
+    handleStatusUpdate(requestId, newStatus, estimatedDate);
     setShowStatusModal(false);
     setSelectedRequest(null);
     fetchAgentData();
@@ -449,8 +456,7 @@ const AgentDashboard = () => {
             isOpen={showStatusModal}
             onClose={() => setShowStatusModal(false)}
             request={selectedRequest}
-            onStatusUpdate={handleStatusUpdate}
-            onSuccess={handleStatusUpdateSuccess}
+            onUpdateStatus={handleStatusUpdateSuccess}
           />
         </>
       )}

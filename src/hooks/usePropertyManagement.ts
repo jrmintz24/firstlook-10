@@ -15,12 +15,12 @@ export const usePropertyManagement = (
   const { checkEligibility } = useShowingEligibility();
 
   const handleAddProperty = async () => {
-    const propertyAddress = formData.propertyAddress || `MLS ID: ${formData.mlsId}`;
+    const propertyAddress = formData.propertyAddress;
     
     if (!propertyAddress) {
       toast({
         title: "Property Required",
-        description: "Please provide either a property address or MLS ID",
+        description: "Please provide a property address",
         variant: "destructive"
       });
       return;
@@ -53,8 +53,7 @@ export const usePropertyManagement = (
     setFormData((prev: PropertyRequestFormData) => ({
       ...prev,
       selectedProperties: [...prev.selectedProperties, propertyAddress],
-      propertyAddress: '',
-      mlsId: ''
+      propertyAddress: ''
     }));
     
     toast({

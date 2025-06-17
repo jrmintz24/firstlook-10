@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +10,6 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
   propertyAddress: '',
-  mlsId: '',
   preferredDate1: '',
   preferredTime1: '',
   preferredDate2: '',
@@ -59,11 +57,10 @@ export const usePropertyRequest = (onClose?: () => void) => {
         const tourData = JSON.parse(pendingTourRequest);
         console.log('usePropertyRequest: Loading pending tour request:', tourData);
         
-        if (tourData.propertyAddress || tourData.mlsId) {
+        if (tourData.propertyAddress) {
           setFormData(prev => ({
             ...prev,
             propertyAddress: tourData.propertyAddress || '',
-            mlsId: tourData.mlsId || '',
             preferredDate1: tourData.preferredDate1 || '',
             preferredTime1: tourData.preferredTime1 || '',
             preferredDate2: tourData.preferredDate2 || '',

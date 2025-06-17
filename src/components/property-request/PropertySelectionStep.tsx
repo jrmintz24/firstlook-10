@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
@@ -23,77 +22,83 @@ const PropertySelectionStep = ({
   onNext
 }: PropertySelectionStepProps) => {
   const hasProperties = formData.selectedProperties.length > 0;
-  const hasSingleProperty = formData.propertyAddress || formData.mlsId;
+  const hasSingleProperty = formData.propertyAddress;
   const canProceed = hasProperties || hasSingleProperty;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-blue-600" />
+    <Card className="border-0 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <MapPin className="h-6 w-6 text-blue-600" />
+          </div>
           Select Properties for Your Tour
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-600 mt-2">
           Add 1-3 homes to your tour session (save time and money with multiple properties!)
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6 p-6">
         {formData.selectedProperties.length > 0 && (
-          <div className="space-y-2">
-            <Label className="font-medium">Selected Properties:</Label>
-            {formData.selectedProperties.map((property, index) => (
-              <div key={index} className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200">
-                <span className="text-sm font-medium text-green-800">{property}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemoveProperty(property)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
+          <div className="space-y-3">
+            <Label className="font-semibold text-gray-800 text-sm uppercase tracking-wide">Selected Properties:</Label>
+            <div className="space-y-2">
+              {formData.selectedProperties.map((property, index) => (
+                <div key={index} className="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 group hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <span className="text-green-700 font-semibold text-sm">{index + 1}</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-800">{property}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemoveProperty(property)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        <AddressAutocomplete
-          value={formData.propertyAddress}
-          onChange={(value) => onInputChange('propertyAddress', value)}
-          placeholder="123 Main St, Washington, DC 20001"
-          label="Property Address"
-          id="propertyAddress"
-        />
-        <div className="text-center text-gray-500">— OR —</div>
-        <div>
-          <Label htmlFor="mlsId">MLS ID</Label>
-          <Input
-            id="mlsId"
-            placeholder="DC1234567"
-            value={formData.mlsId}
-            onChange={(e) => onInputChange('mlsId', e.target.value)}
+        <div className="space-y-4">
+          <AddressAutocomplete
+            value={formData.propertyAddress}
+            onChange={(value) => onInputChange('propertyAddress', value)}
+            placeholder="Enter the full property address"
+            label="Property Address"
+            id="propertyAddress"
           />
         </div>
 
-        <div className="flex gap-2">
-          {formData.selectedProperties.length < 3 && (formData.propertyAddress || formData.mlsId) && (
+        <div className="flex gap-3">
+          {formData.selectedProperties.length < 3 && formData.propertyAddress && (
             <Button 
               onClick={onAddProperty} 
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Add Property ({formData.selectedProperties.length}/3)
             </Button>
           )}
           {canProceed && (
-            <Button onClick={onNext} className="flex-1 bg-blue-600 hover:bg-blue-700">
+            <Button 
+              onClick={onNext} 
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
               Continue to Scheduling
             </Button>
           )}
         </div>
 
         {formData.selectedProperties.length > 0 && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Tour Session Ready</h4>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
+            <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+              💡 Tour Session Ready
+            </h4>
             <p className="text-sm text-blue-700">
               You can add more properties or continue with your current selection. 
               {formData.selectedProperties.length < 3 && " Adding more homes to one session saves money!"}
@@ -102,9 +107,11 @@ const PropertySelectionStep = ({
         )}
 
         {!hasProperties && hasSingleProperty && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Pro Tip</h4>
-            <p className="text-sm text-blue-700">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-5 rounded-xl border border-amber-200">
+            <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
+              💡 Pro Tip
+            </h4>
+            <p className="text-sm text-amber-700">
               Add multiple homes to one session to save money! A multi-home session costs less than individual tours.
             </p>
           </div>

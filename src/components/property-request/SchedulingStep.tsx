@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
-import { PropertyRequestFormData } from "@/hooks/usePropertyRequest";
+import { PropertyRequestFormData } from "@/types/propertyRequest";
 
 interface SchedulingStepProps {
   formData: PropertyRequestFormData;

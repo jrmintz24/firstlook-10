@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import { PropertyRequestFormData } from "@/hooks/usePropertyRequest";
+import { PropertyRequestFormData } from "@/types/propertyRequest";
 
 interface PropertySelectionStepProps {
   formData: PropertyRequestFormData;

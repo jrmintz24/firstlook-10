@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,32 +28,30 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
     try {
       if (isSignUp) {
         console.log('Quick sign up attempt:', email);
-        await signUp(email, password);
-        toast({
-          title: "Account Created!",
-          description: "Welcome to FirstLook! Your property request is being processed.",
-        });
         
         // Store flag to indicate this is a new user from property request
         localStorage.setItem('newUserFromPropertyRequest', 'true');
         
+        await signUp(email, password);
+        
+        toast({
+          title: "Account Created!",
+          description: "Welcome to FirstLook! Processing your tour request...",
+        });
+        
       } else {
         console.log('Quick sign in attempt:', email);
         await signIn(email, password);
+        
         toast({
           title: "Welcome Back!",
-          description: "You're now signed in. Processing your property request.",
+          description: "Processing your tour request...",
         });
       }
       
-      // Wait a moment for auth state to update
-      setTimeout(() => {
-        onSuccess();
-        onClose();
-        
-        // Navigate to dashboard where the pending tour handler will process the request
-        navigate('/buyer-dashboard', { replace: true });
-      }, 1000);
+      // Close modal immediately and let the parent handle success
+      onClose();
+      onSuccess();
       
     } catch (error: any) {
       console.error('Auth error:', error);

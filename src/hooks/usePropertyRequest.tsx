@@ -57,7 +57,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
     if (pendingTourRequest) {
       try {
         const tourData = JSON.parse(pendingTourRequest);
-        console.log('Loading pending tour request:', tourData);
+        console.log('usePropertyRequest: Loading pending tour request:', tourData);
         
         if (tourData.propertyAddress || tourData.mlsId) {
           setFormData(prev => ({
@@ -74,7 +74,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
           }));
         }
       } catch (error) {
-        console.error('Error parsing pending tour request:', error);
+        console.error('usePropertyRequest: Error parsing pending tour request:', error);
         localStorage.removeItem('pendingTourRequest');
       }
     }
@@ -98,7 +98,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
   const handleContinueToSubscriptions = async () => {
     if (!user) {
       // Store current form data in localStorage before redirecting to auth
-      console.log('Storing tour request for unauthenticated user:', formData);
+      console.log('usePropertyRequest: Storing tour request for unauthenticated user:', formData);
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
       setShowQuickSignIn(true);
       setShowAuthModal(true);
@@ -128,14 +128,16 @@ export const usePropertyRequest = (onClose?: () => void) => {
   };
 
   const handleQuickSignInSuccess = () => {
-    console.log('Quick sign in successful, user will be redirected to dashboard');
+    console.log('usePropertyRequest: Quick sign in successful');
     setShowQuickSignIn(false);
     setShowAuthModal(false);
     
-    // The usePendingTourHandler will handle the rest when user arrives at dashboard
+    // Navigate to dashboard immediately - the usePendingTourHandler will handle the request
+    navigate('/buyer-dashboard', { replace: true });
+    
     toast({
-      title: "Success!",
-      description: "Account created successfully! Redirecting to complete your tour request...",
+      title: "Account Created!",
+      description: "Redirecting to your dashboard to complete the tour request...",
     });
   };
 

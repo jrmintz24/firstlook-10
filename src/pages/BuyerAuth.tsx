@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,22 +43,12 @@ const BuyerAuth = () => {
   }, [initialTab]);
 
   const buyerAuth = useAuthForm('buyer', () => {
-    // Check if there's a pending tour request
-    const pendingTourRequest = localStorage.getItem('pendingTourRequest');
-    
-    if (pendingTourRequest) {
-      toast({
-        title: "Welcome to FirstLook!",
-        description: "Processing your tour request...",
-      });
-      navigate('/buyer-dashboard');
-    } else {
-      toast({
-        title: "Welcome to FirstLook!",
-        description: "You're all set to start touring homes.",
-      });
-      navigate('/buyer-dashboard');
-    }
+    // Always navigate to dashboard - the usePendingTourHandler will handle any pending requests
+    toast({
+      title: "Welcome to FirstLook!",
+      description: "Redirecting to your dashboard...",
+    });
+    navigate('/buyer-dashboard', { replace: true });
   });
 
   if (loading) {

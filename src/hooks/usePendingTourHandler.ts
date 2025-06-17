@@ -1,5 +1,5 @@
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,10 +7,15 @@ import { supabase } from "@/integrations/supabase/client";
 export const usePendingTourHandler = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const hasProcessedRef = useRef(false);
 
   const processPendingTour = useCallback(async () => {
-    if (loading || !user) {
-      console.log('usePendingTourHandler: Not ready to process', { loading, hasUser: !!user });
+    if (loading || !user || hasProcessedRef.current) {
+      console.log('usePendingTourHandler: Not ready to process or already processed', { 
+        loading, 
+        hasUser: !!user, 
+        hasProcessed: hasProcessedRef.current 
+      });
       return;
     }
 
@@ -28,12 +33,15 @@ export const usePendingTourHandler = () => {
       return;
     }
 
+    // Mark as processed to prevent duplicate processing
+    hasProcessedRef.current = true;
+
     try {
       const tourData = JSON.parse(pendingTourRequest);
       console.log('usePendingTourHandler: Processing pending tour request:', tourData);
 
       // Validate required data
-      if (!tourData.propertyAddress && !tourData.mlsId) {
+      if (!tourData.propertyAddress) {
         console.error('usePendingTourHandler: Missing property information');
         localStorage.removeItem('pendingTourRequest');
         localStorage.removeItem('newUserFromPropertyRequest');
@@ -65,7 +73,7 @@ export const usePendingTourHandler = () => {
       // Create the showing request
       const showingRequest = {
         user_id: user.id,
-        property_address: tourData.propertyAddress || `Property (MLS: ${tourData.mlsId})`,
+        property_address: tourData.propertyAddress,
         preferred_date: preferredDate || null,
         preferred_time: preferredTime || null,
         message: tourData.notes || null,
@@ -88,6 +96,8 @@ export const usePendingTourHandler = () => {
           description: `Failed to process your tour request: ${error.message}`,
           variant: "destructive"
         });
+        // Reset the flag so user can try again
+        hasProcessedRef.current = false;
         return;
       }
 
@@ -110,6 +120,11 @@ export const usePendingTourHandler = () => {
         });
       }
 
+      // Force a page reload to refresh the dashboard data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
     } catch (error) {
       console.error('usePendingTourHandler: Error processing pending tour request:', error);
       toast({
@@ -118,18 +133,26 @@ export const usePendingTourHandler = () => {
         variant: "destructive"
       });
       
-      // Clear corrupted data
+      // Clear corrupted data and reset flag
       localStorage.removeItem('pendingTourRequest');
       localStorage.removeItem('newUserFromPropertyRequest');
+      hasProcessedRef.current = false;
     }
   }, [user, loading, toast]);
 
   useEffect(() => {
+    // Reset the flag when user changes
+    if (!user) {
+      hasProcessedRef.current = false;
+    }
+  }, [user]);
+
+  useEffect(() => {
     // Wait for auth to be ready, then process
-    if (!loading) {
+    if (!loading && user) {
       // Add a small delay to ensure all auth state is settled
-      const timeoutId = setTimeout(processPendingTour, 1500);
+      const timeoutId = setTimeout(processPendingTour, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [loading, processPendingTour]);
+  }, [loading, user, processPendingTour]);
 };

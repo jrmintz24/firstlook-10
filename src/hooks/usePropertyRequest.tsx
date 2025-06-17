@@ -129,7 +129,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
     setShowQuickSignIn(false);
     setShowAuthModal(false);
     
-    // Navigate to dashboard immediately - the usePendingTourHandler will handle the request
+    // Navigate to dashboard and let the pending tour handler take over
     navigate('/buyer-dashboard', { replace: true });
     
     toast({

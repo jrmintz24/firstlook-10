@@ -36,7 +36,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         
         toast({
           title: "Account Created!",
-          description: "Welcome to FirstLook! Processing your tour request...",
+          description: "Welcome to FirstLook! Your tour request will be processed automatically...",
         });
         
       } else {
@@ -49,9 +49,13 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         });
       }
       
-      // Close modal immediately and let the parent handle success
+      // Close modal and trigger success callback
       onClose();
-      onSuccess();
+      
+      // Small delay to let the auth state settle, then call success
+      setTimeout(() => {
+        onSuccess();
+      }, 500);
       
     } catch (error: any) {
       console.error('Auth error:', error);

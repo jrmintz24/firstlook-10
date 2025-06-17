@@ -53,6 +53,12 @@ const ShowingRequestCard = ({
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
 
+  const handleChatClick = () => {
+    if (onSendMessage) {
+      onSendMessage(showing.id);
+    }
+  };
+
   return (
     <Card className="shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -183,7 +189,7 @@ const ShowingRequestCard = ({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => onSendMessage?.(showing.id)}
+              onClick={handleChatClick}
               className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
             >
               <MessageCircle className="w-4 h-4" />

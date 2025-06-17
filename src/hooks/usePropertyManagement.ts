@@ -26,6 +26,16 @@ export const usePropertyManagement = (
       return;
     }
 
+    // Prevent non-authenticated users from adding multiple properties
+    if (!user) {
+      toast({
+        title: "Single Property Only",
+        description: "Sign up to add multiple properties to your tour session!",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (formData.selectedProperties.includes(propertyAddress)) {
       toast({
         title: "Property Already Added",

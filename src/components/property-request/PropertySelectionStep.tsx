@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MapPin } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PropertySelectionStepProps {
   formData: PropertyRequestFormData;
@@ -21,9 +22,13 @@ const PropertySelectionStep = ({
   onRemoveProperty,
   onNext
 }: PropertySelectionStepProps) => {
+  const { user } = useAuth();
   const hasProperties = formData.selectedProperties.length > 0;
   const hasSingleProperty = formData.propertyAddress;
   const canProceed = hasProperties || hasSingleProperty;
+
+  // For non-authenticated users, limit to single property selection
+  const canAddMoreProperties = user && formData.selectedProperties.length < 3;
 
   return (
     <Card className="border-0 shadow-lg">
@@ -32,10 +37,13 @@ const PropertySelectionStep = ({
           <div className="p-2 bg-blue-100 rounded-lg">
             <MapPin className="h-6 w-6 text-blue-600" />
           </div>
-          Select Properties for Your Tour
+          {user ? "Select Properties for Your Tour" : "Select Property for Your Free Tour"}
         </CardTitle>
         <CardDescription className="text-gray-600 mt-2">
-          Add 1-3 homes to your tour session (save time and money with multiple properties!)
+          {user 
+            ? "Add 1-3 homes to your tour session (save time and money with multiple properties!)"
+            : "Choose the home you'd like to tour for your free showing"
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
@@ -51,14 +59,16 @@ const PropertySelectionStep = ({
                     </div>
                     <span className="text-sm font-medium text-green-800">{property}</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveProperty(property)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  >
-                    Remove
-                  </Button>
+                  {user && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveProperty(property)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -76,7 +86,7 @@ const PropertySelectionStep = ({
         </div>
 
         <div className="flex gap-3">
-          {formData.selectedProperties.length < 3 && formData.propertyAddress && (
+          {canAddMoreProperties && formData.propertyAddress && (
             <Button 
               onClick={onAddProperty} 
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
@@ -94,7 +104,7 @@ const PropertySelectionStep = ({
           )}
         </div>
 
-        {formData.selectedProperties.length > 0 && (
+        {user && formData.selectedProperties.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
             <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
               💡 Tour Session Ready
@@ -106,7 +116,18 @@ const PropertySelectionStep = ({
           </div>
         )}
 
-        {!hasProperties && hasSingleProperty && (
+        {!user && !hasProperties && hasSingleProperty && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
+            <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+              🎉 Free Tour Ready
+            </h4>
+            <p className="text-sm text-green-700">
+              Perfect! Your free showing is ready to be scheduled. After signing up, you can book additional tours with our subscription plans.
+            </p>
+          </div>
+        )}
+
+        {user && !hasProperties && hasSingleProperty && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-5 rounded-xl border border-amber-200">
             <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
               💡 Pro Tip

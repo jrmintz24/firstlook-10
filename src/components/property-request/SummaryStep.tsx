@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, ArrowRight, Loader2 } from "lucide-react";
-import { PropertyRequestFormData } from "@/hooks/usePropertyRequest";
+import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SummaryStepProps {

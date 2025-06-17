@@ -7,7 +7,7 @@ import { PropertyRequestFormData } from "@/types/propertyRequest";
 
 export const usePropertyManagement = (
   formData: PropertyRequestFormData,
-  setFormData: (data: PropertyRequestFormData) => void
+  setFormData: (data: PropertyRequestFormData | ((prev: PropertyRequestFormData) => PropertyRequestFormData)) => void
 ) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -50,7 +50,7 @@ export const usePropertyManagement = (
       }
     }
 
-    setFormData(prev => ({
+    setFormData((prev: PropertyRequestFormData) => ({
       ...prev,
       selectedProperties: [...prev.selectedProperties, propertyAddress],
       propertyAddress: '',
@@ -64,7 +64,7 @@ export const usePropertyManagement = (
   };
 
   const handleRemoveProperty = (propertyToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev: PropertyRequestFormData) => ({
       ...prev,
       selectedProperties: prev.selectedProperties.filter(prop => prop !== propertyToRemove)
     }));

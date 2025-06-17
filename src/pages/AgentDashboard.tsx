@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,11 +13,9 @@ import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "@/hooks/useMessages";
 import AgentConversationsView from "@/components/messaging/AgentConversationsView";
-import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
-import ModernHeader from "@/components/dashboard/ModernHeader";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import ModernSidebar from "@/components/dashboard/ModernSidebar";
-import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +23,7 @@ const AgentDashboard = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageRequestId, setMessageRequestId] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('available');
   
   const { 
     profile, 
@@ -156,6 +156,12 @@ const AgentDashboard = () => {
     fetchAgentData();
   };
 
+  const handleStatClick = (tabId: string | number) => {
+    if (typeof tabId === 'string') {
+      setActiveTab(tabId);
+    }
+  };
+
   // Organize requests by categories
   const availableRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
@@ -204,34 +210,36 @@ const AgentDashboard = () => {
       value: availableRequests.length,
       change: availableRequests.length > 0 ? { value: "Ready to accept", trend: 'up' as const } : undefined,
       icon: UserPlus,
-      color: 'orange' as const
+      color: 'orange' as const,
+      targetTab: "available"
     },
     {
       title: "Active Showings",
       value: activeShowings.length,
       change: activeShowings.length > 0 ? { value: "In progress", trend: 'up' as const } : undefined,
       icon: Calendar,
-      color: 'blue' as const
+      color: 'blue' as const,
+      targetTab: "active"
     },
     {
       title: "Messages",
       value: unreadCount > 0 ? unreadCount : 0,
       change: unreadCount > 0 ? { value: "Response needed", trend: 'neutral' as const } : undefined,
       icon: MessageCircle,
-      color: 'purple' as const
+      color: 'purple' as const,
+      targetTab: "conversations"
     },
     {
       title: "Completed",
       value: completedShowings.filter(s => s.status === 'completed').length,
       change: completedShowings.filter(s => s.status === 'completed').length > 0 ? { value: "This month", trend: 'up' as const } : undefined,
       icon: CheckCircle,
-      color: 'green' as const
+      color: 'green' as const,
+      targetTab: "history"
     }
   ];
 
-  const allShowings = [...availableRequests, ...activeShowings, ...completedShowings];
-
-  // Dashboard sections - convert to object
+  // Dashboard sections
   const dashboardSectionsArray = [
     {
       id: "available",
@@ -359,89 +367,91 @@ const AgentDashboard = () => {
     }
   ];
 
-  // Convert array to object for DashboardLayout
-  const dashboardSections = dashboardSectionsArray.reduce((acc, section) => {
-    acc[section.id] = section;
-    return acc;
-  }, {} as Record<string, any>);
-
-  // Header component
-  const header = (
-    <ModernHeader
-      title="Agent Dashboard"
-      subtitle={`Welcome back, ${profile?.first_name || 'Agent'}!`}
-      displayName={profile?.first_name || 'Agent'}
-      userType="agent"
-      notificationCount={unreadCount}
-    />
-  );
-
-  // Stats component  
-  const stats = <ModernStatsGrid stats={agentStats} />;
-
-  // Main content
-  const mainContent = (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Agent Performance</h2>
-        <p className="text-gray-600">Manage your showings and track your success</p>
-      </div>
-      
-      <WelcomeDashboard 
-        userType="agent"
-        displayName={profile?.first_name || 'Agent'}
-        hasActiveShowings={activeShowings.length > 0}
-        completedCount={completedShowings.filter(s => s.status === 'completed').length}
-        pendingCount={availableRequests.length}
-      />
-    </div>
-  );
-
-  // Sidebar content
-  const sidebar = (
-    <ModernSidebar 
-      quickStats={[
-        { label: "Available", value: availableRequests.length, icon: UserPlus },
-        { label: "In Progress", value: activeShowings.length, icon: Clock },
-        { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
-      ]}
-      upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
-        id: showing.id,
-        title: showing.property_address,
-        date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
-        type: 'Property Showing'
-      }))}
-      activities={[
-        ...availableRequests.slice(0, 2).map(req => ({
-          id: req.id,
-          type: 'update' as const,
-          title: 'New Request Available',
-          description: req.property_address,
-          time: new Date(req.created_at).toLocaleDateString(),
-          unread: true
-        })),
-        ...completedShowings.slice(0, 2).map(req => ({
-          id: req.id,
-          type: 'update' as const,
-          title: 'Showing Completed',
-          description: req.property_address,
-          time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
-          unread: false
-        }))
-      ]}
-    />
-  );
-
   return (
-    <>
-      <ModernDashboardLayout
-        header={header}
-        stats={stats}
-        mainContent={mainContent}
-        sidebar={sidebar}
-        sections={dashboardSections}
-        defaultSection="available"
-      />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Welcome Section with Stats */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Welcome back, {profile?.first_name || 'Agent'}!</h1>
+              <p className="text-gray-600 mt-1">Manage your property showings and grow your business</p>
+            </div>
+          </div>
+          
+          <ModernStatsGrid stats={agentStats} onStatClick={handleStatClick} />
+        </div>
+
+        {/* Main Content Grid - Side by Side Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content - Tabbed Sections */}
+          <div className="lg:col-span-3">
+            <Card className="bg-white border-0 shadow-sm">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <div className="border-b border-gray-100">
+                  <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none">
+                    {dashboardSectionsArray.map((section) => (
+                      <TabsTrigger 
+                        key={section.id} 
+                        value={section.id}
+                        className="relative px-6 py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
+                      >
+                        {section.title}
+                        {section.count !== undefined && section.count > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
+                            {section.count}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                {dashboardSectionsArray.map((section) => (
+                  <TabsContent key={section.id} value={section.id} className="p-6 mt-0">
+                    {section.content}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </Card>
+          </div>
+          
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1">
+            <ModernSidebar 
+              quickStats={[
+                { label: "Available", value: availableRequests.length, icon: UserPlus },
+                { label: "In Progress", value: activeShowings.length, icon: Clock },
+                { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
+              ]}
+              upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
+                id: showing.id,
+                title: showing.property_address,
+                date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
+                type: 'Property Showing'
+              }))}
+              activities={[
+                ...availableRequests.slice(0, 2).map(req => ({
+                  id: req.id,
+                  type: 'update' as const,
+                  title: 'New Request Available',
+                  description: req.property_address,
+                  time: new Date(req.created_at).toLocaleDateString(),
+                  unread: true
+                })),
+                ...completedShowings.slice(0, 2).map(req => ({
+                  id: req.id,
+                  type: 'update' as const,
+                  title: 'Showing Completed',
+                  description: req.property_address,
+                  time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
+                  unread: false
+                }))
+              ]}
+            />
+          </div>
+        </div>
+      </div>
 
       {selectedRequest && (
         <AgentConfirmationModal
@@ -463,7 +473,7 @@ const AgentDashboard = () => {
         }}
         onSend={sendMessage}
       />
-    </>
+    </div>
   );
 };
 

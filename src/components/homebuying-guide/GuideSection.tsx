@@ -61,8 +61,8 @@ export const GuideSection = ({ section, index }: GuideSectionProps) => {
   const anecdote = dcAnecdotes[index];
 
   return (
-    <div data-section={section.id} className="mb-12 md:mb-24">
-      <Card className="border-0 shadow-xl md:shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden bg-white">
+    <div data-section={section.id} className="mb-16 md:mb-24">
+      <Card className="border-0 shadow-xl md:shadow-2xl rounded-3xl overflow-hidden bg-white hover:shadow-3xl transition-all duration-500 hover:-translate-y-1">
         <CardContent className="p-0">
           <SectionHeader
             title={section.title}

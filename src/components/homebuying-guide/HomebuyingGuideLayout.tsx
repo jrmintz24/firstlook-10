@@ -47,27 +47,30 @@ export const HomebuyingGuideLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Integrated Progress Bar - positioned below navigation */}
-      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-16 z-40">
-        <div className="container mx-auto px-4 py-2 md:py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 md:gap-4">
-              <h2 className="text-xs md:text-sm font-medium text-gray-900">No Agent Buyer Guide</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* Enhanced Progress Bar */}
+      <div className="bg-white/95 backdrop-blur-lg border-b border-slate-200/60 shadow-sm sticky top-16 z-40">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3 md:gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+                <h2 className="text-sm md:text-base font-semibold text-slate-800 tracking-wide">Complete Homebuying Guide</h2>
+              </div>
               <div className="hidden sm:block">
                 <DownloadGuideButton />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs md:text-sm text-gray-500">{Math.round(progress)}% Complete</span>
-              <div className="w-6 h-6 md:w-7 md:h-7 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">{activeSection + 1}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm md:text-base text-slate-600 font-medium">{Math.round(progress)}% Complete</span>
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-sm md:text-base font-bold">{activeSection + 1}</span>
               </div>
             </div>
           </div>
           <Progress 
             value={progress} 
-            className="h-1 md:h-1.5 bg-gray-100"
+            className="h-2 bg-slate-100 rounded-full overflow-hidden"
           />
         </div>
       </div>
@@ -81,8 +84,8 @@ export const HomebuyingGuideLayout = () => {
           onSectionClick={scrollToSection}
         />
 
-        {/* Guide Content */}
-        <div className="max-w-5xl mx-auto">
+        {/* Enhanced Guide Content Container */}
+        <div className="max-w-5xl mx-auto pb-16">
           {guideSections.map((section, index) => (
             <GuideSection 
               key={section.id}

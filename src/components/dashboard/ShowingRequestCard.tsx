@@ -53,8 +53,12 @@ const ShowingRequestCard = ({
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
 
+  // Only show messaging for confirmed showings that have an assigned agent
+  const canSendMessage = showing.assigned_agent_id && 
+                        ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
+
   const handleChatClick = () => {
-    if (onSendMessage) {
+    if (onSendMessage && canSendMessage) {
       onSendMessage(showing.id);
     }
   };
@@ -100,7 +104,7 @@ const ShowingRequestCard = ({
               <div className="text-blue-500 text-xs">{timeline}</div>
             </div>
 
-            {currentUserId && (
+            {currentUserId && canSendMessage && (
               <MessageIndicator
                 showingRequestId={showing.id}
                 userId={currentUserId}
@@ -176,15 +180,17 @@ const ShowingRequestCard = ({
 
         {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
           <div className="flex gap-2 flex-wrap">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleChatClick}
-              className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Chat
-            </Button>
+            {canSendMessage && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleChatClick}
+                className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Chat with Agent
+              </Button>
+            )}
 
             <Button
               variant="outline"

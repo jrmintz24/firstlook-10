@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
@@ -45,7 +44,7 @@ export const useBuyerDashboardLogic = () => {
   } = useBuyerDashboard();
 
   const currentUser = user || session?.user;
-  const { unreadCount, sendMessage } = useMessages(currentUser?.id || '');
+  const { unreadCount, sendMessage, getMessagesForShowing } = useMessages(currentUser?.id || '');
 
   // Add real-time updates for showing requests
   useEffect(() => {
@@ -160,10 +159,26 @@ export const useBuyerDashboardLogic = () => {
     await fetchShowingRequests();
   };
 
-  const handleSendMessage = async (requestId: string) => {
+  const handleSendMessage = async (showingId: string) => {
+    console.log('Opening messaging for showing:', showingId);
+    
+    // Find the showing to get agent information
+    const allShowings = [...(pendingRequests || []), ...(activeShowings || []), ...(completedShowings || [])];
+    const showing = allShowings.find(s => s.id === showingId);
+    
+    if (!showing || !showing.assigned_agent_id) {
+      toast({
+        title: "Error",
+        description: "No agent assigned to this showing yet.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For now, show a placeholder message since we need to implement the actual messaging UI
     toast({
-      title: "Coming Soon",
-      description: "Direct messaging will be available soon!",
+      title: "Message Agent",
+      description: `Messaging with ${showing.assigned_agent_name || 'your agent'} for ${showing.property_address} - Coming soon!`,
     });
   };
 

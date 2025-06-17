@@ -7,6 +7,7 @@ import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { usePropertyManagement } from "@/hooks/usePropertyManagement";
 import { useShowingSubmission } from "@/hooks/useShowingSubmission";
 import { usePendingShowingManagement } from "@/hooks/usePendingShowingManagement";
+import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
   propertyAddress: '',
@@ -25,12 +26,15 @@ export const usePropertyRequest = (onClose?: () => void) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showFreeShowingLimitModal, setShowFreeShowingLimitModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   // Get management hooks
   const { handleAddProperty, handleRemoveProperty } = usePropertyManagement(formData, setFormData);
   const { isSubmitting, submitShowingRequests } = useShowingSubmission(formData);
+  const { eligibility, checkEligibility } = useShowingEligibility();
   const { 
     pendingShowingAddress, 
     setPendingShowingAddress, 
@@ -87,7 +91,18 @@ export const usePropertyRequest = (onClose?: () => void) => {
       // Store current form data in localStorage before redirecting to auth
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
       setShowQuickSignIn(true);
+      setShowAuthModal(true);
       return;
+    }
+
+    // Check eligibility before submission
+    const currentEligibility = await checkEligibility();
+    
+    if (!currentEligibility?.eligible) {
+      if (currentEligibility?.reason === 'free_showing_used') {
+        setShowFreeShowingLimitModal(true);
+        return;
+      }
     }
 
     await submitShowingRequests();
@@ -104,6 +119,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
 
   const handleQuickSignInSuccess = () => {
     setShowQuickSignIn(false);
+    setShowAuthModal(false);
     // After successful sign in, the form will automatically submit
     handleContinueToSubscriptions();
   };
@@ -114,6 +130,15 @@ export const usePropertyRequest = (onClose?: () => void) => {
   };
 
   return {
+    // Legacy properties for backward compatibility
+    step: currentStep,
+    showAuthModal,
+    setShowAuthModal,
+    showFreeShowingLimitModal,
+    setShowFreeShowingLimitModal,
+    eligibility,
+    
+    // Current properties
     currentStep,
     formData,
     setFormData,

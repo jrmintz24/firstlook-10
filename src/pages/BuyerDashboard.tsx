@@ -165,7 +165,7 @@ const BuyerDashboard = () => {
       <ErrorBoundary>
         <PropertyRequestForm
           isOpen={showPropertyForm}
-          onClose={() => setShowPropertyForm(false)}
+          onClose={setShowPropertyForm}
         />
       </ErrorBoundary>
 

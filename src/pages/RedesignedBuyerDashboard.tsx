@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { Link } from "react-router-dom";
@@ -239,7 +238,7 @@ const RedesignedBuyerDashboard = () => {
       <ErrorBoundary>
         <PropertyRequestForm
           isOpen={showPropertyForm}
-          onClose={() => setShowPropertyForm(false)}
+          onClose={setShowPropertyForm}
         />
       </ErrorBoundary>
 

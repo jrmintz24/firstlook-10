@@ -74,7 +74,7 @@ const RedesignedBuyerDashboard = () => {
   if (authLoading) {
     console.log('RedesignedBuyerDashboard - Auth loading');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <div className="text-lg mb-4">Checking authentication...</div>
@@ -87,7 +87,7 @@ const RedesignedBuyerDashboard = () => {
   if (!user && !session) {
     console.log('RedesignedBuyerDashboard - No user/session, showing sign-in message');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-lg mb-4">Please sign in to view your dashboard</div>
           <Link to="/">
@@ -102,7 +102,7 @@ const RedesignedBuyerDashboard = () => {
   if (loading) {
     console.log('RedesignedBuyerDashboard - Dashboard loading');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <div className="text-lg mb-4">Loading your dashboard...</div>
@@ -169,32 +169,34 @@ const RedesignedBuyerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Header */}
+      {/* Header - Mobile optimized */}
       <RedesignedDashboardHeader 
         displayName={displayName} 
         unreadCount={unreadCount || 0}
       />
 
-      {/* Main Dashboard Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Journey Progress Bar */}
-        <JourneyProgressBar 
-          currentStep={getCurrentStep()}
-          completedTours={stats.toursCompleted}
-          activeShowings={activeShowings?.length || 0}
-        />
+      {/* Main Dashboard Content - Mobile optimized */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Journey Progress Bar - Stack on mobile */}
+        <div className="mb-6 sm:mb-8">
+          <JourneyProgressBar 
+            currentStep={getCurrentStep()}
+            completedTours={stats.toursCompleted}
+            activeShowings={activeShowings?.length || 0}
+          />
+        </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Main Content Grid - Responsive layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Next Tour Card */}
             <NextTourCard 
               showing={nextTour}
               onMessageAgent={handleSendMessage}
             />
 
-            {/* Quick Actions */}
+            {/* Quick Actions - Better mobile layout */}
             <QuickActionsRow 
               onBookTour={handleRequestShowing}
               onViewHistory={handleViewHistory}
@@ -210,7 +212,7 @@ const RedesignedBuyerDashboard = () => {
           </div>
 
           {/* Right Column - Stats & Messages */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
@@ -221,14 +223,16 @@ const RedesignedBuyerDashboard = () => {
 
         {/* Badges Section - only show if user has some activity */}
         {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
-          <BadgesSection 
-            completedTours={stats.toursCompleted}
-            propertiesViewed={stats.propertiesViewed}
-          />
+          <div className="mb-6 sm:mb-8">
+            <BadgesSection 
+              completedTours={stats.toursCompleted}
+              propertiesViewed={stats.propertiesViewed}
+            />
+          </div>
         )}
       </div>
 
-      {/* Help Widget */}
+      {/* Help Widget - Mobile optimized */}
       <HelpWidget />
 
       {/* Modals */}

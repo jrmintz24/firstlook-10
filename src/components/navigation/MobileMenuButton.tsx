@@ -14,7 +14,8 @@ const MobileMenuButton = ({ isOpen, onToggle }: MobileMenuButtonProps) => {
         variant="ghost"
         size="icon"
         onClick={onToggle}
-        className="text-gray-700"
+        className="text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors p-2 h-10 w-10"
+        aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>

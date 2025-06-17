@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useMessages } from "@/hooks/useMessages";
+import { supabase } from "@/integrations/supabase/client";
 import { trackPropertyRequest, trackSubscription, trackShowingBooking, trackNavigation } from "@/utils/analytics";
 
 interface EligibilityResult {
@@ -45,6 +46,38 @@ export const useBuyerDashboardLogic = () => {
   const currentUser = user || session?.user;
   const { unreadCount, sendMessage } = useMessages(currentUser?.id || '');
 
+  // Add real-time updates for showing requests
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    console.log('Setting up real-time updates for user:', currentUser.id);
+    
+    const channel = supabase
+      .channel('showing-requests-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'showing_requests',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        (payload) => {
+          console.log('Real-time showing request update:', payload);
+          // Refresh showing requests when any change occurs
+          fetchShowingRequests();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id, fetchShowingRequests]);
+
   const handleRequestShowing = async () => {
     // Track property request initiation
     trackPropertyRequest('dashboard_request', 'buyer');
@@ -65,6 +98,14 @@ export const useBuyerDashboardLogic = () => {
     }
     
     setShowPropertyForm(true);
+  };
+
+  const handlePropertyFormClose = () => {
+    setShowPropertyForm(false);
+    // Refresh data when form closes to ensure any new requests are shown
+    setTimeout(() => {
+      fetchShowingRequests();
+    }, 1000);
   };
 
   const handleUpgradeClick = () => {
@@ -114,6 +155,8 @@ export const useBuyerDashboardLogic = () => {
     
     await handleAgreementSign(name);
     setShowAgreementModal(false);
+    // Refresh data after signing agreement
+    await fetchShowingRequests();
   };
 
   const handleSendMessage = async (requestId: string) => {
@@ -133,7 +176,7 @@ export const useBuyerDashboardLogic = () => {
   return {
     // State
     showPropertyForm,
-    setShowPropertyForm,
+    setShowPropertyForm: handlePropertyFormClose,
     showAgreementModal,
     setShowAgreementModal,
     showSubscribeModal,

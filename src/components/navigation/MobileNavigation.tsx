@@ -20,12 +20,12 @@ const MobileNavigation = ({
   if (!isOpen) return null;
 
   return (
-    <div className="md:hidden bg-white border-t border-purple-100 py-4">
+    <div className="md:hidden bg-white border-t border-purple-100 py-4 shadow-lg">
       <div className="flex flex-col space-y-2">
         <Link to="/faq" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
             FAQs
           </Button>
@@ -33,7 +33,7 @@ const MobileNavigation = ({
         <Link to="/subscriptions" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
             Pricing
           </Button>
@@ -41,7 +41,7 @@ const MobileNavigation = ({
         <Link to="/blog" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
             Blog
           </Button>
@@ -49,13 +49,13 @@ const MobileNavigation = ({
         <Link to="/agents" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors justify-start w-full"
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
             For Agents
           </Button>
         </Link>
         
-        {/* Mobile Auth Section */}
+        {/* Mobile Auth Section - Enhanced touch targets */}
         <div className="border-t border-purple-100 pt-4 mt-4">
           {user ? (
             <div className="flex flex-col space-y-2">
@@ -71,9 +71,9 @@ const MobileNavigation = ({
               >
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-purple-600 hover:bg-purple-50 justify-start w-full"
+                  className="flex items-center gap-3 text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-5 h-5" />
                   Dashboard
                 </Button>
               </Link>
@@ -83,9 +83,9 @@ const MobileNavigation = ({
                   onSignOut();
                   onMenuItemClick();
                 }}
-                className="flex items-center gap-2 border-purple-200 text-purple-600 hover:bg-purple-50 justify-start w-full"
+                className="flex items-center gap-3 border-purple-200 text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-5 h-5" />
                 Sign Out
               </Button>
             </div>
@@ -94,14 +94,14 @@ const MobileNavigation = ({
               <Link to="/buyer-auth?tab=login" onClick={onMenuItemClick}>
                 <Button 
                   variant="ghost" 
-                  className="text-purple-600 hover:bg-purple-50 justify-start w-full"
+                  className="text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
                 >
                   Login
                 </Button>
               </Link>
               <Link to="/buyer-auth" onClick={onMenuItemClick}>
                 <Button 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full py-3 px-4"
                 >
                   Get Started
                 </Button>

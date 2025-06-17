@@ -19,7 +19,11 @@ export const useBuyerDashboardLogic = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("requested"); // Changed default from "active" to "requested"
+  const [activeTab, setActiveTab] = useState<string>("requested");
+  
+  const { toast } = useToast();
+  const { eligibility, checkEligibility } = useShowingEligibility();
+  const { isSubscribed, subscriptionTier, refreshStatus } = useSubscriptionStatus();
   
   const {
     profile,

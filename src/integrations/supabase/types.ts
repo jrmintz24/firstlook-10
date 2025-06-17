@@ -299,6 +299,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          read_at: string | null
           receiver_id: string | null
           sender_id: string | null
           showing_request_id: string | null
@@ -308,6 +309,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           showing_request_id?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           showing_request_id?: string | null

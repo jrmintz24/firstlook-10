@@ -40,6 +40,9 @@ export const useBuyerDashboard = () => {
 
   const currentUser = user || session?.user;
 
+  console.log('useBuyerDashboard: Current user:', currentUser?.id, currentUser?.email);
+  console.log('useBuyerDashboard: Auth loading:', authLoading, 'Hook loading:', loading);
+
   // Categorize requests properly - cancelled tours are hidden from history
   const pendingRequests = showingRequests.filter(req => 
     ['pending', 'submitted', 'under_review', 'agent_assigned'].includes(req.status)
@@ -56,38 +59,33 @@ export const useBuyerDashboard = () => {
 
   const fetchUserData = async () => {
     if (!currentUser) {
-      console.log('No user found, stopping fetch');
+      console.log('useBuyerDashboard: No user found, stopping fetch');
       setLoading(false);
       return;
     }
 
-    console.log('Fetching buyer data for user:', currentUser.id);
+    console.log('useBuyerDashboard: Fetching buyer data for user:', currentUser.id);
 
     try {
-      // Fetch profile
+      // Fetch profile - don't fail if it doesn't exist for new users
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
-        .single();
+        .maybeSingle();
 
-      console.log('Profile fetch result:', { profileData, profileError });
+      console.log('useBuyerDashboard: Profile fetch result:', { profileData, profileError });
 
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        if (profileError.code === 'PGRST116') {
-          // Profile doesn't exist, which is okay for new users
-          console.log('Profile not found, user might be new');
-          setProfile(null);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load profile data.",
-            variant: "destructive"
-          });
-        }
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('useBuyerDashboard: Profile error:', profileError);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data.",
+          variant: "destructive"
+        });
       } else {
         setProfile(profileData);
+        console.log('useBuyerDashboard: Profile set:', profileData);
       }
 
       // Fetch showing requests for this user
@@ -99,10 +97,10 @@ export const useBuyerDashboard = () => {
         .select('showing_request_id, signed')
         .eq('buyer_id', currentUser.id);
 
-      console.log('Agreements fetch result:', { agreementsData, agreementsError });
+      console.log('useBuyerDashboard: Agreements fetch result:', { agreementsData, agreementsError });
 
       if (agreementsError) {
-        console.error('Agreements error:', agreementsError);
+        console.error('useBuyerDashboard: Agreements error:', agreementsError);
       } else {
         const agreementsMap = (agreementsData || []).reduce((acc, agreement) => {
           acc[agreement.showing_request_id] = agreement.signed;
@@ -111,31 +109,39 @@ export const useBuyerDashboard = () => {
         setAgreements(agreementsMap);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('useBuyerDashboard: Error fetching user data:', error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data.",
         variant: "destructive"
       });
     } finally {
+      console.log('useBuyerDashboard: Setting loading to false');
       setLoading(false);
     }
   };
 
   const fetchShowingRequests = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log('useBuyerDashboard: No user for showing requests fetch');
+      return;
+    }
 
     try {
+      console.log('useBuyerDashboard: Fetching showing requests...');
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      console.log('Requests fetch result:', { requestsData, requestsError });
+      console.log('useBuyerDashboard: Requests fetch result:', { 
+        count: requestsData?.length || 0, 
+        error: requestsError 
+      });
 
       if (requestsError) {
-        console.error('Requests error:', requestsError);
+        console.error('useBuyerDashboard: Requests error:', requestsError);
         toast({
           title: "Error",
           description: "Failed to load showing requests.",
@@ -146,7 +152,7 @@ export const useBuyerDashboard = () => {
         setShowingRequests(requestsData || []);
       }
     } catch (error) {
-      console.error('Error fetching showing requests:', error);
+      console.error('useBuyerDashboard: Error fetching showing requests:', error);
       setShowingRequests([]);
     }
   };
@@ -262,19 +268,21 @@ export const useBuyerDashboard = () => {
   };
 
   useEffect(() => {
+    console.log('useBuyerDashboard: useEffect triggered, authLoading:', authLoading, 'user:', !!currentUser);
+    
     if (authLoading) {
-      console.log('Auth still loading...');
+      console.log('useBuyerDashboard: Auth still loading...');
       return;
     }
     
     if (!user && !session) {
-      console.log('No user or session, redirecting to home');
+      console.log('useBuyerDashboard: No user or session, redirecting to home');
       setLoading(false);
       navigate('/');
       return;
     }
 
-    console.log('User available, fetching user data');
+    console.log('useBuyerDashboard: User available, fetching user data');
     fetchUserData();
   }, [user, session, authLoading, navigate]);
 

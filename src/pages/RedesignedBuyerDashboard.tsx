@@ -50,25 +50,31 @@ const RedesignedBuyerDashboard = () => {
     handleSendMessage
   } = useBuyerDashboardLogic();
 
-  console.log('RedesignedBuyerDashboard - Auth Loading:', authLoading, 'Loading:', loading);
-  console.log('RedesignedBuyerDashboard - User:', user?.email, 'Session:', !!session);
-  console.log('RedesignedBuyerDashboard - Profile:', profile);
-  console.log('RedesignedBuyerDashboard - Data:', { pendingRequests: pendingRequests?.length, activeShowings: activeShowings?.length, completedShowings: completedShowings?.length });
+  console.log('RedesignedBuyerDashboard - Render state:', {
+    authLoading,
+    loading,
+    hasUser: !!user,
+    hasSession: !!session,
+    userEmail: user?.email || session?.user?.email,
+    userId: user?.id || session?.user?.id,
+    profileExists: !!profile,
+    profileData: profile
+  });
 
-  if (authLoading || loading) {
+  // Show loading while auth is being determined
+  if (authLoading) {
+    console.log('RedesignedBuyerDashboard - Auth loading');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Loading your dashboard...</div>
-          <div className="text-sm text-gray-600">
-            {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
-          </div>
+          <div className="text-lg mb-4">Checking authentication...</div>
         </div>
       </div>
     );
   }
 
+  // Redirect if no auth
   if (!user && !session) {
     console.log('RedesignedBuyerDashboard - No user/session, showing sign-in message');
     return (
@@ -83,8 +89,24 @@ const RedesignedBuyerDashboard = () => {
     );
   }
 
+  // Show loading while dashboard data is being fetched
+  if (loading) {
+    console.log('RedesignedBuyerDashboard - Dashboard loading');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="text-lg mb-4">Loading your dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+
   // Safe fallbacks for first-time users
-  const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
+  const displayName = profile?.first_name || 
+                     currentUser?.user_metadata?.first_name || 
+                     currentUser?.email?.split('@')[0] || 
+                     'User';
   
   // Get next upcoming tour - safely handle empty arrays
   const nextTour = (activeShowings && activeShowings.length > 0) ? activeShowings[0] : 
@@ -125,7 +147,16 @@ const RedesignedBuyerDashboard = () => {
     console.log("Make offer clicked");
   };
 
-  console.log('RedesignedBuyerDashboard - Rendering with:', { displayName, nextTour: !!nextTour, stats });
+  console.log('RedesignedBuyerDashboard - Rendering with:', { 
+    displayName, 
+    nextTour: !!nextTour, 
+    stats,
+    dataLength: {
+      pending: pendingRequests?.length,
+      active: activeShowings?.length,
+      completed: completedShowings?.length
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">

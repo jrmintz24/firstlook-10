@@ -9,7 +9,6 @@ import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout"
 import ModernHeader from "@/components/dashboard/ModernHeader";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import ModernSidebar from "@/components/dashboard/ModernSidebar";
-import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -172,25 +171,11 @@ const BuyerDashboard = () => {
   // Stats component
   const stats = <ModernStatsGrid stats={modernStats} onStatClick={handleStatClick} />;
 
-  // Main content
+  // Simplified main content - remove redundant welcome section
   const mainContent = (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Your Home Search Journey</h2>
-        <p className="text-gray-600">Track your progress and manage your property tours</p>
-      </div>
-      
-      <WelcomeDashboard 
-        userType="buyer"
-        displayName={displayName}
-        onRequestShowing={handleRequestShowing}
-        hasActiveShowings={activeShowings.length > 0}
-        completedCount={completedShowings.filter(s => s.status === 'completed').length}
-        pendingCount={pendingRequests.length}
-      />
-      
       {!isSubscribed && eligibility?.reason === 'free_showing_used' && (
-        <Card className="mt-6 border-l-4 border-l-orange-500 bg-orange-50">
+        <Card className="border-l-4 border-l-orange-500 bg-orange-50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>

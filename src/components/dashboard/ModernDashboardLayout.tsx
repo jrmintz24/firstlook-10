@@ -52,28 +52,30 @@ const ModernDashboardLayout = ({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Stats Section */}
-        <div className="mb-8">
+        <div className="mb-6">
           {stats}
         </div>
 
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          {/* Main Content Area - Takes up 3 columns */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white border-0 shadow-sm">
-              <CardContent className="p-6">
-                {mainContent}
-              </CardContent>
-            </Card>
-          </div>
+        {/* Simplified Main Dashboard Grid - reduced spacing */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+          {/* Main Content Area - Only show if there's actual content */}
+          {mainContent && (
+            <div className="lg:col-span-3">
+              <Card className="bg-white border-0 shadow-sm">
+                <CardContent className="p-6">
+                  {mainContent}
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
           {/* Sidebar - Takes up 1 column */}
-          <div className="lg:col-span-1">
+          <div className={mainContent ? "lg:col-span-1" : "lg:col-span-4"}>
             {sidebar}
           </div>
         </div>
 
-        {/* Tabbed Sections */}
+        {/* Tabbed Sections - moved up with reduced margin */}
         {showSectionTabs && sectionsArray.length > 0 && (
           <Card className="bg-white border-0 shadow-sm">
             <Tabs value={tabValue} onValueChange={handleTabChange}>

@@ -12,6 +12,7 @@ interface AgentConfirmationData {
   alternativeTime1?: string;
   alternativeDate2?: string;
   alternativeTime2?: string;
+  timeChangeReason?: string;
 }
 
 export const useAgentConfirmation = () => {
@@ -26,6 +27,7 @@ export const useAgentConfirmation = () => {
         confirmed_date: confirmationData.confirmedDate,
         confirmed_time: confirmationData.confirmedTime,
         agent_message: confirmationData.agentMessage,
+        time_change_reason: confirmationData.timeChangeReason,
         alternatives: []
       };
 
@@ -67,13 +69,25 @@ export const useAgentConfirmation = () => {
         throw updateError;
       }
 
+      // Get the showing request to find the buyer
+      const { data: showingRequest, error: showingError } = await supabase
+        .from('showing_requests')
+        .select('user_id')
+        .eq('id', confirmationData.requestId)
+        .single();
+
+      if (showingError) {
+        console.error('Error fetching showing request:', showingError);
+      }
+
       // Create a message record for the agent-buyer communication
-      if (confirmationData.agentMessage) {
+      if (confirmationData.agentMessage && showingRequest?.user_id) {
         const { error: messageError } = await supabase
           .from('messages')
           .insert({
             showing_request_id: confirmationData.requestId,
             sender_id: agentProfile.id,
+            receiver_id: showingRequest.user_id,
             content: confirmationData.agentMessage,
           });
 
@@ -85,7 +99,9 @@ export const useAgentConfirmation = () => {
 
       toast({
         title: "Showing Confirmed! 🎉",
-        description: "Your confirmation has been sent to the buyer. They'll receive your message and schedule details.",
+        description: confirmationData.timeChangeReason 
+          ? "Your confirmation with time change has been sent to the buyer."
+          : "Your confirmation has been sent to the buyer. They'll receive your message and schedule details.",
       });
 
       return true;

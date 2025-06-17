@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Clock, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ShowingRequest {
   id: string;
@@ -32,6 +33,7 @@ interface AgentConfirmationData {
   alternativeTime1?: string;
   alternativeDate2?: string;
   alternativeTime2?: string;
+  timeChangeReason?: string;
 }
 
 const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentConfirmationModalProps) => {
@@ -43,22 +45,36 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
   const [alternativeTime1, setAlternativeTime1] = useState('');
   const [alternativeDate2, setAlternativeDate2] = useState('');
   const [alternativeTime2, setAlternativeTime2] = useState('');
+  const [timeChangeReason, setTimeChangeReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check if agent changed the original time/date
+  const isTimeChanged = confirmedDate !== request.preferred_date || confirmedTime !== request.preferred_time;
 
   const handleConfirm = async () => {
     if (!confirmedDate || !confirmedTime) return;
 
+    // If time was changed but no reason provided, require explanation
+    if (isTimeChanged && !timeChangeReason.trim()) {
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const confirmationMessage = isTimeChanged 
+        ? `${agentMessage}\n\nTime Change: ${timeChangeReason}`.trim()
+        : agentMessage;
+
       await onConfirm({
         requestId: request.id,
         confirmedDate,
         confirmedTime,
-        agentMessage,
+        agentMessage: confirmationMessage,
         alternativeDate1: showAlternatives ? alternativeDate1 : undefined,
         alternativeTime1: showAlternatives ? alternativeTime1 : undefined,
         alternativeDate2: showAlternatives ? alternativeDate2 : undefined,
         alternativeTime2: showAlternatives ? alternativeTime2 : undefined,
+        timeChangeReason: isTimeChanged ? timeChangeReason : undefined,
       });
       onClose();
     } catch (error) {
@@ -70,7 +86,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-purple-600" />
@@ -82,9 +98,22 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="font-medium text-gray-800">{request.property_address}</p>
             <p className="text-sm text-gray-600">
-              Buyer's preferred: {request.preferred_date} at {request.preferred_time}
+              Buyer's request: {request.preferred_date} at {request.preferred_time}
             </p>
           </div>
+
+          {/* Time Change Alert */}
+          {isTimeChanged && (
+            <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-amber-800 mb-2">
+                <AlertCircle className="h-4 w-4" />
+                <span className="font-medium">Time Change Detected</span>
+              </div>
+              <p className="text-amber-700 text-sm">
+                You've changed the buyer's preferred time. Please explain why the original time isn't available.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-3">
             <div>
@@ -96,6 +125,11 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
                 onChange={(e) => setConfirmedDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
               />
+              {confirmedDate !== request.preferred_date && (
+                <Badge variant="outline" className="mt-1 text-amber-600 border-amber-300">
+                  Changed from {request.preferred_date}
+                </Badge>
+              )}
             </div>
 
             <div>
@@ -118,15 +152,43 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
                 <option value="17:00:00">5:00 PM</option>
                 <option value="18:00:00">6:00 PM</option>
               </select>
+              {confirmedTime !== request.preferred_time && (
+                <Badge variant="outline" className="mt-1 text-amber-600 border-amber-300">
+                  Changed from {request.preferred_time}
+                </Badge>
+              )}
             </div>
 
+            {/* Time Change Reason - Required if time changed */}
+            {isTimeChanged && (
+              <div>
+                <Label htmlFor="time-change-reason" className="text-amber-700 font-medium">
+                  Reason for Time Change *
+                </Label>
+                <Textarea
+                  id="time-change-reason"
+                  value={timeChangeReason}
+                  onChange={(e) => setTimeChangeReason(e.target.value)}
+                  placeholder="Explain why the original time isn't available (e.g., property has another showing, owner availability, etc.)"
+                  rows={2}
+                  className="border-amber-300 focus:border-amber-500"
+                  required
+                />
+                {!timeChangeReason.trim() && (
+                  <p className="text-sm text-red-600 mt-1">
+                    Please explain why the time was changed
+                  </p>
+                )}
+              </div>
+            )}
+
             <div>
-              <Label htmlFor="agent-message">Message to Buyer (Optional)</Label>
+              <Label htmlFor="agent-message">Message to Buyer</Label>
               <Textarea
                 id="agent-message"
                 value={agentMessage}
                 onChange={(e) => setAgentMessage(e.target.value)}
-                placeholder="Introduce yourself, confirm meeting point, or ask any questions..."
+                placeholder="Introduce yourself, confirm meeting point, or provide additional details..."
                 rows={3}
               />
             </div>
@@ -218,7 +280,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
           <div className="flex gap-2 pt-4">
             <Button
               onClick={handleConfirm}
-              disabled={!confirmedDate || !confirmedTime || isSubmitting}
+              disabled={!confirmedDate || !confirmedTime || isSubmitting || (isTimeChanged && !timeChangeReason.trim())}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <MessageSquare className="h-4 w-4 mr-2" />

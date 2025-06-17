@@ -1,6 +1,7 @@
 
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -17,13 +18,15 @@ import StatsAndMessages from "@/components/dashboard/redesigned/StatsAndMessages
 import WhatsNextCard from "@/components/dashboard/redesigned/WhatsNextCard";
 import BadgesSection from "@/components/dashboard/redesigned/BadgesSection";
 import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
-import ChatWidget from "@/components/messaging/ChatWidget";
+import MessagesPanel from "@/components/messaging/MessagesPanel";
 
 // Tour sections
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
-import { Clock, CheckCircle } from "lucide-react";
+import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
+  const [messagesMinimized, setMessagesMinimized] = useState(false);
+
   // Handle any pending tour requests from signup
   usePendingTourHandler();
 
@@ -38,7 +41,6 @@ const RedesignedBuyerDashboard = () => {
     activeTab,
     setActiveTab,
     
-    // Data
     profile,
     selectedShowing,
     loading,
@@ -51,7 +53,6 @@ const RedesignedBuyerDashboard = () => {
     completedShowings = [],
     unreadCount = 0,
     
-    // Handlers
     handleRequestShowing,
     handleSubscriptionComplete,
     handleConfirmShowingWithModal,
@@ -77,7 +78,6 @@ const RedesignedBuyerDashboard = () => {
 
   // Show loading while auth is being determined
   if (authLoading) {
-    console.log('RedesignedBuyerDashboard - Auth loading');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
@@ -89,7 +89,6 @@ const RedesignedBuyerDashboard = () => {
   }
 
   if (!user && !session) {
-    console.log('RedesignedBuyerDashboard - No user/session, showing sign-in message');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
@@ -103,7 +102,6 @@ const RedesignedBuyerDashboard = () => {
   }
 
   if (loading) {
-    console.log('RedesignedBuyerDashboard - Dashboard loading');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
@@ -153,22 +151,21 @@ const RedesignedBuyerDashboard = () => {
   };
 
   const handleOpenChat = (showingId: string) => {
-    // For now, just show a toast - this could open a chat modal or navigate to chat
     console.log('Opening chat for showing:', showingId);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-white" style={{ backgroundColor: '#f9fafe' }}>
       {/* Header */}
       <RedesignedDashboardHeader 
         displayName={displayName} 
         unreadCount={unreadCount || 0}
       />
 
-      {/* Main Dashboard Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Journey Progress Bar */}
-        <div className="mb-6 sm:mb-8">
+      {/* Main Dashboard Content with New Layout */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        {/* Journey Progress Bar with Better Spacing */}
+        <div className="mb-8 sm:mb-10">
           <JourneyProgressBar 
             currentStep={getCurrentStep()}
             completedTours={stats.toursCompleted}
@@ -176,24 +173,38 @@ const RedesignedBuyerDashboard = () => {
           />
         </div>
 
-        {/* Main Content Grid - Improved layout with chat having more space */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {/* Left Column - Main Tours Content (2 columns) */}
-          <div className="xl:col-span-2 space-y-6">
-            {/* Next Tour Card */}
-            <NextTourCard 
-              showing={nextTour}
-              onMessageAgent={handleSendMessage}
-            />
+        {/* Main Grid Layout - 60% Content, 40% Messages */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 mb-8 sm:mb-10">
+          {/* Main Content Area - 60% width (3 columns) */}
+          <div className="xl:col-span-3 space-y-8">
+            {/* Your Journey Section */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-indigo-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Your Journey</h2>
+              </div>
+              
+              <NextTourCard 
+                showing={nextTour}
+                onMessageAgent={handleSendMessage}
+              />
+            </div>
 
-            {/* Tours Grid - Split into Requested and Confirmed */}
+            {/* Active Tours Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Requested Tours */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-orange-500" />
-                  Requested Tours ({pendingRequests.length})
-                </h3>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Requested Tours ({pendingRequests.length})
+                  </h3>
+                </div>
+                
                 <ShowingListTab
                   title=""
                   showings={pendingRequests.slice(0, 3)}
@@ -208,19 +219,25 @@ const RedesignedBuyerDashboard = () => {
                   currentUserId={currentUser?.id}
                   onSendMessage={handleOpenChat}
                 />
+                
                 {pendingRequests.length > 3 && (
-                  <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("requested")}>
+                  <Button variant="ghost" className="w-full mt-4 text-indigo-600 hover:bg-indigo-50" onClick={() => setActiveTab("requested")}>
                     View All ({pendingRequests.length})
                   </Button>
                 )}
               </div>
 
               {/* Confirmed Tours */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  Confirmed Tours ({activeShowings.length})
-                </h3>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Confirmed Tours ({activeShowings.length})
+                  </h3>
+                </div>
+                
                 <ShowingListTab
                   title=""
                   showings={activeShowings.slice(0, 3)}
@@ -236,8 +253,9 @@ const RedesignedBuyerDashboard = () => {
                   currentUserId={currentUser?.id}
                   onSendMessage={handleOpenChat}
                 />
+                
                 {activeShowings.length > 3 && (
-                  <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("confirmed")}>
+                  <Button variant="ghost" className="w-full mt-4 text-indigo-600 hover:bg-indigo-50" onClick={() => setActiveTab("confirmed")}>
                     View All ({activeShowings.length})
                   </Button>
                 )}
@@ -245,33 +263,55 @@ const RedesignedBuyerDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <QuickActionsRow 
-              onBookTour={handleRequestShowing}
-              onViewHistory={handleViewHistory}
-              onAskQuestion={handleAskQuestion}
-            />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Home className="w-5 h-5 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
+              </div>
+              
+              <QuickActionsRow 
+                onBookTour={handleRequestShowing}
+                onViewHistory={handleViewHistory}
+                onAskQuestion={handleAskQuestion}
+              />
+            </div>
 
             {/* What's Next */}
-            <WhatsNextCard 
-              hasUpcomingTour={!!nextTour}
-              hasCompletedTours={stats.toursCompleted}
-              onMakeOffer={handleMakeOffer}
-            />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <WhatsNextCard 
+                hasUpcomingTour={!!nextTour}
+                hasCompletedTours={stats.toursCompleted}
+                onMakeOffer={handleMakeOffer}
+              />
+            </div>
           </div>
 
-          {/* Chat Widget - Now has its own column with more space */}
-          <div className="xl:col-span-1">
+          {/* Messages Panel - 40% width (2 columns) */}
+          <div className="xl:col-span-2">
             {currentUser?.id && (
-              <ChatWidget
+              <MessagesPanel
                 userId={currentUser.id}
                 unreadCount={unreadCount || 0}
-                className="h-[600px]"
+                className="h-[800px] sticky top-6"
+                onMinimize={() => setMessagesMinimized(!messagesMinimized)}
+                isMinimized={messagesMinimized}
               />
             )}
           </div>
+        </div>
 
-          {/* Right Column - Stats (1 column) */}
-          <div className="xl:col-span-1 space-y-6">
+        {/* Stats Section */}
+        <div className="mb-8 sm:mb-10">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Your Progress</h2>
+            </div>
+            
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
@@ -282,7 +322,7 @@ const RedesignedBuyerDashboard = () => {
 
         {/* Badges Section */}
         {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-8 sm:mb-10">
             <BadgesSection 
               completedTours={stats.toursCompleted}
               propertiesViewed={stats.propertiesViewed}

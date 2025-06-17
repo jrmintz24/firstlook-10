@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,6 @@ const ShowingRequestCard = ({
   return (
     <Card className="shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <CardContent className="p-6">
-        {/* Post-showing workflow trigger */}
         <PostShowingTrigger
           showingId={showing.id}
           status={showing.status}
@@ -89,21 +87,18 @@ const ShowingRequestCard = ({
               {showing.property_address}
             </h3>
 
-            {/* Tour Progress Tracker - only show for active showings */}
             {['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
               <div className="mb-4">
                 <TourProgressTracker showing={showing} userType={userType} />
               </div>
             )}
 
-            {/* Status Description */}
             <div className="bg-blue-50 p-3 rounded-lg mb-4">
               <div className="text-sm font-medium text-blue-800 mb-1">Current Status</div>
               <div className="text-blue-600 text-sm mb-2">{statusInfo.description}</div>
               <div className="text-blue-500 text-xs">{timeline}</div>
             </div>
 
-            {/* Message Indicator */}
             {currentUserId && (
               <MessageIndicator
                 showingRequestId={showing.id}
@@ -113,7 +108,6 @@ const ShowingRequestCard = ({
               />
             )}
 
-            {/* Date/Time Info */}
             {showing.preferred_date && (
               <div className="flex items-center gap-6 text-gray-600 mb-3">
                 <div className="flex items-center gap-1">
@@ -133,7 +127,6 @@ const ShowingRequestCard = ({
               </div>
             )}
 
-            {/* Estimated Confirmation Date */}
             {showing.estimated_confirmation_date && (
               <div className="flex items-center gap-2 text-green-600 mb-3">
                 <CheckCircle className="h-4 w-4" />
@@ -143,7 +136,6 @@ const ShowingRequestCard = ({
               </div>
             )}
 
-            {/* Agent Information */}
             {showing.assigned_agent_name && (
               <div className="bg-green-50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
@@ -168,7 +160,6 @@ const ShowingRequestCard = ({
               </div>
             )}
 
-            {/* Notes */}
             {showing.message && (
               <div className="bg-gray-50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-gray-800 mb-1">Your Notes</div>
@@ -182,10 +173,8 @@ const ShowingRequestCard = ({
           </div>
         </div>
 
-        {/* Actions */}
         {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
           <div className="flex gap-2 flex-wrap">
-            {/* Chat Button */}
             <Button 
               variant="outline" 
               size="sm" 
@@ -196,7 +185,6 @@ const ShowingRequestCard = ({
               Chat
             </Button>
 
-            {/* Reschedule Button */}
             <Button
               variant="outline"
               size="sm"
@@ -213,7 +201,6 @@ const ShowingRequestCard = ({
               </Button>
             )}
             
-            {/* Show checkout button for active showings */}
             <ShowingCheckoutButton
               showing={showing}
               userType={userType}
@@ -231,7 +218,6 @@ const ShowingRequestCard = ({
           </div>
         )}
 
-        {/* Post-showing communication */}
         <PostShowingCommunication
           showingId={showing.id}
           userType={userType}

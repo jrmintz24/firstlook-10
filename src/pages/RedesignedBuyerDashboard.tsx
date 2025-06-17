@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useState } from "react";
@@ -62,8 +63,7 @@ const RedesignedBuyerDashboard = () => {
     handleAgreementSignWithModal,
     handleSendMessage,
     fetchShowingRequests,
-    handleRescheduleShowing,
-    fetchShowingRequests
+    handleRescheduleShowing
   } = useBuyerDashboardLogic();
 
   console.log('RedesignedBuyerDashboard - Render state:', {

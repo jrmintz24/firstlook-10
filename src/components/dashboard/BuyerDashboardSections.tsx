@@ -1,5 +1,5 @@
 
-import { AlertCircle, Calendar, Star, MessageCircle } from "lucide-react";
+import { AlertCircle, Calendar, Star, MessageCircle, Clock, CheckCircle } from "lucide-react";
 import ShowingListTab from "./ShowingListTab";
 import ProfileTab from "./ProfileTab";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
@@ -45,59 +45,45 @@ export const generateBuyerDashboardSections = ({
 
   return [
     {
-      id: "active",
-      label: "Active Tours",
-      count: pendingRequests.length + activeShowings.length,
+      id: "requested",
+      label: "Requested Tours",
+      count: pendingRequests.length,
       content: (
-        <div className="space-y-6">
-          {pendingRequests.length > 0 && (
-            <ShowingListTab
-              title="Pending Requests"
-              showings={pendingRequests}
-              emptyIcon={AlertCircle}
-              emptyTitle="No pending requests"
-              emptyDescription="Ready to find your dream home? Submit a showing request!"
-              emptyButtonText="Request Your Free Showing"
-              onRequestShowing={onRequestShowing}
-              onCancelShowing={onCancelShowing}
-              onRescheduleShowing={onRescheduleShowing}
-              onComplete={fetchShowingRequests}
-              currentUserId={currentUser?.id}
-            />
-          )}
-          
-          {activeShowings.length > 0 && (
-            <ShowingListTab
-              title="Confirmed Showings"
-              showings={activeShowings}
-              emptyIcon={Calendar}
-              emptyTitle="No confirmed showings"
-              emptyDescription="Once your requests are confirmed, they'll appear here."
-              emptyButtonText="Request Your Free Showing"
-              onRequestShowing={onRequestShowing}
-              onCancelShowing={onCancelShowing}
-              onRescheduleShowing={onRescheduleShowing}
-              onConfirmShowing={onConfirmShowing}
-              agreements={agreementsArray}
-              onComplete={fetchShowingRequests}
-              currentUserId={currentUser?.id}
-            />
-          )}
-
-          {pendingRequests.length === 0 && activeShowings.length === 0 && (
-            <div className="text-center py-12">
-              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No active tours</h3>
-              <p className="text-gray-500 mb-6">Ready to find your dream home?</p>
-              <button 
-                onClick={onRequestShowing}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg"
-              >
-                Request Your Free Showing
-              </button>
-            </div>
-          )}
-        </div>
+        <ShowingListTab
+          title="Requested Tours"
+          showings={pendingRequests}
+          emptyIcon={Clock}
+          emptyTitle="No pending requests"
+          emptyDescription="Ready to find your dream home? Submit a showing request!"
+          emptyButtonText="Request Your Free Showing"
+          onRequestShowing={onRequestShowing}
+          onCancelShowing={onCancelShowing}
+          onRescheduleShowing={onRescheduleShowing}
+          onComplete={fetchShowingRequests}
+          currentUserId={currentUser?.id}
+        />
+      )
+    },
+    {
+      id: "confirmed",
+      label: "Confirmed Tours",
+      count: activeShowings.length,
+      content: (
+        <ShowingListTab
+          title="Confirmed Tours"
+          showings={activeShowings}
+          emptyIcon={CheckCircle}
+          emptyTitle="No confirmed showings"
+          emptyDescription="Once your requests are confirmed, they'll appear here."
+          emptyButtonText="Request Your Free Showing"
+          onRequestShowing={onRequestShowing}
+          onCancelShowing={onCancelShowing}
+          onRescheduleShowing={onRescheduleShowing}
+          onConfirmShowing={onConfirmShowing}
+          agreements={agreementsArray}
+          onComplete={fetchShowingRequests}
+          currentUserId={currentUser?.id}
+        />
       )
     },
     {

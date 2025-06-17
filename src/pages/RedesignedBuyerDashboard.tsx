@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { Link } from "react-router-dom";
@@ -16,6 +17,11 @@ import StatsAndMessages from "@/components/dashboard/redesigned/StatsAndMessages
 import WhatsNextCard from "@/components/dashboard/redesigned/WhatsNextCard";
 import BadgesSection from "@/components/dashboard/redesigned/BadgesSection";
 import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
+import ChatWidget from "@/components/messaging/ChatWidget";
+
+// Tour sections
+import ShowingListTab from "@/components/dashboard/ShowingListTab";
+import { Clock, CheckCircle } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
   // Handle any pending tour requests from signup
@@ -82,7 +88,6 @@ const RedesignedBuyerDashboard = () => {
     );
   }
 
-  // Redirect if no auth
   if (!user && !session) {
     console.log('RedesignedBuyerDashboard - No user/session, showing sign-in message');
     return (
@@ -97,7 +102,6 @@ const RedesignedBuyerDashboard = () => {
     );
   }
 
-  // Show loading while dashboard data is being fetched
   if (loading) {
     console.log('RedesignedBuyerDashboard - Dashboard loading');
     return (
@@ -116,11 +120,9 @@ const RedesignedBuyerDashboard = () => {
                      currentUser?.email?.split('@')[0] || 
                      'User';
   
-  // Get next upcoming tour - safely handle empty arrays
   const nextTour = (activeShowings && activeShowings.length > 0) ? activeShowings[0] : 
                    (pendingRequests && pendingRequests.length > 0) ? pendingRequests[0] : null;
   
-  // Calculate current journey step - handle undefined arrays
   const getCurrentStep = () => {
     const activeCount = activeShowings?.length || 0;
     const completedCount = completedShowings?.length || 0;
@@ -132,11 +134,10 @@ const RedesignedBuyerDashboard = () => {
     return "account";
   };
 
-  // Generate stats - safely handle undefined arrays
   const stats = {
     toursCompleted: (completedShowings || []).filter(s => s?.status === 'completed').length,
     propertiesViewed: (completedShowings || []).length + (activeShowings || []).length,
-    offersMade: 0 // TODO: Add offers tracking
+    offersMade: 0
   };
 
   const handleViewHistory = () => {
@@ -155,28 +156,17 @@ const RedesignedBuyerDashboard = () => {
     console.log("Make offer clicked");
   };
 
-  console.log('RedesignedBuyerDashboard - Rendering with:', { 
-    displayName, 
-    nextTour: !!nextTour, 
-    stats,
-    dataLength: {
-      pending: pendingRequests?.length,
-      active: activeShowings?.length,
-      completed: completedShowings?.length
-    }
-  });
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Header - Mobile optimized */}
+      {/* Header */}
       <RedesignedDashboardHeader 
         displayName={displayName} 
         unreadCount={unreadCount || 0}
       />
 
-      {/* Main Dashboard Content - Mobile optimized */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Journey Progress Bar - Stack on mobile */}
+      {/* Main Dashboard Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Journey Progress Bar */}
         <div className="mb-6 sm:mb-8">
           <JourneyProgressBar 
             currentStep={getCurrentStep()}
@@ -185,17 +175,73 @@ const RedesignedBuyerDashboard = () => {
           />
         </div>
 
-        {/* Main Content Grid - Responsive layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        {/* Main Content Grid - Improved layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {/* Left Column - Main Tours Content */}
+          <div className="xl:col-span-3 space-y-6">
             {/* Next Tour Card */}
             <NextTourCard 
               showing={nextTour}
               onMessageAgent={handleSendMessage}
             />
 
-            {/* Quick Actions - Better mobile layout */}
+            {/* Tours Grid - Split into Requested and Confirmed */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Requested Tours */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-orange-500" />
+                  Requested Tours ({pendingRequests.length})
+                </h3>
+                <ShowingListTab
+                  title=""
+                  showings={pendingRequests.slice(0, 3)}
+                  emptyIcon={Clock}
+                  emptyTitle="No pending requests"
+                  emptyDescription="Ready to find your dream home?"
+                  emptyButtonText="Request Your Free Showing"
+                  onRequestShowing={handleRequestShowing}
+                  onCancelShowing={() => {}}
+                  onRescheduleShowing={() => {}}
+                  onComplete={() => {}}
+                  currentUserId={currentUser?.id}
+                />
+                {pendingRequests.length > 3 && (
+                  <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("requested")}>
+                    View All ({pendingRequests.length})
+                  </Button>
+                )}
+              </div>
+
+              {/* Confirmed Tours */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  Confirmed Tours ({activeShowings.length})
+                </h3>
+                <ShowingListTab
+                  title=""
+                  showings={activeShowings.slice(0, 3)}
+                  emptyIcon={CheckCircle}
+                  emptyTitle="No confirmed tours"
+                  emptyDescription="Confirmed tours will appear here"
+                  emptyButtonText="Request Your Free Showing"
+                  onRequestShowing={handleRequestShowing}
+                  onCancelShowing={() => {}}
+                  onRescheduleShowing={() => {}}
+                  onConfirmShowing={handleConfirmShowingWithModal}
+                  onComplete={() => {}}
+                  currentUserId={currentUser?.id}
+                />
+                {activeShowings.length > 3 && (
+                  <Button variant="ghost" className="w-full mt-2" onClick={() => setActiveTab("confirmed")}>
+                    View All ({activeShowings.length})
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
             <QuickActionsRow 
               onBookTour={handleRequestShowing}
               onViewHistory={handleViewHistory}
@@ -210,8 +256,8 @@ const RedesignedBuyerDashboard = () => {
             />
           </div>
 
-          {/* Right Column - Stats & Messages */}
-          <div className="space-y-4 sm:space-y-6">
+          {/* Right Column - Stats */}
+          <div className="xl:col-span-1">
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
@@ -220,7 +266,7 @@ const RedesignedBuyerDashboard = () => {
           </div>
         </div>
 
-        {/* Badges Section - only show if user has some activity */}
+        {/* Badges Section */}
         {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
           <div className="mb-6 sm:mb-8">
             <BadgesSection 
@@ -231,7 +277,16 @@ const RedesignedBuyerDashboard = () => {
         )}
       </div>
 
-      {/* Help Widget - Mobile optimized */}
+      {/* Chat Widget */}
+      {currentUser?.id && (
+        <ChatWidget
+          userId={currentUser.id}
+          unreadCount={unreadCount || 0}
+          onOpenInbox={handleOpenInbox}
+        />
+      )}
+
+      {/* Help Widget */}
       <HelpWidget />
 
       {/* Modals */}

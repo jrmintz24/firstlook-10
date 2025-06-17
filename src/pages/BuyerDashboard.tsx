@@ -1,4 +1,3 @@
-
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -11,6 +10,7 @@ import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 import SubscriptionStatus from "@/components/dashboard/SubscriptionStatus";
+import ChatWidget from "@/components/messaging/ChatWidget";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerStats } from "@/utils/dashboardStats";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -157,10 +157,19 @@ const BuyerDashboard = () => {
         mainContent={mainContent}
         sidebar={sidebar}
         sections={dashboardSections}
-        defaultSection="active"
+        defaultSection="requested"
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
+
+      {/* Chat Widget */}
+      {currentUser?.id && (
+        <ChatWidget
+          userId={currentUser.id}
+          unreadCount={unreadCount || 0}
+          onOpenInbox={() => setActiveTab("messages")}
+        />
+      )}
 
       <ErrorBoundary>
         <PropertyRequestForm

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +35,10 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           title: "Account Created!",
           description: "Welcome to FirstLook! Your property request is being processed.",
         });
+        
+        // Store flag to indicate this is a new user from property request
+        localStorage.setItem('newUserFromPropertyRequest', 'true');
+        
       } else {
         console.log('Quick sign in attempt:', email);
         await signIn(email, password);
@@ -46,6 +52,9 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
       setTimeout(() => {
         onSuccess();
         onClose();
+        
+        // Navigate to dashboard where the pending tour handler will process the request
+        navigate('/buyer-dashboard', { replace: true });
       }, 1000);
       
     } catch (error: any) {
@@ -65,12 +74,12 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isSignUp ? "Create Account" : "Sign In"}
+            {isSignUp ? "Create Account to Continue" : "Sign In to Continue"}
           </DialogTitle>
           <DialogDescription>
             {isSignUp 
               ? "Create an account to complete your tour request" 
-              : "Sign in to your existing account"
+              : "Sign in to your existing account to continue"
             }
           </DialogDescription>
         </DialogHeader>
@@ -105,7 +114,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
 
           <div className="flex flex-col gap-3">
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Processing...' : (isSignUp ? 'Create Account & Continue' : 'Sign In & Continue')}
+              {loading ? 'Processing...' : (isSignUp ? 'Create Account & Book Tour' : 'Sign In & Book Tour')}
             </Button>
             
             <Button 

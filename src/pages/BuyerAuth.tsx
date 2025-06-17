@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,11 +42,22 @@ const BuyerAuth = () => {
   }, [initialTab]);
 
   const buyerAuth = useAuthForm('buyer', () => {
-    toast({
-      title: "Welcome to FirstLook!",
-      description: "You're all set to start touring homes.",
-    });
-    navigate('/buyer-dashboard');
+    // Check if there's a pending tour request
+    const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+    
+    if (pendingTourRequest) {
+      toast({
+        title: "Welcome to FirstLook!",
+        description: "Processing your tour request...",
+      });
+      navigate('/buyer-dashboard');
+    } else {
+      toast({
+        title: "Welcome to FirstLook!",
+        description: "You're all set to start touring homes.",
+      });
+      navigate('/buyer-dashboard');
+    }
   });
 
   if (loading) {
@@ -62,6 +72,10 @@ const BuyerAuth = () => {
     );
     return null;
   }
+
+  // Check if user came from property request
+  const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+  const hasPendingTour = !!pendingTourRequest;
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -78,18 +92,32 @@ const BuyerAuth = () => {
               </span>
             </Link>
             <h1 className="text-3xl font-light text-gray-900 mb-4 tracking-tight">
-              {activeTab === 'login' ? 'Welcome Back!' : 'Welcome Home Buyer!'}
+              {activeTab === 'login' ? 'Welcome Back!' 
+               : hasPendingTour ? 'Almost There!' : 'Welcome Home Buyer!'}
             </h1>
             <p className="text-gray-600 font-light leading-relaxed">
               {activeTab === 'login' 
                 ? 'Sign in to continue your home search' 
+                : hasPendingTour
+                ? 'Create your account to complete your tour request'
                 : 'Join thousands discovering their dream homes with zero commitment'
               }
             </p>
+            
+            {hasPendingTour && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium">
+                  🏠 Tour Request Ready
+                </p>
+                <p className="text-xs text-blue-600">
+                  Complete your account to book your showing
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Collapsible Benefits Section */}
-          {(showBenefits || activeTab === 'signup') && (
+          {(showBenefits || activeTab === 'signup') && !hasPendingTour && (
             <div className="mb-8">
               {activeTab === 'login' && (
                 <div className="text-center mb-4">
@@ -157,11 +185,14 @@ const BuyerAuth = () => {
           <Card id="auth-card" className="bg-white border border-gray-200">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-light text-gray-900 tracking-tight">
-                {activeTab === 'login' ? 'Sign In' : 'Get Started Today'}
+                {activeTab === 'login' ? 'Sign In' 
+                 : hasPendingTour ? 'Complete Your Account' : 'Get Started Today'}
               </CardTitle>
               <CardDescription className="text-gray-600 font-light">
                 {activeTab === 'login' 
                   ? 'Access your account to continue touring homes'
+                  : hasPendingTour
+                  ? 'Just one more step to book your tour'
                   : 'Create your account and start touring homes instantly'
                 }
               </CardDescription>

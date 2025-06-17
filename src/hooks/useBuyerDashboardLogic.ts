@@ -15,23 +15,6 @@ interface EligibilityResult {
   subscription_tier?: string;
 }
 
-interface ShowingRequest {
-  id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_name?: string | null;
-  assigned_agent_phone?: string | null;
-  assigned_agent_email?: string | null;
-  assigned_agent_id?: string | null;
-  estimated_confirmation_date?: string | null;
-  status_updated_at?: string | null;
-  user_id?: string | null;
-}
-
 export const useBuyerDashboardLogic = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);

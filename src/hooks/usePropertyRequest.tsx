@@ -30,6 +30,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
   const [showFreeShowingLimitModal, setShowFreeShowingLimitModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Get management hooks
   const { handleAddProperty, handleRemoveProperty } = usePropertyManagement(formData, setFormData);
@@ -62,11 +63,19 @@ export const usePropertyRequest = (onClose?: () => void) => {
           setFormData(prev => ({
             ...prev,
             propertyAddress: tourData.propertyAddress || '',
-            mlsId: tourData.mlsId || ''
+            mlsId: tourData.mlsId || '',
+            preferredDate1: tourData.preferredDate1 || '',
+            preferredTime1: tourData.preferredTime1 || '',
+            preferredDate2: tourData.preferredDate2 || '',
+            preferredTime2: tourData.preferredTime2 || '',
+            preferredDate3: tourData.preferredDate3 || '',
+            preferredTime3: tourData.preferredTime3 || '',
+            notes: tourData.notes || ''
           }));
         }
       } catch (error) {
         console.error('Error parsing pending tour request:', error);
+        localStorage.removeItem('pendingTourRequest');
       }
     }
   }, []);
@@ -89,6 +98,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
   const handleContinueToSubscriptions = async () => {
     if (!user) {
       // Store current form data in localStorage before redirecting to auth
+      console.log('Storing tour request for unauthenticated user:', formData);
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
       setShowQuickSignIn(true);
       setShowAuthModal(true);
@@ -118,10 +128,15 @@ export const usePropertyRequest = (onClose?: () => void) => {
   };
 
   const handleQuickSignInSuccess = () => {
+    console.log('Quick sign in successful, user will be redirected to dashboard');
     setShowQuickSignIn(false);
     setShowAuthModal(false);
-    // After successful sign in, the form will automatically submit
-    handleContinueToSubscriptions();
+    
+    // The usePendingTourHandler will handle the rest when user arrives at dashboard
+    toast({
+      title: "Success!",
+      description: "Account created successfully! Redirecting to complete your tour request...",
+    });
   };
 
   const resetForm = () => {

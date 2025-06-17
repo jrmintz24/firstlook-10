@@ -1,95 +1,129 @@
 
-import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-
-interface PendingTourData {
-  properties: string[];
-  preferredDates: { date: string; time: string }[];
-  notes?: string;
-}
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export const usePendingTourHandler = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
-
-  const processPendingTour = async () => {
-    if (!user) return;
-
-    const pendingTourData = localStorage.getItem('pendingTourRequest');
-    if (!pendingTourData) return;
-
-    try {
-      console.log('Processing pending tour for user:', user.id);
-      const tourData: PendingTourData = JSON.parse(pendingTourData);
-      
-      if (!tourData.properties || tourData.properties.length === 0) {
-        console.log('No properties in pending tour data');
-        localStorage.removeItem('pendingTourRequest');
-        return;
-      }
-
-      // Get the first preferred date/time
-      const firstPreference = tourData.preferredDates?.[0];
-      const preferredDate = firstPreference?.date || null;
-      const preferredTime = firstPreference?.time || null;
-
-      // Calculate estimated confirmation date (2 business days from now)
-      const estimatedDate = new Date();
-      estimatedDate.setDate(estimatedDate.getDate() + 2);
-
-      // Create showing requests for each property
-      const requests = tourData.properties.map(property => ({
-        user_id: user.id,
-        property_address: property,
-        preferred_date: preferredDate,
-        preferred_time: preferredTime,
-        message: tourData.notes || null,
-        internal_notes: tourData.preferredDates.length > 1 ? JSON.stringify({ preferredOptions: tourData.preferredDates }) : null,
-        status: 'pending',
-        estimated_confirmation_date: estimatedDate.toISOString().split('T')[0]
-      }));
-
-      console.log('Creating pending tour requests:', requests);
-
-      const { data, error } = await supabase
-        .from('showing_requests')
-        .insert(requests)
-        .select();
-
-      if (error) {
-        console.error('Error creating pending tour requests:', error);
-        toast({
-          title: "Error",
-          description: `Failed to process your tour request: ${error.message}`,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('Successfully created pending tour requests:', data);
-
-      // Clear the pending tour data
-      localStorage.removeItem('pendingTourRequest');
-
-      toast({
-        title: "Tour Request Processed! 🎉",
-        description: `Your tour request for ${tourData.properties.length} propert${tourData.properties.length > 1 ? 'ies has' : 'y has'} been submitted successfully.`,
-      });
-
-    } catch (error) {
-      console.error('Error processing pending tour:', error);
-      localStorage.removeItem('pendingTourRequest'); // Clean up invalid data
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      console.log('User signed in, checking for pending tours');
-      processPendingTour();
-    }
-  }, [user]);
+    const processPendingTour = async () => {
+      if (loading || !user) return;
 
-  return { processPendingTour };
+      console.log('Checking for pending tour request...');
+      
+      // Check if this is a new user from property request
+      const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest');
+      const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+      
+      if (!pendingTourRequest) {
+        console.log('No pending tour request found');
+        return;
+      }
+
+      try {
+        const tourData = JSON.parse(pendingTourRequest);
+        console.log('Processing pending tour request:', tourData);
+
+        // Validate required data
+        if (!tourData.propertyAddress && !tourData.mlsId) {
+          console.error('Missing property information in pending tour request');
+          localStorage.removeItem('pendingTourRequest');
+          localStorage.removeItem('newUserFromPropertyRequest');
+          return;
+        }
+
+        // Get preferred date/time options
+        const preferredOptions = [];
+        for (let i = 1; i <= 3; i++) {
+          const date = tourData[`preferredDate${i}`];
+          const time = tourData[`preferredTime${i}`];
+          if (date) {
+            preferredOptions.push({ date, time: time || '' });
+          }
+        }
+
+        const preferredDate = preferredOptions[0]?.date || '';
+        const preferredTime = preferredOptions[0]?.time || '';
+
+        // Calculate estimated confirmation date (2-4 hours from now)
+        const estimatedConfirmationDate = new Date();
+        estimatedConfirmationDate.setHours(estimatedConfirmationDate.getHours() + 3);
+
+        // Create the showing request
+        const showingRequest = {
+          user_id: user.id,
+          property_address: tourData.propertyAddress || `Property (MLS: ${tourData.mlsId})`,
+          preferred_date: preferredDate || null,
+          preferred_time: preferredTime || null,
+          message: tourData.notes || null,
+          internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
+          status: 'pending',
+          estimated_confirmation_date: estimatedConfirmationDate.toISOString().split('T')[0]
+        };
+
+        console.log('Creating showing request:', showingRequest);
+
+        const { data, error } = await supabase
+          .from('showing_requests')
+          .insert([showingRequest])
+          .select();
+
+        if (error) {
+          console.error('Error creating showing request:', error);
+          toast({
+            title: "Error",
+            description: `Failed to process your tour request: ${error.message}`,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        console.log('Successfully created showing request:', data);
+
+        // Clear the pending data
+        localStorage.removeItem('pendingTourRequest');
+        localStorage.removeItem('newUserFromPropertyRequest');
+
+        // Show success message
+        if (isNewUserFromRequest) {
+          toast({
+            title: "Welcome to FirstLook! 🎉",
+            description: `Your tour request for ${showingRequest.property_address} has been submitted successfully! We'll review and assign a showing partner within 2-4 hours.`,
+          });
+        } else {
+          toast({
+            title: "Tour Request Submitted! 🎉",
+            description: `Your tour request for ${showingRequest.property_address} has been submitted successfully!`,
+          });
+        }
+
+        // If on auth page, redirect to dashboard
+        if (window.location.pathname.includes('/buyer-auth')) {
+          navigate('/buyer-dashboard', { replace: true });
+        }
+
+      } catch (error) {
+        console.error('Error processing pending tour request:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process your tour request. Please try requesting a new tour.",
+          variant: "destructive"
+        });
+        
+        // Clear corrupted data
+        localStorage.removeItem('pendingTourRequest');
+        localStorage.removeItem('newUserFromPropertyRequest');
+      }
+    };
+
+    // Small delay to ensure auth state is fully loaded
+    const timeoutId = setTimeout(processPendingTour, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [user, loading, toast, navigate]);
 };

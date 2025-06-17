@@ -178,11 +178,11 @@ const AdminDashboard = () => {
     </div>
   );
 
-  // Dashboard sections
-  const sections = [
+  // Dashboard sections - convert to object
+  const sectionsArray = [
     {
       id: "unassigned",
-      label: "Unassigned",
+      title: "Unassigned",
       count: unassignedRequests.length,
       content: (
         <div className="space-y-4">
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
     },
     {
       id: "agent-requests",
-      label: "Agent Requests",
+      title: "Agent Requests",
       count: agentRequests.length,
       content: (
         <div className="space-y-4">
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
     },
     {
       id: "active",
-      label: "Active Showings",
+      title: "Active Showings",
       count: activeShowings.length,
       content: (
         <div className="space-y-4">
@@ -248,7 +248,7 @@ const AdminDashboard = () => {
     },
     {
       id: "history",
-      label: "History",
+      title: "History",
       count: completedShowings.length,
       content: (
         <div className="space-y-4">
@@ -269,6 +269,12 @@ const AdminDashboard = () => {
       )
     }
   ];
+
+  // Convert array to object for DashboardLayout
+  const sections = sectionsArray.reduce((acc, section) => {
+    acc[section.id] = section;
+    return acc;
+  }, {} as Record<string, any>);
 
   return (
     <>

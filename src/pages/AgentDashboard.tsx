@@ -296,11 +296,11 @@ const AgentDashboard = () => {
 
   const allShowings = [...availableRequests, ...activeShowings, ...completedShowings];
 
-  // Dashboard sections for the new layout
-  const dashboardSections = [
+  // Dashboard sections for the new layout - convert to object
+  const dashboardSectionsArray = [
     {
       id: "available",
-      label: "Available",
+      title: "Available",
       count: availableRequests.length,
       content: (
         <div className="space-y-6">
@@ -339,7 +339,7 @@ const AgentDashboard = () => {
     },
     {
       id: "active",
-      label: "Active",
+      title: "Active",
       count: activeShowings.length,
       content: (
         <div className="space-y-6">
@@ -377,7 +377,7 @@ const AgentDashboard = () => {
     },
     {
       id: "conversations",
-      label: "Conversations",
+      title: "Conversations",
       count: unreadCount,
       content: profile?.id ? (
         <AgentConversationsView agentId={profile.id} />
@@ -389,7 +389,7 @@ const AgentDashboard = () => {
     },
     {
       id: "history",
-      label: "History",
+      title: "History",
       count: completedShowings.length,
       content: (
         <div className="space-y-6">
@@ -423,6 +423,12 @@ const AgentDashboard = () => {
       )
     }
   ];
+
+  // Convert array to object for DashboardLayout
+  const dashboardSections = dashboardSectionsArray.reduce((acc, section) => {
+    acc[section.id] = section;
+    return acc;
+  }, {} as Record<string, any>);
 
   // Header component
   const header = (

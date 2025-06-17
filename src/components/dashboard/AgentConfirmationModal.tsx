@@ -50,6 +50,10 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
 
   // Check if agent changed the original time/date
   const isTimeChanged = confirmedDate !== request.preferred_date || confirmedTime !== request.preferred_time;
+  
+  // Check if offering alternatives (has at least one alternative with both date and time)
+  const isOfferingAlternatives = showAlternatives && 
+    ((alternativeDate1 && alternativeTime1) || (alternativeDate2 && alternativeTime2));
 
   const handleConfirm = async () => {
     if (!confirmedDate || !confirmedTime) return;
@@ -84,6 +88,21 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
     }
   };
 
+  // Determine button text based on what the agent is doing
+  const getButtonText = () => {
+    if (isSubmitting) return 'Sending...';
+    
+    if (isOfferingAlternatives) {
+      return 'Offer Alternative Times';
+    }
+    
+    if (isTimeChanged) {
+      return 'Confirm Time Change';
+    }
+    
+    return 'Confirm & Contact Buyer';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -111,6 +130,19 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
               </div>
               <p className="text-amber-700 text-sm">
                 You've changed the buyer's preferred time. Please explain why the original time isn't available.
+              </p>
+            </div>
+          )}
+
+          {/* Alternatives Notice */}
+          {isOfferingAlternatives && (
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-800 mb-2">
+                <Clock className="h-4 w-4" />
+                <span className="font-medium">Offering Alternative Times</span>
+              </div>
+              <p className="text-blue-700 text-sm">
+                You're providing alternative options for the buyer to choose from.
               </p>
             </div>
           )}
@@ -284,7 +316,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Confirming...' : 'Confirm & Contact Buyer'}
+              {getButtonText()}
             </Button>
             <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel

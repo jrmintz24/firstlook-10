@@ -7,6 +7,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import RescheduleShowingModal from "@/components/dashboard/RescheduleShowingModal";
+import { useRescheduleShowing } from "@/hooks/useRescheduleShowing";
 
 // Redesigned Components
 import RedesignedDashboardHeader from "@/components/dashboard/redesigned/RedesignedDashboardHeader";
@@ -59,6 +61,8 @@ const RedesignedBuyerDashboard = () => {
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
     handleSendMessage,
+    fetchShowingRequests,
+    handleRescheduleShowing,
     fetchShowingRequests
   } = useBuyerDashboardLogic();
 
@@ -77,6 +81,15 @@ const RedesignedBuyerDashboard = () => {
       completed: completedShowings.length
     }
   });
+
+  // Add reschedule functionality
+  const {
+    showRescheduleModal,
+    selectedShowingForReschedule,
+    handleRescheduleShowing: openRescheduleModal,
+    handleRescheduleModalClose,
+    handleRescheduleComplete
+  } = useRescheduleShowing(fetchShowingRequests);
 
   // Show loading while auth is being determined
   if (authLoading) {
@@ -152,6 +165,14 @@ const RedesignedBuyerDashboard = () => {
     console.log("Make offer clicked");
   };
 
+  // Enhanced reschedule handler that opens the modal
+  const handleRescheduleWithModal = (showingId: string) => {
+    const showing = handleRescheduleShowing(showingId);
+    if (showing) {
+      openRescheduleModal(showing);
+    }
+  };
+
   const handleOpenChat = (showingId: string) => {
     console.log('Opening chat for showing:', showingId);
   };
@@ -212,7 +233,7 @@ const RedesignedBuyerDashboard = () => {
               emptyButtonText="Request Your Free Showing"
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
-              onRescheduleShowing={() => {}}
+              onRescheduleShowing={handleRescheduleWithModal}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
               onSendMessage={handleOpenChat}
@@ -245,7 +266,7 @@ const RedesignedBuyerDashboard = () => {
               emptyButtonText="Request Your Free Showing"
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
-              onRescheduleShowing={() => {}}
+              onRescheduleShowing={handleRescheduleWithModal}
               onConfirmShowing={handleConfirmShowingWithModal}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
@@ -330,6 +351,13 @@ const RedesignedBuyerDashboard = () => {
           onSign={handleAgreementSignWithModal}
         />
       )}
+
+      <RescheduleShowingModal
+        isOpen={showRescheduleModal}
+        onClose={handleRescheduleModalClose}
+        showing={selectedShowingForReschedule}
+        onRescheduleComplete={handleRescheduleComplete}
+      />
 
       <SubscribeModal
         isOpen={showSubscribeModal}

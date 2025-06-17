@@ -15,6 +15,8 @@ import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerStats } from "@/utils/dashboardStats";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
+import RescheduleShowingModal from "@/components/dashboard/RescheduleShowingModal";
+import { useRescheduleShowing } from "@/hooks/useRescheduleShowing";
 
 const BuyerDashboard = () => {
   // Handle any pending tour requests from signup and refresh data when processed
@@ -104,6 +106,14 @@ const BuyerDashboard = () => {
     signed
   }));
 
+  // Enhanced reschedule handler that opens the modal
+  const handleRescheduleWithModal = (showingId: string) => {
+    const showing = handleRescheduleShowing(showingId);
+    if (showing) {
+      openRescheduleModal(showing);
+    }
+  };
+
   // Generate dashboard sections
   const dashboardSections = generateBuyerDashboardSections({
     pendingRequests,
@@ -116,7 +126,7 @@ const BuyerDashboard = () => {
     unreadCount,
     onRequestShowing: handleRequestShowing,
     onCancelShowing: handleCancelShowing,
-    onRescheduleShowing: handleRescheduleShowing,
+    onRescheduleShowing: handleRescheduleWithModal,
     onConfirmShowing: handleConfirmShowingWithModal,
     fetchShowingRequests,
     onSendMessage: handleSendMessage
@@ -168,6 +178,15 @@ const BuyerDashboard = () => {
     </div>
   );
 
+  // Add reschedule functionality
+  const {
+    showRescheduleModal,
+    selectedShowingForReschedule,
+    handleRescheduleShowing: openRescheduleModal,
+    handleRescheduleModalClose,
+    handleRescheduleComplete
+  } = useRescheduleShowing(fetchShowingRequests);
+
   return (
     <>
       <DashboardLayout
@@ -195,6 +214,13 @@ const BuyerDashboard = () => {
           onSign={handleAgreementSignWithModal}
         />
       )}
+
+      <RescheduleShowingModal
+        isOpen={showRescheduleModal}
+        onClose={handleRescheduleModalClose}
+        showing={selectedShowingForReschedule}
+        onRescheduleComplete={handleRescheduleComplete}
+      />
 
       <SubscribeModal
         isOpen={showSubscribeModal}

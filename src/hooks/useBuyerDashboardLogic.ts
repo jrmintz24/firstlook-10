@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
@@ -54,7 +53,6 @@ export const useBuyerDashboardLogic = () => {
     activeShowings,
     completedShowings,
     handleCancelShowing,
-    handleRescheduleShowing,
     handleConfirmShowing,
     handleAgreementSign,
     fetchUserData,
@@ -175,6 +173,27 @@ export const useBuyerDashboardLogic = () => {
     setShowAgreementModal(false);
     // Refresh data after signing agreement
     await fetchShowingRequests();
+  };
+
+  const handleRescheduleShowing = (showingId: string) => {
+    console.log('Reschedule showing from dashboard logic:', showingId);
+    
+    // Find the showing to reschedule
+    const allShowings = [...(pendingRequests || []), ...(activeShowings || []), ...(completedShowings || [])];
+    const showing = allShowings.find(s => s.id === showingId);
+    
+    if (!showing) {
+      toast({
+        title: "Error",
+        description: "Showing not found.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For now, we'll pass this to the component level
+    // The actual reschedule modal will be handled at component level
+    return showing;
   };
 
   const handleSendMessage = async (showingId: string) => {

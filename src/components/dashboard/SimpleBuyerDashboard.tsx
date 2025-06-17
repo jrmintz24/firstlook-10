@@ -34,6 +34,8 @@ const SimpleBuyerDashboard = () => {
   const currentUser = user || session?.user;
   const displayName = currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
 
+  console.log('SimpleBuyerDashboard: Auth loading:', authLoading, 'Loading:', loading, 'User:', currentUser?.email);
+
   useEffect(() => {
     if (authLoading) return;
     
@@ -49,6 +51,7 @@ const SimpleBuyerDashboard = () => {
     if (!currentUser) return;
     
     try {
+      console.log('SimpleBuyerDashboard: Fetching showing requests for user:', currentUser.id);
       const { data, error } = await supabase
         .from('showing_requests')
         .select('*')
@@ -64,6 +67,7 @@ const SimpleBuyerDashboard = () => {
         });
         setShowingRequests([]);
       } else {
+        console.log('SimpleBuyerDashboard: Loaded', data?.length || 0, 'showing requests');
         setShowingRequests(data || []);
       }
     } catch (error) {
@@ -78,6 +82,7 @@ const SimpleBuyerDashboard = () => {
     setShowPropertyForm(true);
   };
 
+  // Show loading spinner while auth is loading
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -89,6 +94,7 @@ const SimpleBuyerDashboard = () => {
     );
   }
 
+  // Show sign in prompt if no user
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -102,6 +108,7 @@ const SimpleBuyerDashboard = () => {
     );
   }
 
+  // Show loading spinner while fetching data
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
@@ -124,6 +131,8 @@ const SimpleBuyerDashboard = () => {
   const completedShowings = showingRequests.filter(req => 
     req.status === 'completed'
   );
+
+  console.log('SimpleBuyerDashboard: Rendering dashboard for user:', currentUser.email);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-white">

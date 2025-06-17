@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
+import AgentConversationsView from "@/components/messaging/AgentConversationsView";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -352,14 +354,14 @@ const AgentDashboard = () => {
       )
     },
     {
-      id: "messages",
-      label: "Messages",
+      id: "conversations",
+      label: "Conversations",
       count: unreadCount,
       content: profile?.id ? (
-        <MessagesTab userId={profile.id} userType="agent" />
+        <AgentConversationsView agentId={profile.id} />
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">Please sign in to view messages</p>
+          <p className="text-gray-600">Please sign in to view conversations</p>
         </div>
       )
     },

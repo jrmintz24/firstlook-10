@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +34,6 @@ export const useBuyerDashboard = () => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dataFetched, setDataFetched] = useState(false);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -59,48 +57,10 @@ export const useBuyerDashboard = () => {
     req.status === 'completed'
   );
 
-  const fetchShowingRequests = useCallback(async () => {
+  const fetchUserData = async () => {
     if (!currentUser) {
-      console.log('useBuyerDashboard: No user for showing requests fetch');
-      return;
-    }
-
-    try {
-      console.log('useBuyerDashboard: Fetching showing requests...');
-      const { data: requestsData, error: requestsError } = await supabase
-        .from('showing_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      console.log('useBuyerDashboard: Requests fetch result:', { 
-        count: requestsData?.length || 0, 
-        error: requestsError 
-      });
-
-      if (requestsError) {
-        console.error('useBuyerDashboard: Requests error:', requestsError);
-        toast({
-          title: "Error",
-          description: "Failed to load showing requests.",
-          variant: "destructive"
-        });
-        setShowingRequests([]);
-      } else {
-        setShowingRequests(requestsData || []);
-      }
-    } catch (error) {
-      console.error('useBuyerDashboard: Error fetching showing requests:', error);
-      setShowingRequests([]);
-    }
-  }, [currentUser?.id, toast]);
-
-  const fetchUserData = useCallback(async () => {
-    if (!currentUser || dataFetched) {
-      console.log('useBuyerDashboard: Skipping fetch - no user or already fetched');
-      if (!currentUser) {
-        setLoading(false);
-      }
+      console.log('useBuyerDashboard: No user found, stopping fetch');
+      setLoading(false);
       return;
     }
 
@@ -148,8 +108,6 @@ export const useBuyerDashboard = () => {
         }, {} as Record<string, boolean>);
         setAgreements(agreementsMap);
       }
-
-      setDataFetched(true);
     } catch (error) {
       console.error('useBuyerDashboard: Error fetching user data:', error);
       toast({
@@ -161,7 +119,43 @@ export const useBuyerDashboard = () => {
       console.log('useBuyerDashboard: Setting loading to false');
       setLoading(false);
     }
-  }, [currentUser, dataFetched, fetchShowingRequests, toast]);
+  };
+
+  const fetchShowingRequests = async () => {
+    if (!currentUser) {
+      console.log('useBuyerDashboard: No user for showing requests fetch');
+      return;
+    }
+
+    try {
+      console.log('useBuyerDashboard: Fetching showing requests...');
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      console.log('useBuyerDashboard: Requests fetch result:', { 
+        count: requestsData?.length || 0, 
+        error: requestsError 
+      });
+
+      if (requestsError) {
+        console.error('useBuyerDashboard: Requests error:', requestsError);
+        toast({
+          title: "Error",
+          description: "Failed to load showing requests.",
+          variant: "destructive"
+        });
+        setShowingRequests([]);
+      } else {
+        setShowingRequests(requestsData || []);
+      }
+    } catch (error) {
+      console.error('useBuyerDashboard: Error fetching showing requests:', error);
+      setShowingRequests([]);
+    }
+  };
 
   const handleCancelShowing = async (id: string) => {
     console.log('Cancelling showing:', id);
@@ -290,39 +284,7 @@ export const useBuyerDashboard = () => {
 
     console.log('useBuyerDashboard: User available, fetching user data');
     fetchUserData();
-  }, [user, session, authLoading, navigate, fetchUserData]);
-
-  // Set up real-time updates only once when user is available
-  useEffect(() => {
-    if (!currentUser?.id || !dataFetched) return;
-
-    console.log('Setting up real-time updates for user:', currentUser.id);
-    
-    const channel = supabase
-      .channel('showing-requests-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'showing_requests',
-          filter: `user_id=eq.${currentUser.id}`
-        },
-        (payload) => {
-          console.log('Real-time showing request update:', payload);
-          // Refresh showing requests when any change occurs
-          fetchShowingRequests();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-      });
-
-    return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [currentUser?.id, dataFetched, fetchShowingRequests]);
+  }, [user, session, authLoading, navigate]);
 
   return {
     profile,

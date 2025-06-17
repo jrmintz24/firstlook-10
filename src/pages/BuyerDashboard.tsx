@@ -1,3 +1,4 @@
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -15,17 +16,10 @@ import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerStats } from "@/utils/dashboardStats";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
-import RescheduleShowingModal from "@/components/dashboard/RescheduleShowingModal";
-import { useRescheduleShowing } from "@/hooks/useRescheduleShowing";
 
 const BuyerDashboard = () => {
-  // Handle any pending tour requests from signup and refresh data when processed
-  usePendingTourHandler({
-    onProcessed: () => {
-      console.log('BuyerDashboard: Pending tour processed, refreshing data...');
-      fetchShowingRequests();
-    }
-  });
+  // Handle any pending tour requests from signup
+  usePendingTourHandler();
 
   const {
     // State
@@ -106,14 +100,6 @@ const BuyerDashboard = () => {
     signed
   }));
 
-  // Enhanced reschedule handler that opens the modal
-  const handleRescheduleWithModal = (showingId: string) => {
-    const showing = handleRescheduleShowing(showingId);
-    if (showing) {
-      openRescheduleModal(showing);
-    }
-  };
-
   // Generate dashboard sections
   const dashboardSections = generateBuyerDashboardSections({
     pendingRequests,
@@ -126,7 +112,7 @@ const BuyerDashboard = () => {
     unreadCount,
     onRequestShowing: handleRequestShowing,
     onCancelShowing: handleCancelShowing,
-    onRescheduleShowing: handleRescheduleWithModal,
+    onRescheduleShowing: handleRescheduleShowing,
     onConfirmShowing: handleConfirmShowingWithModal,
     fetchShowingRequests,
     onSendMessage: handleSendMessage
@@ -178,15 +164,6 @@ const BuyerDashboard = () => {
     </div>
   );
 
-  // Add reschedule functionality
-  const {
-    showRescheduleModal,
-    selectedShowingForReschedule,
-    handleRescheduleShowing: openRescheduleModal,
-    handleRescheduleModalClose,
-    handleRescheduleComplete
-  } = useRescheduleShowing(fetchShowingRequests);
-
   return (
     <>
       <DashboardLayout
@@ -214,13 +191,6 @@ const BuyerDashboard = () => {
           onSign={handleAgreementSignWithModal}
         />
       )}
-
-      <RescheduleShowingModal
-        isOpen={showRescheduleModal}
-        onClose={handleRescheduleModalClose}
-        showing={selectedShowingForReschedule}
-        onRescheduleComplete={handleRescheduleComplete}
-      />
 
       <SubscribeModal
         isOpen={showSubscribeModal}

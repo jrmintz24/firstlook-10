@@ -1,4 +1,3 @@
-
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -90,7 +89,7 @@ const BuyerDashboard = () => {
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
   const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
 
-  // Generate focused buyer stats
+  // Generate focused buyer stats - now include messages
   const focusedStats = generateBuyerStats(pendingRequests, activeShowings, completedShowings, unreadCount);
 
   // Transform agreements to expected array format
@@ -100,7 +99,7 @@ const BuyerDashboard = () => {
     signed
   }));
 
-  // Generate dashboard sections
+  // Generate dashboard sections - now include messages tab
   const dashboardSections = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,

@@ -204,8 +204,8 @@ export const useBuyerDashboardLogic = () => {
     // Track navigation between dashboard tabs
     trackNavigation(targetTab, activeTab);
     
-    // Only allow navigation to valid tabs (no longer including "messages")
-    const validTabs = ["requested", "confirmed", "history", "profile"];
+    // Allow navigation to all valid tabs including messages
+    const validTabs = ["requested", "confirmed", "messages", "history", "profile"];
     if (validTabs.includes(targetTab)) {
       setActiveTab(targetTab);
     }

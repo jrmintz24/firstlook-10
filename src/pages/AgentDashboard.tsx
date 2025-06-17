@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,12 +43,19 @@ const AgentDashboard = () => {
 
   const { confirmShowing, loading: confirmationLoading } = useAgentConfirmation();
   const { toast } = useToast();
-  const { unreadCount } = useMessages(profile?.id || '');
+  const { unreadCount, sendMessage: sendMessageViaHook } = useMessages(profile?.id || '');
 
   const handleSendMessage = (requestId: string) => {
+    console.log('handleSendMessage called with requestId:', requestId);
+    
     // Check if messaging is allowed for this request
     const request = showingRequests.find(req => req.id === requestId);
-    if (!request) return;
+    console.log('Found request:', request);
+    
+    if (!request) {
+      console.log('Request not found');
+      return;
+    }
     
     // Don't allow messaging for cancelled showings
     if (request.status === 'cancelled') {
@@ -75,6 +81,17 @@ const AgentDashboard = () => {
       }
     }
 
+    // Don't allow messaging if no buyer user_id
+    if (!request.user_id) {
+      toast({
+        title: "Messaging Unavailable",
+        description: "No buyer contact available for this showing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Setting messageRequestId and showing modal');
     setMessageRequestId(requestId);
     setShowMessageModal(true);
   };
@@ -89,6 +106,8 @@ const AgentDashboard = () => {
       return;
     }
 
+    console.log('sendMessage called with:', { message, messageRequestId, profileId: profile.id });
+
     try {
       // Find the request to get buyer information
       const request = showingRequests.find(req => req.id === messageRequestId);
@@ -96,26 +115,29 @@ const AgentDashboard = () => {
         throw new Error("Request not found");
       }
 
+      console.log('Found request for messaging:', request);
+
       // Check if messaging is still allowed
       if (request.status === 'cancelled') {
         throw new Error("Cannot send messages for cancelled showings");
       }
 
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          showing_request_id: messageRequestId,
-          sender_id: profile.id,
-          receiver_id: request.user_id,
-          content: message
+      if (!request.user_id) {
+        throw new Error("No buyer contact available");
+      }
+
+      // Use the updated hook that handles email notifications
+      const success = await sendMessageViaHook(messageRequestId, request.user_id, message);
+      
+      if (success) {
+        toast({
+          title: "Message Sent",
+          description: "Your message has been sent to the buyer.",
         });
-
-      if (error) throw error;
-
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent to the buyer.",
-      });
+        // Close the modal
+        setShowMessageModal(false);
+        setMessageRequestId('');
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -120,16 +119,34 @@ export const useMessages = (userId: string | null) => {
         }
       }
 
-      const { error } = await supabase
+      const { data: messageData, error } = await supabase
         .from('messages')
         .insert({
           showing_request_id: showingRequestId,
           sender_id: userId,
           receiver_id: receiverId,
           content: content
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-message-notification', {
+          body: {
+            messageId: messageData.id,
+            senderId: userId,
+            receiverId: receiverId,
+            showingRequestId: showingRequestId,
+            content: content
+          }
+        });
+      } catch (notificationError) {
+        console.error('Failed to send email notification:', notificationError);
+        // Don't fail the whole message send if notification fails
+      }
 
       toast({
         title: "Message Sent",

@@ -53,9 +53,22 @@ const AgentRequestCard = ({
     request.buyer_consents_to_contact === true && 
     request.assigned_agent_id === currentAgentId;
 
-  // Agent can message if assigned and showing is not cancelled or completed with expired access
+  // Agent can message if assigned and showing is not cancelled
   const canMessage = request.assigned_agent_id === currentAgentId && 
-    !['cancelled'].includes(request.status);
+    !['cancelled'].includes(request.status) &&
+    request.user_id; // Make sure there's a buyer to message
+
+  const handleMessageClick = () => {
+    console.log('Message button clicked for request:', request.id);
+    console.log('Can message:', canMessage);
+    console.log('Current agent ID:', currentAgentId);
+    console.log('Assigned agent ID:', request.assigned_agent_id);
+    console.log('User ID:', request.user_id);
+    
+    if (canMessage) {
+      onSendMessage();
+    }
+  };
 
   return (
     <Card className="group shadow-sm border border-gray-100/80 hover:shadow-lg hover:border-gray-200/80 transition-all duration-300">
@@ -210,7 +223,7 @@ const AgentRequestCard = ({
           {canMessage && (
             <Button 
               variant="outline" 
-              onClick={onSendMessage} 
+              onClick={handleMessageClick}
               className="border-purple-200 text-purple-700 hover:bg-purple-50 text-sm w-full sm:w-auto"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
@@ -221,6 +234,12 @@ const AgentRequestCard = ({
           {request.status === 'cancelled' && (
             <div className="text-xs text-gray-500 italic">
               Messaging disabled for cancelled showings
+            </div>
+          )}
+
+          {!canMessage && request.assigned_agent_id === currentAgentId && request.status !== 'cancelled' && !request.user_id && (
+            <div className="text-xs text-gray-500 italic">
+              No buyer contact available for messaging
             </div>
           )}
         </div>

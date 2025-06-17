@@ -1,30 +1,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { User, UserPlus, Clock, CheckCircle, AlertCircle, Calendar, MessageCircle, TrendingUp, Users } from "lucide-react";
+import { User, UserPlus, Clock, CheckCircle, Calendar, MessageCircle, TrendingUp } from "lucide-react";
 import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import SendMessageModal from "@/components/dashboard/SendMessageModal";
-import QuickStatsGrid from "@/components/dashboard/QuickStatsGrid";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import MessagesTab from "@/components/messaging/MessagesTab";
 import { useMessages } from "@/hooks/useMessages";
-import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import TourProgressTracker from "@/components/dashboard/TourProgressTracker";
-import SmartReminders from "@/components/dashboard/SmartReminders";
-import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
-import TourHistoryInsights from "@/components/dashboard/TourHistoryInsights";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
-import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 import AgentConversationsView from "@/components/messaging/AgentConversationsView";
+import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
+import ModernHeader from "@/components/dashboard/ModernHeader";
+import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
+import ModernSidebar from "@/components/dashboard/ModernSidebar";
+import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 
 const AgentDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +40,6 @@ const AgentDashboard = () => {
   const handleSendMessage = (requestId: string) => {
     console.log('handleSendMessage called with requestId:', requestId);
     
-    // Check if messaging is allowed for this request
     const request = showingRequests.find(req => req.id === requestId);
     console.log('Found request:', request);
     
@@ -57,7 +48,6 @@ const AgentDashboard = () => {
       return;
     }
     
-    // Don't allow messaging for cancelled showings
     if (request.status === 'cancelled') {
       toast({
         title: "Messaging Unavailable",
@@ -67,7 +57,6 @@ const AgentDashboard = () => {
       return;
     }
 
-    // Don't allow messaging if completed more than a week ago
     if (request.status === 'completed' && request.status_updated_at) {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -81,7 +70,6 @@ const AgentDashboard = () => {
       }
     }
 
-    // Don't allow messaging if no buyer user_id
     if (!request.user_id) {
       toast({
         title: "Messaging Unavailable",
@@ -109,7 +97,6 @@ const AgentDashboard = () => {
     console.log('sendMessage called with:', { message, messageRequestId, profileId: profile.id });
 
     try {
-      // Find the request to get buyer information
       const request = showingRequests.find(req => req.id === messageRequestId);
       if (!request) {
         throw new Error("Request not found");
@@ -117,7 +104,6 @@ const AgentDashboard = () => {
 
       console.log('Found request for messaging:', request);
 
-      // Check if messaging is still allowed
       if (request.status === 'cancelled') {
         throw new Error("Cannot send messages for cancelled showings");
       }
@@ -126,7 +112,6 @@ const AgentDashboard = () => {
         throw new Error("No buyer contact available");
       }
 
-      // Use the updated hook that handles email notifications
       const success = await sendMessageViaHook(messageRequestId, request.user_id, message);
       
       if (success) {
@@ -134,7 +119,6 @@ const AgentDashboard = () => {
           title: "Message Sent",
           description: "Your message has been sent to the buyer.",
         });
-        // Close the modal
         setShowMessageModal(false);
         setMessageRequestId('');
       }
@@ -172,7 +156,7 @@ const AgentDashboard = () => {
     fetchAgentData();
   };
 
-  // Organize requests by categories - cancelled requests go to history
+  // Organize requests by categories
   const availableRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
   );
@@ -181,25 +165,17 @@ const AgentDashboard = () => {
     isActiveShowing(req.status as ShowingStatus)
   );
 
-  // History includes completed AND cancelled requests
   const completedShowings = showingRequests.filter(req => 
     req.status === 'completed' || req.status === 'cancelled'
   );
-  
-  const thisWeekShowings = activeShowings.filter(req => {
-    if (!req.preferred_date) return false;
-    const showingDate = new Date(req.preferred_date);
-    const now = new Date();
-    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return showingDate >= now && showingDate <= weekFromNow;
-  });
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">Loading agent dashboard...</div>
-          <div className="text-sm text-gray-600">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg font-medium text-gray-900 mb-2">Loading agent dashboard...</div>
+          <div className="text-sm text-gray-500">
             {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
           </div>
         </div>
@@ -209,94 +185,53 @@ const AgentDashboard = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">Access Denied</div>
+          <div className="text-lg font-medium text-gray-900 mb-4">Access Denied</div>
           <div className="text-sm text-gray-600 mb-4">You need to be an agent to access this dashboard.</div>
           <Link to="/">
-            <Button>Go to Home</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">Go to Home</Button>
           </Link>
         </div>
       </div>
     );
   }
 
-  // Create enhanced agent-specific stats with more relevant information
+  // Modern agent stats
   const agentStats = [
     {
+      title: "Available Requests",
       value: availableRequests.length,
-      label: "New Requests",
-      subtitle: availableRequests.length > 0 ? "Ready to accept" : "No new requests",
+      change: availableRequests.length > 0 ? { value: "Ready to accept", trend: 'up' as const } : undefined,
       icon: UserPlus,
-      iconColor: "text-orange-500",
-      trend: availableRequests.length > 0 ? {
-        value: "Opportunities",
-        direction: 'up' as const
-      } : undefined,
-      actionable: true
+      color: 'orange' as const
     },
     {
-      value: thisWeekShowings.length,
-      label: "This Week",
-      subtitle: thisWeekShowings.length > 0 ? "Scheduled tours" : "No tours scheduled",
+      title: "Active Showings",
+      value: activeShowings.length,
+      change: activeShowings.length > 0 ? { value: "In progress", trend: 'up' as const } : undefined,
       icon: Calendar,
-      iconColor: "text-blue-500",
-      trend: thisWeekShowings.length > 0 ? {
-        value: "Busy week!",
-        direction: 'up' as const
-      } : undefined,
-      progress: thisWeekShowings.length > 0 ? {
-        current: thisWeekShowings.filter(s => s.status === 'scheduled').length,
-        max: thisWeekShowings.length,
-        color: 'bg-blue-500'
-      } : undefined
+      color: 'blue' as const
     },
     {
-      value: unreadCount > 0 ? unreadCount : "0",
-      label: "Messages",
-      subtitle: unreadCount > 0 ? "From clients" : "All caught up",
+      title: "Messages",
+      value: unreadCount > 0 ? unreadCount : 0,
+      change: unreadCount > 0 ? { value: "Response needed", trend: 'neutral' as const } : undefined,
       icon: MessageCircle,
-      iconColor: "text-purple-500",
-      trend: unreadCount > 0 ? {
-        value: "Response needed",
-        direction: 'neutral' as const
-      } : undefined,
-      actionable: true
+      color: 'purple' as const
     },
     {
+      title: "Completed",
       value: completedShowings.filter(s => s.status === 'completed').length,
-      label: "Tours Completed",
-      subtitle: completedShowings.filter(s => s.status === 'completed').length > 0 ? "This month" : "Get started",
-      icon: TrendingUp,
-      iconColor: "text-green-500",
-      trend: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
-        value: "Great work!",
-        direction: 'up' as const
-      } : undefined,
-      progress: completedShowings.filter(s => s.status === 'completed').length > 0 ? {
-        current: completedShowings.filter(s => s.status === 'completed').length,
-        max: Math.max(10, completedShowings.filter(s => s.status === 'completed').length),
-        color: 'bg-green-500'
-      } : undefined
+      change: completedShowings.filter(s => s.status === 'completed').length > 0 ? { value: "This month", trend: 'up' as const } : undefined,
+      icon: CheckCircle,
+      color: 'green' as const
     }
   ];
 
-  const handleStatClick = (statIndex: number) => {
-    switch (statIndex) {
-      case 0: // Available requests
-        // Switch to available tab
-        break;
-      case 2: // Messages
-        // Switch to messages tab
-        break;
-      default:
-        break;
-    }
-  };
-
   const allShowings = [...availableRequests, ...activeShowings, ...completedShowings];
 
-  // Dashboard sections for the new layout - convert to object
+  // Dashboard sections - convert to object
   const dashboardSectionsArray = [
     {
       id: "available",
@@ -305,20 +240,20 @@ const AgentDashboard = () => {
       content: (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800">Available Requests</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Available Requests</h2>
             <p className="text-gray-600">Accept and confirm showing requests</p>
           </div>
 
           {availableRequests.length === 0 ? (
-            <Card className="text-center py-12">
+            <Card className="text-center py-12 border-0 shadow-sm">
               <CardContent>
-                <UserPlus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No available requests</h3>
+                <UserPlus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No available requests</h3>
                 <p className="text-gray-500">All current requests have been accepted by agents.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {availableRequests.map((request) => (
                 <AgentRequestCard
                   key={request.id}
@@ -344,20 +279,20 @@ const AgentDashboard = () => {
       content: (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800">Active Showings</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Active Showings</h2>
             <p className="text-gray-600">Confirmed and scheduled showings</p>
           </div>
 
           {activeShowings.length === 0 ? (
-            <Card className="text-center py-12">
+            <Card className="text-center py-12 border-0 shadow-sm">
               <CardContent>
-                <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No active showings</h3>
+                <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No active showings</h3>
                 <p className="text-gray-500">Confirmed showings will appear here.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {activeShowings.map((request) => (
                 <AgentRequestCard
                   key={request.id}
@@ -393,18 +328,18 @@ const AgentDashboard = () => {
       count: completedShowings.length,
       content: (
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800">Showing History</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Showing History</h2>
           
           {completedShowings.length === 0 ? (
-            <Card className="text-center py-12">
+            <Card className="text-center py-12 border-0 shadow-sm">
               <CardContent>
-                <CheckCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No completed showings yet</h3>
+                <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No completed showings yet</h3>
                 <p className="text-gray-500">Your completed and cancelled showings will appear here.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {completedShowings.map((request) => (
                 <AgentRequestCard
                   key={request.id}
@@ -432,39 +367,74 @@ const AgentDashboard = () => {
 
   // Header component
   const header = (
-    <DashboardHeader 
-      displayName={profile?.first_name || 'Agent'} 
-      onRequestShowing={() => {}} // Agents don't request showings
+    <ModernHeader
+      title="Agent Dashboard"
+      subtitle={`Welcome back, ${profile?.first_name || 'Agent'}!`}
+      displayName={profile?.first_name || 'Agent'}
       userType="agent"
+      notificationCount={unreadCount}
     />
   );
 
   // Stats component  
-  const stats = <EnhancedStatsGrid stats={agentStats} onStatClick={handleStatClick} />;
+  const stats = <ModernStatsGrid stats={agentStats} />;
 
-  // Main content (welcome dashboard instead of progress tracker)
+  // Main content
   const mainContent = (
-    <WelcomeDashboard 
-      userType="agent"
-      displayName={profile?.first_name || 'Agent'}
-      hasActiveShowings={activeShowings.length > 0}
-      completedCount={completedShowings.filter(s => s.status === 'completed').length}
-      pendingCount={availableRequests.length}
-    />
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Agent Performance</h2>
+        <p className="text-gray-600">Manage your showings and track your success</p>
+      </div>
+      
+      <WelcomeDashboard 
+        userType="agent"
+        displayName={profile?.first_name || 'Agent'}
+        hasActiveShowings={activeShowings.length > 0}
+        completedCount={completedShowings.filter(s => s.status === 'completed').length}
+        pendingCount={availableRequests.length}
+      />
+    </div>
   );
 
   // Sidebar content
   const sidebar = (
-    <UpdatesPanel 
-      showingRequests={allShowings} 
-      userType="agent" 
-      onSendMessage={handleSendMessage}
+    <ModernSidebar 
+      quickStats={[
+        { label: "Available", value: availableRequests.length, icon: UserPlus },
+        { label: "In Progress", value: activeShowings.length, icon: Clock },
+        { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
+      ]}
+      upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
+        id: showing.id,
+        title: showing.property_address,
+        date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
+        type: 'Property Showing'
+      }))}
+      activities={[
+        ...availableRequests.slice(0, 2).map(req => ({
+          id: req.id,
+          type: 'update' as const,
+          title: 'New Request Available',
+          description: req.property_address,
+          time: new Date(req.created_at).toLocaleDateString(),
+          unread: true
+        })),
+        ...completedShowings.slice(0, 2).map(req => ({
+          id: req.id,
+          type: 'update' as const,
+          title: 'Showing Completed',
+          description: req.property_address,
+          time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
+          unread: false
+        }))
+      ]}
     />
   );
 
   return (
     <>
-      <DashboardLayout
+      <ModernDashboardLayout
         header={header}
         stats={stats}
         mainContent={mainContent}

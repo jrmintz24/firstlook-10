@@ -1,20 +1,20 @@
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import FocusedStatsGrid from "@/components/dashboard/FocusedStatsGrid";
-import UpdatesPanel from "@/components/dashboard/UpdatesPanel";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
+import ModernHeader from "@/components/dashboard/ModernHeader";
+import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
+import ModernSidebar from "@/components/dashboard/ModernSidebar";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
-import SubscriptionStatus from "@/components/dashboard/SubscriptionStatus";
-import ChatWidget from "@/components/messaging/ChatWidget";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
-import { generateBuyerStats } from "@/utils/dashboardStats";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
+import { Calendar, CheckCircle, MessageCircle, TrendingUp, Clock, User } from "lucide-react";
 
 const BuyerDashboard = () => {
   // Handle any pending tour requests from signup
@@ -62,10 +62,11 @@ const BuyerDashboard = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">Loading your dashboard...</div>
-          <div className="text-sm text-gray-600">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg font-medium text-gray-900 mb-2">Loading your dashboard...</div>
+          <div className="text-sm text-gray-500">
             {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
           </div>
         </div>
@@ -75,11 +76,11 @@ const BuyerDashboard = () => {
 
   if (!user && !session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">Please sign in to view your dashboard</div>
+          <div className="text-lg font-medium text-gray-900 mb-4">Please sign in to view your dashboard</div>
           <Link to="/">
-            <Button>Go to Home</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">Go to Home</Button>
           </Link>
         </div>
       </div>
@@ -89,8 +90,37 @@ const BuyerDashboard = () => {
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
   const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
 
-  // Generate focused buyer stats - now include messages
-  const focusedStats = generateBuyerStats(pendingRequests, activeShowings, completedShowings, unreadCount);
+  // Modern stats configuration
+  const modernStats = [
+    {
+      title: "Pending Tours",
+      value: pendingRequests.length,
+      change: pendingRequests.length > 0 ? { value: "Action needed", trend: 'neutral' as const } : undefined,
+      icon: Clock,
+      color: 'orange' as const
+    },
+    {
+      title: "Confirmed Tours",
+      value: activeShowings.length,
+      change: activeShowings.length > 0 ? { value: "Upcoming", trend: 'up' as const } : undefined,
+      icon: Calendar,
+      color: 'blue' as const
+    },
+    {
+      title: "Messages",
+      value: unreadCount || 0,
+      change: unreadCount > 0 ? { value: "New messages", trend: 'up' as const } : undefined,
+      icon: MessageCircle,
+      color: 'purple' as const
+    },
+    {
+      title: "Completed",
+      value: completedShowings.filter(s => s.status === 'completed').length,
+      change: completedShowings.length > 0 ? { value: "Tours done", trend: 'up' as const } : undefined,
+      icon: CheckCircle,
+      color: 'green' as const
+    }
+  ];
 
   // Transform agreements to expected array format
   const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
@@ -99,7 +129,7 @@ const BuyerDashboard = () => {
     signed
   }));
 
-  // Generate dashboard sections - now include messages tab
+  // Generate dashboard sections
   const dashboardSections = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
@@ -124,54 +154,94 @@ const BuyerDashboard = () => {
   }, {} as Record<string, any>);
 
   // Header component
-  const header = <DashboardHeader displayName={displayName} onRequestShowing={handleRequestShowing} />;
-
-  // Stats component with subscription status
-  const stats = (
-    <div>
-      <FocusedStatsGrid stats={focusedStats} onStatClick={handleStatClick} />
-      <SubscriptionStatus 
-        isSubscribed={isSubscribed}
-        eligibility={eligibility}
-        onUpgradeClick={handleUpgradeClick}
-      />
-    </div>
-  );
-
-  // Main content
-  const mainContent = (
-    <WelcomeDashboard 
-      userType="buyer"
+  const header = (
+    <ModernHeader
+      title="Dashboard"
+      subtitle={`Welcome back, ${displayName}!`}
       displayName={displayName}
-      onRequestShowing={handleRequestShowing}
-      hasActiveShowings={activeShowings.length > 0}
-      completedCount={completedShowings.filter(s => s.status === 'completed').length}
-      pendingCount={pendingRequests.length}
+      onPrimaryAction={handleRequestShowing}
+      primaryActionText="Request Tour"
+      userType="buyer"
+      notificationCount={unreadCount}
     />
   );
 
-  // Sidebar content
-  const sidebar = (
-    <div className="space-y-6">
-      <UpdatesPanel 
-        showingRequests={allShowings} 
-        userType="buyer" 
-        onSendMessage={handleSendMessage}
+  // Stats component
+  const stats = <ModernStatsGrid stats={modernStats} onStatClick={handleStatClick} />;
+
+  // Main content
+  const mainContent = (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Your Home Search Journey</h2>
+        <p className="text-gray-600">Track your progress and manage your property tours</p>
+      </div>
+      
+      <WelcomeDashboard 
+        userType="buyer"
+        displayName={displayName}
+        onRequestShowing={handleRequestShowing}
+        hasActiveShowings={activeShowings.length > 0}
+        completedCount={completedShowings.filter(s => s.status === 'completed').length}
+        pendingCount={pendingRequests.length}
       />
       
-      {/* Chat Messages */}
-      {currentUser?.id && (
-        <ChatWidget
-          userId={currentUser.id}
-          unreadCount={unreadCount || 0}
-        />
+      {!isSubscribed && eligibility?.reason === 'free_showing_used' && (
+        <Card className="mt-6 border-l-4 border-l-orange-500 bg-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-orange-900">Upgrade to Premium</h3>
+                <p className="text-sm text-orange-700 mt-1">Get unlimited property tours and priority support</p>
+              </div>
+              <Button onClick={handleUpgradeClick} className="bg-orange-600 hover:bg-orange-700">
+                Upgrade Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
 
+  // Sidebar content
+  const sidebar = (
+    <ModernSidebar 
+      quickStats={[
+        { label: "Active Tours", value: activeShowings.length, icon: Calendar },
+        { label: "Total Requests", value: allShowings.length, icon: TrendingUp },
+        { label: "Profile Complete", value: profile ? "100%" : "60%", icon: User }
+      ]}
+      upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
+        id: showing.id,
+        title: showing.property_address,
+        date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
+        type: 'Property Tour'
+      }))}
+      activities={[
+        ...pendingRequests.slice(0, 2).map(req => ({
+          id: req.id,
+          type: 'update' as const,
+          title: 'Tour Request Submitted',
+          description: req.property_address,
+          time: new Date(req.created_at).toLocaleDateString(),
+          unread: false
+        })),
+        ...completedShowings.slice(0, 2).map(req => ({
+          id: req.id,
+          type: 'update' as const,
+          title: 'Tour Completed',
+          description: req.property_address,
+          time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
+          unread: false
+        }))
+      ]}
+    />
+  );
+
   return (
     <>
-      <DashboardLayout
+      <ModernDashboardLayout
         header={header}
         stats={stats}
         mainContent={mainContent}

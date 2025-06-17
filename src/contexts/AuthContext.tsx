@@ -82,6 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
       options: {
         emailRedirectTo: `${getRedirectUrl()}/buyer-dashboard`,
+        data: {
+          user_type: 'buyer'
+        }
       }
     })
     if (error) throw error
@@ -102,6 +105,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       provider,
       options: {
         redirectTo: `${getRedirectUrl()}/buyer-dashboard`,
+        queryParams: {
+          user_type: 'buyer'
+        }
       }
     })
     if (error) throw error

@@ -15,11 +15,14 @@ const NavigationLogo = ({ onLogoClick }: NavigationLogoProps) => {
     
     const userType = user.user_metadata?.user_type;
     console.log('NavigationLogo user type:', userType);
+    
+    // Default to buyer dashboard for undefined user types (new users)
     switch (userType) {
       case 'agent':
         return '/agent-dashboard';
       case 'admin':
         return '/admin-dashboard';
+      case 'buyer':
       default:
         return '/buyer-dashboard';
     }

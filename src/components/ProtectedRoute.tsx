@@ -33,19 +33,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check for specific user type requirement
-  if (requiredUserType && user.user_metadata?.user_type !== requiredUserType) {
-    console.log('User type mismatch:', {
-      required: requiredUserType,
-      actual: user.user_metadata?.user_type
-    });
-    // Redirect to appropriate dashboard based on user type
+  if (requiredUserType) {
     const userType = user.user_metadata?.user_type;
-    if (userType === 'admin') {
-      return <Navigate to="/admin-dashboard" replace />
-    } else if (userType === 'agent') {
-      return <Navigate to="/agent-dashboard" replace />
-    } else {
-      return <Navigate to="/buyer-dashboard" replace />
+    
+    // For buyer routes, allow users with no user_type (new users) or explicit buyer type
+    if (requiredUserType === 'buyer' && (!userType || userType === 'buyer')) {
+      return <>{children}</>
+    }
+    
+    // For other user types, require exact match
+    if (requiredUserType !== 'buyer' && userType !== requiredUserType) {
+      console.log('User type mismatch:', {
+        required: requiredUserType,
+        actual: userType
+      });
+      // Redirect to appropriate dashboard based on user type
+      if (userType === 'admin') {
+        return <Navigate to="/admin-dashboard" replace />
+      } else if (userType === 'agent') {
+        return <Navigate to="/agent-dashboard" replace />
+      } else {
+        return <Navigate to="/buyer-dashboard" replace />
+      }
     }
   }
 

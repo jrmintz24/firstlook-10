@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useState } from "react";
@@ -24,8 +23,13 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
-  // Handle any pending tour requests from signup
-  usePendingTourHandler();
+  // Handle any pending tour requests from signup and refresh data when processed
+  usePendingTourHandler({
+    onProcessed: () => {
+      console.log('RedesignedBuyerDashboard: Pending tour processed, refreshing data...');
+      fetchShowingRequests();
+    }
+  });
 
   const {
     // State
@@ -54,7 +58,8 @@ const RedesignedBuyerDashboard = () => {
     handleSubscriptionComplete,
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
-    handleSendMessage
+    handleSendMessage,
+    fetchShowingRequests
   } = useBuyerDashboardLogic();
 
   console.log('RedesignedBuyerDashboard - Render state:', {

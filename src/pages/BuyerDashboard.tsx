@@ -1,4 +1,3 @@
-
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -18,8 +17,13 @@ import { generateBuyerStats } from "@/utils/dashboardStats";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 
 const BuyerDashboard = () => {
-  // Handle any pending tour requests from signup
-  usePendingTourHandler();
+  // Handle any pending tour requests from signup and refresh data when processed
+  usePendingTourHandler({
+    onProcessed: () => {
+      console.log('BuyerDashboard: Pending tour processed, refreshing data...');
+      fetchShowingRequests();
+    }
+  });
 
   const {
     // State

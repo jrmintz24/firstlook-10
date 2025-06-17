@@ -4,9 +4,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const usePendingTourHandler = () => {
+interface UsePendingTourHandlerProps {
+  onProcessed?: () => void;
+}
+
+export const usePendingTourHandler = (options?: UsePendingTourHandlerProps) => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const { onProcessed } = options || {};
 
   const processPendingTour = useCallback(async () => {
     if (loading || !user) {
@@ -110,6 +115,12 @@ export const usePendingTourHandler = () => {
         });
       }
 
+      // Trigger callback to refresh dashboard data
+      if (onProcessed) {
+        console.log('usePendingTourHandler: Triggering onProcessed callback');
+        onProcessed();
+      }
+
     } catch (error) {
       console.error('usePendingTourHandler: Error processing pending tour request:', error);
       toast({
@@ -122,7 +133,7 @@ export const usePendingTourHandler = () => {
       localStorage.removeItem('pendingTourRequest');
       localStorage.removeItem('newUserFromPropertyRequest');
     }
-  }, [user, loading, toast]);
+  }, [user, loading, toast, onProcessed]);
 
   useEffect(() => {
     // Wait for auth to be ready, then process

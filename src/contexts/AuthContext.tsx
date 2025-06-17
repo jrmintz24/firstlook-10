@@ -2,13 +2,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import * as authService from '../services/authService'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, metadata?: Record<string, unknown> & { user_type?: string }) => Promise<void>
   signOut: () => Promise<void>
   signInWithProvider: (
     provider: 'google' | 'github' | 'discord' | 'facebook'
@@ -24,10 +25,6 @@ export const useAuth = () => {
   }
   return context
 }
-
-const getRedirectUrl = () => {
-  return window.location.origin;
-};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -69,29 +66,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized])
 
   const signIn = async (email: string, password: string): Promise<void> => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { error } = await authService.signIn(email, password)
     if (error) throw error
   }
 
-  const signUp = async (email: string, password: string): Promise<void> => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${getRedirectUrl()}/buyer-dashboard`,
-        data: {
-          user_type: 'buyer'
-        }
-      }
-    })
+  const signUp = async (
+    email: string, 
+    password: string, 
+    metadata: Record<string, unknown> & { user_type?: string } = { user_type: 'buyer' }
+  ): Promise<void> => {
+    const { error } = await authService.signUp(email, password, metadata)
     if (error) throw error
   }
 
   const signOut = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await authService.signOut()
     if (error) throw error
     // Clear local state immediately after successful sign out
     setUser(null)
@@ -104,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${getRedirectUrl()}/buyer-dashboard`,
+        redirectTo: `${window.location.origin}/buyer-dashboard`,
         queryParams: {
           user_type: 'buyer'
         }

@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import * as authService from "@/services/authService";
 
 interface AuthFormData {
   email: string;
@@ -27,7 +28,7 @@ export const useAuthForm = (
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signUp, signIn, signInWithProvider } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSocialLogin = async (
@@ -35,7 +36,7 @@ export const useAuthForm = (
   ) => {
     setIsLoading(true);
     try {
-      await signInWithProvider(provider);
+      await authService.signInWithProvider(provider, userType);
       toast({
         title: "Success!",
         description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}!`
@@ -111,7 +112,22 @@ export const useAuthForm = (
         }
       } else {
         try {
-          await signUp(formData.email, formData.password);
+          // Prepare metadata for signup
+          const metadata: Record<string, unknown> & { user_type?: string } = {
+            user_type: userType,
+            first_name: formData.firstName,
+            phone: formData.phone
+          };
+
+          // Add license number for agents
+          if (userType === 'agent' && formData.licenseNumber) {
+            metadata.license_number = formData.licenseNumber;
+          }
+
+          console.log('useAuthForm - Signing up with metadata:', metadata);
+
+          await authService.signUp(formData.email, formData.password, metadata);
+          
           toast({
             title: "Success!",
             description: "Account created successfully! Please check your email to verify your account."

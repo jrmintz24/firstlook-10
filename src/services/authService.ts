@@ -19,6 +19,8 @@ export const signUp = async (
     ? 'admin-dashboard'
     : 'buyer-dashboard';
 
+  console.log('authService.signUp - User type:', userType, 'Metadata:', metadata);
+
   const { error } = await supabase.auth.signUp({
     email,
     password,

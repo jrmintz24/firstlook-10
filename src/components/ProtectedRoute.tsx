@@ -36,7 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (requiredUserType) {
     const userType = user.user_metadata?.user_type;
     
-    // For buyer routes, allow users with no user_type (new users) or explicit buyer type
+    // For buyer routes, allow users with no user_type (legacy users) or explicit buyer type
     if (requiredUserType === 'buyer' && (!userType || userType === 'buyer')) {
       return <>{children}</>
     }

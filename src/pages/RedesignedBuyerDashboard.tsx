@@ -72,7 +72,9 @@ const RedesignedBuyerDashboard = () => {
   usePendingTourHandler({
     onProcessed: () => {
       console.log('RedesignedBuyerDashboard: Pending tour processed, refreshing data...');
-      fetchShowingRequests();
+      if (fetchShowingRequests) {
+        fetchShowingRequests();
+      }
     }
   });
 

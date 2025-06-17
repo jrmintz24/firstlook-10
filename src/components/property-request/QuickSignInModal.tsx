@@ -1,131 +1,124 @@
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthForm } from "@/hooks/useAuthForm";
-import SignupForm from "@/components/auth/SignupForm";
-import LoginForm from "@/components/auth/LoginForm";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  defaultUserType?: 'buyer' | 'agent' | 'admin';
-  defaultTab?: 'login' | 'signup';
 }
 
-const QuickSignInModal = ({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
-  defaultUserType = 'buyer',
-  defaultTab = 'signup'
-}: QuickSignInModalProps) => {
-  const [userType, setUserType] = useState<'buyer' | 'agent' | 'admin'>(defaultUserType);
+const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps) => {
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signUp, signIn } = useAuth();
   const { toast } = useToast();
-  const { user } = useAuth();
 
-  const buyerAuth = useAuthForm('buyer', () => {
-    onSuccess();
-    onClose();
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const agentAuth = useAuthForm('agent', () => {
-    onSuccess();
-    onClose();
-  });
-
-  const currentAuth = userType === 'buyer' ? buyerAuth : agentAuth;
-
-  // Set the initial login state when the modal opens or when the user type
-  // changes. Using an effect prevents overriding user interactions on every
-  // render.
-  useEffect(() => {
-    currentAuth.setIsLogin(defaultTab === 'login');
-  }, [defaultTab, userType]);
-
-  // Close modal if user is authenticated
-  if (user) {
-    onClose();
-    return null;
-  }
+    try {
+      if (isSignUp) {
+        console.log('Quick sign up attempt:', email);
+        await signUp(email, password);
+        toast({
+          title: "Account Created!",
+          description: "Welcome to FirstLook! Your property request is being processed.",
+        });
+      } else {
+        console.log('Quick sign in attempt:', email);
+        await signIn(email, password);
+        toast({
+          title: "Welcome Back!",
+          description: "You're now signed in. Processing your property request.",
+        });
+      }
+      
+      // Wait a moment for auth state to update
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1000);
+      
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      toast({
+        title: "Authentication Error",
+        description: error.message || "Failed to authenticate. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-50 to-purple-50">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Welcome to FirstLook
+          <DialogTitle>
+            {isSignUp ? "Create Account" : "Sign In"}
           </DialogTitle>
+          <DialogDescription>
+            {isSignUp 
+              ? "Create an account to complete your tour request" 
+              : "Sign in to your existing account"
+            }
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* User Type Toggle */}
-          <div className="flex justify-center">
-            <div className="bg-white p-1 rounded-lg shadow-inner">
-              <Button
-                variant={userType === 'buyer' ? 'default' : 'ghost'}
-                onClick={() => setUserType('buyer')}
-                className={userType === 'buyer' ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'text-gray-600'}
-              >
-                Home Buyer
-              </Button>
-              <Button
-                variant={userType === 'agent' ? 'default' : 'ghost'}
-                onClick={() => setUserType('agent')}
-                className={userType === 'agent' ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'text-gray-600'}
-              >
-                Real Estate Agent
-              </Button>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              disabled={loading}
+            />
           </div>
 
-          <Tabs value={currentAuth.isLogin ? "login" : "signup"} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger 
-                value="login" 
-                onClick={() => currentAuth.setIsLogin(true)}
-              >
-                Sign In
-              </TabsTrigger>
-              <TabsTrigger 
-                value="signup" 
-                onClick={() => currentAuth.setIsLogin(false)}
-              >
-                Sign Up
-              </TabsTrigger>
-            </TabsList>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+              disabled={loading}
+              minLength={6}
+            />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Processing...' : (isSignUp ? 'Create Account & Continue' : 'Sign In & Continue')}
+            </Button>
             
-            <TabsContent value="login">
-              <LoginForm
-                email={currentAuth.formData.email}
-                password={currentAuth.formData.password}
-                isLoading={currentAuth.isLoading}
-                onInputChange={currentAuth.handleInputChange}
-                onSubmit={(e) => currentAuth.handleSubmit(e, true)}
-                onSocialLogin={currentAuth.handleSocialLogin}
-              />
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <SignupForm
-                userType={userType}
-                firstName={currentAuth.formData.firstName}
-                email={currentAuth.formData.email}
-                phone={currentAuth.formData.phone}
-                password={currentAuth.formData.password}
-                licenseNumber={currentAuth.formData.licenseNumber}
-                isLoading={currentAuth.isLoading}
-                onInputChange={currentAuth.handleInputChange}
-                onSubmit={(e) => currentAuth.handleSubmit(e, false)}
-                onSocialLogin={currentAuth.handleSocialLogin}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+              className="w-full"
+            >
+              {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

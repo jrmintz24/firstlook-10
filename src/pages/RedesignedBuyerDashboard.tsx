@@ -1,5 +1,6 @@
 
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
+import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -18,6 +19,9 @@ import BadgesSection from "@/components/dashboard/redesigned/BadgesSection";
 import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
 
 const RedesignedBuyerDashboard = () => {
+  // Handle any pending tour requests from signup
+  usePendingTourHandler();
+
   const {
     // State
     showPropertyForm,
@@ -58,7 +62,12 @@ const RedesignedBuyerDashboard = () => {
     userEmail: user?.email || session?.user?.email,
     userId: user?.id || session?.user?.id,
     profileExists: !!profile,
-    profileData: profile
+    profileData: profile,
+    showingCounts: {
+      pending: pendingRequests.length,
+      active: activeShowings.length,
+      completed: completedShowings.length
+    }
   });
 
   // Show loading while auth is being determined

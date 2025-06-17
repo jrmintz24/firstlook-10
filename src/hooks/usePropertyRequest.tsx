@@ -233,10 +233,14 @@ export const usePropertyRequest = () => {
 
     setIsSubmitting(true);
     try {
+      console.log('Submitting showing requests for user:', user.id);
+      
       // Get all properties to submit
       const propertiesToSubmit = formData.selectedProperties.length > 0 
         ? formData.selectedProperties 
         : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
+
+      console.log('Properties to submit:', propertiesToSubmit);
 
       // Check eligibility before submission - especially for multiple properties
       if (propertiesToSubmit.length > 1) {
@@ -273,7 +277,7 @@ export const usePropertyRequest = () => {
       const estimatedDate = new Date();
       estimatedDate.setDate(estimatedDate.getDate() + 2);
 
-      // Create showing requests for each property.
+      // Create showing requests for each property
       const requests = propertiesToSubmit.map(property => ({
         user_id: user.id,
         property_address: property,
@@ -285,19 +289,24 @@ export const usePropertyRequest = () => {
         estimated_confirmation_date: estimatedDate.toISOString().split('T')[0]
       }));
 
-      const { error } = await supabase
+      console.log('Inserting showing requests:', requests);
+
+      const { data, error } = await supabase
         .from('showing_requests')
-        .insert(requests);
+        .insert(requests)
+        .select();
 
       if (error) {
         console.error('Error creating showing requests:', error);
         toast({
           title: "Error",
-          description: "Failed to submit showing request. Please try again.",
+          description: `Failed to submit showing request: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
+
+      console.log('Successfully created showing requests:', data);
 
       // Mark free showing as used for first-time users
       const currentEligibility = await checkEligibility();
@@ -313,13 +322,8 @@ export const usePropertyRequest = () => {
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Redirect to the appropriate dashboard
-      const redirectPath =
-        user.user_metadata?.user_type === 'agent'
-          ? '/agent-dashboard'
-          : '/buyer-dashboard';
-
-      window.location.href = redirectPath;
+      // Redirect to the buyer dashboard
+      navigate('/buyer-dashboard');
       
     } catch (error) {
       console.error('Error submitting showing requests:', error);
@@ -334,7 +338,10 @@ export const usePropertyRequest = () => {
   };
 
   const handleContinueToSubscriptions = async () => {
+    console.log('handleContinueToSubscriptions called', { user: !!user });
+    
     if (!user) {
+      console.log('No user, storing pending tour request');
       const properties = formData.selectedProperties.length > 0
         ? formData.selectedProperties
         : [formData.propertyAddress || `MLS ID: ${formData.mlsId}`];
@@ -356,6 +363,7 @@ export const usePropertyRequest = () => {
     
     // Check showing eligibility before proceeding
     const currentEligibility = await checkEligibility();
+    console.log('Current eligibility:', currentEligibility);
     
     if (!currentEligibility?.eligible) {
       if (currentEligibility?.reason === 'active_showing_exists') {
@@ -376,6 +384,7 @@ export const usePropertyRequest = () => {
     }
 
     // Submit the showing requests directly if eligible
+    console.log('User is eligible, submitting showing requests');
     await submitShowingRequests();
   };
 

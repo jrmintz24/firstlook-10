@@ -1,10 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Inbox } from "lucide-react";
+import { MessageCircle, Inbox, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import ConversationsList from "./ConversationsList";
 import MessageThread from "./MessageThread";
 import { useMessages } from "@/hooks/useMessages";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MessagingInterfaceProps {
   userId: string;
@@ -22,6 +25,9 @@ const MessagingInterface = ({
   className = ""
 }: MessagingInterfaceProps) => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(specificShowingId || null);
+  const [showConversationsList, setShowConversationsList] = useState(true);
+  const isMobile = useIsMobile();
+  
   const { 
     loading, 
     unreadCount, 
@@ -51,6 +57,14 @@ const MessagingInterface = ({
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
+    if (isMobile) {
+      setShowConversationsList(false);
+    }
+  };
+
+  const handleBackToConversations = () => {
+    setShowConversationsList(true);
+    setSelectedConversationId(null);
   };
 
   const handleSendMessage = async (content: string) => {
@@ -101,7 +115,75 @@ const MessagingInterface = ({
     );
   }
 
-  // Full dashboard view
+  // Mobile view - show either conversations list or message thread
+  if (isMobile) {
+    return (
+      <div className={`space-y-4 ${className}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {!showConversationsList && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToConversations}
+                className="p-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <MessageCircle className="h-5 w-5 text-purple-600" />
+            <h2 className="text-xl font-bold text-gray-800">
+              {showConversationsList ? 'Messages' : selectedConversation?.property_address}
+            </h2>
+            {unreadCount > 0 && showConversationsList && (
+              <Badge className="bg-red-500 text-white text-xs">
+                {unreadCount}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {showConversationsList ? (
+          <Card className="h-[500px]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Inbox className="h-5 w-5" />
+                Conversations ({filteredConversations.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-y-auto max-h-[400px]">
+              <ConversationsList
+                conversations={filteredConversations}
+                selectedConversationId={selectedConversationId}
+                onSelectConversation={handleSelectConversation}
+              />
+            </CardContent>
+          </Card>
+        ) : selectedConversation ? (
+          <div className="h-[500px]">
+            <MessageThread
+              messages={selectedConversation.messages}
+              currentUserId={userId}
+              onSendMessage={handleSendMessage}
+              propertyAddress={selectedConversation.property_address}
+              showingStatus={selectedConversation.status}
+            />
+          </div>
+        ) : (
+          <Card className="h-[500px] flex items-center justify-center">
+            <CardContent className="text-center">
+              <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Select a Conversation</h3>
+              <p className="text-gray-500">Choose a conversation to start messaging</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop view - side by side layout
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}

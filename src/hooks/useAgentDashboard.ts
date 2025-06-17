@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +44,27 @@ export const useAgentDashboard = () => {
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Categorize requests with cancelled items at the bottom in history
+  const pendingRequests = showingRequests.filter(req => 
+    ['pending', 'submitted', 'under_review'].includes(req.status)
+  );
+  
+  const assignedRequests = showingRequests.filter(req => 
+    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
+  );
+  
+  const completedRequests = showingRequests
+    .filter(req => ['completed', 'cancelled'].includes(req.status))
+    .sort((a, b) => {
+      // First sort by status: completed first, cancelled last
+      if (a.status !== b.status) {
+        if (a.status === 'completed' && b.status === 'cancelled') return -1;
+        if (a.status === 'cancelled' && b.status === 'completed') return 1;
+      }
+      // Then sort by date (most recent first within each status)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   const fetchAgentData = async () => {
     const currentUser = user || session?.user;
@@ -181,6 +201,9 @@ export const useAgentDashboard = () => {
   return {
     profile,
     showingRequests,
+    pendingRequests,
+    assignedRequests,
+    completedRequests,
     loading,
     authLoading,
     handleStatusUpdate,

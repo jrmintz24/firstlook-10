@@ -65,18 +65,18 @@ const ShowingListTab = ({
   onSendMessage
 }: ShowingListTabProps) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-        <p className="text-gray-600">{showings.length} showing{showings.length !== 1 ? 's' : ''}</p>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800">{title}</h2>
+        <p className="text-sm md:text-base text-gray-600">{showings.length} showing{showings.length !== 1 ? 's' : ''}</p>
       </div>
 
       {showings.length === 0 ? (
-        <Card className="text-center py-12">
+        <Card className="text-center py-8 md:py-12">
           <CardContent>
-            <EmptyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">{emptyTitle}</h3>
-            <p className="text-gray-500 mb-6">{emptyDescription}</p>
+            <EmptyIcon className="h-12 w-12 md:h-16 md:w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg md:text-xl font-semibold text-gray-600 mb-2">{emptyTitle}</h3>
+            <p className="text-sm md:text-base text-gray-500 mb-4 md:mb-6">{emptyDescription}</p>
             {/* Only show the button if it's not the history tab */}
             {!title.toLowerCase().includes('history') && (
               <Button 
@@ -89,7 +89,7 @@ const ShowingListTab = ({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid gap-4 md:gap-6">
           {showings.map((showing) => (
             <ShowingRequestCard
               key={showing.id}

@@ -52,10 +52,18 @@ export const useBuyerDashboard = () => {
     ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
   );
   
-  // History includes only completed requests, hiding cancelled ones
-  const completedShowings = showingRequests.filter(req => 
-    req.status === 'completed'
-  );
+  // History includes completed and cancelled requests, with cancelled at the bottom
+  const completedShowings = showingRequests
+    .filter(req => ['completed', 'cancelled'].includes(req.status))
+    .sort((a, b) => {
+      // First sort by status: completed first, cancelled last
+      if (a.status !== b.status) {
+        if (a.status === 'completed' && b.status === 'cancelled') return -1;
+        if (a.status === 'cancelled' && b.status === 'completed') return 1;
+      }
+      // Then sort by date (most recent first within each status)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   const fetchUserData = async () => {
     if (!currentUser) {

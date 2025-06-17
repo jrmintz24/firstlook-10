@@ -1,191 +1,91 @@
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { User, UserPlus, Clock, CheckCircle, Calendar, MessageCircle, TrendingUp, Menu, X } from "lucide-react";
-import AgentRequestCard from "@/components/dashboard/AgentRequestCard";
-import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
-import SendMessageModal from "@/components/dashboard/SendMessageModal";
-import { useAgentDashboard } from "@/hooks/useAgentDashboard";
-import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
-import { isActiveShowing, type ShowingStatus } from "@/utils/showingStatus";
-import { useToast } from "@/hooks/use-toast";
-import { useMessages } from "@/hooks/useMessages";
-import AgentConversationsView from "@/components/messaging/AgentConversationsView";
-import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
-import ModernSidebar from "@/components/dashboard/ModernSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, Users, Calendar, Menu, X } from "lucide-react";
+import { useAgentDashboard } from "@/hooks/useAgentDashboard";
+import ShowingListTab from "@/components/dashboard/ShowingListTab";
+import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
+import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
+import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
+import MessagingInterface from "@/components/messaging/MessagingInterface";
+import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const AgentDashboard = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageRequestId, setMessageRequestId] = useState<string>('');
-  const [activeTab, setActiveTab] = useState('available');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
-  
-  const { 
-    profile, 
-    showingRequests, 
-    loading, 
+  const {
+    profile,
+    pendingRequests,
+    assignedRequests,
+    completedRequests,
+    loading,
     authLoading,
+    handleStatusUpdate,
     fetchAgentData
   } = useAgentDashboard();
 
-  const { confirmShowing, loading: confirmationLoading } = useAgentConfirmation();
-  const { toast } = useToast();
-  const { unreadCount, sendMessage: sendMessageViaHook } = useMessages(profile?.id || '');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("pending");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  const handleSendMessage = (requestId: string) => {
-    console.log('handleSendMessage called with requestId:', requestId);
-    
-    const request = showingRequests.find(req => req.id === requestId);
-    console.log('Found request:', request);
-    
-    if (!request) {
-      console.log('Request not found');
-      return;
-    }
-    
-    if (request.status === 'cancelled') {
-      toast({
-        title: "Messaging Unavailable",
-        description: "Cannot send messages for cancelled showings.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const currentUser = profile;
+  const { unreadCount } = useMessages(currentUser?.id || null);
 
-    if (request.status === 'completed' && request.status_updated_at) {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      if (new Date(request.status_updated_at) < weekAgo) {
-        toast({
-          title: "Messaging Expired",
-          description: "Message access expires one week after showing completion.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    if (!request.user_id) {
-      toast({
-        title: "Messaging Unavailable",
-        description: "No buyer contact available for this showing.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('Setting messageRequestId and showing modal');
-    setMessageRequestId(requestId);
-    setShowMessageModal(true);
-  };
-
-  const sendMessage = async (message: string) => {
-    if (!profile) {
-      toast({
-        title: "Error",
-        description: "Profile not found. Please refresh and try again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('sendMessage called with:', { message, messageRequestId, profileId: profile.id });
-
-    try {
-      const request = showingRequests.find(req => req.id === messageRequestId);
-      if (!request) {
-        throw new Error("Request not found");
-      }
-
-      console.log('Found request for messaging:', request);
-
-      if (request.status === 'cancelled') {
-        throw new Error("Cannot send messages for cancelled showings");
-      }
-
-      if (!request.user_id) {
-        throw new Error("No buyer contact available");
-      }
-
-      const success = await sendMessageViaHook(messageRequestId, request.user_id, message);
-      
-      if (success) {
-        toast({
-          title: "Message Sent",
-          description: "Your message has been sent to the buyer.",
-        });
-        setShowMessageModal(false);
-        setMessageRequestId('');
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
+  console.log('AgentDashboard - Current user:', currentUser?.id);
+  console.log('AgentDashboard - Loading states:', { loading, authLoading });
 
   const handleConfirmShowing = (request: any) => {
     setSelectedRequest(request);
-    setShowConfirmationModal(true);
+    setShowConfirmModal(true);
   };
 
-  const handleAgentConfirmation = async (confirmationData: any) => {
-    if (!profile) {
-      console.error('No profile available for confirmation');
-      return;
-    }
-    
-    const success = await confirmShowing(confirmationData, profile);
-    if (success) {
-      setShowConfirmationModal(false);
-      setSelectedRequest(null);
-      fetchAgentData();
-    }
+  const handleStatusChange = (request: any) => {
+    setSelectedRequest(request);
+    setShowStatusModal(true);
   };
 
-  const handleComplete = () => {
+  const handleConfirmSuccess = () => {
+    setShowConfirmModal(false);
+    setSelectedRequest(null);
     fetchAgentData();
   };
 
-  const handleStatClick = (tabId: string | number) => {
-    if (typeof tabId === 'string') {
-      setActiveTab(tabId);
+  const handleStatusUpdateSuccess = () => {
+    setShowStatusModal(false);
+    setSelectedRequest(null);
+    fetchAgentData();
+  };
+
+  const handleStatClick = (tab: string) => {
+    setActiveTab(tab);
+    if (isMobile) {
+      setSidebarOpen(false);
     }
   };
 
-  // Organize requests by categories
-  const availableRequests = showingRequests.filter(req => 
-    req.status === 'pending' && !req.assigned_agent_name && !req.requested_agent_name
-  );
-  
-  const activeShowings = showingRequests.filter(req => 
-    isActiveShowing(req.status as ShowingStatus)
-  );
-
-  const completedShowings = showingRequests.filter(req => 
-    req.status === 'completed' || req.status === 'cancelled'
-  );
-
-  if (authLoading || loading) {
+  // Show loading while auth is being determined
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-lg font-medium text-gray-900 mb-2">Loading agent dashboard...</div>
-          <div className="text-sm text-gray-500">
-            {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="text-lg mb-4">Checking authentication...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <div className="text-lg mb-4">Loading your dashboard...</div>
         </div>
       </div>
     );
@@ -193,356 +93,367 @@ const AgentDashboard = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="text-lg font-medium text-gray-900 mb-4">Access Denied</div>
-          <div className="text-sm text-gray-600 mb-4">You need to be an agent to access this dashboard.</div>
-          <Link to="/">
-            <Button className="bg-blue-600 hover:bg-blue-700">Go to Home</Button>
-          </Link>
+          <div className="text-lg mb-4">Unable to load profile</div>
         </div>
       </div>
     );
   }
 
-  // Modern agent stats
-  const agentStats = [
-    {
-      title: "Available Requests",
-      value: availableRequests.length,
-      change: availableRequests.length > 0 ? { value: "Ready to accept", trend: 'up' as const } : undefined,
-      icon: UserPlus,
-      color: 'orange' as const,
-      targetTab: "available"
-    },
-    {
-      title: "Active Showings",
-      value: activeShowings.length,
-      change: activeShowings.length > 0 ? { value: "In progress", trend: 'up' as const } : undefined,
-      icon: Calendar,
-      color: 'blue' as const,
-      targetTab: "active"
-    },
-    {
-      title: "Messages",
-      value: unreadCount > 0 ? unreadCount : 0,
-      change: unreadCount > 0 ? { value: "Response needed", trend: 'neutral' as const } : undefined,
-      icon: MessageCircle,
-      color: 'purple' as const,
-      targetTab: "conversations"
-    },
-    {
-      title: "Completed",
-      value: completedShowings.filter(s => s.status === 'completed').length,
-      change: completedShowings.filter(s => s.status === 'completed').length > 0 ? { value: "This month", trend: 'up' as const } : undefined,
-      icon: CheckCircle,
-      color: 'green' as const,
-      targetTab: "history"
-    }
-  ];
-
-  // Dashboard sections
-  const dashboardSectionsArray = [
-    {
-      id: "available",
-      title: "Available",
-      count: availableRequests.length,
-      content: (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">Available Requests</h2>
-            <p className="text-gray-600 text-sm sm:text-base">Accept and confirm showing requests</p>
-          </div>
-
-          {availableRequests.length === 0 ? (
-            <Card className="text-center py-12 border-0 shadow-sm">
-              <CardContent>
-                <UserPlus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No available requests</h3>
-                <p className="text-gray-500">All current requests have been accepted by agents.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {availableRequests.map((request) => (
-                <AgentRequestCard
-                  key={request.id}
-                  request={request}
-                  onAssign={() => {}}
-                  onUpdateStatus={() => {}}
-                  onSendMessage={() => handleSendMessage(request.id)}
-                  onConfirm={handleConfirmShowing}
-                  showAssignButton={true}
-                  onComplete={handleComplete}
-                  currentAgentId={profile.id}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      id: "active",
-      title: "Active",
-      count: activeShowings.length,
-      content: (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">Active Showings</h2>
-            <p className="text-gray-600 text-sm sm:text-base">Confirmed and scheduled showings</p>
-          </div>
-
-          {activeShowings.length === 0 ? (
-            <Card className="text-center py-12 border-0 shadow-sm">
-              <CardContent>
-                <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No active showings</h3>
-                <p className="text-gray-500">Confirmed showings will appear here.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {activeShowings.map((request) => (
-                <AgentRequestCard
-                  key={request.id}
-                  request={request}
-                  onAssign={() => {}}
-                  onUpdateStatus={() => {}}
-                  onSendMessage={() => handleSendMessage(request.id)}
-                  showAssignButton={false}
-                  onComplete={handleComplete}
-                  currentAgentId={profile.id}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      id: "conversations",
-      title: "Conversations",
-      count: unreadCount,
-      content: profile?.id ? (
-        <AgentConversationsView agentId={profile.id} />
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Please sign in to view conversations</p>
-        </div>
-      )
-    },
-    {
-      id: "history",
-      title: "History",
-      count: completedShowings.length,
-      content: (
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-900">Showing History</h2>
-          
-          {completedShowings.length === 0 ? (
-            <Card className="text-center py-12 border-0 shadow-sm">
-              <CardContent>
-                <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No completed showings yet</h3>
-                <p className="text-gray-500">Your completed and cancelled showings will appear here.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {completedShowings.map((request) => (
-                <AgentRequestCard
-                  key={request.id}
-                  request={request}
-                  onAssign={() => {}}
-                  onUpdateStatus={() => {}}
-                  onSendMessage={() => handleSendMessage(request.id)}
-                  showAssignButton={false}
-                  onComplete={handleComplete}
-                  currentAgentId={profile.id}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-  ];
+  const displayName = profile.first_name || 'Agent';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* Mobile Header */}
-        {isMobile && (
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Welcome, {profile?.first_name || 'Agent'}!</h1>
-              <p className="text-sm text-gray-600 mt-1">Manage your property showings</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
-          </div>
-        )}
-
-        {/* Desktop Welcome Section */}
-        {!isMobile && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-white">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200/60 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden"
+                >
+                  {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome back, {profile?.first_name || 'Agent'}!</h1>
-                <p className="text-gray-600 mt-1">Manage your property showings and grow your business</p>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Welcome back, {displayName}
+                </h1>
+                <p className="text-sm text-gray-600 hidden sm:block">
+                  Manage your showing requests and connect with buyers
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">
+                <Users className="h-4 w-4 text-blue-600" />
+                <span className="hidden sm:inline">Agent Dashboard</span>
               </div>
             </div>
           </div>
-        )}
-        
-        <ModernStatsGrid stats={agentStats} onStatClick={handleStatClick} />
-
-        {/* Main Content Grid */}
-        <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-4'} gap-6 mt-6`}>
-          {/* Main Content - Tabbed Sections */}
-          <div className={isMobile ? '' : 'lg:col-span-3'}>
-            <Card className="bg-white border-0 shadow-sm">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="border-b border-gray-100">
-                  <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none overflow-x-auto">
-                    {dashboardSectionsArray.map((section) => (
-                      <TabsTrigger 
-                        key={section.id} 
-                        value={section.id}
-                        className="relative px-4 sm:px-6 py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600 text-sm sm:text-base whitespace-nowrap"
-                      >
-                        {section.title}
-                        {section.count !== undefined && section.count > 0 && (
-                          <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
-                            {section.count}
-                          </span>
-                        )}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-
-                {dashboardSectionsArray.map((section) => (
-                  <TabsContent key={section.id} value={section.id} className="p-4 sm:p-6 mt-0">
-                    {section.content}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </Card>
-          </div>
-
-          {/* Mobile Sidebar Overlay */}
-          {isMobile && sidebarOpen && (
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)} />
-              <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-lg p-6 overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Dashboard Info</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-                <ModernSidebar 
-                  quickStats={[
-                    { label: "Available", value: availableRequests.length, icon: UserPlus },
-                    { label: "In Progress", value: activeShowings.length, icon: Clock },
-                    { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
-                  ]}
-                  upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
-                    id: showing.id,
-                    title: showing.property_address,
-                    date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
-                    type: 'Property Showing'
-                  }))}
-                  activities={[
-                    ...availableRequests.slice(0, 2).map(req => ({
-                      id: req.id,
-                      type: 'update' as const,
-                      title: 'New Request Available',
-                      description: req.property_address,
-                      time: new Date(req.created_at).toLocaleDateString(),
-                      unread: true
-                    })),
-                    ...completedShowings.slice(0, 2).map(req => ({
-                      id: req.id,
-                      type: 'update' as const,
-                      title: 'Showing Completed',
-                      description: req.property_address,
-                      time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
-                      unread: false
-                    }))
-                  ]}
-                />
-              </div>
-            </div>
-          )}
-          
-          {/* Desktop Sidebar */}
-          {!isMobile && (
-            <div className="lg:col-span-1">
-              <ModernSidebar 
-                quickStats={[
-                  { label: "Available", value: availableRequests.length, icon: UserPlus },
-                  { label: "In Progress", value: activeShowings.length, icon: Clock },
-                  { label: "Total Completed", value: completedShowings.filter(s => s.status === 'completed').length, icon: TrendingUp }
-                ]}
-                upcomingEvents={activeShowings.slice(0, 3).map(showing => ({
-                  id: showing.id,
-                  title: showing.property_address,
-                  date: showing.preferred_date ? new Date(showing.preferred_date).toLocaleDateString() : 'TBD',
-                  type: 'Property Showing'
-                }))}
-                activities={[
-                  ...availableRequests.slice(0, 2).map(req => ({
-                    id: req.id,
-                    type: 'update' as const,
-                    title: 'New Request Available',
-                    description: req.property_address,
-                    time: new Date(req.created_at).toLocaleDateString(),
-                    unread: true
-                  })),
-                  ...completedShowings.slice(0, 2).map(req => ({
-                    id: req.id,
-                    type: 'update' as const,
-                    title: 'Showing Completed',
-                    description: req.property_address,
-                    time: req.status_updated_at ? new Date(req.status_updated_at).toLocaleDateString() : '',
-                    unread: false
-                  }))
-                ]}
-              />
-            </div>
-          )}
         </div>
       </div>
 
-      {selectedRequest && (
-        <AgentConfirmationModal
-          isOpen={showConfirmationModal}
-          onClose={() => {
-            setShowConfirmationModal(false);
-            setSelectedRequest(null);
-          }}
-          request={selectedRequest}
-          onConfirm={handleAgentConfirmation}
-        />
-      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4 bg-gray-100/80 p-1 rounded-xl">
+                <TabsTrigger 
+                  value="pending" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="hidden sm:inline">Pending</span>
+                    {pendingRequests.length > 0 && (
+                      <Badge variant="secondary" className="ml-1 bg-orange-100 text-orange-700 text-xs px-1.5 py-0.5">
+                        {pendingRequests.length}
+                      </Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="assigned" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    <span className="hidden sm:inline">Assigned</span>
+                    {assignedRequests.length > 0 && (
+                      <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5">
+                        {assignedRequests.length}
+                      </Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="messages" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="hidden sm:inline">Messages</span>
+                    {unreadCount > 0 && (
+                      <Badge variant="secondary" className="ml-1 bg-red-100 text-red-700 text-xs px-1.5 py-0.5">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="completed" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="hidden sm:inline">History</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
 
-      <SendMessageModal
-        isOpen={showMessageModal}
-        onClose={() => {
-          setShowMessageModal(false);
-          setMessageRequestId('');
-        }}
-        onSend={sendMessage}
-      />
+              <TabsContent value="pending" className="mt-6">
+                <ShowingListTab
+                  title="Pending Requests"
+                  showings={pendingRequests}
+                  emptyIcon={Clock}
+                  emptyTitle="No Pending Requests"
+                  emptyDescription="All caught up! New showing requests will appear here."
+                  emptyButtonText=""
+                  onRequestShowing={() => {}}
+                  onCancelShowing={() => {}}
+                  onRescheduleShowing={() => {}}
+                  onConfirmShowing={handleConfirmShowing}
+                  userType="agent"
+                  onComplete={fetchAgentData}
+                  currentUserId={currentUser?.id}
+                />
+              </TabsContent>
+
+              <TabsContent value="assigned" className="mt-6">
+                <ShowingListTab
+                  title="Assigned Showings"
+                  showings={assignedRequests}
+                  emptyIcon={CalendarDays}
+                  emptyTitle="No Assigned Showings"
+                  emptyDescription="Confirmed showings will appear here."
+                  emptyButtonText=""
+                  onRequestShowing={() => {}}
+                  onCancelShowing={() => {}}
+                  onRescheduleShowing={() => {}}
+                  userType="agent"
+                  onComplete={fetchAgentData}
+                  currentUserId={currentUser?.id}
+                />
+              </TabsContent>
+
+              <TabsContent value="messages" className="mt-6">
+                {currentUser?.id ? (
+                  <MessagingInterface
+                    userId={currentUser.id}
+                    userType="agent"
+                  />
+                ) : (
+                  <EmptyStateCard
+                    title="Unable to Load Messages"
+                    description="Please refresh the page to load your messages."
+                    buttonText="Refresh"
+                    onButtonClick={() => window.location.reload()}
+                    icon={MessageSquare}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="completed" className="mt-6">
+                <ShowingListTab
+                  title="History"
+                  showings={completedRequests}
+                  emptyIcon={CheckCircle}
+                  emptyTitle="No Completed Showings"
+                  emptyDescription="Completed and cancelled showings will appear here."
+                  emptyButtonText=""
+                  onRequestShowing={() => {}}
+                  onCancelShowing={() => {}}
+                  onRescheduleShowing={() => {}}
+                  showActions={false}
+                  userType="agent"
+                  onComplete={fetchAgentData}
+                  currentUserId={currentUser?.id}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className={`lg:col-span-1 ${isMobile ? (sidebarOpen ? 'fixed inset-0 z-50 bg-white p-4' : 'hidden') : ''}`}>
+            <div className="space-y-6">
+              {isMobile && sidebarOpen && (
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold">Dashboard Overview</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Quick Stats */}
+              <Card className="shadow-sm border-gray-200/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-purple-600" />
+                    Quick Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div 
+                    className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-100 transition-colors"
+                    onClick={() => handleStatClick("pending")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-700">Pending</div>
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-orange-600">{pendingRequests.length}</div>
+                  </div>
+
+                  <div 
+                    className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => handleStatClick("assigned")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <CalendarDays className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-700">Assigned</div>
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-blue-600">{assignedRequests.length}</div>
+                  </div>
+
+                  <div 
+                    className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition-colors"
+                    onClick={() => handleStatClick("completed")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-700">Completed</div>
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-green-600">{completedRequests.length}</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Upcoming Showings */}
+              <Card className="shadow-sm border-gray-200/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                    Upcoming
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {assignedRequests.slice(0, 3).length > 0 ? (
+                    <div className="space-y-3">
+                      {assignedRequests.slice(0, 3).map((showing) => (
+                        <div key={showing.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                            {showing.property_address}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {showing.preferred_date && new Date(showing.preferred_date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))}
+                      {assignedRequests.length > 3 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full text-blue-600 hover:bg-blue-50"
+                          onClick={() => handleStatClick("assigned")}
+                        >
+                          View All ({assignedRequests.length})
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No upcoming showings
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="shadow-sm border-gray-200/60">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {completedRequests.slice(0, 3).length > 0 ? (
+                    <div className="space-y-3">
+                      {completedRequests.slice(0, 3).map((showing) => (
+                        <div key={showing.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                            {showing.property_address}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={showing.status === 'completed' ? 'default' : 'secondary'} 
+                              className={`text-xs ${
+                                showing.status === 'completed' 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {showing.status}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {new Date(showing.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {completedRequests.length > 3 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full text-green-600 hover:bg-green-50"
+                          onClick={() => handleStatClick("completed")}
+                        >
+                          View All ({completedRequests.length})
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No recent activity
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {selectedRequest && (
+        <>
+          <AgentConfirmationModal
+            isOpen={showConfirmModal}
+            onClose={() => setShowConfirmModal(false)}
+            request={selectedRequest}
+            onConfirm={handleConfirmSuccess}
+          />
+          
+          <StatusUpdateModal
+            isOpen={showStatusModal}
+            onClose={() => setShowStatusModal(false)}
+            request={selectedRequest}
+            onStatusUpdate={handleStatusUpdate}
+            onSuccess={handleStatusUpdateSuccess}
+          />
+        </>
+      )}
     </div>
   );
 };

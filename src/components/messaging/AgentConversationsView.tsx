@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,18 +39,44 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
   );
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedConversationId || !selectedConversation) return false;
+    if (!selectedConversationId || !selectedConversation) {
+      console.error('No conversation selected');
+      return false;
+    }
 
-    // Find the buyer in the conversation
-    const buyerMessage = selectedConversation.messages.find(msg => 
-      msg.sender_profile?.user_type === 'buyer'
-    );
-    
-    if (!buyerMessage) return false;
+    console.log('Sending message for conversation:', selectedConversation);
+    console.log('Agent ID:', agentId);
+    console.log('Messages in conversation:', selectedConversation.messages);
 
-    const buyerId = buyerMessage.sender_id === agentId ? buyerMessage.receiver_id : buyerMessage.sender_id;
+    // Find the buyer in the conversation - look for messages where sender is not the current agent
+    let buyerId: string | null = null;
     
-    return await sendMessage(selectedConversationId, buyerId, content);
+    for (const message of selectedConversation.messages) {
+      if (message.sender_id !== agentId) {
+        buyerId = message.sender_id;
+        break;
+      }
+      if (message.receiver_id !== agentId) {
+        buyerId = message.receiver_id;
+        break;
+      }
+    }
+
+    console.log('Found buyer ID:', buyerId);
+    
+    if (!buyerId) {
+      console.error('Could not find buyer ID in conversation');
+      return false;
+    }
+
+    try {
+      const success = await sendMessage(selectedConversationId, buyerId, content);
+      console.log('Message send result:', success);
+      return success;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return false;
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -143,55 +168,70 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
                     </p>
                   </div>
                 ) : (
-                  filteredConversations.map((conversation) => (
-                    <Card
-                      key={conversation.showing_request_id}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedConversationId === conversation.showing_request_id
-                          ? 'ring-2 ring-purple-500 bg-purple-50'
-                          : ''
-                      }`}
-                      onClick={() => setSelectedConversationId(conversation.showing_request_id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <MapPin className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                            <span className="font-medium text-sm truncate">
-                              {conversation.property_address}
+                  filteredConversations.map((conversation) => {
+                    const getStatusColor = (status: string) => {
+                      switch (status) {
+                        case 'pending': return 'bg-yellow-100 text-yellow-800';
+                        case 'confirmed': return 'bg-green-100 text-green-800';
+                        case 'completed': return 'bg-blue-100 text-blue-800';
+                        case 'cancelled': return 'bg-red-100 text-red-800';
+                        default: return 'bg-gray-100 text-gray-800';
+                      }
+                    };
+
+                    return (
+                      <Card
+                        key={conversation.showing_request_id}
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          selectedConversationId === conversation.showing_request_id
+                            ? 'ring-2 ring-purple-500 bg-purple-50'
+                            : ''
+                        }`}
+                        onClick={() => {
+                          console.log('Selecting conversation:', conversation.showing_request_id);
+                          setSelectedConversationId(conversation.showing_request_id);
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <MapPin className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                              <span className="font-medium text-sm truncate">
+                                {conversation.property_address}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {conversation.unread_count > 0 && (
+                                <Badge className="bg-red-500 text-white text-xs">
+                                  {conversation.unread_count}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge className={`text-xs ${getStatusColor(conversation.status)}`}>
+                              {conversation.status}
+                            </Badge>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Calendar className="h-3 w-3" />
+                              {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                              {conversation.messages.length} message{conversation.messages.length !== 1 ? 's' : ''}
                             </span>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <User className="h-3 w-3" />
+                              Buyer
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {conversation.unread_count > 0 && (
-                              <Badge className="bg-red-500 text-white text-xs">
-                                {conversation.unread_count}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className={`text-xs ${getStatusColor(conversation.status)}`}>
-                            {conversation.status}
-                          </Badge>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Calendar className="h-3 w-3" />
-                            {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
-                            {conversation.messages.length} message{conversation.messages.length !== 1 ? 's' : ''}
-                          </span>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <User className="h-3 w-3" />
-                            Buyer
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </CardContent>

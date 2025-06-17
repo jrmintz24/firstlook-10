@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +38,8 @@ export const useMessages = (userId: string | null) => {
     }
 
     try {
+      console.log('Fetching messages for user:', userId);
+      
       const { data, error } = await supabase
         .from('messages')
         .select(`
@@ -47,6 +50,8 @@ export const useMessages = (userId: string | null) => {
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
+      console.log('Messages fetch result:', { data, error });
+
       if (error) throw error;
 
       // Filter out expired messages
@@ -56,6 +61,7 @@ export const useMessages = (userId: string | null) => {
         return new Date(msg.access_expires_at) > now;
       });
 
+      console.log('Active messages:', activeMessages);
       setMessages(activeMessages);
       
       // Count unread messages (for now, consider all received messages as potentially unread)
@@ -79,6 +85,13 @@ export const useMessages = (userId: string | null) => {
     receiverId: string,
     content: string
   ) => {
+    console.log('sendMessage called with:', {
+      showingRequestId,
+      receiverId,
+      content,
+      userId
+    });
+
     if (!userId) {
       toast({
         title: "Error",
@@ -90,11 +103,18 @@ export const useMessages = (userId: string | null) => {
 
     try {
       // Check if the showing allows messaging
-      const { data: showingData } = await supabase
+      const { data: showingData, error: showingError } = await supabase
         .from('showing_requests')
         .select('status, status_updated_at')
         .eq('id', showingRequestId)
         .single();
+
+      console.log('Showing data:', { showingData, showingError });
+
+      if (showingError) {
+        console.error('Error fetching showing data:', showingError);
+        throw showingError;
+      }
 
       if (showingData?.status === 'cancelled') {
         toast({
@@ -119,6 +139,13 @@ export const useMessages = (userId: string | null) => {
         }
       }
 
+      console.log('Inserting message:', {
+        showing_request_id: showingRequestId,
+        sender_id: userId,
+        receiver_id: receiverId,
+        content: content
+      });
+
       const { data: messageData, error } = await supabase
         .from('messages')
         .insert({
@@ -130,10 +157,13 @@ export const useMessages = (userId: string | null) => {
         .select()
         .single();
 
+      console.log('Message insert result:', { messageData, error });
+
       if (error) throw error;
 
       // Send email notification
       try {
+        console.log('Sending email notification...');
         await supabase.functions.invoke('send-message-notification', {
           body: {
             messageId: messageData.id,
@@ -143,6 +173,7 @@ export const useMessages = (userId: string | null) => {
             content: content
           }
         });
+        console.log('Email notification sent successfully');
       } catch (notificationError) {
         console.error('Failed to send email notification:', notificationError);
         // Don't fail the whole message send if notification fails

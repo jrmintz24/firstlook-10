@@ -22,22 +22,23 @@ const timeSlots = [
 const SchedulingStep = ({ formData, onInputChange, onNext, onBack }: SchedulingStepProps) => {
   const { user } = useAuth();
   
-  // Calculate minimum date (tomorrow for non-logged users, today for logged users)
+  // Calculate minimum date (23 hours from now for non-logged users, today for logged users)
   const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + (user ? 0 : 1));
-    return tomorrow.toISOString().split('T')[0];
+    const minDate = new Date();
+    if (!user) {
+      // Add 23 hours for non-authenticated users
+      minDate.setHours(minDate.getHours() + 23);
+    }
+    return minDate.toISOString().split('T')[0];
   };
 
-  const isDateRestricted = (dateValue: string) => {
-    if (!user && dateValue) {
-      const selectedDate = new Date(dateValue);
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      return selectedDate < tomorrow;
+  const getMinDateTime = () => {
+    if (!user) {
+      const minDateTime = new Date();
+      minDateTime.setHours(minDateTime.getHours() + 23);
+      return minDateTime;
     }
-    return false;
+    return new Date();
   };
 
   return (
@@ -92,15 +93,8 @@ const SchedulingStep = ({ formData, onInputChange, onNext, onBack }: SchedulingS
                   value={formData[`preferredDate${num}` as keyof PropertyRequestFormData]}
                   onChange={(e) => onInputChange(`preferredDate${num}`, e.target.value)}
                   min={getMinDate()}
-                  className={`rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ${
-                    isDateRestricted(formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string) 
-                      ? 'border-red-300 bg-red-50' 
-                      : ''
-                  }`}
+                  className="rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                 />
-                {isDateRestricted(formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string) && (
-                  <p className="text-xs text-red-600 mt-1">Please select a date at least 24 hours in advance</p>
-                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`time${num}`} className="text-sm font-medium text-gray-700 flex items-center gap-2">

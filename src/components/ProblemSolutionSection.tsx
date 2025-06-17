@@ -13,14 +13,14 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
       oldWay: {
         icon: X,
         title: "The Traditional Trap",
-        story: "Sarah wanted to tour 4 homes over the weekend. But before she could even get started, she had to sign a buyer agreement with an agent she'd never met—just to schedule a showing. Then she waited 3 days for their availability. In the end, she saw only 2 homes, felt rushed, and was nudged toward writing offers she wasn't ready for. When she emailed with follow-up questions? Crickets.",
-        pain: "She committed to an agent before she knew if they were a good fit. No flexibility. No freedom. No follow-through."
+        story: "Sarah found 4 perfect homes on Zillow Friday night. Excited for weekend tours, she called the first listing agent Saturday morning. \"Sorry, you'll need to work with a buyer's agent first—I can't show you the home directly.\" Three agents later, she finally found one available... for Tuesday. By then, 2 of her dream homes were under contract. She toured the remaining properties feeling rushed, with an agent who barely knew her name pushing her to \"write an offer today before someone else does.\"",
+        pain: "Lost her dream homes to paperwork and other people's schedules. Felt pressured by someone she'd never met."
       },
       newWay: {
         icon: CheckCircle2,
         title: "The FirstLook Way",
-        story: "Sarah opened FirstLook on Friday. She picked 4 homes, booked tours in under 10 minutes, and visited all of them on her schedule the next day. Each tour was hosted by a vetted local pro—no pressure, just answers. When she finally found \"the one,\" then she chose to connect with an agent she liked.",
-        benefit: "She got to experience homes first—then decide when (and if) to commit. Freedom to explore. Support when it matters."
+        story: "Sarah spotted those same 4 homes Friday night. By Saturday morning, she'd booked all 4 tours through FirstLook—the earliest starting at 10 AM. Each tour was led by a knowledgeable local professional who answered her questions without any sales pressure. She had thoughtful conversations at each property, took her time, and when she found \"the one\" on Sunday, she chose to work with the FirstLook agent who'd impressed her most.",
+        benefit: "Saw every home she wanted, on her timeline. Made informed decisions without pressure. Built trust before commitment."
       }
     },
     {
@@ -29,14 +29,30 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
       oldWay: {
         icon: X,
         title: "The Hidden Cost of \"Free\"",
-        story: "Mike thought working with a buyer's agent was free. But at closing, he realized the seller paid 3% in commission to the buyer's agent—baked into the sale price. That meant on his $300K condo, $9,000 went to an agent he barely interacted with. He never negotiated the fee, never approved the terms—and never got a breakdown of where that money went.",
-        pain: "\"Free\" turned out to be one of the most expensive parts of buying."
+        story: "Mike thought he'd scored when his friend's agent offered to help him buy—\"completely free!\" Six months later at closing, Mike discovered the truth. That $300K condo? The seller had built in $18,000 to cover both agents' commissions. Mike's \"free\" agent had shown him exactly 3 properties, was impossible to reach on weekends, and spent more time texting during tours than answering Mike's questions. The most expensive \"free\" service he'd ever received.",
+        pain: "Paid $18K hidden in the home price for terrible service he never agreed to."
       },
       newWay: {
         icon: CheckCircle2,
         title: "Transparent with FirstLook",
-        story: "Mike toured his first home for $0. He booked a few more for $99, and when he was ready to make an offer, he used FirstLook's expert help for a flat $499. All-in? He saved over $8,000, stayed in control, and only paid for what he actually needed.",
-        benefit: "No bloated fees. No forced commitments. Just smart homebuying."
+        story: "Mike toured 8 condos over two weeks with FirstLook's transparent pricing: his first tour was free, then $99 per additional tour. When he was ready to make an offer, FirstLook's full-service support cost him $899. Total investment: under $1,200. He saved over $16,000 compared to traditional commissions, got better service, and always knew exactly what he was paying for—and why.",
+        benefit: "Complete transparency. Better service. Saved over $16,000 with no hidden fees."
+      }
+    },
+    {
+      name: "Lisa's Curiosity",
+      subtitle: "Two approaches to neighborhood intel.",
+      oldWay: {
+        icon: X,
+        title: "The Awkward Dance",
+        story: "Lisa noticed the cute house three doors down hit the market. After 8 years in the neighborhood, she was curious what it might be worth—and honestly, what her own house could sell for. But getting a tour meant calling an agent, pretending to be a serious buyer, and enduring an uncomfortable song-and-dance. \"Are you pre-approved? When are you looking to buy? I'll need you to sign this agreement...\" She gave up. The house sold two weeks later, and she never did find out what her place might be worth.",
+        pain: "Couldn't satisfy simple curiosity without lying to agents or making fake commitments."
+      },
+      newWay: {
+        icon: CheckCircle2,
+        title: "Honest Exploration",
+        story: "When Lisa saw her neighbor's house go on the market, she booked a FirstLook tour the same day. She was upfront: \"I live three doors down and I'm curious about market values in our neighborhood.\" Her tour guide was knowledgeable about recent sales, renovation costs, and neighborhood trends. Lisa got great insights about her area's market—and when she was ready to sell her own home two years later, she knew exactly who to call.",
+        benefit: "Got honest market insights without awkward pretenses. Built a relationship for future needs."
       }
     }
   ];
@@ -61,7 +77,7 @@ const ProblemSolutionSection = ({ onRequestShowing }: ProblemSolutionSectionProp
               <div key={index} className="max-w-5xl mx-auto">
                 <div className="text-center mb-12">
                   <h3 className="text-2xl font-medium text-gray-900 mb-2">
-                    {index === 0 ? "🎀" : "🧾"} {story.name}
+                    {index === 0 ? "🎀" : index === 1 ? "🧾" : "🏠"} {story.name}
                   </h3>
                   <p className="text-gray-500 text-sm uppercase tracking-wide">{story.subtitle}</p>
                 </div>

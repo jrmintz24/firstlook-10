@@ -26,6 +26,7 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
+  // All hooks must be called at the top level, before any conditional returns
   const {
     // State
     showPropertyForm,
@@ -58,6 +59,15 @@ const RedesignedBuyerDashboard = () => {
     handleRescheduleShowing
   } = useBuyerDashboardLogic();
 
+  // Add reschedule functionality - must be called before any conditional returns
+  const {
+    showRescheduleModal,
+    selectedShowingForReschedule,
+    handleRescheduleShowing: openRescheduleModal,
+    handleRescheduleModalClose,
+    handleRescheduleComplete
+  } = useRescheduleShowing(fetchShowingRequests);
+
   // Handle any pending tour requests from signup and refresh data when processed
   usePendingTourHandler({
     onProcessed: () => {
@@ -81,15 +91,6 @@ const RedesignedBuyerDashboard = () => {
       completed: completedShowings.length
     }
   });
-
-  // Add reschedule functionality
-  const {
-    showRescheduleModal,
-    selectedShowingForReschedule,
-    handleRescheduleShowing: openRescheduleModal,
-    handleRescheduleModalClose,
-    handleRescheduleComplete
-  } = useRescheduleShowing(fetchShowingRequests);
 
   // Show loading while auth is being determined
   if (authLoading) {

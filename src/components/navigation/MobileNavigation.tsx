@@ -22,6 +22,14 @@ const MobileNavigation = ({
   return (
     <div className="md:hidden bg-white border-t border-purple-100 py-4 shadow-lg">
       <div className="flex flex-col space-y-2">
+        <Link to="/homebuying-guide" onClick={onMenuItemClick}>
+          <Button 
+            variant="ghost" 
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
+          >
+            No Agent Buyer Guide
+          </Button>
+        </Link>
         <Link to="/faq" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 

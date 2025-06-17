@@ -4,9 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DashboardSection {
   id: string;
-  label: string;
+  title: string;
   content: ReactNode;
   count?: number;
+  icon?: any;
 }
 
 interface DashboardLayoutProps {
@@ -14,7 +15,7 @@ interface DashboardLayoutProps {
   stats: ReactNode;
   mainContent: ReactNode;
   sidebar: ReactNode;
-  sections: DashboardSection[];
+  sections: Record<string, DashboardSection>;
   defaultSection?: string;
   showSectionTabs?: boolean;
   onTabChange?: (tabId: string) => void;
@@ -27,12 +28,13 @@ const DashboardLayout = ({
   mainContent, 
   sidebar, 
   sections, 
-  defaultSection = sections[0]?.id,
+  defaultSection,
   showSectionTabs = true,
   onTabChange,
   activeTab
 }: DashboardLayoutProps) => {
-  const [currentTab, setCurrentTab] = useState(defaultSection);
+  const sectionsArray = Object.values(sections);
+  const [currentTab, setCurrentTab] = useState(defaultSection || sectionsArray[0]?.id);
   
   const handleTabChange = (value: string) => {
     setCurrentTab(value);
@@ -64,16 +66,16 @@ const DashboardLayout = ({
         </div>
 
         {/* Tabbed Sections */}
-        {showSectionTabs && sections.length > 0 && (
+        {showSectionTabs && sectionsArray.length > 0 && (
           <Tabs value={tabValue} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1" style={{ gridTemplateColumns: `repeat(${sections.length}, 1fr)` }}>
-              {sections.map((section) => (
+            <TabsList className="grid w-full bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1" style={{ gridTemplateColumns: `repeat(${sectionsArray.length}, 1fr)` }}>
+              {sectionsArray.map((section) => (
                 <TabsTrigger 
                   key={section.id} 
                   value={section.id} 
                   className="rounded-lg font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
-                  {section.label}
+                  {section.title}
                   {section.count !== undefined && section.count > 0 && (
                     <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
                       {section.count}
@@ -83,7 +85,7 @@ const DashboardLayout = ({
               ))}
             </TabsList>
 
-            {sections.map((section) => (
+            {sectionsArray.map((section) => (
               <TabsContent key={section.id} value={section.id}>
                 {section.content}
               </TabsContent>

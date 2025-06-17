@@ -26,14 +26,6 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
-  // Handle any pending tour requests from signup and refresh data when processed
-  usePendingTourHandler({
-    onProcessed: () => {
-      console.log('RedesignedBuyerDashboard: Pending tour processed, refreshing data...');
-      fetchShowingRequests();
-    }
-  });
-
   const {
     // State
     showPropertyForm,
@@ -65,6 +57,14 @@ const RedesignedBuyerDashboard = () => {
     fetchShowingRequests,
     handleRescheduleShowing
   } = useBuyerDashboardLogic();
+
+  // Handle any pending tour requests from signup and refresh data when processed
+  usePendingTourHandler({
+    onProcessed: () => {
+      console.log('RedesignedBuyerDashboard: Pending tour processed, refreshing data...');
+      fetchShowingRequests();
+    }
+  });
 
   console.log('RedesignedBuyerDashboard - Render state:', {
     authLoading,
@@ -108,8 +108,8 @@ const RedesignedBuyerDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-lg mb-4">Please sign in to view your dashboard</div>
-          <Link to="/">
-            <Button>Go to Home</Button>
+          <Link to="/buyer-auth">
+            <Button>Go to Sign In</Button>
           </Link>
         </div>
       </div>

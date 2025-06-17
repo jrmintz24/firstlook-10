@@ -32,7 +32,7 @@ export const useAuthForm = (
   const navigate = useNavigate();
 
   const handleSocialLogin = async (
-    provider: 'google' | 'github' | 'discord' | 'facebook'
+    provider: 'google' | 'facebook'
   ) => {
     setIsLoading(true);
     try {

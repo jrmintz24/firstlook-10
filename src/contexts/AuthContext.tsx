@@ -80,8 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async (): Promise<void> => {
-    const { error } = await authService.signOut()
-    if (error) throw error
+    await authService.signOut()
     // Clear local state immediately after successful sign out
     setUser(null)
     setSession(null)
@@ -90,16 +89,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithProvider = async (
     provider: 'google' | 'github' | 'discord' | 'facebook'
   ): Promise<void> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/buyer-dashboard`,
-        queryParams: {
-          user_type: 'buyer'
+    // For now, only support google and facebook as per authService
+    if (provider === 'google' || provider === 'facebook') {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/buyer-dashboard`,
+          queryParams: {
+            user_type: 'buyer'
+          }
         }
-      }
-    })
-    if (error) throw error
+      })
+      if (error) throw error
+    } else {
+      throw new Error(`Provider ${provider} is not supported yet`)
+    }
   }
 
   const value = {

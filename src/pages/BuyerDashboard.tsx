@@ -1,4 +1,3 @@
-
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -97,28 +96,32 @@ const BuyerDashboard = () => {
       value: pendingRequests.length,
       change: pendingRequests.length > 0 ? { value: "Action needed", trend: 'neutral' as const } : undefined,
       icon: Clock,
-      color: 'orange' as const
+      color: 'orange' as const,
+      targetTab: "requested"
     },
     {
       title: "Confirmed Tours",
       value: activeShowings.length,
       change: activeShowings.length > 0 ? { value: "Upcoming", trend: 'up' as const } : undefined,
       icon: Calendar,
-      color: 'blue' as const
+      color: 'blue' as const,
+      targetTab: "confirmed"
     },
     {
       title: "Messages",
       value: unreadCount || 0,
       change: unreadCount > 0 ? { value: "New messages", trend: 'up' as const } : undefined,
       icon: MessageCircle,
-      color: 'purple' as const
+      color: 'purple' as const,
+      targetTab: "messages"
     },
     {
       title: "Completed",
       value: completedShowings.filter(s => s.status === 'completed').length,
       change: completedShowings.length > 0 ? { value: "Tours done", trend: 'up' as const } : undefined,
       icon: CheckCircle,
-      color: 'green' as const
+      color: 'green' as const,
+      targetTab: "history"
     }
   ];
 

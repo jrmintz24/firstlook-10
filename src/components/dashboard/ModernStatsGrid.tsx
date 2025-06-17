@@ -11,11 +11,12 @@ interface Stat {
   };
   icon?: LucideIcon;
   color?: 'blue' | 'green' | 'purple' | 'orange' | 'red';
+  targetTab?: string; // Add this to allow targeting specific tabs
 }
 
 interface ModernStatsGridProps {
   stats: Stat[];
-  onStatClick?: (index: number) => void;
+  onStatClick?: (indexOrTab: number | string) => void;
 }
 
 const ModernStatsGrid = ({ stats, onStatClick }: ModernStatsGridProps) => {
@@ -36,6 +37,13 @@ const ModernStatsGrid = ({ stats, onStatClick }: ModernStatsGridProps) => {
     return null;
   };
 
+  const handleStatClick = (stat: Stat, index: number) => {
+    if (onStatClick) {
+      // If the stat has a targetTab, use that; otherwise use the index
+      onStatClick(stat.targetTab || index);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat, index) => (
@@ -44,7 +52,7 @@ const ModernStatsGrid = ({ stats, onStatClick }: ModernStatsGridProps) => {
           className={`bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200 ${
             onStatClick ? 'cursor-pointer' : ''
           }`}
-          onClick={() => onStatClick?.(index)}
+          onClick={() => handleStatClick(stat, index)}
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">

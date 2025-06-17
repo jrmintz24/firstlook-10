@@ -15,7 +15,7 @@ interface StatsAndMessagesProps {
 
 const StatsAndMessages = ({ stats, unreadMessages, onOpenInbox }: StatsAndMessagesProps) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
       {/* Stats Card */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Stats</h3>

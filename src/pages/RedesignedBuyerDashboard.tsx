@@ -37,10 +37,10 @@ const RedesignedBuyerDashboard = () => {
     user,
     session,
     currentUser,
-    pendingRequests,
-    activeShowings,
-    completedShowings,
-    unreadCount,
+    pendingRequests = [],
+    activeShowings = [],
+    completedShowings = [],
+    unreadCount = 0,
     
     // Handlers
     handleRequestShowing,
@@ -50,10 +50,16 @@ const RedesignedBuyerDashboard = () => {
     handleSendMessage
   } = useBuyerDashboardLogic();
 
+  console.log('RedesignedBuyerDashboard - Auth Loading:', authLoading, 'Loading:', loading);
+  console.log('RedesignedBuyerDashboard - User:', user?.email, 'Session:', !!session);
+  console.log('RedesignedBuyerDashboard - Profile:', profile);
+  console.log('RedesignedBuyerDashboard - Data:', { pendingRequests: pendingRequests?.length, activeShowings: activeShowings?.length, completedShowings: completedShowings?.length });
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <div className="text-lg mb-4">Loading your dashboard...</div>
           <div className="text-sm text-gray-600">
             {authLoading ? 'Checking authentication...' : 'Loading dashboard data...'}
@@ -64,6 +70,7 @@ const RedesignedBuyerDashboard = () => {
   }
 
   if (!user && !session) {
+    console.log('RedesignedBuyerDashboard - No user/session, showing sign-in message');
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
@@ -76,23 +83,29 @@ const RedesignedBuyerDashboard = () => {
     );
   }
 
+  // Safe fallbacks for first-time users
   const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || currentUser?.email?.split('@')[0] || 'User';
   
-  // Get next upcoming tour
-  const nextTour = activeShowings[0] || pendingRequests[0];
+  // Get next upcoming tour - safely handle empty arrays
+  const nextTour = (activeShowings && activeShowings.length > 0) ? activeShowings[0] : 
+                   (pendingRequests && pendingRequests.length > 0) ? pendingRequests[0] : null;
   
-  // Calculate current journey step
+  // Calculate current journey step - handle undefined arrays
   const getCurrentStep = () => {
-    if (activeShowings.length > 0) return "scheduled";
-    if (completedShowings.length > 0) return "completed";
-    if (pendingRequests.length > 0) return "scheduled";
+    const activeCount = activeShowings?.length || 0;
+    const completedCount = completedShowings?.length || 0;
+    const pendingCount = pendingRequests?.length || 0;
+    
+    if (activeCount > 0) return "scheduled";
+    if (completedCount > 0) return "completed";
+    if (pendingCount > 0) return "scheduled";
     return "account";
   };
 
-  // Generate stats
+  // Generate stats - safely handle undefined arrays
   const stats = {
-    toursCompleted: completedShowings.filter(s => s.status === 'completed').length,
-    propertiesViewed: completedShowings.length + activeShowings.length,
+    toursCompleted: (completedShowings || []).filter(s => s?.status === 'completed').length,
+    propertiesViewed: (completedShowings || []).length + (activeShowings || []).length,
     offersMade: 0 // TODO: Add offers tracking
   };
 
@@ -101,7 +114,6 @@ const RedesignedBuyerDashboard = () => {
   };
 
   const handleAskQuestion = () => {
-    // TODO: Implement help/question functionality
     console.log("Ask question clicked");
   };
 
@@ -110,16 +122,17 @@ const RedesignedBuyerDashboard = () => {
   };
 
   const handleMakeOffer = () => {
-    // TODO: Implement offer functionality
     console.log("Make offer clicked");
   };
+
+  console.log('RedesignedBuyerDashboard - Rendering with:', { displayName, nextTour: !!nextTour, stats });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
       <RedesignedDashboardHeader 
         displayName={displayName} 
-        unreadCount={unreadCount}
+        unreadCount={unreadCount || 0}
       />
 
       {/* Main Dashboard Content */}
@@ -128,7 +141,7 @@ const RedesignedBuyerDashboard = () => {
         <JourneyProgressBar 
           currentStep={getCurrentStep()}
           completedTours={stats.toursCompleted}
-          activeShowings={activeShowings.length}
+          activeShowings={activeShowings?.length || 0}
         />
 
         {/* Main Content Grid */}
@@ -160,17 +173,19 @@ const RedesignedBuyerDashboard = () => {
           <div className="space-y-6">
             <StatsAndMessages 
               stats={stats}
-              unreadMessages={unreadCount}
+              unreadMessages={unreadCount || 0}
               onOpenInbox={handleOpenInbox}
             />
           </div>
         </div>
 
-        {/* Badges Section */}
-        <BadgesSection 
-          completedTours={stats.toursCompleted}
-          propertiesViewed={stats.propertiesViewed}
-        />
+        {/* Badges Section - only show if user has some activity */}
+        {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
+          <BadgesSection 
+            completedTours={stats.toursCompleted}
+            propertiesViewed={stats.propertiesViewed}
+          />
+        )}
       </div>
 
       {/* Help Widget */}

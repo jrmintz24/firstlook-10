@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,8 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
     unreadCount, 
     sendMessage, 
     getMessagesForShowing, 
-    getConversations 
+    getConversations,
+    markMessagesAsRead
   } = useMessages(agentId);
 
   const conversations = getConversations();
@@ -37,6 +38,18 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
   const selectedConversation = conversations.find(
     conv => conv.showing_request_id === selectedConversationId
   );
+
+  // Mark messages as read when conversation is selected
+  useEffect(() => {
+    if (selectedConversationId) {
+      markMessagesAsRead(selectedConversationId);
+    }
+  }, [selectedConversationId, markMessagesAsRead]);
+
+  const handleSelectConversation = (conversationId: string) => {
+    console.log('Selecting conversation:', conversationId);
+    setSelectedConversationId(conversationId);
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversationId || !selectedConversation) {
@@ -187,10 +200,7 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
                             ? 'ring-2 ring-purple-500 bg-purple-50'
                             : ''
                         }`}
-                        onClick={() => {
-                          console.log('Selecting conversation:', conversation.showing_request_id);
-                          setSelectedConversationId(conversation.showing_request_id);
-                        }}
+                        onClick={() => handleSelectConversation(conversation.showing_request_id)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">

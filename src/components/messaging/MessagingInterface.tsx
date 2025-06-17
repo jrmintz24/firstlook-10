@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Inbox } from "lucide-react";
@@ -28,7 +27,8 @@ const MessagingInterface = ({
     unreadCount, 
     sendMessage, 
     getMessagesForShowing, 
-    getConversations 
+    getConversations,
+    markMessagesAsRead
   } = useMessages(userId);
 
   const conversations = getConversations();
@@ -41,6 +41,17 @@ const MessagingInterface = ({
   const selectedConversation = filteredConversations.find(
     conv => conv.showing_request_id === selectedConversationId
   );
+
+  // Mark messages as read when conversation is selected
+  useEffect(() => {
+    if (selectedConversationId) {
+      markMessagesAsRead(selectedConversationId);
+    }
+  }, [selectedConversationId, markMessagesAsRead]);
+
+  const handleSelectConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversationId || !selectedConversation) return false;
@@ -123,7 +134,7 @@ const MessagingInterface = ({
               <ConversationsList
                 conversations={filteredConversations}
                 selectedConversationId={selectedConversationId}
-                onSelectConversation={setSelectedConversationId}
+                onSelectConversation={handleSelectConversation}
               />
             </CardContent>
           </Card>

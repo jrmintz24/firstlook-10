@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +10,7 @@ interface Message {
   content: string;
   created_at: string;
   access_expires_at?: string | null;
+  read_at?: string | null;
 }
 
 interface MessageWithShowing extends Message {
@@ -64,8 +64,10 @@ export const useMessages = (userId: string | null) => {
       console.log('Active messages:', activeMessages);
       setMessages(activeMessages);
       
-      // Count unread messages (for now, consider all received messages as potentially unread)
-      const unread = activeMessages?.filter(msg => msg.receiver_id === userId).length || 0;
+      // Count unread messages (received messages that haven't been read)
+      const unread = activeMessages?.filter(msg => 
+        msg.receiver_id === userId && !msg.read_at
+      ).length || 0;
       setUnreadCount(unread);
       
     } catch (error) {
@@ -77,6 +79,29 @@ export const useMessages = (userId: string | null) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markMessagesAsRead = async (showingRequestId: string) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('showing_request_id', showingRequestId)
+        .eq('receiver_id', userId)
+        .is('read_at', null);
+
+      if (error) {
+        console.error('Error marking messages as read:', error);
+        return;
+      }
+
+      // Refresh messages to update read status
+      fetchMessages();
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
     }
   };
 
@@ -225,8 +250,8 @@ export const useMessages = (userId: string | null) => {
         conversation.last_message_at = message.created_at;
       }
       
-      // Count unread (messages received by current user)
-      if (message.receiver_id === userId) {
+      // Count unread (messages received by current user that haven't been read)
+      if (message.receiver_id === userId && !message.read_at) {
         conversation.unread_count++;
       }
     });
@@ -272,6 +297,7 @@ export const useMessages = (userId: string | null) => {
     fetchMessages,
     sendMessage,
     getMessagesForShowing,
-    getConversations
+    getConversations,
+    markMessagesAsRead
   };
 };

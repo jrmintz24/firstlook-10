@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { Link } from "react-router-dom";
@@ -175,9 +176,9 @@ const RedesignedBuyerDashboard = () => {
           />
         </div>
 
-        {/* Main Content Grid - Improved layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {/* Left Column - Main Tours Content */}
+        {/* Main Content Grid - Improved layout with chat having more space */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {/* Left Column - Main Tours Content (2 columns) */}
           <div className="xl:col-span-2 space-y-6">
             {/* Next Tour Card */}
             <NextTourCard 
@@ -258,21 +259,24 @@ const RedesignedBuyerDashboard = () => {
             />
           </div>
 
-          {/* Right Column - Stats and Messages */}
+          {/* Chat Widget - Now has its own column with more space */}
+          <div className="xl:col-span-1">
+            {currentUser?.id && (
+              <ChatWidget
+                userId={currentUser.id}
+                unreadCount={unreadCount || 0}
+                className="h-[600px]"
+              />
+            )}
+          </div>
+
+          {/* Right Column - Stats (1 column) */}
           <div className="xl:col-span-1 space-y-6">
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
               onOpenInbox={() => {}}
             />
-            
-            {/* Chat Messages */}
-            {currentUser?.id && (
-              <ChatWidget
-                userId={currentUser.id}
-                unreadCount={unreadCount || 0}
-              />
-            )}
           </div>
         </div>
 

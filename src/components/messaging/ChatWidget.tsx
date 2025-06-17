@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, X, Send } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useMessages } from "@/hooks/useMessages";
 
@@ -44,11 +44,11 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
         className={`cursor-pointer hover:shadow-md transition-all duration-200 ${className}`}
         onClick={() => setIsExpanded(true)}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                <MessageCircle className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Messages</h3>
@@ -69,10 +69,9 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
   }
 
   return (
-    <Card className={`${className}`}>
-      <CardContent className="p-0">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+    <Card className={`${className} flex flex-col`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-blue-600" />
@@ -93,18 +92,20 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
             <X className="w-4 h-4" />
           </Button>
         </div>
+      </CardHeader>
 
+      <CardContent className="flex-1 flex flex-col p-0">
         {/* Content */}
-        <div className="h-96 flex">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Conversations List */}
-          <div className="w-1/2 border-r border-gray-100 overflow-y-auto">
+          <div className="border-b border-gray-100 max-h-48 overflow-y-auto">
             {conversations.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-6 text-center text-gray-500">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm">No conversations yet</p>
               </div>
             ) : (
-              <div className="space-y-1 p-2">
+              <div className="space-y-1 p-3">
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.showing_request_id}
@@ -137,11 +138,11 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
           </div>
 
           {/* Message Thread */}
-          <div className="w-1/2 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             {selectedConversation ? (
               <>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                   {conversations
                     .find(c => c.showing_request_id === selectedConversation)
                     ?.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
@@ -164,13 +165,13 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
                 </div>
 
                 {/* Message Input */}
-                <div className="border-t border-gray-100 p-3">
-                  <div className="flex gap-2">
+                <div className="border-t border-gray-100 p-4">
+                  <div className="flex gap-3">
                     <Textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 min-h-[36px] max-h-20 resize-none text-sm"
+                      className="flex-1 min-h-[44px] max-h-24 resize-none text-sm"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
@@ -182,7 +183,7 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
                       size="sm"
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
-                      className="bg-blue-600 hover:bg-blue-700 h-9 w-9 p-0"
+                      className="bg-blue-600 hover:bg-blue-700 h-11 w-11 p-0 self-end"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -192,8 +193,9 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500">
                 <div className="text-center">
-                  <MessageCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Select a conversation</p>
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm font-medium">Select a conversation</p>
+                  <p className="text-xs text-gray-400 mt-1">Choose a property to start messaging</p>
                 </div>
               </div>
             )}

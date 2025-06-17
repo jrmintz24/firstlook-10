@@ -171,9 +171,9 @@ const RedesignedBuyerDashboard = () => {
         </div>
 
         {/* Main Content Grid - Improved layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Left Column - Main Tours Content */}
-          <div className="xl:col-span-3 space-y-6">
+          <div className="xl:col-span-2 space-y-6">
             {/* Next Tour Card */}
             <NextTourCard 
               showing={nextTour}
@@ -251,13 +251,21 @@ const RedesignedBuyerDashboard = () => {
             />
           </div>
 
-          {/* Right Column - Stats (removed messages section) */}
-          <div className="xl:col-span-1">
+          {/* Right Column - Stats and Messages */}
+          <div className="xl:col-span-1 space-y-6">
             <StatsAndMessages 
               stats={stats}
               unreadMessages={unreadCount || 0}
-              onOpenInbox={() => {}} // Empty function since we handle this via ChatWidget now
+              onOpenInbox={() => {}}
             />
+            
+            {/* Chat Messages */}
+            {currentUser?.id && (
+              <ChatWidget
+                userId={currentUser.id}
+                unreadCount={unreadCount || 0}
+              />
+            )}
           </div>
         </div>
 
@@ -271,15 +279,6 @@ const RedesignedBuyerDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Chat Widget - Updated to not use onOpenInbox */}
-      {currentUser?.id && (
-        <ChatWidget
-          userId={currentUser.id}
-          unreadCount={unreadCount || 0}
-          onOpenInbox={() => {}} // Empty function since messages tab no longer exists
-        />
-      )}
 
       {/* Help Widget */}
       <HelpWidget />

@@ -142,11 +142,21 @@ const BuyerDashboard = () => {
 
   // Sidebar content
   const sidebar = (
-    <UpdatesPanel 
-      showingRequests={allShowings} 
-      userType="buyer" 
-      onSendMessage={handleSendMessage}
-    />
+    <div className="space-y-6">
+      <UpdatesPanel 
+        showingRequests={allShowings} 
+        userType="buyer" 
+        onSendMessage={handleSendMessage}
+      />
+      
+      {/* Chat Messages */}
+      {currentUser?.id && (
+        <ChatWidget
+          userId={currentUser.id}
+          unreadCount={unreadCount || 0}
+        />
+      )}
+    </div>
   );
 
   return (
@@ -161,15 +171,6 @@ const BuyerDashboard = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
-
-      {/* Chat Widget */}
-      {currentUser?.id && (
-        <ChatWidget
-          userId={currentUser.id}
-          unreadCount={unreadCount || 0}
-          onOpenInbox={() => setActiveTab("messages")}
-        />
-      )}
 
       <ErrorBoundary>
         <PropertyRequestForm

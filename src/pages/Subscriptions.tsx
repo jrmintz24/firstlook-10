@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,7 +94,7 @@ const Subscriptions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/30">
       {/* Hero Section */}
       <div className="py-16 sm:py-20 relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -221,14 +220,14 @@ const Subscriptions = () => {
       </div>
 
       {/* Flexible Add-ons */}
-      <div className="py-16 sm:py-20 bg-gray-50/50">
+      <div className="py-16 sm:py-20 bg-white/70 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Flexible Add-ons & Extras</h2>
           </div>
           
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <Card className="border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-lg sm:text-xl text-gray-900 font-medium">Additional Tour Session</CardTitle>
                 <div className="text-2xl sm:text-3xl font-light text-gray-900">$59<span className="text-sm text-gray-500">/session</span></div>
@@ -238,17 +237,17 @@ const Subscriptions = () => {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-lg sm:text-xl text-gray-900 font-medium">Single Home Tour</CardTitle>
-                <div className="text-2xl sm:text-3xl font-light text-green-700">$29<span className="text-sm text-gray-500">/home</span></div>
+                <div className="text-2xl sm:text-3xl font-light text-blue-600">$29<span className="text-sm text-gray-500">/home</span></div>
               </CardHeader>
               <CardContent className="text-center pt-0">
                 <p className="text-gray-600 text-sm sm:text-base font-light">Members only - perfect for one-off tours</p>
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-lg sm:text-xl text-gray-900 font-medium">Single Home Tour</CardTitle>
                 <div className="text-2xl sm:text-3xl font-light text-gray-700">$49<span className="text-sm text-gray-500">/home</span></div>
@@ -258,10 +257,10 @@ const Subscriptions = () => {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-lg sm:text-xl text-gray-900 font-medium">Tour Session</CardTitle>
-                <div className="text-2xl sm:text-3xl font-light text-orange-600">$99<span className="text-sm text-gray-500">/session</span></div>
+                <div className="text-2xl sm:text-3xl font-light text-purple-600">$99<span className="text-sm text-gray-500">/session</span></div>
               </CardHeader>
               <CardContent className="text-center pt-0">
                 <p className="text-gray-600 text-sm sm:text-base font-light">Non-members - up to 3 homes in one session</p>
@@ -328,36 +327,36 @@ const Subscriptions = () => {
       </div>
 
       {/* Commission Rebate Program */}
-      <div className="py-16 sm:py-20 bg-gradient-to-br from-green-50/50 to-emerald-50/50">
+      <div className="py-16 sm:py-20 bg-gradient-to-br from-slate-50/80 to-blue-50/60">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Commission Rebate Program</h2>
-            <h3 className="text-xl sm:text-2xl font-medium text-green-700 mb-6">Put Seller-Paid Commissions Back in Your Pocket</h3>
+            <h3 className="text-xl sm:text-2xl font-medium text-blue-700 mb-6">Put Seller-Paid Commissions Back in Your Pocket</h3>
             <p className="text-base sm:text-lg text-gray-600 max-w-4xl mx-auto font-light leading-relaxed">
               If the seller offers a guaranteed buyer agent commission, you can reclaim this money as a rebate. FirstLook seamlessly handles this:
             </p>
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-lg bg-white rounded-3xl mb-8 overflow-hidden">
+            <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
               <CardContent className="p-6 sm:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8">
                   <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-2xl flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white font-medium text-xl">1</span>
                     </div>
                     <h4 className="font-medium text-gray-900 mb-2">We Submit Your Offer</h4>
                     <p className="text-gray-600 font-light text-sm sm:text-base">Through our licensed agent</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-2xl flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white font-medium text-xl">2</span>
                     </div>
                     <h4 className="font-medium text-gray-900 mb-2">FirstLook Collects Commission</h4>
                     <p className="text-gray-600 font-light text-sm sm:text-base">At closing, retains only 10% as service fee</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-2xl flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white font-medium text-xl">3</span>
                     </div>
                     <h4 className="font-medium text-gray-900 mb-2">You Receive 90% Back</h4>
@@ -365,14 +364,14 @@ const Subscriptions = () => {
                   </div>
                 </div>
 
-                <div className="bg-green-50/80 rounded-2xl p-6 border border-green-100">
-                  <h4 className="font-medium text-green-800 mb-4 text-center">Example Rebate Calculation:</h4>
-                  <div className="space-y-2 text-green-700 text-sm sm:text-base">
+                <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/60 rounded-2xl p-6 border border-blue-100/50 backdrop-blur-sm">
+                  <h4 className="font-medium text-blue-800 mb-4 text-center">Example Rebate Calculation:</h4>
+                  <div className="space-y-2 text-blue-700 text-sm sm:text-base">
                     <p>• Seller offers a 2.5% commission on a $400,000 home = <strong>$10,000 total</strong></p>
                     <p>• FirstLook retains 10% = <strong>$1,000</strong></p>
                     <p>• <strong>You get a $9,000 rebate at closing</strong></p>
                   </div>
-                  <p className="text-green-600 mt-4 font-medium text-center text-sm sm:text-base">
+                  <p className="text-blue-600 mt-4 font-medium text-center text-sm sm:text-base">
                     This simple approach helps you potentially save thousands on your new home.
                   </p>
                 </div>

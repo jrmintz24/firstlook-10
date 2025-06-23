@@ -1,5 +1,4 @@
-
-import { Lock, Clock, Eye, Gift } from "lucide-react";
+import { Lock, Clock, Eye, Headphones } from "lucide-react";
 
 const TrustIndicators = () => {
   const features = [
@@ -19,9 +18,9 @@ const TrustIndicators = () => {
       description: "See any home you want, with a local pro on standby for support only if you ask."
     },
     {
-      icon: Gift,
-      title: "First Tour is Free",
-      description: "Try it with zero risk—your first showing is always on us, no strings attached."
+      icon: Headphones,
+      title: "Flexible Support Options",
+      description: "Choose your level of help—from offer coaching to full contract management, all à la carte."
     }
   ];
 

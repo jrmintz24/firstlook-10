@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
-import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import HowItWorks from '../components/buyer-os/HowItWorks'
 import TrustStory from '../components/buyer-os/TrustStory'
 import IndustryChanges from '../components/buyer-os/IndustryChanges'
 import PricingSection from '../components/buyer-os/PricingSection'
 import FAQSection from '../components/buyer-os/FAQSection'
+import TrustIndicators from '../components/buyer-os/TrustIndicators'
+import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import PropertyRequestForm from '../components/PropertyRequestForm'
 import { useTourQuota } from '../hooks/useTourQuota'
@@ -78,9 +79,6 @@ export default function Index() {
       {/* Value Proposition */}
       <ValueProposition />
 
-      {/* Trust Indicators */}
-      <TrustIndicators />
-
       {/* How It Works */}
       <HowItWorks />
 
@@ -95,6 +93,12 @@ export default function Index() {
 
       {/* FAQ Section */}
       <FAQSection />
+
+      {/* Trust Indicators - moved towards bottom */}
+      <TrustIndicators />
+
+      {/* Final CTA Section */}
+      <FinalCTASection onRequestShowing={handleStartTour} />
 
       {/* Tour Quota Banner - only show for authenticated users who exceeded quota */}
       {user && tourQuota.isExceeded && !tourQuota.loading && (

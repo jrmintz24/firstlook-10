@@ -1,3 +1,4 @@
+
 import { Lock, Clock, Eye, Headphones } from "lucide-react";
 
 const TrustIndicators = () => {
@@ -25,32 +26,32 @@ const TrustIndicators = () => {
   ];
 
   return (
-    <div className="py-20 sm:py-28 bg-white">
+    <div className="py-16 sm:py-20 bg-white">
       <div className="container mx-auto px-6 sm:px-8">
-        <div className="text-center mb-16 max-w-5xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-8 tracking-tight">
+        <div className="text-center mb-14 max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight">
             Loved by <span className="font-medium">Homebuyers Who Want Control</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
             Home tours—your way, on your terms. Here's how FirstLook delivers:
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
             return (
               <div 
                 key={index}
-                className="bg-gray-50/50 rounded-2xl p-10 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-left group border border-gray-100"
+                className="bg-gray-50/50 rounded-xl p-8 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-left group border border-gray-100"
               >
-                <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
-                    <IconComponent className="h-7 w-7 text-white" />
+                <div className="flex items-start gap-5">
+                  <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
+                    <IconComponent className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-medium text-gray-900 mb-4 leading-tight">{feature.title}</h3>
-                    <p className="text-gray-600 font-light leading-relaxed">{feature.description}</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3 leading-tight">{feature.title}</h3>
+                    <p className="text-gray-600 font-light leading-relaxed text-sm">{feature.description}</p>
                   </div>
                 </div>
               </div>
@@ -58,8 +59,8 @@ const TrustIndicators = () => {
           })}
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-lg text-gray-500 font-light italic">
+        <div className="text-center mt-12">
+          <p className="text-base text-gray-500 font-light italic">
             "Experience the freedom of home shopping built for today's buyers."
           </p>
         </div>

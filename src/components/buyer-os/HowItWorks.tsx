@@ -31,33 +31,33 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div id="how-it-works" className="py-24 sm:py-32 bg-gray-50">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center mb-20">
-          <h2 className="text-4xl sm:text-5xl font-light tracking-tight text-gray-900 mb-8">
+    <div id="how-it-works" className="py-16 sm:py-20 bg-gray-50">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 mb-6">
             How FirstLook Works
           </h2>
-          <p className="text-lg sm:text-xl leading-8 text-gray-600 font-light">
+          <p className="text-lg leading-8 text-gray-600 font-light">
             House hunting without the awkward contracts or sales pressure.
           </p>
         </div>
         
-        <div className="mx-auto mt-20 grid max-w-6xl grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
-              <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 rounded-2xl">
-                <CardContent className="p-8 sm:p-10 text-center">
-                  <div className={`inline-flex h-16 w-16 items-center justify-center rounded-xl ${step.color} mb-8 shadow-lg`}>
-                    <IconComponent className="h-8 w-8 text-white" />
+              <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 rounded-xl">
+                <CardContent className="p-6 sm:p-8 text-center">
+                  <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl ${step.color} mb-6 shadow-md`}>
+                    <IconComponent className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-medium text-gray-900 mb-4 leading-tight">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3 leading-tight">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed font-light">
+                  <p className="text-gray-600 leading-relaxed font-light text-sm">
                     {step.description}
                   </p>
-                  <div className="absolute -top-3 -right-3 h-8 w-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-medium shadow-md">
+                  <div className="absolute -top-2 -right-2 h-6 w-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium shadow-md">
                     {index + 1}
                   </div>
                 </CardContent>

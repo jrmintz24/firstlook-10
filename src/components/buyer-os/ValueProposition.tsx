@@ -1,5 +1,5 @@
 
-import { Shield, Zap, Gift, Users, ArrowRight } from "lucide-react";
+import { Shield, Zap, DollarSign, Users, ArrowRight } from "lucide-react";
 
 const ValueProposition = () => {
   const features = [
@@ -18,9 +18,9 @@ const ValueProposition = () => {
       bgColor: "bg-orange-50"
     },
     {
-      icon: Gift,
-      label: "First Tour Free",
-      description: "Try it risk-free. Just book and go — no hidden fees.",
+      icon: DollarSign,
+      label: "Save Thousands in Commissions",
+      description: "Get 90% of buyer agent commissions back when you purchase through FirstLook.",
       color: "from-green-500 to-emerald-500",
       bgColor: "bg-green-50"
     },
@@ -34,30 +34,30 @@ const ValueProposition = () => {
   ];
 
   return (
-    <div className="py-24 sm:py-32 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+    <div className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 via-transparent to-purple-100/20"></div>
       
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
-        <div className="text-center mb-20 max-w-6xl mx-auto">
-          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-6 py-3 mb-8 shadow-sm">
+        <div className="text-center mb-16 max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-5 py-2 mb-6 shadow-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium text-gray-700">Built for Modern Homebuyers</span>
           </div>
           
-          <h2 className="text-5xl md:text-6xl font-light text-gray-900 mb-8 tracking-tight leading-tight">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight leading-tight">
             Why FirstLook?
           </h2>
-          <p className="text-2xl md:text-3xl text-gray-600 font-light leading-relaxed mb-6">
+          <p className="text-lg md:text-xl text-gray-600 font-light leading-relaxed mb-4">
             The only platform built for <span className="font-semibold text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">buyers — not agents.</span>
           </p>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
+          <p className="text-base text-gray-500 max-w-2xl mx-auto font-light">
             Every feature designed to give you control, transparency, and flexibility in your home search.
           </p>
         </div>
 
         {/* Features Grid with Alternating Layout */}
-        <div className="max-w-7xl mx-auto space-y-12">
+        <div className="max-w-6xl mx-auto space-y-8">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
             const isEven = index % 2 === 0;
@@ -65,26 +65,26 @@ const ValueProposition = () => {
             return (
               <div 
                 key={index}
-                className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-16 ${!isEven ? 'lg:flex-row-reverse' : ''}`}
+                className={`flex flex-col lg:flex-row items-center gap-8 lg:gap-12 ${!isEven ? 'lg:flex-row-reverse' : ''}`}
               >
                 {/* Icon and Visual Side */}
                 <div className="flex-1 flex justify-center">
-                  <div className={`relative ${feature.bgColor} rounded-3xl p-12 shadow-sm hover:shadow-xl transition-all duration-500 group`}>
-                    <div className={`w-24 h-24 mx-auto bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-lg`}>
-                      <IconComponent className="h-12 w-12 text-white" />
+                  <div className={`relative ${feature.bgColor} rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-500 group`}>
+                    <div className={`w-16 h-16 mx-auto bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-md`}>
+                      <IconComponent className="h-8 w-8 text-white" />
                     </div>
                     {/* Decorative elements */}
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md opacity-80"></div>
-                    <div className="absolute -bottom-3 -left-3 w-4 h-4 bg-gray-200 rounded-full opacity-60"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow-md opacity-80"></div>
+                    <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gray-200 rounded-full opacity-60"></div>
                   </div>
                 </div>
                 
                 {/* Content Side */}
                 <div className="flex-1 text-center lg:text-left">
-                  <h3 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-6 leading-tight">
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 leading-tight">
                     {feature.label}
                   </h3>
-                  <p className="text-xl text-gray-600 leading-relaxed font-light mb-6">
+                  <p className="text-base text-gray-600 leading-relaxed font-light mb-4">
                     {feature.description}
                   </p>
                   <div className="inline-flex items-center gap-2 text-gray-500 font-medium group cursor-pointer">
@@ -98,12 +98,12 @@ const ValueProposition = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-20">
-          <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 max-w-2xl mx-auto shadow-sm">
-            <p className="text-lg text-gray-700 font-medium mb-2">
+        <div className="text-center mt-16">
+          <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-xl p-6 max-w-2xl mx-auto shadow-sm">
+            <p className="text-base text-gray-700 font-medium mb-2">
               Traditional real estate puts agents first.
             </p>
-            <p className="text-2xl font-semibold text-gray-900">
+            <p className="text-lg font-semibold text-gray-900">
               We put <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">you</span> first.
             </p>
           </div>

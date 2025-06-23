@@ -58,13 +58,13 @@ const PricingSection = () => {
   ];
 
   return (
-    <div className="py-24 sm:py-32 bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-light tracking-tight text-gray-900 mb-6">
+    <div className="py-16 sm:py-20 bg-white">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight text-gray-900 mb-6">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-xl text-gray-600 font-light leading-relaxed">
+          <p className="text-lg text-gray-600 font-light leading-relaxed">
             Choose the plan that works for you. No hidden fees. Cancel anytime.
           </p>
         </div>

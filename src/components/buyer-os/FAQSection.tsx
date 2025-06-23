@@ -35,10 +35,10 @@ const FAQSection = () => {
   ];
 
   return (
-    <div className="py-28 sm:py-36 bg-white">
+    <div className="py-16 sm:py-20 bg-white">
       <div className="mx-auto max-w-4xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center mb-20">
-          <h2 className="text-4xl sm:text-5xl font-light tracking-tight text-gray-900 mb-8">
+        <div className="mx-auto max-w-2xl text-center mb-14">
+          <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 mb-6">
             FAQs
           </h2>
         </div>

@@ -88,14 +88,14 @@ const TrustStory = () => {
   ];
 
   return (
-    <div className="py-28 sm:py-36 bg-gray-50">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-8 tracking-tight">
-            🧡 You Shouldn't Have to <span className="font-medium">Marry Your Agent</span> Before the First Date
+    <div className="py-16 sm:py-20 bg-white">
+      <div className="container mx-auto px-6 sm:px-8">
+        <div className="text-center mb-16 max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight">
+            What Buyers Are Saying
           </h2>
-          <p className="text-xl text-gray-600 font-light leading-relaxed">
-            Real stories from real buyers who discovered there's a better way to house hunt.
+          <p className="text-lg text-gray-600 font-light leading-relaxed">
+            Real experiences from DC homebuyers who chose FirstLook
           </p>
         </div>
         

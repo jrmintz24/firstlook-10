@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
+import ValueProposition from '../components/buyer-os/ValueProposition'
 import HowItWorks from '../components/buyer-os/HowItWorks'
-import PricingSection from '../components/buyer-os/PricingSection'
 import TrustStory from '../components/buyer-os/TrustStory'
+import IndustryChanges from '../components/buyer-os/IndustryChanges'
+import PricingSection from '../components/buyer-os/PricingSection'
 import FAQSection from '../components/buyer-os/FAQSection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import PropertyRequestForm from '../components/PropertyRequestForm'
@@ -72,14 +74,20 @@ export default function Index() {
       {/* Hero Section */}
       <HeroSection onStartTour={handleStartTour} />
 
+      {/* Value Proposition */}
+      <ValueProposition />
+
       {/* How It Works */}
       <HowItWorks />
 
-      {/* Pricing Section */}
-      <PricingSection />
-
       {/* Trust Stories */}
       <TrustStory />
+
+      {/* Industry Changes */}
+      <IndustryChanges />
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* FAQ Section */}
       <FAQSection />

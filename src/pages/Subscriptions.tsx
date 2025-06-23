@@ -17,39 +17,42 @@ const Subscriptions = () => {
   const { user } = useAuth();
 
   const basicFeatures = [
-    "1 tour session per month (up to 3 homes per session)",
-    "Standard priority scheduling",
-    "Email/chat support",
-    "Perfect for casual browsing and first-time buyers"
+    "Book w/ Pro",
+    "No contract", 
+    "Tour tracker"
+  ];
+
+  const proFeatures = [
+    "Rebate access",
+    "Priority scheduling",
+    "Email support"
   ];
 
   const premiumFeatures = [
-    "2 tour sessions per month (3 homes per session)",
-    "VIP priority scheduling",
-    "15-minute monthly live support call with FirstLook experts",
-    "Keep your contact details private until you choose to share",
-    "Ideal for active buyers looking for regular tours"
+    "Offer help",
+    "Max rebates", 
+    "Phone support"
   ];
 
   const whyChooseFeatures = [
     {
-      title: "No Pressure",
-      description: "See homes without being locked into an agent.",
+      title: "Private by Default",
+      description: "Your info stays yours. No sales calls, no surprise agent emails.",
       icon: Shield
     },
     {
-      title: "Transparent Pricing",
-      description: "No hidden fees or surprises.",
+      title: "Zero Commitment",
+      description: "No contracts. Tour any home without signing your life away.",
       icon: Star
     },
     {
-      title: "Privacy",
-      description: "Your contact info stays confidential until you decide to share.",
+      title: "First Tour Free",
+      description: "Try it risk-free. Just book and go — no hidden fees.",
       icon: Users
     },
     {
-      title: "Expert Support",
-      description: "Dedicated professionals assist you every step of the way.",
+      title: "Local Pros, Only When You Want Them",
+      description: "Licensed, DC-based agents meet you at the door — and only help when you ask.",
       icon: Phone
     }
   ];
@@ -100,15 +103,15 @@ const Subscriptions = () => {
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-light leading-tight mb-6 text-gray-900 tracking-tight">
-              Unlock Your <span className="font-medium text-gray-800">Homebuying Advantage</span>
+              You Shouldn't Have to <span className="font-medium text-gray-800">Hire an Agent</span> Just to See a House
             </h1>
             
             <p className="text-lg sm:text-xl text-gray-600 mb-6 max-w-3xl mx-auto leading-relaxed font-light">
-              Simple Pricing. Flexible Choices. Complete Control.
+              Tour homes on your schedule. Make offers only when you're ready.
             </p>
 
             <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed font-light">
-              Whether you're just starting your home search or ready to make offers, FirstLook offers easy-to-understand plans that put you in control of your homebuying journey.
+              No pressure. No contracts. No gatekeeping. <strong>Your first tour is totally free.</strong>
             </p>
 
             <SubscriptionBadge />
@@ -129,7 +132,7 @@ const Subscriptions = () => {
             onClick={handleRequestShowing}
           >
             <Home className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-            Book Free Tour
+            See Your First Home Free
             <ArrowRight className="ml-3 h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
         </div>
@@ -139,16 +142,22 @@ const Subscriptions = () => {
       <div className="py-16 sm:py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Choose Your Membership</h2>
+            <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Pricing Plans</h2>
+            <p className="text-lg sm:text-xl text-gray-600 font-light">
+              Transparent, monthly pricing. No hidden fees. Cancel anytime.
+            </p>
           </div>
           
-          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Basic Access */}
             <Card className="border border-gray-200/60 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden group hover:-translate-y-1">
               <CardHeader className="text-center pb-6 pt-8">
-                <CardTitle className="text-2xl text-gray-900 font-light mb-4">Basic Access</CardTitle>
+                <CardTitle className="text-2xl text-gray-900 font-light mb-4">Basic</CardTitle>
                 <div className="text-4xl sm:text-5xl font-light text-gray-900 mb-2">
-                  $39<span className="text-lg text-gray-500">/month</span>
+                  Free
+                </div>
+                <div className="text-lg font-semibold text-blue-600 mt-2">
+                  1 tour/mo
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8">
@@ -166,32 +175,60 @@ const Subscriptions = () => {
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white py-4 sm:py-6 text-base sm:text-lg font-medium rounded-2xl shadow-none transition-all duration-300"
                   disabled={loading}
                 >
-                  Choose Basic
+                  Get Started Free
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Pro Membership */}
+            <Card className="border-2 border-blue-500/20 shadow-lg hover:shadow-xl relative overflow-hidden rounded-3xl group hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+              
+              {/* Most Popular Badge */}
+              <div className="absolute top-6 right-6 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                Most Popular
+              </div>
+
+              <CardHeader className="text-center pb-6 pt-12">
+                <CardTitle className="text-2xl text-gray-900 font-light mb-4">Pro</CardTitle>
+                <div className="text-4xl sm:text-5xl font-light text-gray-900 mb-2">
+                  $39<span className="text-lg text-gray-500">/month</span>
+                </div>
+                <div className="text-lg font-semibold text-blue-600 mt-2">
+                  2 tours/mo
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 sm:px-8 pb-8">
+                <div className="space-y-4 mb-8">
+                  {proFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <Check className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-gray-700 font-light text-sm sm:text-base">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 sm:py-6 text-base sm:text-lg font-medium rounded-2xl shadow-none transition-all duration-300"
+                  onClick={handleGetPremiumAccess}
+                  disabled={loading}
+                >
+                  Upgrade to Pro
                 </Button>
               </CardContent>
             </Card>
 
             {/* Premium Membership */}
-            <Card className="border-2 border-gray-900/10 shadow-lg hover:shadow-xl relative overflow-hidden rounded-3xl group hover:-translate-y-1 transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-800 to-gray-600"></div>
-              
-              {/* Most Popular Badge */}
-              <div className="absolute top-6 right-6 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium">
-                Most Popular
-              </div>
-
-              <CardHeader className="text-center pb-6 pt-12">
-                <CardTitle className="text-2xl text-gray-900 font-light mb-4">Premium Membership</CardTitle>
-                
-                {/* Special Pricing Display */}
-                <div className="mb-6">
-                  <div className="text-4xl sm:text-5xl font-light text-green-700 mb-2">
-                    $29<span className="text-lg text-gray-500">/first month</span>
-                  </div>
-                  <div className="text-2xl font-medium text-gray-900">Then $69/month</div>
-                  <Badge variant="secondary" className="mt-3 bg-green-50 text-green-800 border-green-200 rounded-full px-4 py-1">
-                    Save $40 Your First Month!
-                  </Badge>
+            <Card className="border border-gray-200/60 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden group hover:-translate-y-1">
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-2xl text-gray-900 font-light mb-4">Premium</CardTitle>
+                <div className="text-4xl sm:text-5xl font-light text-gray-900 mb-2">
+                  $69<span className="text-lg text-gray-500">/month</span>
+                </div>
+                <div className="text-lg font-semibold text-blue-600 mt-2">
+                  5 tours/mo
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8">
@@ -207,14 +244,45 @@ const Subscriptions = () => {
                 </div>
                 <Button 
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white py-4 sm:py-6 text-base sm:text-lg font-medium rounded-2xl shadow-none transition-all duration-300"
-                  onClick={handleGetPremiumAccess}
                   disabled={loading}
                 >
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Start for $29 First Month
+                  Go Premium
                 </Button>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Why Choose FirstLook */}
+      <div className="py-16 sm:py-20 bg-white/70 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Why FirstLook?</h2>
+            <p className="text-lg sm:text-xl text-gray-600 font-light">
+              The only platform built for buyers — not agents.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+            {whyChooseFeatures.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card key={index} className="border-0 shadow-sm hover:shadow-lg bg-white rounded-3xl transition-all duration-300 group hover:-translate-y-1">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                        <IconComponent className="w-6 h-6 text-gray-700" />
+                      </div>
+                      <CardTitle className="text-xl font-medium text-gray-900">{feature.title}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-gray-700 font-light">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -444,21 +512,3 @@ const Subscriptions = () => {
           </div>
         </div>
       )}
-
-      <ErrorBoundary>
-        <PropertyRequestForm
-          isOpen={showPropertyForm}
-          onClose={() => setShowPropertyForm(false)}
-        />
-      </ErrorBoundary>
-
-      <SubscribeModal
-        isOpen={showSubscribeModal}
-        onClose={() => setShowSubscribeModal(false)}
-        onSubscriptionComplete={handleSubscriptionComplete}
-      />
-    </div>
-  );
-};
-
-export default Subscriptions;

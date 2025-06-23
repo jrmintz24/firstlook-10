@@ -236,7 +236,7 @@ const Subscriptions = () => {
                       <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                         <Check className="w-3 h-3 text-green-600" />
                       </div>
-                      <span className="text-gray-700 font-light text-sm sm:text-base">{feature}</span>
+                      <span className="text-gray-700 font-light text-sm sm:text-base">{feature.text}</span>
                     </div>
                   ))}
                 </div>

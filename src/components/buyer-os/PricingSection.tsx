@@ -13,9 +13,10 @@ const PricingSection = () => {
       period: "",
       tours: "1",
       features: [
-        "Book with Pro",
-        "No contract",
-        "Tour tracker"
+        "One free home tour",
+        "Book with FirstLook Pro",
+        "No contracts or commitments",
+        "Tour tracking dashboard"
       ],
       cta: "Get Started Free",
       popular: false,
@@ -23,14 +24,16 @@ const PricingSection = () => {
     },
     {
       name: "Pro",
-      price: "$29",
+      price: "$19",
       period: "/first month",
-      originalPrice: "$69",
-      tours: "2",
+      originalPrice: "$49",
+      tours: "Unlimited",
       features: [
-        "Rebate access",
-        "Priority scheduling", 
-        "Email support"
+        "Unlimited home tours",
+        "Commission rebate access",
+        "Priority scheduling support", 
+        "Email and chat support",
+        "Tour history & insights"
       ],
       cta: "Start Pro Trial",
       popular: true,
@@ -38,13 +41,15 @@ const PricingSection = () => {
     },
     {
       name: "Premium", 
-      price: "$69",
+      price: "$99",
       period: "/month",
-      tours: "5",
+      tours: "Unlimited",
       features: [
-        "Offer help",
-        "Max rebates",
-        "Phone support"
+        "Everything in Pro",
+        "Dedicated offer assistance",
+        "Maximum rebate percentages",
+        "Priority phone support",
+        "Market analysis reports"
       ],
       cta: "Go Premium",
       popular: false,
@@ -53,71 +58,71 @@ const PricingSection = () => {
   ];
 
   return (
-    <div className="py-32 bg-white">
+    <div className="py-24 sm:py-32 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-light tracking-tight text-gray-900 mb-8">
-            Transparent Pricing
+        <div className="mx-auto max-w-4xl text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-light tracking-tight text-gray-900 mb-6">
+            Simple, Transparent Pricing
           </h2>
           <p className="text-xl text-gray-600 font-light leading-relaxed">
             Choose the plan that works for you. No hidden fees. Cancel anytime.
           </p>
         </div>
         
-        <div className="mx-auto mt-20 grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-3">
+        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-3">
           {plans.map((plan, index) => (
-            <Card key={index} className={`relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl ${plan.popular ? 'scale-105 shadow-2xl border-2 border-blue-500/20' : ''}`}>
+            <Card key={index} className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl ${plan.popular ? 'scale-105 shadow-xl border-2 border-blue-500/20' : ''}`}>
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-blue-600 text-white px-6 py-2 text-sm font-medium shadow-lg">
-                    <Star className="mr-2 h-4 w-4" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-blue-600 text-white px-4 py-1.5 text-sm font-medium shadow-lg rounded-full">
+                    <Star className="mr-1.5 h-3.5 w-3.5" />
                     Most Popular
                   </Badge>
                 </div>
               )}
               
-              <CardHeader className="text-center pb-8 pt-12">
-                <CardTitle className="text-2xl font-medium text-gray-900 mb-8">
+              <CardHeader className="text-center pb-6 pt-10">
+                <CardTitle className="text-2xl font-semibold text-gray-900 mb-6">
                   {plan.name}
                 </CardTitle>
-                <div className="mb-6">
-                  <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-light text-gray-900">
+                <div className="mb-4">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-bold text-gray-900">
                       {plan.price}
                     </span>
-                    <span className="text-gray-600 font-light">{plan.period}</span>
+                    <span className="text-gray-600 font-medium">{plan.period}</span>
                   </div>
                   {plan.originalPrice && (
-                    <div className="mt-2">
-                      <span className="text-lg text-gray-400 line-through font-light">
-                        {plan.originalPrice}/month
+                    <div className="mt-1">
+                      <span className="text-base text-gray-400 line-through font-medium">
+                        {plan.originalPrice}/month after
                       </span>
                     </div>
                   )}
                 </div>
                 <div className="text-center">
-                  <span className="text-lg font-medium text-blue-600">
-                    {plan.tours} tours/month
+                  <span className="text-base font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    {plan.tours} tours
                   </span>
                 </div>
               </CardHeader>
               
-              <CardContent className="px-10 pb-10">
-                <ul className="space-y-4 mb-10">
+              <CardContent className="px-8 pb-8">
+                <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-500 mr-4 flex-shrink-0" />
-                      <span className="text-gray-700 font-light">{feature}</span>
+                    <li key={featureIndex} className="flex items-start">
+                      <Check className="h-4 w-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 font-medium text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
                 
                 <Link to={plan.ctaLink} className="w-full">
                   <Button 
-                    className={`w-full h-14 text-lg font-medium transition-all duration-300 rounded-2xl ${
+                    className={`w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl ${
                       plan.popular 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl' 
-                        : 'bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' 
+                        : 'bg-gray-900 hover:bg-gray-800 text-white shadow-sm hover:shadow-md'
                     }`}
                   >
                     {plan.cta}
@@ -128,8 +133,8 @@ const PricingSection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-gray-500 font-light text-lg">
+        <div className="text-center mt-12">
+          <p className="text-gray-500 font-medium">
             All plans include commission rebates when you buy through FirstLook
           </p>
         </div>

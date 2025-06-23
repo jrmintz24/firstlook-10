@@ -7,25 +7,25 @@ const HowItWorks = () => {
     {
       icon: MapPin,
       title: "Pick a Home",
-      description: "Enter an address or MLS number of any home you want to see",
+      description: "Enter any address you want to tour.",
       color: "bg-blue-500"
     },
     {
       icon: Calendar,
-      title: "Book a Tour",
-      description: "Choose your time and a FirstLook Pro will meet you there",
+      title: "Book a Time",
+      description: "Choose when works for you. A FirstLook Pro meets you there.",
       color: "bg-green-500"
     },
     {
       icon: Users,
       title: "Need Help? Just Ask",
-      description: "Get expert guidance on offers, financing, or market insights",
+      description: "Want help with the offer? Negotiation advice? It's optional.",
       color: "bg-purple-500"
     },
     {
       icon: Gift,
       title: "Get Rewarded",
-      description: "Upgrade for commission rebates and unlimited tours",
+      description: "Upgrade for commission rebates and extra tours.",
       color: "bg-orange-500"
     }
   ];
@@ -38,7 +38,7 @@ const HowItWorks = () => {
             How FirstLook Works
           </h2>
           <p className="mt-4 text-lg leading-8 text-gray-600">
-            House hunting on your timeline, without the traditional agent pressure
+            House hunting without the awkward contracts or sales pressure.
           </p>
         </div>
         

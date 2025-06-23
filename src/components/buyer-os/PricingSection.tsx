@@ -13,12 +13,11 @@ const PricingSection = () => {
       period: "",
       tours: "1",
       features: [
-        "1 tour per month",
-        "Book with FirstLook Pro",
-        "Basic support",
-        "Tour scheduling"
+        "Book w/ Pro",
+        "No contract",
+        "Tour tracker"
       ],
-      cta: "Get Started",
+      cta: "Get Started Free",
       popular: false,
       ctaLink: "/start"
     },
@@ -28,13 +27,11 @@ const PricingSection = () => {
       period: "/month",
       tours: "2",
       features: [
-        "2 tours per month",
-        "Tour tracking dashboard",
-        "Commission rebate access",
+        "Rebate access",
         "Priority scheduling",
         "Email support"
       ],
-      cta: "Upgrade Now",
+      cta: "Upgrade to Pro",
       popular: true,
       ctaLink: "/subscriptions"
     },
@@ -44,28 +41,25 @@ const PricingSection = () => {
       period: "/month",
       tours: "5",
       features: [
-        "5 tours per month",
-        "All Pro features",
-        "VIP priority scheduling",
-        "Phone support",
-        "Offer writing assistance",
-        "Maximum rebate potential"
+        "Offer help",
+        "Max rebates",
+        "Phone support"
       ],
-      cta: "Upgrade Now",
+      cta: "Go Premium",
       popular: false,
       ctaLink: "/subscriptions"
     }
   ];
 
   return (
-    <div className="py-24 bg-white">
+    <div className="py-24 bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Choose Your Plan
+            Pricing Plans
           </h2>
           <p className="mt-4 text-lg leading-8 text-gray-600">
-            Transparent pricing with no hidden fees. Upgrade or downgrade anytime.
+            Transparent, monthly pricing. No hidden fees. Cancel anytime.
           </p>
         </div>
         
@@ -91,7 +85,7 @@ const PricingSection = () => {
                 </div>
                 <div className="mt-2">
                   <span className="text-lg font-semibold text-blue-600">
-                    {plan.tours} tours/month
+                    {plan.tours} tours/mo
                   </span>
                 </div>
               </CardHeader>

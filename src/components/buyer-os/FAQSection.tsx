@@ -10,27 +10,27 @@ const FAQSection = () => {
   const faqs = [
     {
       question: "How is FirstLook different from working with a traditional agent?",
-      answer: "FirstLook gives you control. You tour homes on your schedule without signing exclusive agreements. You only work with an agent when you're ready to make an offer, and you can choose from our network of professionals."
+      answer: "You're not locked in. No contracts. No pressure. You decide when — and if — to involve an agent."
     },
     {
       question: "What happens after I tour a home?",
-      answer: "Nothing, unless you want something to happen. There's no pressure to make decisions. If you love a home and want to make an offer, we can connect you with experienced agents who will help you negotiate and write competitive offers."
+      answer: "You choose next steps. Walk away, book more, or ask for help with an offer."
     },
     {
       question: "How does the commission rebate work?",
-      answer: "When you buy a home through FirstLook and the seller offers buyer agent commission, we keep 10% as our service fee and return 90% to you as a rebate at closing. This can save you thousands of dollars."
+      answer: "If the seller offers a buyer agent commission, we keep 10% as our service fee and give you back 90% — at closing. Simple, clean, and often worth thousands."
     },
     {
       question: "Can I really see a home for free?",
-      answer: "Yes! Your first tour is completely free with no strings attached. After that, our transparent pricing starts at just $39/month for 2 tours, or you can pay per tour without a subscription."
+      answer: "Yes. First tour is on us — no strings."
     },
     {
-      question: "Are FirstLook Pros licensed real estate professionals?",
-      answer: "Yes, all FirstLook Pros are licensed real estate professionals in DC. They're knowledgeable about the local market and can answer questions about homes, neighborhoods, and the buying process."
+      question: "Are FirstLook Pros licensed agents?",
+      answer: "Yes, fully licensed in DC and vetted by our team."
     },
     {
       question: "What if I need help with financing or offers?",
-      answer: "FirstLook Pros can provide guidance and connect you with trusted lenders and agents. For offer writing, we offer professional services starting at $499, including negotiation support."
+      answer: "Once you upgrade, you get access to expert help — à la carte, when you need it."
     }
   ];
 
@@ -39,11 +39,8 @@ const FAQSection = () => {
       <div className="mx-auto max-w-4xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Frequently Asked Questions
+            FAQs
           </h2>
-          <p className="mt-4 text-lg leading-8 text-gray-600">
-            Everything you need to know about the FirstLook experience
-          </p>
         </div>
         
         <Accordion type="single" collapsible className="w-full">

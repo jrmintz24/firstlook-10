@@ -1,30 +1,30 @@
 
-import { Shield, Zap, Gift, MapPin } from "lucide-react";
+import { Shield, Zap, Gift, Users } from "lucide-react";
 
 const ValueProposition = () => {
   const features = [
     {
       icon: Shield,
       label: "Private by Default",
-      description: "Your contact info is never shared with agents—only you decide when to connect.",
+      description: "Your info stays yours. No sales calls, no surprise agent emails.",
       color: "from-blue-500 to-blue-600"
     },
     {
       icon: Zap,
       label: "Zero Commitment",
-      description: "Tour any home with no contracts, no pushy sales, no pressure to sign.",
+      description: "No contracts. Tour any home without signing your life away.",
       color: "from-yellow-500 to-orange-500"
     },
     {
       icon: Gift,
       label: "First Tour Free",
-      description: "Book your first showing risk-free, no strings attached.",
+      description: "Try it risk-free. Just book and go — no hidden fees.",
       color: "from-green-500 to-emerald-500"
     },
     {
-      icon: MapPin,
-      label: "Local Experts",
-      description: "Verified, DC-licensed pros are ready to answer questions—only if you need them.",
+      icon: Users,
+      label: "Local Pros, Only When You Want Them",
+      description: "Licensed, DC-based agents meet you at the door — and only help when you ask.",
       color: "from-purple-500 to-indigo-500"
     }
   ];
@@ -34,10 +34,10 @@ const ValueProposition = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 max-w-5xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight leading-tight">
-            The only platform built for <span className="font-semibold text-gray-900">buyers, not agents.</span>
+            Why FirstLook?
           </h2>
           <p className="text-xl text-gray-600 font-light leading-relaxed">
-            See how we're different
+            The only platform built for <span className="font-semibold text-gray-900">buyers — not agents.</span>
           </p>
         </div>
 

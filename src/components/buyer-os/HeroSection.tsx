@@ -22,14 +22,19 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             FirstLook
           </h1>
           
-          <h2 className="text-3xl md:text-5xl font-light text-gray-700 mb-8 leading-tight tracking-tight">
+          <h2 className="text-4xl md:text-6xl font-light text-gray-700 mb-8 leading-tight tracking-tight">
             You Shouldn't Have to <span className="font-semibold text-gray-900">Hire an Agent</span><br />
             Just to See a House
           </h2>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
-            Tour homes on your terms. Make offers only when you're ready.<br />
-            <span className="text-gray-700 font-medium">Your first home tour is completely free.</span>
+          <p className="text-xl md:text-2xl text-gray-600 mb-4 max-w-4xl mx-auto leading-relaxed font-light">
+            Tour homes on your schedule. Make offers only when you're ready.
+          </p>
+          <p className="text-xl md:text-2xl text-gray-600 mb-4 max-w-4xl mx-auto leading-relaxed font-light">
+            No pressure. No contracts. No gatekeeping.
+          </p>
+          <p className="text-xl md:text-2xl text-gray-700 mb-16 max-w-4xl mx-auto leading-relaxed font-semibold">
+            Your first tour is totally free.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
@@ -48,7 +53,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               onClick={scrollToHowItWorks}
             >
               <Play className="mr-2 h-5 w-5" />
-              Learn How It Works
+              How It Works
             </Button>
           </div>
         </div>

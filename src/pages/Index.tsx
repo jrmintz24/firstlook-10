@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
+import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import HowItWorks from '../components/buyer-os/HowItWorks'
 import TrustStory from '../components/buyer-os/TrustStory'
 import IndustryChanges from '../components/buyer-os/IndustryChanges'
@@ -76,6 +77,9 @@ export default function Index() {
 
       {/* Value Proposition */}
       <ValueProposition />
+
+      {/* Trust Indicators */}
+      <TrustIndicators />
 
       {/* How It Works */}
       <HowItWorks />

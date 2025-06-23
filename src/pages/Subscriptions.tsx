@@ -512,3 +512,23 @@ const Subscriptions = () => {
           </div>
         </div>
       )}
+
+      {/* Error Boundary Modals */}
+      <ErrorBoundary>
+        {showPropertyForm && (
+          <PropertyRequestForm onClose={() => setShowPropertyForm(false)} />
+        )}
+      </ErrorBoundary>
+
+      {showSubscribeModal && (
+        <SubscribeModal
+          isOpen={showSubscribeModal}
+          onClose={() => setShowSubscribeModal(false)}
+          onSuccess={handleSubscriptionComplete}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Subscriptions;

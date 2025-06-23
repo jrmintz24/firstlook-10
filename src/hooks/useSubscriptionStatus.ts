@@ -31,18 +31,8 @@ export const useSubscriptionStatus = () => {
     }
 
     try {
-      // First check the users table for plan_tier
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('plan_tier')
-        .eq('id', user.id)
-        .single();
-
-      if (userError && userError.code !== 'PGRST116') {
-        console.error('Error checking user plan:', userError);
-      }
-
-      const planTier = userData?.plan_tier || 'free';
+      // Check user metadata for plan tier first
+      const planTier = user.user_metadata?.plan_tier || 'free';
       const isSubscribed = planTier !== 'free';
 
       // Also check subscribers table for backward compatibility

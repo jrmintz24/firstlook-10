@@ -35,37 +35,26 @@ export const useTourQuota = () => {
 
     const fetchTourQuota = async () => {
       try {
-        // Get user's plan tier
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('plan_tier')
-          .eq('id', user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user plan:', userError);
-          return;
-        }
-
-        const planTier = userData?.plan_tier || 'free';
+        // Get user's plan tier from profiles table or user metadata
+        const planTier = user.user_metadata?.plan_tier || 'free';
         const limit = TOUR_LIMITS[planTier as keyof typeof TOUR_LIMITS] || 1;
 
-        // Get current month's tour count
+        // Get current month's showing request count
         const currentMonth = new Date();
         const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
         
-        const { data: tourData, error: tourError } = await supabase
-          .from('tours')
+        const { data: showingData, error: showingError } = await supabase
+          .from('showing_requests')
           .select('id')
-          .eq('buyer_id', user.id)
+          .eq('user_id', user.id)
           .gte('created_at', startOfMonth.toISOString());
 
-        if (tourError) {
-          console.error('Error fetching tour count:', tourError);
+        if (showingError) {
+          console.error('Error fetching showing request count:', showingError);
           return;
         }
 
-        const used = tourData?.length || 0;
+        const used = showingData?.length || 0;
         const remaining = Math.max(0, limit - used);
 
         setQuota({

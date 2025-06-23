@@ -1,23 +1,21 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Button } from '../components/ui/button'
-import HeroSection from '../components/home/HeroSection'
-import ValuePropositionSection from '../components/ValuePropositionSection'
-import HowItWorks from '../components/HowItWorks'
-import TrustIndicators from '../components/TrustIndicators'
-import ProblemSolutionSection from '../components/ProblemSolutionSection'
-import IndustryChangesSection from '../components/IndustryChangesSection'
-import FinalCTASection from '../components/home/FinalCTASection'
+import HeroSection from '../components/buyer-os/HeroSection'
+import HowItWorks from '../components/buyer-os/HowItWorks'
+import PricingSection from '../components/buyer-os/PricingSection'
+import TrustStory from '../components/buyer-os/TrustStory'
+import FAQSection from '../components/buyer-os/FAQSection'
+import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import PropertyRequestForm from '../components/PropertyRequestForm'
+import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
-import { ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
 export default function Index() {
   const { user, loading } = useAuth()
   const { toast } = useToast()
   const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
+  const tourQuota = useTourQuota()
 
   // Handle redirects for authenticated users
   useEffect(() => {
@@ -34,16 +32,25 @@ export default function Index() {
     }
   }, [user, loading]);
 
-  const handleRequestShowing = () => {
-    // Open the property request form directly
+  const handleStartTour = () => {
+    // Check if user has exceeded their tour quota
+    if (user && tourQuota.isExceeded && !tourQuota.loading) {
+      toast({
+        title: "Tour Limit Reached",
+        description: "You've used all your tours this month. Upgrade your plan for more access.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setShowPropertyRequestForm(true)
   }
 
   // Show loading while checking auth state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
@@ -51,9 +58,9 @@ export default function Index() {
   // If user is authenticated, show loading while redirecting
   if (user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Redirecting to your dashboard...</p>
         </div>
       </div>
@@ -63,37 +70,28 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <HeroSection onRequestShowing={handleRequestShowing} />
+      <HeroSection onStartTour={handleStartTour} />
 
-      {/* Value Proposition Section - improved spacing */}
-      <div className="mt-0">
-        <ValuePropositionSection />
-      </div>
+      {/* How It Works */}
+      <HowItWorks />
 
-      {/* How It Works - improved spacing */}
-      <div className="mt-0">
-        <HowItWorks />
-      </div>
+      {/* Pricing Section */}
+      <PricingSection />
 
-      {/* Problem/Solution Section - improved spacing */}
-      <div className="mt-0">
-        <ProblemSolutionSection onRequestShowing={handleRequestShowing} />
-      </div>
+      {/* Trust Stories */}
+      <TrustStory />
 
-      {/* Industry Changes Section - improved spacing */}
-      <div className="mt-0">
-        <IndustryChangesSection onRequestShowing={handleRequestShowing} />
-      </div>
+      {/* FAQ Section */}
+      <FAQSection />
 
-      {/* Trust Indicators - improved spacing */}
-      <div className="mt-0">
-        <TrustIndicators />
-      </div>
-
-      {/* Final CTA - improved spacing */}
-      <div className="mt-0">
-        <FinalCTASection onRequestShowing={handleRequestShowing} />
-      </div>
+      {/* Tour Quota Banner - only show for authenticated users who exceeded quota */}
+      {user && tourQuota.isExceeded && !tourQuota.loading && (
+        <TourQuotaBanner 
+          used={tourQuota.used}
+          limit={tourQuota.limit}
+          planTier={user.user_metadata?.plan_tier || 'free'}
+        />
+      )}
 
       {/* Property Request Form Modal */}
       <PropertyRequestForm 

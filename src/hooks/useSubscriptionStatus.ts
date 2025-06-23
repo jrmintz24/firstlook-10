@@ -31,27 +31,37 @@ export const useSubscriptionStatus = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      // First check the users table for plan_tier
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('plan_tier')
+        .eq('id', user.id)
+        .single();
+
+      if (userError && userError.code !== 'PGRST116') {
+        console.error('Error checking user plan:', userError);
+      }
+
+      const planTier = userData?.plan_tier || 'free';
+      const isSubscribed = planTier !== 'free';
+
+      // Also check subscribers table for backward compatibility
+      const { data: subscriberData, error: subscriberError } = await supabase
         .from('subscribers')
         .select('subscribed, subscription_tier, subscription_end')
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking subscription status:', error);
-        setStatus(prev => ({ ...prev, loading: false }));
-        return;
+      if (subscriberError && subscriberError.code !== 'PGRST116') {
+        console.error('Error checking subscription status:', subscriberError);
       }
 
-      const isSubscribed = data?.subscribed || false;
-      const subscriptionEnd = data?.subscription_end;
-      
-      // Check if subscription has expired
+      const subscriptionEnd = subscriberData?.subscription_end;
       const isExpired = subscriptionEnd && new Date(subscriptionEnd) < new Date();
       
       setStatus({
         isSubscribed: isSubscribed && !isExpired,
-        subscriptionTier: data?.subscription_tier || null,
+        subscriptionTier: subscriberData?.subscription_tier || planTier,
         subscriptionEnd: subscriptionEnd,
         loading: false
       });

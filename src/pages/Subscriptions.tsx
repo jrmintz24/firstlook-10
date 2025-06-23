@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Link } from "react-router-dom";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import { RebateCalculator } from "@/components/subscription/RebateCalculator";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -349,7 +349,7 @@ const Subscriptions = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-10 pb-10">
+              <CardContent className="text-center pt-0 pb-8">
                 <div className="space-y-4 text-gray-700 font-light text-lg">
                   <p className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -379,7 +379,7 @@ const Subscriptions = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-10 pb-10">
+              <CardContent className="text-center pt-0 pb-8">
                 <div className="space-y-4 text-gray-700 font-light text-lg">
                   <p className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -422,32 +422,7 @@ const Subscriptions = () => {
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-white via-blue-50/50 to-indigo-50/30 rounded-3xl mb-8 overflow-hidden">
-              <CardContent className="p-10 sm:p-12">
-                <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/60 rounded-3xl p-8 border border-blue-100/50 backdrop-blur-sm shadow-lg">
-                  <h4 className="font-semibold text-blue-800 mb-6 text-center text-xl">Example:</h4>
-                  <div className="space-y-4 text-blue-700 text-lg font-light">
-                    <p className="flex justify-between items-center">
-                      <span>$400,000 home × 2.5% buyer agent commission</span>
-                      <span className="font-semibold">$10,000</span>
-                    </p>
-                    <p className="flex justify-between items-center">
-                      <span>FirstLook keeps 10%</span>
-                      <span className="font-semibold">$1,000</span>
-                    </p>
-                    <div className="border-t border-blue-200 pt-4">
-                      <p className="flex justify-between items-center text-2xl font-bold text-blue-800">
-                        <span>You get back</span>
-                        <span>$9,000</span>
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-blue-600 mt-8 font-medium text-center text-lg bg-white/60 rounded-2xl py-4 px-6">
-                    Traditional buyers don't even know they're missing this. You won't.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <RebateCalculator />
           </div>
         </div>
       </div>

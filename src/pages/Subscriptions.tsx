@@ -308,7 +308,7 @@ const Subscriptions = () => {
             <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-lg sm:text-xl text-gray-900 font-medium">Single Home Tour</CardTitle>
-                <div className="text-2xl sm:text-3xl font-light text-blue-600">$29<span className="text-sm text-gray-500">/home</span></div>
+                <div className="text-2xl sm:text-3xl font-light text-gray-900">$29<span className="text-sm text-gray-500">/home</span></div>
               </CardHeader>
               <CardContent className="text-center pt-0">
                 <p className="text-gray-600 text-sm sm:text-base font-light">Members only - perfect for one-off tours</p>
@@ -516,7 +516,10 @@ const Subscriptions = () => {
       {/* Error Boundary Modals */}
       <ErrorBoundary>
         {showPropertyForm && (
-          <PropertyRequestForm onClose={() => setShowPropertyForm(false)} />
+          <PropertyRequestForm 
+            isOpen={showPropertyForm}
+            onClose={() => setShowPropertyForm(false)} 
+          />
         )}
       </ErrorBoundary>
 
@@ -524,7 +527,7 @@ const Subscriptions = () => {
         <SubscribeModal
           isOpen={showSubscribeModal}
           onClose={() => setShowSubscribeModal(false)}
-          onSuccess={handleSubscriptionComplete}
+          onSubscriptionComplete={handleSubscriptionComplete}
         />
       )}
     </div>

@@ -88,22 +88,22 @@ const TrustStory = () => {
   ];
 
   return (
-    <div className="py-24 bg-gray-50">
+    <div className="py-28 sm:py-36 bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight">
-            🧡 You Shouldn't Have to <span className="font-semibold">Marry Your Agent</span> Before the First Date
+        <div className="mx-auto max-w-4xl text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-8 tracking-tight">
+            🧡 You Shouldn't Have to <span className="font-medium">Marry Your Agent</span> Before the First Date
           </h2>
           <p className="text-xl text-gray-600 font-light leading-relaxed">
             Real stories from real buyers who discovered there's a better way to house hunt.
           </p>
         </div>
         
-        <div className="space-y-20">
+        <div className="space-y-24">
           {stories.map((story, index) => (
             <div key={index} className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h3 className="text-3xl font-semibold text-gray-900 mb-2">
+              <div className="text-center mb-16">
+                <h3 className="text-3xl font-medium text-gray-900 mb-3">
                   {story.emoji} {story.title}
                 </h3>
                 <p className="text-sm font-medium text-gray-500 tracking-wider uppercase">
@@ -111,17 +111,17 @@ const TrustStory = () => {
                 </p>
               </div>
               
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid lg:grid-cols-2 gap-10">
                 {story.sections.map((section, sectionIndex) => {
                   const IconComponent = section.icon;
                   return (
-                    <Card key={sectionIndex} className={`${section.bgColor} ${section.borderColor} border-2 shadow-lg hover:shadow-xl transition-all duration-300`}>
-                      <CardContent className="p-8">
-                        <div className="flex items-center gap-4 mb-6">
-                          <div className={`w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md`}>
-                            <IconComponent className={`h-5 w-5 ${section.iconColor}`} />
+                    <Card key={sectionIndex} className={`${section.bgColor} ${section.borderColor} border-2 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl`}>
+                      <CardContent className="p-8 sm:p-10">
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className={`w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm`}>
+                            <IconComponent className={`h-6 w-6 ${section.iconColor}`} />
                           </div>
-                          <h4 className={`text-xl font-semibold ${section.textColor}`}>
+                          <h4 className={`text-xl font-medium ${section.textColor}`}>
                             {section.title}
                           </h4>
                         </div>
@@ -138,11 +138,11 @@ const TrustStory = () => {
           ))}
         </div>
         
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center gap-4 bg-white text-gray-600 px-10 py-6 rounded-3xl border border-gray-200 shadow-lg">
+        <div className="text-center mt-20">
+          <div className="inline-flex items-center gap-4 bg-white text-gray-600 px-12 py-8 rounded-3xl border border-gray-200 shadow-sm">
             <span className="text-3xl">✨</span>
             <span className="font-medium text-xl">
-              Every FirstLook buyer gets to write their own success story—<span className="font-bold text-gray-900">starting with a free tour</span>
+              Every FirstLook buyer gets to write their own success story—<span className="font-semibold text-gray-900">starting with a free tour</span>
             </span>
           </div>
         </div>

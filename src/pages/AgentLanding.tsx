@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Users, Clock, Shield, Star, TrendingUp, CheckCircle, Phone, ArrowRight, Sparkles, Home, HandHeart, Target } from "lucide-react";
+import { DollarSign, Users, Clock, Shield, Star, TrendingUp, CheckCircle, Phone, ArrowRight, Sparkles, Home, HandHeart, Target, Navigation, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
@@ -281,6 +281,73 @@ const AgentLanding = () => {
             <div className="bg-gray-900 rounded-xl p-8 text-white">
               <p className="text-xl font-light mb-4">Your job?</p>
               <p className="text-xl font-medium">Deliver a great experience, offer creative a la carte value, and earn their business.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* How We Compare to Zillow */}
+      <div className="py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
+                How We Compare to Zillow
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+                Zillow may promise buyer leads, but here's what sets FirstLook apart:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div className="flex items-start space-x-4 p-8 bg-white rounded-xl border border-gray-200">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">💸 No upfront fees</h3>
+                  <p className="text-gray-600 font-light leading-relaxed">You're not paying for leads who may never respond.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4 p-8 bg-white rounded-xl border border-gray-200">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Navigation className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">🧭 No lead roulette</h3>
+                  <p className="text-gray-600 font-light leading-relaxed">You choose the leads that make sense that won't be a time waster.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4 p-8 bg-white rounded-xl border border-gray-200">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <RotateCcw className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">🔁 Real engagement</h3>
+                  <p className="text-gray-600 font-light leading-relaxed">Our buyers are already active—booking tours and engaging in the process.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4 p-8 bg-white rounded-xl border border-gray-200">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <HandHeart className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">🤝 Earn their trust, not just their email</h3>
+                  <p className="text-gray-600 font-light leading-relaxed">Every tour is a live opportunity to build a relationship, demonstrate value, and win long-term business.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-900 to-gray-900 rounded-xl p-8 text-white text-center">
+              <p className="text-xl font-light mb-4">
+                With FirstLook, you're not buying leads.
+              </p>
+              <p className="text-xl font-medium">
+                You're building real connections with serious buyers who want optional, professional support—not a sales pitch.
+              </p>
             </div>
           </div>
         </div>

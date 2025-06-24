@@ -23,8 +23,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
           </h1>
           
           <h2 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
-            You Shouldn't Need <span className="font-medium text-gray-900">Permission</span><br />
-            Just to See a House
+            Your Home Journey, <span className="font-medium text-gray-900">On Your Terms</span>
           </h2>
           
           <div className="space-y-4 mb-12">
@@ -32,7 +31,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               Tour homes without pressure, contracts, or gatekeeping.
             </p>
             <p className="text-lg md:text-xl text-gray-800 max-w-3xl mx-auto leading-relaxed font-semibold mt-6">
-              Get started with one free home tour every month — no subscription required.
+              No commitment. Full control. Save thousands.
             </p>
           </div>
           

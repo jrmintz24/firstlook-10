@@ -12,170 +12,112 @@ const FAQ = () => {
     document.title = 'FAQs | FirstLook';
   }, []);
 
-  const generalFAQs = [
+  const gettingStartedFAQs = [
     {
-      question: "What is FirstLook and how does it work?",
-      answer: "FirstLook is a modern home touring platform built for buyers who want to tour homes without agent pressure. We connect you with licensed local showing partners on your terms, not theirs. You browse, book, and tour independently, with support available only when you ask for it.",
+      question: "❓ What is FirstLook?",
+      answer: "FirstLook is a home touring platform built for modern buyers. We let you schedule showings on your terms—with no contracts, no pressure, and no gatekeeping. Want to bring in an agent later? Cool. Want to go solo until you're ready to make an offer? Also fine. You're in control.",
       icon: Home
     },
     {
-      question: "Do I need to sign a contract or commit to an agent?",
-      answer: "Nope. There are no contracts, no commitments, and no pushy follow-up calls. Tour the home. Ask questions. Walk away—or move forward. It's your call.",
+      question: "💡 Why was FirstLook created?",
+      answer: "After a 2024 legal settlement, buyers are now responsible for signing their own buyer agency agreements and paying their agents directly. This left a lot of buyers confused—and unrepresented. FirstLook bridges that gap by: Letting you tour homes freely, Offering optional help when you're ready, Giving you access to huge commission rebates. We're here to make buying a home simpler, fairer, and a whole lot less pushy.",
+      icon: Shield
+    },
+    {
+      question: "🔏 Will I be asked to sign anything?",
+      answer: "Before your first tour, you'll sign a simple, non-exclusive, non-paid tour agreement that satisfies state requirements. It's not a commitment—it's just a permission slip so your showing agent can legally walk you through the property.",
       icon: Shield
     }
   ];
 
-  const privacyControlFAQs = [
+  const touringProcessFAQs = [
     {
-      question: "Will agents or sellers get my contact info?",
-      answer: "Never—unless you explicitly decide to share it. You're in control every step of the way. No cold calls, no spam, ever.",
-      icon: Shield
+      question: "🏠 Can I really see a home without hiring an agent?",
+      answer: "Yes! With FirstLook, you can book one free tour a month (on the Basic plan), and up to five a month on Premium. No contracts, no pressure. You only connect with an agent if you choose to.",
+      icon: Home
     },
     {
-      question: "Can I tour homes without being assigned an agent?",
-      answer: "Absolutely. FirstLook was built to put buyers in charge, with zero agent assignment or pressure until you're ready.",
-      icon: Handshake
-    },
-    {
-      question: "If I want to work with an agent, can I?",
-      answer: "Yes! If and when you want agent help, you can connect with a vetted, DC-licensed pro—on your terms.",
-      icon: Users
-    }
-  ];
-
-  const touringExperienceFAQs = [
-    {
-      question: "How fast can I book a tour?",
-      answer: "Most FirstLook users can book a showing within 2–12 hours, sometimes same-day. We work with a network of on-call local pros who know the neighborhoods you're looking in.",
+      question: "📅 How do I book a tour?",
+      answer: "Easy: Find a home you want to see, Enter the address on FirstLook, Pick a time that works for you, A licensed pro will meet you there",
       icon: Calendar
     },
     {
-      question: "Can I tour a home without the listing agent?",
-      answer: "Yes. We connect you with a vetted, third-party licensed showing partner who represents you—not the seller.",
-      icon: Home
+      question: "🔐 Is FirstLook safe and private?",
+      answer: "Absolutely. Your contact info is never shared with agents unless you explicitly choose to connect with one. All of our showing partners are licensed professionals who pass a screening and onboarding process. You'll always know who you're meeting and when. We also provide: Agent profiles and reviews, Tour confirmations with full details, A secure messaging system for any follow-up questions. Your privacy and safety are our top priorities.",
+      icon: Shield
     },
     {
-      question: "Who shows the home during my tour?",
-      answer: "A verified, DC-licensed local pro will greet you and give access. They're there to help if you need, but will always respect your space and privacy.",
-      icon: Home
-    },
-    {
-      question: "What happens during the tour?",
-      answer: "You'll walk the home just like you would with any agent—but without the awkward pitch. Ask questions, take your time, and explore freely.",
+      question: "📄 What happens after I tour a home?",
+      answer: "Nothing—unless you want more help. You can: Keep browsing and booking tours, Upgrade your plan to unlock offer-writing tools, Ask FirstLook to help write and negotiate an offer",
       icon: Users
-    },
-    {
-      question: "Can I bring friends or family on a tour?",
-      answer: "Of course—bring whoever you like. We want you to feel comfortable and empowered in your decision-making.",
-      icon: Users
-    },
-    {
-      question: "What happens after my first (free) tour?",
-      answer: "You can continue booking tours at transparent, flat rates. Still no contracts or commitments.",
-      icon: Gift
     }
   ];
 
-  const costValueFAQs = [
+  const pricingCommissionFAQs = [
     {
-      question: "Is my first tour really free?",
-      answer: "Yes. Your first tour is on us—no strings attached.",
-      icon: Gift
-    },
-    {
-      question: "What does it cost after that?",
-      answer: "Subscribe for $69.95/month for unlimited VIP tours + access to our buyer concierge, or book pay-as-you-go tours at $49 (single home) or $74.95 (multi-home session).",
+      question: "🧾 How does the commission rebate work?",
+      answer: "If the seller offers a buyer agent commission (which many still do), and you buy through FirstLook: We collect the commission at closing, We keep just 10% as a service fee, You get 90% back as a rebate. Example: Seller offers 2.5% on a $500,000 home = $12,500, FirstLook keeps $1,250, You get $11,250 back at closing 💸",
       icon: DollarSign
     },
     {
-      question: "How much could I save using FirstLook?",
-      answer: "Traditional buyer agents often collect 2.5%–3% of the purchase price—baked into the sale. On a $600,000 home, that's $15,000–$18,000. With FirstLook, you stay in control and avoid that full commission unless you choose to bring in an agent.",
-      icon: Gift
-    },
-    {
-      question: "Are there any hidden fees or upcharges?",
-      answer: "No. Our pricing is upfront, all-inclusive, and you'll never be surprised by extra costs.",
+      question: "🚫 Are there any hidden fees?",
+      answer: "Nope. Our pricing is simple, transparent, and month-to-month. Cancel anytime. Extra tours and offer-writing help are clearly priced and optional.",
       icon: AlertCircle
+    },
+    {
+      question: "💰 How much does FirstLook cost?",
+      answer: "We offer flexible pricing: Basic plan includes 1 free tour per month, Premium plan includes up to 5 tours per month plus offer-writing tools, Pay-per-tour options are also available. All plans are month-to-month with no long-term commitments.",
+      icon: CreditCard
     }
   ];
 
-  const differentiatorsFAQs = [
+  const flexibilityChoiceFAQs = [
     {
-      question: "How is FirstLook different from traditional real estate services?",
-      answer: "Privacy-first: You never get spammed or cold-called. No commitment: No contracts, no agent sign-up, ever. On-demand: Book tours instantly, on your schedule. Flat, transparent pricing: No commissions. Local support, only if you want it: Agents are on-call, not in your face.",
-      icon: Shield
-    },
-    {
-      question: "What if I want help writing an offer?",
-      answer: "We offer flat-rate contract support ($499 per offer or $249 for paperwork-only). You'll get access to a licensed pro who can walk you through it.",
+      question: "👩‍💼 Do I have to use FirstLook for the whole transaction?",
+      answer: "Nope. After touring, you can: Use FirstLook to help you write and manage your offer (Premium plan), Choose one of our agents to represent you and pay a discounted referral fee, Or go off-platform and work directly with your favorite agent—we'll just collect a referral fee based on how many homes they showed you",
       icon: Handshake
     },
     {
-      question: "Can I work with the person who showed me the home?",
-      answer: "Yes, but only if you choose to. Your contact info is never shared unless you explicitly request it.",
-      icon: Users
-    },
-    {
-      question: "Can I use FirstLook and still work with my own agent?",
-      answer: "Yes! You're never locked in. Use FirstLook to tour homes, then bring in your own agent at any stage if you wish.",
-      icon: Users
-    },
-    {
-      question: "Can I still use a traditional agent if I change my mind?",
-      answer: "Of course. FirstLook is about control and flexibility—if a traditional buyer's agent makes sense later, we'll help match you.",
-      icon: Handshake
-    }
-  ];
-
-  const safetySupportFAQs = [
-    {
-      question: "Is my information safe with FirstLook?",
-      answer: "Absolutely. All data is encrypted, and we only collect what's needed to facilitate your tours—never for marketing or sales.",
+      question: "📍 Why can't I just use Zillow?",
+      answer: "You can—but here's the catch: Zillow sends your info to 3+ agents instantly, You get hit with sales calls, You're pushed to sign contracts before you're ready. FirstLook puts the buyer first. No spam. No pressure. Just tours when and how you want them.",
       icon: Shield
     },
     {
-      question: "What if I need help during a tour?",
-      answer: "Local pros are always available for questions or support, but never pushy. You can also reach us directly via chat or support.",
-      icon: HelpCircle
-    },
-    {
-      question: "What if I need help beyond touring?",
-      answer: "You'll get access to a licensed concierge via live call or message anytime you need help. We support you from browsing to closing—with none of the pressure.",
-      icon: HelpCircle
+      question: "🏘️ Can I work with my own agent if I change my mind?",
+      answer: "Absolutely! FirstLook is designed to give you maximum flexibility. You can start touring homes with us and later decide to work with your own agent for offers and negotiations. We're not here to lock you in—we're here to give you options.",
+      icon: Users
     }
   ];
 
-  const practicalFAQs = [
+  const practicalDetailsFAQs = [
     {
-      question: "What if I want to keep seeing homes before making a decision?",
-      answer: "No problem. Book as many tours as you like, whenever you like. There's no limit and never any pressure to buy.",
-      icon: Calendar
-    },
-    {
-      question: "Do you operate in my area?",
-      answer: "We're currently live in the DC metro area (including Northern Virginia and parts of Maryland). More cities launching soon!",
+      question: "📍 Do you operate in my area?",
+      answer: "We're currently live in the DC metro area (including Northern Virginia and parts of Maryland). More cities launching soon! Contact us to be notified when we expand to your area.",
       icon: MapPin
     },
     {
-      question: "Can sellers list their homes on FirstLook?",
-      answer: "Yes—contact us for details on our transparent, commission-free listing process.",
-      icon: Home
+      question: "💬 What if I have more questions?",
+      answer: "We're happy to help. Just shoot us a message or check out our support center. Our team is available to answer any questions about the platform, touring process, or home buying in general.",
+      icon: HelpCircle
     },
     {
-      question: "What happens if I need to reschedule or cancel a tour?",
-      answer: "You can reschedule or cancel any tour with a simple click—no penalties or headaches.",
+      question: "🔄 Can I reschedule or cancel a tour?",
+      answer: "Yes! Life happens, and we understand. You can easily reschedule or cancel tours through your dashboard with reasonable notice. We'll work with you to find a time that works better.",
       icon: Calendar
+    },
+    {
+      question: "👥 Can I bring family or friends on tours?",
+      answer: "Of course! Buying a home is a big decision, and we encourage you to bring whoever you'd like for support and additional perspectives. Just let us know how many people will be attending when you book.",
+      icon: Users
     }
   ];
 
   const faqSections = [
-    { title: "General", faqs: generalFAQs, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
-    { title: "Privacy & Control", faqs: privacyControlFAQs, iconBg: "bg-green-100", iconColor: "text-green-600" },
-    { title: "Touring & Experience", faqs: touringExperienceFAQs, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
-    { title: "Pricing & Savings", faqs: costValueFAQs, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
-    { title: "Differentiators", faqs: differentiatorsFAQs, iconBg: "bg-red-100", iconColor: "text-red-600" },
-    { title: "Safety & Support", faqs: safetySupportFAQs, iconBg: "bg-indigo-100", iconColor: "text-indigo-600" },
-    { title: "Other Practical Questions", faqs: practicalFAQs, iconBg: "bg-gray-100", iconColor: "text-gray-600" }
+    { title: "Getting Started", faqs: gettingStartedFAQs, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+    { title: "Touring Process", faqs: touringProcessFAQs, iconBg: "bg-green-100", iconColor: "text-green-600" },
+    { title: "Pricing & Commissions", faqs: pricingCommissionFAQs, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
+    { title: "Flexibility & Choice", faqs: flexibilityChoiceFAQs, iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+    { title: "Practical Details", faqs: practicalDetailsFAQs, iconBg: "bg-gray-100", iconColor: "text-gray-600" }
   ];
 
   return (
@@ -185,10 +127,10 @@ const FAQ = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
-              Frequently Asked Questions
+              Everything You Need to Know About Touring, Offers, and Buying With FirstLook
             </h1>
             <p className="text-gray-600 text-xl font-light leading-relaxed">
-              Get the answers you need about <span className="font-medium">FirstLook's</span> privacy-first, commitment-free home touring experience.
+              Get the answers you need about <span className="font-medium">FirstLook's</span> commitment-free, buyer-first home touring experience.
             </p>
           </div>
         </div>
@@ -213,7 +155,7 @@ const FAQ = () => {
                     <AccordionItem 
                       key={index} 
                       value={`${sectionIndex}-${index}`}
-                      className="bg-white rounded-2xl shadow-sm border border-gray-200"
+                      className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
                     >
                       <AccordionTrigger className="text-left hover:no-underline px-6 py-6">
                         <div className="flex items-center gap-4">
@@ -234,27 +176,27 @@ const FAQ = () => {
           </div>
         ))}
 
-        {/* Call to Action */}
+        {/* Ready to Start CTA */}
         <div className="text-center max-w-3xl mx-auto">
-          <div className="bg-gray-900 rounded-3xl p-12 text-white">
+          <div className="bg-gradient-to-br from-gray-900 to-blue-900 rounded-3xl p-12 text-white">
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Gift className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-3xl font-light mb-6 tracking-tight">Still have questions?</h3>
+            <h3 className="text-3xl font-light mb-6 tracking-tight">🏁 Ready to Start Touring?</h3>
             <p className="mb-8 text-gray-300 text-lg font-light leading-relaxed">
-              Get personalized answers and start your commitment-free home search today.
+              Pick your plan, find a home, and book your first tour today. Your future home is closer than you think.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/">
                 <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-2xl font-medium text-lg shadow-none">
-                  Start Your Free Tour
+                  Get Your Free Tour
                 </Button>
               </Link>
               <a 
                 href="mailto:support@firstlook.com"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-2xl font-medium text-lg border-2 border-white/20 text-white hover:bg-white/10 transition-all duration-300"
               >
-                Contact Support
+                View Pricing Plans
               </a>
             </div>
           </div>

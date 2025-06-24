@@ -1,32 +1,38 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, Users, Gift } from "lucide-react";
+import { MapPin, Calendar, FileText, Users, Gift } from "lucide-react";
 
 const HowItWorks = () => {
   const steps = [
     {
       icon: MapPin,
       title: "Pick a Home",
-      description: "Enter any address you want to tour.",
+      description: "Enter any address — no need to wait for MLS access.",
       color: "bg-blue-500"
     },
     {
       icon: Calendar,
       title: "Book a Time",
-      description: "Choose when works for you. A FirstLook Pro meets you there.",
+      description: "Choose when works for you. A FirstLook Pro will meet you there.",
       color: "bg-green-500"
+    },
+    {
+      icon: FileText,
+      title: "Sign a Tour Agreement",
+      description: "We'll send you a non-exclusive, non-paid agreement — just to make things official.",
+      color: "bg-orange-500"
     },
     {
       icon: Users,
       title: "Need Help? Just Ask",
-      description: "Want help with the offer? Negotiation advice? It's optional.",
+      description: "Want offer support or negotiation guidance? It's always on-demand.",
       color: "bg-purple-500"
     },
     {
       icon: Gift,
       title: "Get Rewarded",
-      description: "Upgrade for commission rebates and extra tours.",
-      color: "bg-orange-500"
+      description: "Upgrade to unlock rebates worth thousands when you buy.",
+      color: "bg-red-500"
     }
   ];
 
@@ -35,14 +41,14 @@ const HowItWorks = () => {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 mb-6">
-            How FirstLook Works
+            How It Works
           </h2>
           <p className="text-lg leading-8 text-gray-600 font-light">
-            House hunting without the awkward contracts or sales pressure.
+            House hunting without the gatekeeping.
           </p>
         </div>
         
-        <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (

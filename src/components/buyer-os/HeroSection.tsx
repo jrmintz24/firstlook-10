@@ -23,19 +23,16 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
           </h1>
           
           <h2 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
-            You Shouldn't Have to <span className="font-medium text-gray-900">Hire an Agent</span><br />
+            You Shouldn't Need <span className="font-medium text-gray-900">Permission</span><br />
             Just to See a House
           </h2>
           
           <div className="space-y-4 mb-12">
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-              Tour homes on your schedule. Make offers only when you're ready.
-            </p>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-              No pressure. No contracts. No gatekeeping.
+              Tour homes without pressure, contracts, or gatekeeping.
             </p>
             <p className="text-lg md:text-xl text-gray-800 max-w-3xl mx-auto leading-relaxed font-semibold mt-6">
-              Your first tour is totally free.
+              Get started with one free home tour every month — no subscription required.
             </p>
           </div>
           
@@ -45,7 +42,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               className="bg-gray-900 hover:bg-black text-white px-10 py-5 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 rounded-xl min-w-[280px] h-[56px]"
               onClick={onStartTour}
             >
-              <span>See Your First Home Free</span>
+              <span>Book Your Free Tour</span>
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
             <Button 
@@ -55,7 +52,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               onClick={scrollToHowItWorks}
             >
               <Play className="mr-3 h-5 w-5" />
-              How It Works
+              See How It Works
             </Button>
           </div>
         </div>

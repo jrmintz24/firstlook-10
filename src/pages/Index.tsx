@@ -5,7 +5,7 @@ import HeroSection from '../components/buyer-os/HeroSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
 import HowItWorks from '../components/buyer-os/HowItWorks'
 import TrustStory from '../components/buyer-os/TrustStory'
-import IndustryChanges from '../components/buyer-os/IndustryChanges'
+import CommissionExplainer from '../components/buyer-os/CommissionExplainer'
 import PricingSection from '../components/buyer-os/PricingSection'
 import FAQSection from '../components/buyer-os/FAQSection'
 import TrustIndicators from '../components/buyer-os/TrustIndicators'
@@ -85,8 +85,8 @@ export default function Index() {
       {/* Trust Stories */}
       <TrustStory />
 
-      {/* Industry Changes */}
-      <IndustryChanges />
+      {/* Commission Explainer */}
+      <CommissionExplainer />
 
       {/* Pricing Section */}
       <PricingSection />

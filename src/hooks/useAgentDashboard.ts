@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,7 @@ interface ShowingRequest {
   assigned_agent_name?: string | null;
   assigned_agent_phone?: string | null;
   assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
   requested_agent_name?: string | null;
   requested_agent_phone?: string | null;
   requested_agent_email?: string | null;
@@ -45,17 +47,21 @@ export const useAgentDashboard = () => {
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Categorize requests with cancelled items at the bottom in history
+  // Categorize requests properly for agent view
   const pendingRequests = showingRequests.filter(req => 
-    ['pending', 'submitted', 'under_review'].includes(req.status)
+    req.status === 'pending' && !req.assigned_agent_id
   );
   
   const assignedRequests = showingRequests.filter(req => 
+    req.assigned_agent_id === profile?.id && 
     ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
   );
   
   const completedRequests = showingRequests
-    .filter(req => ['completed', 'cancelled'].includes(req.status))
+    .filter(req => 
+      req.assigned_agent_id === profile?.id && 
+      ['completed', 'cancelled'].includes(req.status)
+    )
     .sort((a, b) => {
       // First sort by status: completed first, cancelled last
       if (a.status !== b.status) {
@@ -99,13 +105,15 @@ export const useAgentDashboard = () => {
 
       setProfile(profileData);
 
-      // Fetch all showing requests for agents to see
+      // Fetch showing requests that are relevant to this agent
+      // This includes: pending requests (for assignment) and requests assigned to this agent
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
+        .or(`status.eq.pending,assigned_agent_id.eq.${currentUser.id}`)
         .order('created_at', { ascending: false });
 
-      console.log('Requests fetch result:', { requestsData, requestsError });
+      console.log('Requests fetch result:', { requestsData, requestsError, agentId: currentUser.id });
 
       if (requestsError) {
         console.error('Requests error:', requestsError);
@@ -116,6 +124,7 @@ export const useAgentDashboard = () => {
         });
         setShowingRequests([]);
       } else {
+        console.log('Filtered requests for agent:', requestsData?.length || 0);
         setShowingRequests(requestsData || []);
       }
     } catch (error) {

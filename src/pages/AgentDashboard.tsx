@@ -9,6 +9,7 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
+import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,6 +30,7 @@ const AgentDashboard = () => {
   const { confirmShowing } = useAgentConfirmation();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showReportIssueModal, setShowReportIssueModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("pending");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,6 +52,11 @@ const AgentDashboard = () => {
     setShowStatusModal(true);
   };
 
+  const handleReportIssue = (request: any) => {
+    setSelectedRequest(request);
+    setShowReportIssueModal(true);
+  };
+
   const handleConfirmSuccess = async (confirmationData: any) => {
     if (!profile) return;
     
@@ -64,6 +71,12 @@ const AgentDashboard = () => {
   const handleStatusUpdateSuccess = (requestId: string, newStatus: string, estimatedDate?: string) => {
     handleStatusUpdate(requestId, newStatus, estimatedDate);
     setShowStatusModal(false);
+    setSelectedRequest(null);
+    fetchAgentData();
+  };
+
+  const handleReportIssueSuccess = () => {
+    setShowReportIssueModal(false);
     setSelectedRequest(null);
     fetchAgentData();
   };
@@ -218,6 +231,7 @@ const AgentDashboard = () => {
                   onCancelShowing={() => {}}
                   onRescheduleShowing={() => {}}
                   onConfirmShowing={handleConfirmShowing}
+                  onReportIssue={handleReportIssue}
                   userType="agent"
                   onComplete={fetchAgentData}
                   currentUserId={currentUser?.id}
@@ -235,6 +249,7 @@ const AgentDashboard = () => {
                   onRequestShowing={() => {}}
                   onCancelShowing={() => {}}
                   onRescheduleShowing={() => {}}
+                  onReportIssue={handleReportIssue}
                   userType="agent"
                   onComplete={fetchAgentData}
                   currentUserId={currentUser?.id}
@@ -457,6 +472,14 @@ const AgentDashboard = () => {
             onClose={() => setShowStatusModal(false)}
             request={selectedRequest}
             onUpdateStatus={handleStatusUpdateSuccess}
+          />
+
+          <ReportIssueModal
+            isOpen={showReportIssueModal}
+            onClose={() => setShowReportIssueModal(false)}
+            request={selectedRequest}
+            agentId={currentUser?.id || ''}
+            onComplete={handleReportIssueSuccess}
           />
         </>
       )}

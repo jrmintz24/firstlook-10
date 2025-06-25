@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, MessageCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, MessageCircle, AlertTriangle } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 
@@ -30,6 +30,7 @@ interface AgentRequestCardProps {
   onUpdateStatus: (status: string, estimatedDate?: string) => void;
   onSendMessage: () => void;
   onConfirm?: (request: ShowingRequest) => void;
+  onReportIssue?: (request: ShowingRequest) => void;
   showAssignButton: boolean;
   onComplete?: () => void;
   currentAgentId?: string;
@@ -41,6 +42,7 @@ const AgentRequestCard = ({
   onUpdateStatus, 
   onSendMessage, 
   onConfirm, 
+  onReportIssue,
   showAssignButton,
   onComplete,
   currentAgentId
@@ -67,6 +69,12 @@ const AgentRequestCard = ({
     
     if (canMessage) {
       onSendMessage();
+    }
+  };
+
+  const handleReportIssue = () => {
+    if (onReportIssue) {
+      onReportIssue(request);
     }
   };
 
@@ -228,6 +236,19 @@ const AgentRequestCard = ({
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               Message Client
+            </Button>
+          )}
+
+          {/* Report Issue button for assigned agents who can't fulfill the showing */}
+          {!showAssignButton && request.assigned_agent_id === currentAgentId && 
+           ['agent_assigned', 'confirmed'].includes(request.status) && (
+            <Button 
+              variant="outline" 
+              onClick={handleReportIssue}
+              className="border-red-200 text-red-700 hover:bg-red-50 text-sm w-full sm:w-auto"
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Report Issue
             </Button>
           )}
 

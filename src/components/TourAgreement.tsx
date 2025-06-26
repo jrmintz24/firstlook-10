@@ -136,6 +136,10 @@ const TourAgreement = () => {
     }
   };
 
+  const handleAgreementChange = (checked: boolean | 'indeterminate') => {
+    setAgreementAccepted(checked === true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -221,7 +225,7 @@ const TourAgreement = () => {
               <Checkbox
                 id="agreement"
                 checked={agreementAccepted}
-                onCheckedChange={setAgreementAccepted}
+                onCheckedChange={handleAgreementChange}
               />
               <label htmlFor="agreement" className="text-sm leading-5">
                 I have read and agree to the terms of this non-exclusive single tour agreement. 

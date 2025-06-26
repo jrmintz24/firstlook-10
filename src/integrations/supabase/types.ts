@@ -348,6 +348,93 @@ export type Database = {
           },
         ]
       }
+      open_houses: {
+        Row: {
+          address: string
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          description: string | null
+          id: string
+          images: Json | null
+          latitude: number | null
+          listing_agent_email: string | null
+          listing_agent_name: string | null
+          listing_agent_phone: string | null
+          longitude: number | null
+          lot_size: string | null
+          mls_id: string | null
+          open_house_date: string
+          open_house_end_time: string
+          open_house_start_time: string
+          price: number
+          property_type: string | null
+          sqft: number | null
+          state: string
+          status: string | null
+          updated_at: string
+          year_built: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          baths: number
+          beds: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          open_house_date: string
+          open_house_end_time: string
+          open_house_start_time: string
+          price: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          latitude?: number | null
+          listing_agent_email?: string | null
+          listing_agent_name?: string | null
+          listing_agent_phone?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string | null
+          open_house_date?: string
+          open_house_end_time?: string
+          open_house_start_time?: string
+          price?: number
+          property_type?: string | null
+          sqft?: number | null
+          state?: string
+          status?: string | null
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       post_showing_actions: {
         Row: {
           action_details: Json | null
@@ -593,6 +680,44 @@ export type Database = {
           },
         ]
       }
+      showing_email_notifications: {
+        Row: {
+          action_taken_at: string | null
+          created_at: string
+          email_opened_at: string | null
+          email_sent_at: string
+          id: string
+          notification_type: string
+          showing_request_id: string
+        }
+        Insert: {
+          action_taken_at?: string | null
+          created_at?: string
+          email_opened_at?: string | null
+          email_sent_at?: string
+          id?: string
+          notification_type: string
+          showing_request_id: string
+        }
+        Update: {
+          action_taken_at?: string | null
+          created_at?: string
+          email_opened_at?: string | null
+          email_sent_at?: string
+          id?: string
+          notification_type?: string
+          showing_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showing_email_notifications_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       showing_requests: {
         Row: {
           assigned_agent_email: string | null
@@ -712,30 +837,42 @@ export type Database = {
       tour_agreements: {
         Row: {
           agent_id: string | null
+          agreement_type: string | null
           buyer_id: string | null
           created_at: string
+          email_token: string | null
           id: string
           showing_request_id: string | null
           signed: boolean
           signed_at: string | null
+          terms_accepted_at: string | null
+          token_expires_at: string | null
         }
         Insert: {
           agent_id?: string | null
+          agreement_type?: string | null
           buyer_id?: string | null
           created_at?: string
+          email_token?: string | null
           id?: string
           showing_request_id?: string | null
           signed?: boolean
           signed_at?: string | null
+          terms_accepted_at?: string | null
+          token_expires_at?: string | null
         }
         Update: {
           agent_id?: string | null
+          agreement_type?: string | null
           buyer_id?: string | null
           created_at?: string
+          email_token?: string | null
           id?: string
           showing_request_id?: string | null
           signed?: boolean
           signed_at?: string | null
+          terms_accepted_at?: string | null
+          token_expires_at?: string | null
         }
         Relationships: [
           {
@@ -814,6 +951,10 @@ export type Database = {
       check_showing_eligibility: {
         Args: { user_uuid: string }
         Returns: Json
+      }
+      generate_agreement_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_user_type: {
         Args: Record<PropertyKey, never>

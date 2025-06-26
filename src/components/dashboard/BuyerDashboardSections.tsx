@@ -93,7 +93,12 @@ export const generateBuyerDashboardSections = ({
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
-                onConfirm={onConfirmShowing}
+                onConfirm={(id: string) => {
+                  const showingToConfirm = pendingRequests.find(s => s.id === id);
+                  if (showingToConfirm) {
+                    onConfirmShowing(showingToConfirm);
+                  }
+                }}
                 currentUserId={currentUser?.id}
                 onSendMessage={onSendMessage}
                 onComplete={fetchShowingRequests}
@@ -125,7 +130,12 @@ export const generateBuyerDashboardSections = ({
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
-                onConfirm={onConfirmShowing}
+                onConfirm={(id: string) => {
+                  const showingToConfirm = activeShowings.find(s => s.id === id);
+                  if (showingToConfirm) {
+                    onConfirmShowing(showingToConfirm);
+                  }
+                }}
                 currentUserId={currentUser?.id}
                 onSendMessage={onSendMessage}
                 onComplete={fetchShowingRequests}

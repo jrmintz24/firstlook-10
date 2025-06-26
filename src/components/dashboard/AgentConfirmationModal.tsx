@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ShowingRequest {
   id: string;
@@ -80,24 +80,6 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
         alternativeTime2: showAlternatives ? alternativeTime2 : undefined,
         timeChangeReason: isTimeChanged ? timeChangeReason : undefined,
       });
-
-      // After successful confirmation, trigger agreement email workflow
-      try {
-        const { data, error } = await supabase.functions.invoke('send-agreement-email', {
-          body: { showingRequestId: request.id }
-        });
-
-        if (error) {
-          console.error('Failed to send agreement email:', error);
-          // Don't block the confirmation process if email fails
-        } else {
-          console.log('Agreement email workflow initiated:', data);
-        }
-      } catch (emailError) {
-        console.error('Error invoking agreement email function:', emailError);
-        // Don't block the confirmation process if email fails
-      }
-
       onClose();
     } catch (error) {
       console.error('Error confirming showing:', error);

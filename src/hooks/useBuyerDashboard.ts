@@ -43,9 +43,9 @@ export const useBuyerDashboard = () => {
   console.log('useBuyerDashboard: Current user:', currentUser?.id, currentUser?.email);
   console.log('useBuyerDashboard: Auth loading:', authLoading, 'Hook loading:', loading);
 
-  // Categorize requests properly - now includes awaiting_agreement status
+  // Categorize requests properly - cancelled tours are hidden from history
   const pendingRequests = showingRequests.filter(req => 
-    ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
+    ['pending', 'submitted', 'under_review', 'agent_assigned'].includes(req.status)
   );
   
   const activeShowings = showingRequests.filter(req => 

@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X, UserPlus } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
@@ -61,14 +62,26 @@ const ShowingRequestCard = ({
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
   const isAgreementSigned = agreements[showing.id];
 
-  // Simplified button visibility logic
+  // Enhanced button visibility logic for different user types
   const canSendMessage = showing.assigned_agent_id && 
                         ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
   
-  const showRescheduleButton = ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
+  // Buyer-specific buttons
+  const showBuyerRescheduleButton = userType === 'buyer' && 
+    ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
   
-  const showCancelButton = ['submitted', 'under_review', 'agent_assigned', 'pending'].includes(showing.status);
+  const showBuyerCancelButton = userType === 'buyer' && 
+    ['submitted', 'under_review', 'agent_assigned', 'pending'].includes(showing.status);
   
+  // Agent-specific buttons
+  const showAgentAcceptButton = userType === 'agent' && 
+    showing.status === 'pending' && !showing.assigned_agent_id && onConfirm;
+  
+  const showAgentRescheduleButton = userType === 'agent' && 
+    showing.assigned_agent_id === currentUserId &&
+    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
+  
+  // Shared buttons
   const showConfirmButton = showing.status === 'awaiting_agreement' && onConfirm;
 
   const handleChatClick = () => {
@@ -83,6 +96,12 @@ const ShowingRequestCard = ({
 
   const handleCancelClick = () => {
     onCancel(showing.id);
+  };
+
+  const handleAcceptClick = () => {
+    if (onConfirm) {
+      onConfirm(showing.id);
+    }
   };
 
   const handleRescheduleSuccess = () => {
@@ -259,11 +278,23 @@ const ShowingRequestCard = ({
                   className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-sm"
                   icon={MessageCircle}
                 >
-                  Chat with Agent
+                  Chat with {userType === 'buyer' ? 'Agent' : 'Client'}
                 </InteractiveButton>
               )}
 
-              {showRescheduleButton && (
+              {/* Agent Accept Button */}
+              {showAgentAcceptButton && (
+                <InteractiveButton
+                  onClick={handleAcceptClick}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
+                  icon={UserPlus}
+                >
+                  Accept & Confirm
+                </InteractiveButton>
+              )}
+
+              {/* Buyer Reschedule Button */}
+              {showBuyerRescheduleButton && (
                 <InteractiveButton
                   variant="outline"
                   size="sm"
@@ -275,7 +306,21 @@ const ShowingRequestCard = ({
                 </InteractiveButton>
               )}
 
-              {showCancelButton && (
+              {/* Agent Reschedule Button */}
+              {showAgentRescheduleButton && (
+                <InteractiveButton
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRescheduleClick}
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 shadow-sm"
+                  icon={Edit}
+                >
+                  Reschedule
+                </InteractiveButton>
+              )}
+
+              {/* Buyer Cancel Button */}
+              {showBuyerCancelButton && (
                 <InteractiveButton
                   variant="outline"
                   size="sm"

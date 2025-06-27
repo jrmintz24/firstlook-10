@@ -31,13 +31,10 @@ export const useAgentConfirmation = () => {
     try {
       console.log('Starting agent confirmation process...', confirmationData);
 
-      // First, get the showing request details including buyer info
+      // First, get the showing request details
       const { data: showingRequest, error: fetchError } = await supabase
         .from('showing_requests')
-        .select(`
-          *,
-          profiles!showing_requests_user_id_fkey(first_name, last_name)
-        `)
+        .select('*')
         .eq('id', confirmationData.requestId)
         .single();
 
@@ -47,6 +44,20 @@ export const useAgentConfirmation = () => {
       }
 
       console.log('Showing request details:', showingRequest);
+
+      // Separately fetch the buyer's profile information
+      let buyerName = 'Buyer';
+      if (showingRequest.user_id) {
+        const { data: buyerProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', showingRequest.user_id)
+          .single();
+
+        if (buyerProfile && !profileError) {
+          buyerName = buyerProfile.first_name || 'Buyer';
+        }
+      }
 
       // Update the showing request with agent details and new status
       const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
@@ -71,33 +82,12 @@ export const useAgentConfirmation = () => {
 
       console.log('Showing request updated successfully');
 
-      // Get buyer's email from profiles table since we can't access auth.users directly
-      const { data: buyerProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', showingRequest.user_id)
-        .single();
-
-      if (profileError || !buyerProfile) {
-        console.error('Error fetching buyer profile:', profileError);
-        // Continue with the process even if we can't get the email
-        toast({
-          title: "Tour Confirmed",
-          description: "Tour confirmed but couldn't send agreement email. Please contact the buyer directly.",
-          variant: "destructive"
-        });
-        return true;
-      }
-
-      // Get the buyer's email from auth metadata - we'll use the edge function to handle this
-      const buyerName = (showingRequest.profiles as any)?.first_name || 'Buyer';
-
       console.log('Sending agreement email via edge function...');
       
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-agreement-email', {
         body: {
           showing_request_id: confirmationData.requestId,
-          buyer_user_id: showingRequest.user_id, // Pass the user ID so edge function can get email
+          buyer_user_id: showingRequest.user_id,
           buyer_name: buyerName,
           property_address: showingRequest.property_address,
           agent_name: agentName,

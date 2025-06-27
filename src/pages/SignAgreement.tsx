@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,7 +109,7 @@ const SignAgreement = () => {
         throw updateError;
       }
 
-      // Update showing request status to confirmed
+      // Update showing request status to confirmed (NOT completed)
       const { error: statusError } = await supabase
         .from('showing_requests')
         .update({

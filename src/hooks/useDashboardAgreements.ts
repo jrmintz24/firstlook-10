@@ -123,7 +123,7 @@ export const useDashboardAgreements = (userId: string) => {
         throw new Error('Failed to sign agreement');
       }
 
-      // Update showing status to confirmed
+      // Update showing status to confirmed (NOT completed)
       const { error: statusError } = await supabase
         .from('showing_requests')
         .update({

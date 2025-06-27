@@ -91,8 +91,8 @@ const ShowingListTab = ({
               onAssign={() => {}}
               onUpdateStatus={() => {}}
               onSendMessage={() => onSendMessage?.(showing.id)}
-              onConfirm={onConfirmShowing}
-              onReportIssue={onReportIssue}
+              onConfirm={onConfirmShowing ? () => onConfirmShowing(showing) : undefined}
+              onReportIssue={onReportIssue ? () => onReportIssue(showing) : undefined}
               showAssignButton={showing.status === 'pending' && !showing.assigned_agent_id}
               onComplete={onComplete}
               currentAgentId={currentUserId}

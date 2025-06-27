@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -229,27 +230,67 @@ export const useBuyerDashboard = () => {
     console.log('Signing agreement for showing:', selectedShowing.id, 'with name:', name);
 
     try {
-      const { data, error } = await supabase
+      // First, try to find existing agreement
+      const { data: existingAgreement, error: findError } = await supabase
         .from('tour_agreements')
-        .upsert({
-          showing_request_id: selectedShowing.id,
-          buyer_id: currentUser.id,
-          signed: true,
-          signed_at: new Date().toISOString()
-        }, {
-          onConflict: 'showing_request_id,buyer_id'
-        });
+        .select('*')
+        .eq('showing_request_id', selectedShowing.id)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
 
-      console.log('Agreement sign result:', { data, error });
+      console.log('Existing agreement check:', { existingAgreement, findError });
 
-      if (error) {
-        console.error('Error signing agreement:', error);
-        toast({
-          title: "Error",
-          description: "Failed to sign agreement. Please try again.",
-          variant: "destructive"
-        });
-        return;
+      if (findError) {
+        console.error('Error finding existing agreement:', findError);
+        throw new Error('Failed to check existing agreement');
+      }
+
+      if (existingAgreement) {
+        // Update existing agreement
+        const { error: updateError } = await supabase
+          .from('tour_agreements')
+          .update({
+            signed: true,
+            signed_at: new Date().toISOString()
+          })
+          .eq('id', existingAgreement.id);
+
+        if (updateError) {
+          console.error('Error updating agreement:', updateError);
+          throw new Error('Failed to sign agreement');
+        }
+      } else {
+        // Create new agreement
+        const { error: insertError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: selectedShowing.id,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: true,
+            signed_at: new Date().toISOString(),
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+
+        if (insertError) {
+          console.error('Error creating agreement:', insertError);
+          throw new Error('Failed to create and sign agreement');
+        }
+      }
+
+      // Update showing status to confirmed
+      const { error: statusError } = await supabase
+        .from('showing_requests')
+        .update({
+          status: 'confirmed',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedShowing.id);
+
+      if (statusError) {
+        console.error('Error updating showing status:', statusError);
+        // Don't throw here as agreement is already signed
       }
 
       // Update local agreements state
@@ -265,11 +306,11 @@ export const useBuyerDashboard = () => {
 
       // Clear selected showing
       setSelectedShowing(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Exception signing agreement:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: error.message || "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }

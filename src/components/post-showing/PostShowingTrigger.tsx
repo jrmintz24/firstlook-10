@@ -29,7 +29,7 @@ const PostShowingTrigger = ({ showingId, status, preferredDate, preferredTime }:
       // Add 1 hour for typical showing duration
       scheduledDateTime.setHours(scheduledDateTime.getHours() + 1);
       
-      console.log('Scheduling workflow triggers for showing:', showingId);
+      console.log('Scheduling workflow triggers including auto-completion for showing:', showingId);
       
       scheduleWorkflowTriggers(showingId, scheduledDateTime.toISOString())
         .then(() => {

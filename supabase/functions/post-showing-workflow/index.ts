@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
@@ -9,7 +8,7 @@ const corsHeaders = {
 
 interface WorkflowTrigger {
   showing_request_id: string;
-  trigger_type: 'post_showing_workflow' | 'follow_up_nudge' | 'agent_notification' | 'attendance_confirmation';
+  trigger_type: 'post_showing_workflow' | 'follow_up_nudge' | 'agent_notification' | 'attendance_confirmation' | 'auto_complete';
   scheduled_for: string;
   payload?: any;
 }
@@ -66,6 +65,39 @@ async function markShowingCompletedIfReady(supabase: any, showing_request_id: st
   return false;
 }
 
+async function autoCompleteShowing(supabase: any, showing_request_id: string) {
+  console.log('Auto-completing showing after 3 days:', showing_request_id);
+  
+  // Check if showing is still in confirmed/scheduled status
+  const { data: showing } = await supabase
+    .from('showing_requests')
+    .select('status, preferred_date, preferred_time')
+    .eq('id', showing_request_id)
+    .single();
+
+  if (!showing || !['confirmed', 'scheduled'].includes(showing.status)) {
+    console.log('Showing not in eligible status for auto-completion');
+    return;
+  }
+
+  // Mark as completed automatically
+  const { error } = await supabase
+    .from('showing_requests')
+    .update({ 
+      status: 'completed',
+      status_updated_at: new Date().toISOString()
+    })
+    .eq('id', showing_request_id);
+
+  if (error) {
+    console.error('Error auto-completing showing:', error);
+    throw error;
+  }
+
+  console.log('Successfully auto-completed showing');
+  return true;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -102,6 +134,9 @@ const handler = async (req: Request): Promise<Response> => {
       
       case 'schedule_workflow_triggers':
         return await scheduleWorkflowTriggers(supabase, showing_request_id, data);
+      
+      case 'auto_complete_showing':
+        return await autoCompleteShowing(supabase, showing_request_id);
       
       default:
         throw new Error(`Unknown action: ${action}`);
@@ -439,19 +474,33 @@ async function scheduleWorkflowTriggers(supabase: any, showing_request_id: strin
   const workflowTime = new Date(scheduled_end_time);
   workflowTime.setMinutes(workflowTime.getMinutes() + 30);
 
-  const { error } = await supabase
-    .from('workflow_triggers')
-    .insert({
+  // Schedule auto-completion for 3 days after the showing
+  const autoCompleteTime = new Date(scheduled_end_time);
+  autoCompleteTime.setDate(autoCompleteTime.getDate() + 3);
+
+  const triggers = [
+    {
       showing_request_id,
       trigger_type: 'post_showing_workflow',
       scheduled_for: workflowTime.toISOString(),
       payload: { auto_triggered: true }
-    });
+    },
+    {
+      showing_request_id,
+      trigger_type: 'auto_complete',
+      scheduled_for: autoCompleteTime.toISOString(),
+      payload: { reason: 'auto_complete_after_3_days' }
+    }
+  ];
+
+  const { error } = await supabase
+    .from('workflow_triggers')
+    .insert(triggers);
 
   if (error) throw error;
 
   return new Response(
-    JSON.stringify({ success: true, message: 'Workflow triggers scheduled' }),
+    JSON.stringify({ success: true, message: 'Workflow triggers scheduled including auto-completion' }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }

@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BuyerFeedbackModal from "@/components/post-showing/BuyerFeedbackModal";
-import AgentFeedbackModal from "@/components/post-showing/AgentFeedbackModal";
 
 interface ShowingCheckoutButtonProps {
   showing: {
@@ -26,8 +25,8 @@ const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckou
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Only show for active showings
-  if (!['confirmed', 'scheduled'].includes(showing.status)) {
+  // Only show for buyers with active showings
+  if (userType !== 'buyer' || !['confirmed', 'scheduled'].includes(showing.status)) {
     return null;
   }
 
@@ -89,25 +88,13 @@ const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckou
         Complete Showing
       </Button>
 
-      {userType === 'buyer' && (
-        <BuyerFeedbackModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onComplete={handleComplete}
-          showing={showing}
-          buyerId={user?.id || ""}
-        />
-      )}
-
-      {userType === 'agent' && (
-        <AgentFeedbackModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onComplete={handleComplete}
-          showing={showing}
-          agentId={user?.id || ""}
-        />
-      )}
+      <BuyerFeedbackModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onComplete={handleComplete}
+        showing={showing}
+        buyerId={user?.id || ""}
+      />
     </>
   );
 };

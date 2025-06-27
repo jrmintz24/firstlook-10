@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AgentConfirmationData {
   requestId: string;
@@ -15,101 +15,112 @@ interface AgentConfirmationData {
   timeChangeReason?: string;
 }
 
+interface AgentProfile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+}
+
 export const useAgentConfirmation = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const confirmShowing = async (confirmationData: AgentConfirmationData, agentProfile: any) => {
+  const confirmShowing = async (confirmationData: AgentConfirmationData, agentProfile: AgentProfile) => {
     setLoading(true);
     try {
-      // Prepare the confirmation details
-      const confirmationDetails = {
-        confirmed_date: confirmationData.confirmedDate,
-        confirmed_time: confirmationData.confirmedTime,
-        agent_message: confirmationData.agentMessage,
-        time_change_reason: confirmationData.timeChangeReason,
-        alternatives: []
-      };
+      console.log('Starting agent confirmation process...', confirmationData);
 
-      // Add alternatives if provided
-      if (confirmationData.alternativeDate1 && confirmationData.alternativeTime1) {
-        confirmationDetails.alternatives.push({
-          date: confirmationData.alternativeDate1,
-          time: confirmationData.alternativeTime1
-        });
+      // First, get the showing request details including buyer info
+      const { data: showingRequest, error: fetchError } = await supabase
+        .from('showing_requests')
+        .select(`
+          *,
+          profiles!showing_requests_user_id_fkey(email, first_name, last_name)
+        `)
+        .eq('id', confirmationData.requestId)
+        .single();
+
+      if (fetchError || !showingRequest) {
+        console.error('Error fetching showing request:', fetchError);
+        throw new Error('Failed to fetch showing request details');
       }
 
-      if (confirmationData.alternativeDate2 && confirmationData.alternativeTime2) {
-        confirmationDetails.alternatives.push({
-          date: confirmationData.alternativeDate2,
-          time: confirmationData.alternativeTime2
-        });
-      }
+      console.log('Showing request details:', showingRequest);
 
-      // Update the showing request with confirmation details
+      // Update the showing request with agent details and new status
+      const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
+      
       const { error: updateError } = await supabase
         .from('showing_requests')
         .update({
-          status: 'agent_confirmed',
+          assigned_agent_id: agentProfile.id,
+          assigned_agent_name: agentName,
+          assigned_agent_phone: agentProfile.phone,
+          status: 'awaiting_agreement',
           preferred_date: confirmationData.confirmedDate,
           preferred_time: confirmationData.confirmedTime,
-          assigned_agent_id: agentProfile.id,
-          assigned_agent_name: `${agentProfile.first_name} ${agentProfile.last_name}`,
-          assigned_agent_phone: agentProfile.phone,
-          assigned_agent_email: agentProfile.email || agentProfile.id,
-          internal_notes: JSON.stringify({
-            agent_confirmation: confirmationDetails,
-            original_notes: ''
-          }),
           status_updated_at: new Date().toISOString()
         })
         .eq('id', confirmationData.requestId);
 
       if (updateError) {
-        throw updateError;
+        console.error('Error updating showing request:', updateError);
+        throw new Error('Failed to update showing request');
       }
 
-      // Get the showing request to find the buyer
-      const { data: showingRequest, error: showingError } = await supabase
-        .from('showing_requests')
-        .select('user_id')
-        .eq('id', confirmationData.requestId)
-        .single();
+      console.log('Showing request updated successfully');
 
-      if (showingError) {
-        console.error('Error fetching showing request:', showingError);
-      }
+      // Send agreement email to buyer
+      const buyerEmail = showingRequest.profiles?.email;
+      const buyerName = showingRequest.profiles?.first_name || 'Buyer';
 
-      // Create a message record for the agent-buyer communication
-      if (confirmationData.agentMessage && showingRequest?.user_id) {
-        const { error: messageError } = await supabase
-          .from('messages')
-          .insert({
+      if (buyerEmail) {
+        console.log('Sending agreement email to:', buyerEmail);
+        
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-agreement-email', {
+          body: {
             showing_request_id: confirmationData.requestId,
-            sender_id: agentProfile.id,
-            receiver_id: showingRequest.user_id,
-            content: confirmationData.agentMessage,
+            buyer_email: buyerEmail,
+            buyer_name: buyerName,
+            property_address: showingRequest.property_address,
+            agent_name: agentName,
+            preferred_date: confirmationData.confirmedDate,
+            preferred_time: confirmationData.confirmedTime
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending agreement email:', emailError);
+          // Don't fail the entire process if email fails
+          toast({
+            title: "Tour Confirmed",
+            description: "Tour confirmed but there was an issue sending the agreement email. Please contact the buyer directly.",
+            variant: "destructive"
           });
-
-        if (messageError) {
-          console.error('Error creating message:', messageError);
-          // Don't fail the whole operation for message creation error
+        } else {
+          console.log('Agreement email sent successfully:', emailResult);
+          toast({
+            title: "Tour Confirmed & Agreement Sent",
+            description: `Tour confirmed for ${showingRequest.property_address}. Agreement email sent to buyer.`
+          });
         }
+      } else {
+        console.warn('No buyer email found, skipping agreement email');
+        toast({
+          title: "Tour Confirmed",
+          description: "Tour confirmed but no buyer email found for agreement.",
+          variant: "destructive"
+        });
       }
-
-      toast({
-        title: "Showing Confirmed! 🎉",
-        description: confirmationData.timeChangeReason 
-          ? "Your confirmation with time change has been sent to the buyer."
-          : "Your confirmation has been sent to the buyer. They'll receive your message and schedule details.",
-      });
 
       return true;
-    } catch (error) {
-      console.error('Error confirming showing:', error);
+
+    } catch (error: any) {
+      console.error('Error in confirmShowing:', error);
       toast({
         title: "Error",
-        description: "Failed to confirm showing. Please try again.",
+        description: error.message || "Failed to confirm showing. Please try again.",
         variant: "destructive"
       });
       return false;

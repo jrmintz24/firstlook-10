@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Clock, MessageSquare, AlertCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@ui/badge';
 
 interface ShowingRequest {
   id: string;
@@ -90,17 +90,17 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
 
   // Determine button text based on what the agent is doing
   const getButtonText = () => {
-    if (isSubmitting) return 'Sending...';
+    if (isSubmitting) return 'Sending Agreement Email...';
     
     if (isOfferingAlternatives) {
       return 'Offer Alternative Times';
     }
     
     if (isTimeChanged) {
-      return 'Confirm Time Change';
+      return 'Confirm Time Change & Send Agreement';
     }
     
-    return 'Confirm & Contact Buyer';
+    return 'Confirm & Send Agreement Email';
   };
 
   return (
@@ -109,7 +109,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-purple-600" />
-            Confirm Showing Details
+            Confirm Showing & Send Agreement
           </DialogTitle>
         </DialogHeader>
 
@@ -118,6 +118,16 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
             <p className="font-medium text-gray-800">{request.property_address}</p>
             <p className="text-sm text-gray-600">
               Buyer's request: {request.preferred_date} at {request.preferred_time}
+            </p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-blue-800 mb-2">
+              <MessageSquare className="h-4 w-4" />
+              <span className="font-medium">What happens next?</span>
+            </div>
+            <p className="text-blue-700 text-sm">
+              After you confirm, we'll automatically send a tour agreement email to the buyer. They'll need to sign it to finalize the appointment.
             </p>
           </div>
 

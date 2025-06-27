@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface SendAgreementEmailRequest {
   showing_request_id: string;
-  buyer_email: string;
+  buyer_user_id: string;
   buyer_name: string;
   property_address: string;
   agent_name: string;
@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { 
       showing_request_id, 
-      buyer_email, 
+      buyer_user_id,
       buyer_name, 
       property_address, 
       agent_name,
@@ -43,12 +43,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Sending agreement email for showing:', showing_request_id);
 
+    // Get buyer's email from auth.users using service role
+    const { data: authUser, error: authError } = await supabaseClient.auth.admin.getUserById(buyer_user_id);
+    
+    if (authError || !authUser) {
+      console.error('Error fetching buyer auth details:', authError);
+      throw new Error(`Failed to fetch buyer contact details: ${authError?.message}`);
+    }
+
+    const buyerEmail = authUser.user.email;
+    if (!buyerEmail) {
+      throw new Error('Buyer email not found');
+    }
+
     // Create tour agreement record with token
     const { data: agreement, error: agreementError } = await supabaseClient
       .from('tour_agreements')
       .insert({
         showing_request_id,
-        buyer_id: null, // Will be populated when buyer signs
+        buyer_id: buyer_user_id,
         agreement_type: 'single_tour',
         signed: false
       })
@@ -107,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResult = await resend.emails.send({
       from: "HomeTours <noreply@resend.dev>",
-      to: [buyer_email],
+      to: [buyerEmail],
       subject: `Tour Agreement Required - ${property_address}`,
       html: emailHtml,
     });

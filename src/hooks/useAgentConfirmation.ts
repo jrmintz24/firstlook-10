@@ -31,7 +31,7 @@ export const useAgentConfirmation = () => {
     try {
       console.log('Starting agent confirmation process...', confirmationData);
 
-      // First, get the showing request details including buyer info from auth.users
+      // First, get the showing request details including buyer info
       const { data: showingRequest, error: fetchError } = await supabase
         .from('showing_requests')
         .select(`
@@ -47,14 +47,6 @@ export const useAgentConfirmation = () => {
       }
 
       console.log('Showing request details:', showingRequest);
-
-      // Get buyer's email from auth.users table
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
-      
-      if (authError || !authUser) {
-        console.error('Error fetching buyer auth details:', authError);
-        throw new Error('Failed to fetch buyer contact details');
-      }
 
       // Update the showing request with agent details and new status
       const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
@@ -79,46 +71,53 @@ export const useAgentConfirmation = () => {
 
       console.log('Showing request updated successfully');
 
-      // Send agreement email to buyer
-      const buyerEmail = authUser.user.email;
-      const buyerName = (showingRequest.profiles as any)?.first_name || 'Buyer';
+      // Get buyer's email from profiles table since we can't access auth.users directly
+      const { data: buyerProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', showingRequest.user_id)
+        .single();
 
-      if (buyerEmail) {
-        console.log('Sending agreement email to:', buyerEmail);
-        
-        const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-agreement-email', {
-          body: {
-            showing_request_id: confirmationData.requestId,
-            buyer_email: buyerEmail,
-            buyer_name: buyerName,
-            property_address: showingRequest.property_address,
-            agent_name: agentName,
-            preferred_date: confirmationData.confirmedDate,
-            preferred_time: confirmationData.confirmedTime
-          }
-        });
-
-        if (emailError) {
-          console.error('Error sending agreement email:', emailError);
-          // Don't fail the entire process if email fails
-          toast({
-            title: "Tour Confirmed",
-            description: "Tour confirmed but there was an issue sending the agreement email. Please contact the buyer directly.",
-            variant: "destructive"
-          });
-        } else {
-          console.log('Agreement email sent successfully:', emailResult);
-          toast({
-            title: "Tour Confirmed & Agreement Sent",
-            description: `Tour confirmed for ${showingRequest.property_address}. Agreement email sent to buyer.`
-          });
-        }
-      } else {
-        console.warn('No buyer email found, skipping agreement email');
+      if (profileError || !buyerProfile) {
+        console.error('Error fetching buyer profile:', profileError);
+        // Continue with the process even if we can't get the email
         toast({
           title: "Tour Confirmed",
-          description: "Tour confirmed but no buyer email found for agreement.",
+          description: "Tour confirmed but couldn't send agreement email. Please contact the buyer directly.",
           variant: "destructive"
+        });
+        return true;
+      }
+
+      // Get the buyer's email from auth metadata - we'll use the edge function to handle this
+      const buyerName = (showingRequest.profiles as any)?.first_name || 'Buyer';
+
+      console.log('Sending agreement email via edge function...');
+      
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-agreement-email', {
+        body: {
+          showing_request_id: confirmationData.requestId,
+          buyer_user_id: showingRequest.user_id, // Pass the user ID so edge function can get email
+          buyer_name: buyerName,
+          property_address: showingRequest.property_address,
+          agent_name: agentName,
+          preferred_date: confirmationData.confirmedDate,
+          preferred_time: confirmationData.confirmedTime
+        }
+      });
+
+      if (emailError) {
+        console.error('Error sending agreement email:', emailError);
+        toast({
+          title: "Tour Confirmed",
+          description: "Tour confirmed but there was an issue sending the agreement email. Please contact the buyer directly.",
+          variant: "destructive"
+        });
+      } else {
+        console.log('Agreement email sent successfully:', emailResult);
+        toast({
+          title: "Tour Confirmed & Agreement Sent",
+          description: `Tour confirmed for ${showingRequest.property_address}. Agreement email sent to buyer.`
         });
       }
 

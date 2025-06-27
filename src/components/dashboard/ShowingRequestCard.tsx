@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,9 +62,13 @@ const ShowingRequestCard = ({
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
   const isAgreementSigned = agreements[showing.id];
 
-  // Only show messaging for confirmed showings that have an assigned agent
+  // Simplified button visibility logic
   const canSendMessage = showing.assigned_agent_id && 
                         ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
+  
+  const showRescheduleButton = ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
+  
+  const showConfirmButton = showing.status === 'awaiting_agreement' && onConfirm;
 
   const handleChatClick = () => {
     if (canSendMessage) {
@@ -84,7 +89,7 @@ const ShowingRequestCard = ({
 
   return (
     <>
-      <Card className="group shadow-sm border border-gray-200/80 hover:shadow-lg hover:border-purple-200/60 transition-all duration-300 bg-gradient-to-br from-white to-gray-50/30">
+      <Card className="group shadow-sm border border-gray-200/80 hover:shadow-md hover:border-purple-200/60 transition-all duration-200 bg-white">
         <CardContent className="p-6">
           <PostShowingTrigger
             showingId={showing.id}
@@ -120,15 +125,16 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
-              {/* Only show current status box for awaiting_agreement or non-confirmed statuses */}
-              {showing.status === 'awaiting_agreement' || !['confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status) ? (
+              {/* Current Status - only show for non-confirmed statuses or awaiting_agreement */}
+              {(showing.status === 'awaiting_agreement' || !['confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status)) && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6">
                   <div className="text-sm font-semibold text-blue-900 mb-2">Current Status</div>
                   <div className="text-blue-700 text-sm mb-2">{statusInfo.description}</div>
                   <div className="text-blue-600 text-xs font-medium">{timeline}</div>
                 </div>
-              ) : null}
+              )}
 
+              {/* Message Indicator */}
               {currentUserId && canSendMessage && (
                 <div className="mb-4">
                   <MessageIndicator
@@ -140,6 +146,7 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
+              {/* Date and Time */}
               {showing.preferred_date && (
                 <div className="flex items-center gap-8 text-gray-700 mb-4 p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2">
@@ -159,6 +166,7 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
+              {/* Estimated Confirmation Date */}
               {showing.estimated_confirmation_date && (
                 <div className="flex items-center gap-3 text-green-700 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -168,6 +176,7 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
+              {/* Agent Information */}
               {showing.assigned_agent_name && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-4">
                   <div className="text-sm font-semibold text-green-900 mb-3 flex items-center gap-2">
@@ -192,6 +201,7 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
+              {/* User Message */}
               {showing.message && (
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
                   <div className="text-sm font-semibold text-gray-800 mb-2">Your Notes</div>
@@ -205,8 +215,8 @@ const ShowingRequestCard = ({
             </div>
           </div>
 
-          {/* Enhanced handling for awaiting_agreement status */}
-          {showing.status === 'awaiting_agreement' && (
+          {/* Agreement Required Section */}
+          {showConfirmButton && (
             <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -232,8 +242,8 @@ const ShowingRequestCard = ({
             </div>
           )}
 
-          {/* Show action buttons for non-signed agreements (excluding awaiting_agreement which has its own section) */}
-          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed'].includes(showing.status) && (
+          {/* Action Buttons */}
+          {showActions && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
               {canSendMessage && (
                 <Button 
@@ -247,48 +257,17 @@ const ShowingRequestCard = ({
                 </Button>
               )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRescheduleClick}
-                className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 shadow-sm"
-              >
-                <Edit className="w-4 h-4" />
-                Reschedule
-              </Button>
-              
-              <ShowingCheckoutButton
-                showing={showing}
-                userType={userType}
-                onComplete={onComplete}
-              />
-            </div>
-          )}
-
-          {/* Show action buttons for signed agreements but exclude Confirm & Sign and Cancel */}
-          {showActions && isAgreementSigned && ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status) && (
-            <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
-              {canSendMessage && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleChatClick}
-                  className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm"
+              {showRescheduleButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRescheduleClick}
+                  className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 shadow-sm"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  Chat with Agent
+                  <Edit className="w-4 h-4" />
+                  Reschedule
                 </Button>
               )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRescheduleClick}
-                className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 shadow-sm"
-              >
-                <Edit className="w-4 h-4" />
-                Reschedule
-              </Button>
               
               <ShowingCheckoutButton
                 showing={showing}

@@ -60,6 +60,20 @@ const InteractiveButton = ({
   const handleMouseUp = () => setIsPressed(false);
   const handleMouseLeave = () => setIsPressed(false);
 
+  // Enhanced styling for modern look
+  const getVariantStyles = () => {
+    switch (variant) {
+      case "outline":
+        return "border-2 bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-lg transition-all duration-200 font-medium";
+      case "ghost":
+        return "bg-transparent hover:bg-gray-100/80 transition-all duration-200";
+      case "secondary":
+        return "bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-all duration-200 font-medium";
+      default:
+        return "bg-gradient-to-r shadow-lg hover:shadow-xl transition-all duration-200 font-semibold";
+    }
+  };
+
   return (
     <Button
       {...props}
@@ -71,10 +85,11 @@ const InteractiveButton = ({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       className={`
-        relative overflow-hidden transition-all duration-200
+        relative overflow-hidden transition-all duration-200 rounded-xl
         ${isPressed ? 'scale-95' : 'scale-100'}
         ${success ? 'bg-green-600 hover:bg-green-700' : ''}
         ${loading ? 'cursor-wait' : ''}
+        ${getVariantStyles()}
         ${className}
       `}
     >

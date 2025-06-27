@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ShowingRequestCard from "./ShowingRequestCard";
@@ -25,7 +26,7 @@ interface ShowingRequest {
 interface ShowingListTabProps {
   title: string;
   showings: ShowingRequest[];
-  emptyIcon: React.ElementType;
+  emptyIcon: LucideIcon;
   emptyTitle: string;
   emptyDescription: string;
   emptyButtonText?: string;
@@ -37,6 +38,9 @@ interface ShowingListTabProps {
   currentUserId?: string;
   onSendMessage?: (showingId: string) => void;
   agreements?: Record<string, boolean>;
+  userType?: 'buyer' | 'agent';
+  showActions?: boolean;
+  onReportIssue?: (showing: ShowingRequest) => void;
 }
 
 const ShowingListTab = ({
@@ -53,7 +57,10 @@ const ShowingListTab = ({
   onComplete,
   currentUserId,
   onSendMessage,
-  agreements = {}
+  agreements = {},
+  userType = 'buyer',
+  showActions = true,
+  onReportIssue
 }: ShowingListTabProps) => {
   if (showings.length === 0) {
     return (
@@ -89,6 +96,8 @@ const ShowingListTab = ({
             currentUserId={currentUserId}
             onSendMessage={onSendMessage}
             agreements={agreements}
+            userType={userType}
+            showActions={showActions}
           />
         ))}
       </CardContent>

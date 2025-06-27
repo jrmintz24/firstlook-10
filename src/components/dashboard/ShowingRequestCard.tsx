@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
@@ -68,6 +67,8 @@ const ShowingRequestCard = ({
   
   const showRescheduleButton = ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
   
+  const showCancelButton = ['submitted', 'under_review', 'agent_assigned', 'pending'].includes(showing.status);
+  
   const showConfirmButton = showing.status === 'awaiting_agreement' && onConfirm;
 
   const handleChatClick = () => {
@@ -78,6 +79,10 @@ const ShowingRequestCard = ({
 
   const handleRescheduleClick = () => {
     setShowRescheduleModal(true);
+  };
+
+  const handleCancelClick = () => {
+    onCancel(showing.id);
   };
 
   const handleRescheduleSuccess = () => {
@@ -267,6 +272,18 @@ const ShowingRequestCard = ({
                   icon={Edit}
                 >
                   Reschedule
+                </InteractiveButton>
+              )}
+
+              {showCancelButton && (
+                <InteractiveButton
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelClick}
+                  className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 shadow-sm"
+                  icon={X}
+                >
+                  Cancel Tour
                 </InteractiveButton>
               )}
               

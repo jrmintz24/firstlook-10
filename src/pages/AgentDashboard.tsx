@@ -7,7 +7,6 @@ import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
-import QuickStatsGrid from "@/components/dashboard/shared/QuickStatsGrid";
 import UpcomingSection from "@/components/dashboard/shared/UpcomingSection";
 
 // Existing components
@@ -221,16 +220,6 @@ const AgentDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
-      {/* Quick Stats */}
-      <QuickStatsGrid
-        userType="agent"
-        pendingCount={pendingRequests.length}
-        activeCount={assignedRequests.length}
-        completedCount={completedRequests.length}
-        unreadCount={unreadCount}
-        onStatClick={handleStatClick}
-      />
-
       {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming"

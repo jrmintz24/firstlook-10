@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, Heart, Calendar, User, FileText, MessageSquare, Home } from "lucide-react";
+import { Star, Heart, Calendar, User, FileText, MessageSquare } from "lucide-react";
 import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
+import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -27,15 +28,24 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   const [propertyComments, setPropertyComments] = useState("");
   const [agentComments, setAgentComments] = useState("");
   const [followUpQuestion, setFollowUpQuestion] = useState("");
+  const [showNotesInput, setShowNotesInput] = useState(false);
+  const [favoriteNotes, setFavoriteNotes] = useState("");
   
   const { 
     loading, 
     checkAttendance, 
     submitBuyerFeedback, 
-    recordAction, 
-    favoriteProperty, 
     askFollowUpQuestion 
   } = usePostShowingWorkflow();
+
+  const {
+    isSubmitting,
+    scheduleAnotherTour,
+    hireAgent,
+    makeOfferAgentAssisted,
+    makeOfferFirstLook,
+    favoriteProperty
+  } = useEnhancedPostShowingActions();
 
   const handleAttendanceSubmit = async () => {
     if (attended === null) return;
@@ -68,22 +78,74 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     setStep('actions');
   };
 
-  const handleAction = async (actionType: string, details?: any) => {
-    await recordAction(showing.id, {
-      buyer_id: buyerId,
-      action_type: actionType as any,
-      action_details: details
-    });
-
-    // Handle specific actions
-    if (actionType === 'favorite_property') {
-      await favoriteProperty(showing.property_address, showing.id);
-    } else if (actionType === 'ask_question' && followUpQuestion.trim()) {
-      await askFollowUpQuestion(showing.id, followUpQuestion);
-    }
-
+  const handleScheduleAnotherTour = async () => {
+    await scheduleAnotherTour(buyerId);
     onClose();
     onComplete?.();
+  };
+
+  const handleHireAgent = async () => {
+    if (!showing.assigned_agent_id) return;
+    
+    await hireAgent({
+      showingId: showing.id,
+      buyerId,
+      agentId: showing.assigned_agent_id,
+      propertyAddress: showing.property_address,
+      agentName: showing.assigned_agent_name
+    });
+    onClose();
+    onComplete?.();
+  };
+
+  const handleMakeOffer = async () => {
+    if (!showing.assigned_agent_id) {
+      // Use FirstLook generator if no agent
+      await makeOfferFirstLook({
+        showingId: showing.id,
+        buyerId,
+        propertyAddress: showing.property_address,
+        agentName: showing.assigned_agent_name
+      });
+    } else {
+      // Use agent-assisted if agent is available
+      await makeOfferAgentAssisted({
+        showingId: showing.id,
+        buyerId,
+        agentId: showing.assigned_agent_id,
+        propertyAddress: showing.property_address,
+        agentName: showing.assigned_agent_name
+      });
+    }
+    onClose();
+    onComplete?.();
+  };
+
+  const handleFavoriteProperty = async () => {
+    if (showNotesInput) {
+      await favoriteProperty({
+        showingId: showing.id,
+        buyerId,
+        propertyAddress: showing.property_address,
+        agentName: showing.assigned_agent_name
+      }, favoriteNotes);
+      
+      setShowNotesInput(false);
+      setFavoriteNotes("");
+      onClose();
+      onComplete?.();
+    } else {
+      setShowNotesInput(true);
+    }
+  };
+
+  const handleAskQuestion = async () => {
+    if (followUpQuestion.trim()) {
+      await askFollowUpQuestion(showing.id, followUpQuestion);
+      setFollowUpQuestion("");
+      onClose();
+      onComplete?.();
+    }
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (
@@ -110,7 +172,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
           <DialogTitle>
             {step === 'attendance' && 'How was your showing?'}
             {step === 'feedback' && 'Share your feedback'}
-            {step === 'actions' && 'What would you like to do next?'}
+            {step === 'actions' && "What's Next?"}
           </DialogTitle>
         </DialogHeader>
 
@@ -205,71 +267,105 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
         {step === 'actions' && (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-medium">What would you like to do next?</h3>
-              <p className="text-gray-600">Choose any actions that interest you</p>
+              <h3 className="text-lg font-medium">Thanks for touring {showing.property_address}! Choose your next step:</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Button
+                onClick={handleScheduleAnotherTour}
+                disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('schedule_same_agent')}
+                className="border-blue-300 text-blue-700 hover:bg-blue-50 h-auto p-4"
               >
-                <Calendar className="h-6 w-6" />
-                <span className="font-medium">Schedule Another Showing</span>
-                <span className="text-sm text-gray-600">With {showing.assigned_agent_name}</span>
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-semibold">Schedule Another Tour</div>
+                    <div className="text-xs opacity-80">Find more properties</div>
+                  </div>
+                </div>
               </Button>
-
+              
+              {showing.assigned_agent_name && (
+                <Button
+                  onClick={handleHireAgent}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50 h-auto p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Hire {showing.assigned_agent_name}</div>
+                      <div className="text-xs opacity-80">Work together long-term</div>
+                    </div>
+                  </div>
+                </Button>
+              )}
+              
               <Button
+                onClick={handleMakeOffer}
+                disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('schedule_different_agent')}
+                className="border-orange-300 text-orange-700 hover:bg-orange-50 h-auto p-4"
               >
-                <User className="h-6 w-6" />
-                <span className="font-medium">Try Different Agent</span>
-                <span className="text-sm text-gray-600">Schedule with someone new</span>
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-semibold">Make an Offer</div>
+                    <div className="text-xs opacity-80">Ready to buy this one</div>
+                  </div>
+                </div>
               </Button>
-
+              
               <Button
+                onClick={handleFavoriteProperty}
+                disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('work_with_agent')}
+                className="border-pink-300 text-pink-700 hover:bg-pink-50 h-auto p-4"
               >
-                <Home className="h-6 w-6" />
-                <span className="font-medium">Work with This Agent</span>
-                <span className="text-sm text-gray-600">Start your home search together</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('request_offer_assistance')}
-              >
-                <FileText className="h-6 w-6" />
-                <span className="font-medium">Get Offer Help</span>
-                <span className="text-sm text-gray-600">FirstLook offer assistance</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('favorite_property')}
-              >
-                <Heart className="h-6 w-6" />
-                <span className="font-medium">Favorite Property</span>
-                <span className="text-sm text-gray-600">Save for later</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto p-4 flex flex-col gap-2"
-                onClick={() => handleAction('request_disclosures')}
-              >
-                <FileText className="h-6 w-6" />
-                <span className="font-medium">Request Documents</span>
-                <span className="text-sm text-gray-600">Disclosures & property docs</span>
+                <div className="flex items-center gap-3">
+                  <Heart className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-semibold">Favorite Property</div>
+                    <div className="text-xs opacity-80">Save for later</div>
+                  </div>
+                </div>
               </Button>
             </div>
+
+            {showNotesInput && (
+              <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
+                <label className="text-sm font-medium text-gray-700">
+                  Add a note about what you liked (optional):
+                </label>
+                <Textarea
+                  value={favoriteNotes}
+                  onChange={(e) => setFavoriteNotes(e.target.value)}
+                  placeholder="Great location, loved the kitchen, needs some updates..."
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleFavoriteProperty}
+                    size="sm"
+                    disabled={isSubmitting}
+                  >
+                    Save to Favorites
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setShowNotesInput(false);
+                      setFavoriteNotes("");
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <label className="text-sm font-medium mb-2 block">Have a question for your agent?</label>
@@ -282,7 +378,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                   className="flex-1"
                 />
                 <Button
-                  onClick={() => handleAction('ask_question', { question: followUpQuestion })}
+                  onClick={handleAskQuestion}
                   disabled={!followUpQuestion.trim() || loading}
                   className="self-end"
                 >
@@ -294,7 +390,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
             <div className="flex justify-center">
               <Button
                 variant="ghost"
-                onClick={() => handleAction('no_action')}
+                onClick={onClose}
                 className="text-gray-600"
               >
                 I'll decide later

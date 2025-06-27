@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, ExternalLink } from "lucide-react";
+import { CheckCircle, Circle, ExternalLink, Calendar, UserPlus, Heart } from "lucide-react";
 
 interface WhatsNextCardProps {
   hasUpcomingTour: boolean;
@@ -72,6 +72,27 @@ const WhatsNextCard = ({ hasUpcomingTour, hasCompletedTours, onMakeOffer }: What
           </div>
         ))}
       </div>
+
+      {/* Post-tour actions for completed tours */}
+      {hasCompletedTours > 0 && (
+        <div className="border-t pt-4 mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-3">Post-Tour Actions:</p>
+          <div className="grid grid-cols-1 gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-2 justify-start">
+              <Calendar className="w-4 h-4" />
+              Schedule Another Showing
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-2 justify-start">
+              <UserPlus className="w-4 h-4" />
+              Work with Agent
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-2 justify-start">
+              <Heart className="w-4 h-4" />
+              See Other Properties
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="border-t pt-4">
         <p className="text-sm text-gray-600 mb-3">Need guidance?</p>

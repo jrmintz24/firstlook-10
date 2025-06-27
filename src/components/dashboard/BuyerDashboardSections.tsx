@@ -54,6 +54,16 @@ interface BuyerDashboardSectionsProps {
   onSendMessage: (showingId: string) => void;
 }
 
+// Helper function to check if a showing has passed its scheduled time
+const hasShowingPassed = (showing: ShowingRequest): boolean => {
+  if (!showing.preferred_date || !showing.preferred_time) return false;
+  
+  const showingDateTime = new Date(`${showing.preferred_date}T${showing.preferred_time}`);
+  const now = new Date();
+  
+  return showingDateTime < now;
+};
+
 export const generateBuyerDashboardSections = ({
   pendingRequests,
   activeShowings,
@@ -70,6 +80,13 @@ export const generateBuyerDashboardSections = ({
   fetchShowingRequests,
   onSendMessage
 }: BuyerDashboardSectionsProps) => {
+  // Separate confirmed showings into active and past
+  const currentActiveShowings = activeShowings.filter(showing => !hasShowingPassed(showing));
+  const pastConfirmedShowings = activeShowings.filter(showing => hasShowingPassed(showing));
+  
+  // Combine completed showings with past confirmed showings
+  const allCompletedShowings = [...completedShowings, ...pastConfirmedShowings];
+
   return [
     {
       id: "requested",
@@ -112,10 +129,10 @@ export const generateBuyerDashboardSections = ({
       id: "confirmed",
       title: "Confirmed Tours",
       icon: CheckCircle,
-      count: activeShowings.length,
+      count: currentActiveShowings.length,
       content: (
         <div className="space-y-4">
-          {activeShowings.length === 0 ? (
+          {currentActiveShowings.length === 0 ? (
             <EmptyStateCard
               title="No Confirmed Tours"
               description="Once your tour requests are confirmed, they'll appear here."
@@ -124,14 +141,14 @@ export const generateBuyerDashboardSections = ({
               icon={CheckCircle}
             />
           ) : (
-            activeShowings.map((showing) => (
+            currentActiveShowings.map((showing) => (
               <ShowingRequestCard
                 key={showing.id}
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
                 onConfirm={(id: string) => {
-                  const showingToConfirm = activeShowings.find(s => s.id === id);
+                  const showingToConfirm = currentActiveShowings.find(s => s.id === id);
                   if (showingToConfirm) {
                     onConfirmShowing(showingToConfirm);
                   }
@@ -163,21 +180,21 @@ export const generateBuyerDashboardSections = ({
     },
     {
       id: "history",
-      title: "Tour History",
+      title: "Completed Tours",
       icon: Clock,
-      count: completedShowings.length,
+      count: allCompletedShowings.length,
       content: (
         <div className="space-y-4">
-          {completedShowings.length === 0 ? (
+          {allCompletedShowings.length === 0 ? (
             <EmptyStateCard
-              title="No Tour History"
+              title="No Completed Tours"
               description="Your completed tours will appear here for your reference."
               buttonText="Request Your First Tour"
               onButtonClick={onRequestShowing}
               icon={Clock}
             />
           ) : (
-            completedShowings.map((showing) => (
+            allCompletedShowings.map((showing) => (
               <ShowingRequestCard
                 key={showing.id}
                 showing={showing}

@@ -61,6 +61,16 @@ const ShowingRequestCard = ({
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
   const isAgreementSigned = agreements[showing.id];
 
+  // Helper function to check if showing has passed
+  const hasShowingPassed = (): boolean => {
+    if (!showing.preferred_date || !showing.preferred_time) return false;
+    
+    const showingDateTime = new Date(`${showing.preferred_date}T${showing.preferred_time}`);
+    const now = new Date();
+    
+    return showingDateTime < now;
+  };
+
   // Enhanced button visibility logic for different user types
   const canSendMessage = showing.assigned_agent_id && 
                         ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
@@ -348,10 +358,11 @@ const ShowingRequestCard = ({
             </div>
           )}
 
+          {/* Show PostShowingCommunication for completed tours AND past confirmed tours */}
           <PostShowingCommunication
             showingId={showing.id}
             userType={userType}
-            showingStatus={showing.status}
+            showingStatus={showing.status === 'completed' || (hasShowingPassed() && ['confirmed', 'scheduled'].includes(showing.status)) ? 'completed' : showing.status}
             agentName={showing.assigned_agent_name || undefined}
             propertyAddress={showing.property_address}
             onActionTaken={onComplete}

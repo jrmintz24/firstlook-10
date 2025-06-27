@@ -274,13 +274,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleScheduleAnotherTour}
                 disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 text-gray-600" />
                   <div className="text-left">
                     <div className="font-semibold text-gray-900">Schedule Another Tour</div>
-                    <div className="text-xs text-gray-600">Find more properties</div>
+                    <div className="text-xs text-gray-500">Find more properties</div>
                   </div>
                 </div>
               </Button>
@@ -290,13 +290,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                   onClick={handleHireAgent}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                  className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <User className="h-5 w-5" />
+                    <User className="h-5 w-5 text-gray-600" />
                     <div className="text-left">
                       <div className="font-semibold text-gray-900">Hire {showing.assigned_agent_name}</div>
-                      <div className="text-xs text-gray-600">Work together long-term</div>
+                      <div className="text-xs text-gray-500">Work together long-term</div>
                     </div>
                   </div>
                 </Button>
@@ -306,13 +306,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleMakeOffer}
                 disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5" />
+                  <FileText className="h-5 w-5 text-gray-600" />
                   <div className="text-left">
                     <div className="font-semibold text-gray-900">Make an Offer</div>
-                    <div className="text-xs text-gray-600">Ready to buy this one</div>
+                    <div className="text-xs text-gray-500">Ready to buy this one</div>
                   </div>
                 </div>
               </Button>
@@ -321,13 +321,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleFavoriteProperty}
                 disabled={isSubmitting}
                 variant="outline"
-                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <Heart className="h-5 w-5" />
+                  <Heart className="h-5 w-5 text-gray-600" />
                   <div className="text-left">
                     <div className="font-semibold text-gray-900">Favorite Property</div>
-                    <div className="text-xs text-gray-600">Save for later</div>
+                    <div className="text-xs text-gray-500">Save for later</div>
                   </div>
                 </div>
               </Button>

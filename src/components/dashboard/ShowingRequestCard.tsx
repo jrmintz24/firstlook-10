@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -233,8 +232,8 @@ const ShowingRequestCard = ({
             </div>
           )}
 
-          {/* Only show action buttons if agreement not signed and showing actions are enabled */}
-          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled', 'awaiting_agreement'].includes(showing.status) && (
+          {/* Only show action buttons if showing actions are enabled and for appropriate statuses */}
+          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'pending', 'awaiting_agreement'].includes(showing.status) && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
               {canSendMessage && (
                 <Button 
@@ -257,17 +256,6 @@ const ShowingRequestCard = ({
                 <Edit className="w-4 h-4" />
                 Reschedule
               </Button>
-
-              {showing.status === 'confirmed' && onConfirm && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onConfirm(showing.id)} 
-                  className="border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 shadow-sm"
-                >
-                  Confirm & Sign
-                </Button>
-              )}
               
               <ShowingCheckoutButton
                 showing={showing}

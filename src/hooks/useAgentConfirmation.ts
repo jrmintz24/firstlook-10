@@ -81,7 +81,7 @@ export const useAgentConfirmation = () => {
 
       // Send agreement email to buyer
       const buyerEmail = authUser.user.email;
-      const buyerName = showingRequest.profiles?.first_name || 'Buyer';
+      const buyerName = (showingRequest.profiles as any)?.first_name || 'Buyer';
 
       if (buyerEmail) {
         console.log('Sending agreement email to:', buyerEmail);

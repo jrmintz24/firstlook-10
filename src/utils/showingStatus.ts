@@ -1,3 +1,4 @@
+
 import { CalendarDays, Hourglass, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export type ShowingStatusCategory = 'pending' | 'active' | 'completed' | 'cancelled';
@@ -14,7 +15,8 @@ export type ShowingStatus =
   | 'in_progress' 
   | 'completed' 
   | 'cancelled'
-  | 'no_show';
+  | 'no_show'
+  | 'agent_requested';
 
 interface StatusInfo {
   label: string;
@@ -126,15 +128,24 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
         description: 'Your showing has been cancelled.',
         category: 'cancelled'
       };
-      case 'no_show':
-        return {
-          label: 'No Show',
-          color: 'text-orange-700',
-          bgColor: 'bg-orange-100',
-          icon: '⚠️',
-          description: 'Buyer did not show up for the showing.',
-          category: 'cancelled'
-        };
+    case 'no_show':
+      return {
+        label: 'No Show',
+        color: 'text-orange-700',
+        bgColor: 'bg-orange-100',
+        icon: '⚠️',
+        description: 'Buyer did not show up for the showing.',
+        category: 'cancelled'
+      };
+    case 'agent_requested':
+      return {
+        label: 'Agent Requested',
+        color: 'text-blue-700',
+        bgColor: 'bg-blue-100',
+        icon: '🤝',
+        description: 'Agent has requested assignment to this showing.',
+        category: 'pending'
+      };
     default:
       return {
         label: 'Unknown',
@@ -194,7 +205,35 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
       return 'Your tour has been cancelled. Contact us if you have any questions.';
     case 'no_show':
       return 'The showing was marked as a no-show. Please reschedule if you\'re still interested.';
+    case 'agent_requested':
+      return 'An agent has requested assignment to your showing. Awaiting admin approval.';
     default:
       return 'Status timeline unavailable.';
   }
+};
+
+// Utility functions for status validation and categorization
+export const isValidShowingStatus = (status: string): status is ShowingStatus => {
+  const validStatuses: ShowingStatus[] = [
+    'pending', 'submitted', 'under_review', 'agent_assigned', 'agent_confirmed',
+    'awaiting_agreement', 'confirmed', 'scheduled', 'in_progress', 'completed',
+    'cancelled', 'no_show', 'agent_requested'
+  ];
+  return validStatuses.includes(status as ShowingStatus);
+};
+
+export const isActiveShowing = (status: ShowingStatus): boolean => {
+  return ['confirmed', 'scheduled', 'in_progress'].includes(status);
+};
+
+export const isPendingRequest = (status: ShowingStatus): boolean => {
+  return ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement', 'agent_requested'].includes(status);
+};
+
+export const isAgentRequested = (status: ShowingStatus): boolean => {
+  return status === 'agent_requested';
+};
+
+export const isUnassignedRequest = (request: any): boolean => {
+  return request.status === 'pending' && !request.assigned_agent_id && !request.requested_agent_id;
 };

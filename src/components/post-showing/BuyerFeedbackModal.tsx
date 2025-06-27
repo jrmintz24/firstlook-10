@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -275,13 +274,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleScheduleAnotherTour}
                 disabled={isSubmitting}
                 variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-50 h-auto p-4"
+                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5" />
                   <div className="text-left">
-                    <div className="font-semibold">Schedule Another Tour</div>
-                    <div className="text-xs opacity-80">Find more properties</div>
+                    <div className="font-semibold text-gray-900">Schedule Another Tour</div>
+                    <div className="text-xs text-gray-600">Find more properties</div>
                   </div>
                 </div>
               </Button>
@@ -291,13 +290,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                   onClick={handleHireAgent}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="border-purple-300 text-purple-700 hover:bg-purple-50 h-auto p-4"
+                  className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5" />
                     <div className="text-left">
-                      <div className="font-semibold">Hire {showing.assigned_agent_name}</div>
-                      <div className="text-xs opacity-80">Work together long-term</div>
+                      <div className="font-semibold text-gray-900">Hire {showing.assigned_agent_name}</div>
+                      <div className="text-xs text-gray-600">Work together long-term</div>
                     </div>
                   </div>
                 </Button>
@@ -307,13 +306,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleMakeOffer}
                 disabled={isSubmitting}
                 variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-50 h-auto p-4"
+                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5" />
                   <div className="text-left">
-                    <div className="font-semibold">Make an Offer</div>
-                    <div className="text-xs opacity-80">Ready to buy this one</div>
+                    <div className="font-semibold text-gray-900">Make an Offer</div>
+                    <div className="text-xs text-gray-600">Ready to buy this one</div>
                   </div>
                 </div>
               </Button>
@@ -322,20 +321,20 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleFavoriteProperty}
                 disabled={isSubmitting}
                 variant="outline"
-                className="border-pink-300 text-pink-700 hover:bg-pink-50 h-auto p-4"
+                className="h-auto p-4 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <Heart className="h-5 w-5" />
                   <div className="text-left">
-                    <div className="font-semibold">Favorite Property</div>
-                    <div className="text-xs opacity-80">Save for later</div>
+                    <div className="font-semibold text-gray-900">Favorite Property</div>
+                    <div className="text-xs text-gray-600">Save for later</div>
                   </div>
                 </div>
               </Button>
             </div>
 
             {showNotesInput && (
-              <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
+              <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <label className="text-sm font-medium text-gray-700">
                   Add a note about what you liked (optional):
                 </label>
@@ -391,7 +390,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
               <Button
                 variant="ghost"
                 onClick={onClose}
-                className="text-gray-600"
+                className="text-gray-600 hover:text-gray-800"
               >
                 I'll decide later
               </Button>

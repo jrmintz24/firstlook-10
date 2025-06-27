@@ -150,8 +150,8 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
-              {/* Current Status - only show for non-confirmed statuses or awaiting_agreement */}
-              {(showing.status === 'awaiting_agreement' || !['confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status)) && (
+              {/* Timeline display for all non-final statuses */}
+              {!['confirmed', 'agent_confirmed', 'scheduled', 'completed', 'cancelled'].includes(showing.status) && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6 hover:shadow-md transition-all duration-200">
                   <div className="text-sm font-semibold text-blue-900 mb-2">Current Status</div>
                   <div className="text-blue-700 text-sm mb-2">{statusInfo.description}</div>

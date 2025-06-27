@@ -198,8 +198,20 @@ export const usePostShowingWorkflow = () => {
     }
   };
 
+  // Add debouncing and duplicate prevention for scheduleWorkflowTriggers
+  const scheduledRequests = new Set<string>();
+
   const scheduleWorkflowTriggers = async (showing_request_id: string, scheduled_end_time: string) => {
+    // Prevent duplicate scheduling
+    const requestKey = `${showing_request_id}-${scheduled_end_time}`;
+    if (scheduledRequests.has(requestKey)) {
+      console.log('Workflow triggers already scheduled for:', showing_request_id);
+      return;
+    }
+
+    scheduledRequests.add(requestKey);
     setLoading(true);
+
     try {
       const { data, error } = await supabase.functions.invoke('post-showing-workflow', {
         body: {
@@ -211,9 +223,12 @@ export const usePostShowingWorkflow = () => {
 
       if (error) throw error;
 
+      console.log('Successfully scheduled workflow triggers for:', showing_request_id);
       return data;
     } catch (error) {
       console.error('Error scheduling workflow triggers:', error);
+      // Remove from scheduled set on error so it can be retried
+      scheduledRequests.delete(requestKey);
       throw error;
     } finally {
       setLoading(false);

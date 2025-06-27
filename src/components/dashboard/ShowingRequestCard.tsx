@@ -132,8 +132,8 @@ const ShowingRequestCard = ({
 
   return (
     <>
-      <Card className="group shadow-sm border border-gray-200/60 hover:shadow-lg hover:border-blue-200/40 transition-all duration-300 bg-white/95 backdrop-blur-sm hover:-translate-y-1 transform rounded-xl overflow-hidden">
-        <CardContent className="p-6">
+      <Card className="group shadow-sm border border-gray-200/60 hover:shadow-md hover:border-blue-200/40 transition-all duration-300 bg-white/95 backdrop-blur-sm hover:-translate-y-0.5 transform rounded-lg overflow-hidden">
+        <CardContent className="p-5">
           <PostShowingTrigger
             showingId={showing.id}
             status={showing.status}
@@ -141,24 +141,24 @@ const ShowingRequestCard = ({
             preferredTime={showing.preferred_time || undefined}
           />
 
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex items-start justify-between mb-5">
             <div className="flex-1">
               {/* Property Address */}
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3 group-hover:text-blue-700 transition-colors duration-200">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-200 shadow-sm">
-                  <MapPin className="h-5 w-5 text-blue-600" />
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2 group-hover:text-blue-700 transition-colors duration-200">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-200">
+                  <MapPin className="h-4 w-4 text-blue-600" />
                 </div>
                 {showing.property_address}
               </h3>
 
               {/* Date and Time - Enhanced styling */}
               {showing.preferred_date && (
-                <div className="flex items-center gap-6 text-gray-700 mb-4 p-3 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-xl border border-gray-100/50 hover:shadow-sm transition-all duration-200">
+                <div className="flex items-center gap-4 text-gray-700 mb-4 p-3 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-lg border border-gray-100/50 hover:shadow-sm transition-all duration-200">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="h-4 w-4 text-blue-600" />
+                    <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                      <Calendar className="h-3 w-3 text-blue-600" />
                     </div>
-                    <span className="font-medium">{new Date(showing.preferred_date).toLocaleDateString('en-US', { 
+                    <span className="font-medium text-sm">{new Date(showing.preferred_date).toLocaleDateString('en-US', { 
                       weekday: 'long', 
                       month: 'long', 
                       day: 'numeric' 
@@ -166,41 +166,43 @@ const ShowingRequestCard = ({
                   </div>
                   {showing.preferred_time && (
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <Clock className="h-4 w-4 text-indigo-600" />
+                      <div className="w-6 h-6 bg-indigo-100 rounded-md flex items-center justify-center">
+                        <Clock className="h-3 w-3 text-indigo-600" />
                       </div>
-                      <span className="font-medium">{formatTime(showing.preferred_time)}</span>
+                      <span className="font-medium text-sm">{formatTime(showing.preferred_time)}</span>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Status and Updated Date */}
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-3 mb-4">
                 <StatusBadge 
                   status={showing.status} 
                   size="md" 
                   animated={true}
                 />
                 {showing.status_updated_at && (
-                  <span className="text-xs text-gray-500 bg-gray-100/80 px-2.5 py-1.5 rounded-lg transition-colors duration-200 hover:bg-gray-200/80">
+                  <span className="text-xs text-gray-500 bg-gray-100/80 px-2 py-1 rounded-md transition-colors duration-200 hover:bg-gray-200/80">
                     Updated {new Date(showing.status_updated_at).toLocaleDateString()}
                   </span>
                 )}
               </div>
 
-              {['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
-                <div className="mb-6 animate-fade-in">
+              {/* Show tour progress only for buyers, or for agents in non-confirmed statuses */}
+              {(userType === 'buyer' || (userType === 'agent' && showing.status === 'pending')) && 
+               ['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
+                <div className="mb-5 animate-fade-in">
                   <TourProgressTracker showing={showing} userType={userType} />
                 </div>
               )}
 
               {/* Timeline display for awaiting agreement */}
               {showing.status === 'awaiting_agreement' && (
-                <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-4 rounded-xl border border-orange-200/50 mb-5 hover:shadow-sm transition-all duration-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center">
-                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-3 rounded-lg border border-orange-200/50 mb-4 hover:shadow-sm transition-all duration-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                      <AlertCircle className="h-3 w-3 text-orange-600" />
                     </div>
                     <div className="text-sm font-semibold text-orange-900">Current Status</div>
                   </div>
@@ -211,10 +213,10 @@ const ShowingRequestCard = ({
 
               {/* Timeline display for other non-final statuses */}
               {!['confirmed', 'agent_confirmed', 'scheduled', 'completed', 'cancelled', 'awaiting_agreement'].includes(showing.status) && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200/50 mb-5 hover:shadow-sm transition-all duration-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-blue-600" />
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200/50 mb-4 hover:shadow-sm transition-all duration-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Clock className="h-3 w-3 text-blue-600" />
                     </div>
                     <div className="text-sm font-semibold text-blue-900">Current Status</div>
                   </div>
@@ -225,7 +227,7 @@ const ShowingRequestCard = ({
 
               {/* Message Indicator */}
               {currentUserId && canSendMessage && (
-                <div className="mb-5 animate-fade-in">
+                <div className="mb-4 animate-fade-in">
                   <MessageIndicator
                     showingRequestId={showing.id}
                     userId={currentUserId}
@@ -237,9 +239,9 @@ const ShowingRequestCard = ({
 
               {/* Estimated Confirmation Date */}
               {showing.estimated_confirmation_date && !showing.assigned_agent_name && (
-                <div className="flex items-center gap-3 text-green-700 mb-5 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 hover:shadow-sm transition-all duration-200">
-                  <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 text-green-700 mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200/50 hover:shadow-sm transition-all duration-200">
+                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
                   <span className="text-sm font-medium">
                     Expected confirmation by {new Date(showing.estimated_confirmation_date).toLocaleDateString()}
@@ -249,24 +251,24 @@ const ShowingRequestCard = ({
 
               {/* Agent Information */}
               {showing.assigned_agent_name && (
-                <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 p-4 rounded-xl border border-green-200/50 mb-5 hover:shadow-sm transition-all duration-200">
-                  <div className="text-sm font-semibold text-green-900 mb-3 flex items-center gap-2">
-                    <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
-                      <User className="h-4 w-4 text-green-600" />
+                <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 p-3 rounded-lg border border-green-200/50 mb-4 hover:shadow-sm transition-all duration-200">
+                  <div className="text-sm font-semibold text-green-900 mb-2 flex items-center gap-2">
+                    <div className="w-6 h-6 bg-green-100 rounded-md flex items-center justify-center">
+                      <User className="h-3 w-3 text-green-600" />
                     </div>
                     Your Showing Partner
                   </div>
-                  <div className="text-green-800 font-semibold text-lg mb-2">{showing.assigned_agent_name}</div>
-                  <div className="flex items-center gap-6">
+                  <div className="text-green-800 font-semibold mb-2">{showing.assigned_agent_name}</div>
+                  <div className="flex items-center gap-4">
                     {showing.assigned_agent_phone && (
                       <div className="flex items-center gap-2 text-green-700 text-sm hover:text-green-800 transition-colors duration-200">
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-3 w-3" />
                         <span>{showing.assigned_agent_phone}</span>
                       </div>
                     )}
                     {showing.assigned_agent_email && (
                       <div className="flex items-center gap-2 text-green-700 text-sm hover:text-green-800 transition-colors duration-200">
-                        <Mail className="h-4 w-4" />
+                        <Mail className="h-3 w-3" />
                         <span>{showing.assigned_agent_email}</span>
                       </div>
                     )}
@@ -276,13 +278,13 @@ const ShowingRequestCard = ({
 
               {/* User Message */}
               {showing.message && (
-                <div className="bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200/50 mb-5 hover:bg-gray-100/50 transition-colors duration-200">
+                <div className="bg-gradient-to-r from-gray-50 to-slate-50 p-3 rounded-lg border border-gray-200/50 mb-4 hover:bg-gray-100/50 transition-colors duration-200">
                   <div className="text-sm font-semibold text-gray-800 mb-2">Your Notes</div>
                   <div className="text-gray-700 text-sm leading-relaxed">{showing.message}</div>
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 bg-gray-100/80 px-3 py-1.5 rounded-lg inline-block hover:bg-gray-200/80 transition-colors duration-200">
+              <p className="text-xs text-gray-500 bg-gray-100/80 px-2 py-1 rounded-md inline-block hover:bg-gray-200/80 transition-colors duration-200">
                 Requested on {new Date(showing.created_at).toLocaleDateString()}
               </p>
             </div>
@@ -290,10 +292,10 @@ const ShowingRequestCard = ({
 
           {/* Agreement Required Section */}
           {showConfirmButton && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 border border-orange-200/50 rounded-xl hover:shadow-sm transition-all duration-200 animate-fade-in">
+            <div className="mb-5 p-3 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 border border-orange-200/50 rounded-lg hover:shadow-sm transition-all duration-200 animate-fade-in">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-orange-900 mb-2">Agreement Required</h4>
@@ -305,7 +307,7 @@ const ShowingRequestCard = ({
                   </p>
                   <InteractiveButton
                     onClick={() => onConfirm && onConfirm(showing.id)}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 py-2"
                     icon={FileText}
                   >
                     Sign Agreement Now
@@ -317,13 +319,13 @@ const ShowingRequestCard = ({
 
           {/* Action Buttons */}
           {showActions && (
-            <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100/80">
+            <div className="flex gap-2 flex-wrap pt-3 border-t border-gray-100/80">
               {canSendMessage && (
                 <InteractiveButton 
                   variant="outline" 
                   size="sm" 
                   onClick={handleChatClick}
-                  className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-sm"
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
                   icon={MessageCircle}
                 >
                   Chat with {userType === 'buyer' ? 'Agent' : 'Client'}
@@ -334,7 +336,7 @@ const ShowingRequestCard = ({
               {showAgentAcceptButton && (
                 <InteractiveButton
                   onClick={handleAcceptClick}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-2"
                   icon={UserPlus}
                 >
                   Accept & Confirm
@@ -347,7 +349,7 @@ const ShowingRequestCard = ({
                   variant="outline"
                   size="sm"
                   onClick={handleRescheduleClick}
-                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 shadow-sm"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
                   icon={Edit}
                 >
                   Reschedule
@@ -360,7 +362,7 @@ const ShowingRequestCard = ({
                   variant="outline"
                   size="sm"
                   onClick={handleRescheduleClick}
-                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 shadow-sm"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
                   icon={Edit}
                 >
                   Reschedule
@@ -373,7 +375,7 @@ const ShowingRequestCard = ({
                   variant="outline"
                   size="sm"
                   onClick={handleCancelClick}
-                  className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 shadow-sm"
+                  className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
                   icon={X}
                 >
                   Cancel Tour

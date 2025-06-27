@@ -56,14 +56,21 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Buyer email not found');
     }
 
-    // Create tour agreement record with token
+    // Generate a simple token using crypto
+    const tokenBytes = new Uint8Array(32);
+    crypto.getRandomValues(tokenBytes);
+    const emailToken = btoa(String.fromCharCode(...tokenBytes)).replace(/[+/]/g, c => c === '+' ? '-' : '_').replace(/=/g, '');
+
+    // Create tour agreement record with generated token
     const { data: agreement, error: agreementError } = await supabaseClient
       .from('tour_agreements')
       .insert({
         showing_request_id,
         buyer_id: buyer_user_id,
         agreement_type: 'single_tour',
-        signed: false
+        signed: false,
+        email_token: emailToken,
+        token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
       })
       .select('email_token')
       .single();

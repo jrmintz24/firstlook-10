@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Calendar, Heart, UserPlus, Send } from "lucide-react";
+import { MessageCircle, Calendar, Heart, User, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
+import OfferTypeDialog from "./OfferTypeDialog";
 
 interface PostShowingCommunicationProps {
   showingId: string;
@@ -25,157 +26,248 @@ const PostShowingCommunication = ({
   propertyAddress,
   onActionTaken
 }: PostShowingCommunicationProps) => {
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showOfferDialog, setShowOfferDialog] = useState(false);
+  const [favoriteNotes, setFavoriteNotes] = useState("");
+  const [showNotesInput, setShowNotesInput] = useState(false);
   const { toast } = useToast();
-
-  const handleAction = async (actionType: string, details?: any) => {
-    if (!supabase.auth.getUser()) return;
-
-    setIsSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { error } = await supabase.functions.invoke('post-showing-workflow', {
-        body: {
-          action: 'record_action',
-          showing_request_id: showingId,
-          buyer_id: user?.id,
-          action_type: actionType,
-          action_details: details || {}
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Action Recorded",
-        description: getActionSuccessMessage(actionType),
-      });
-
-      if (onActionTaken) onActionTaken();
-    } catch (error) {
-      console.error('Error recording action:', error);
-      toast({
-        title: "Error",
-        description: "Failed to record your action. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const getActionSuccessMessage = (actionType: string) => {
-    switch (actionType) {
-      case 'schedule_same_agent':
-        return "Your request to schedule another showing with this agent has been sent.";
-      case 'work_with_agent':
-        return "Your interest in working with this agent has been noted.";
-      case 'ask_question':
-        return "Your question has been sent to the agent.";
-      case 'schedule_different_property':
-        return "Your request to see other properties has been noted.";
-      default:
-        return "Your action has been recorded.";
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!message.trim()) return;
-
-    await handleAction('ask_question', { message: message.trim() });
-    setMessage("");
-  };
+  
+  const {
+    isSubmitting,
+    scheduleAnotherTour,
+    hireAgent,
+    makeOfferAgentAssisted,
+    makeOfferFirstLook,
+    favoriteProperty
+  } = useEnhancedPostShowingActions();
 
   // Only show for completed showings
   if (showingStatus !== 'completed') {
     return null;
   }
 
-  return (
-    <Card className="mt-6 border-green-200 bg-green-50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-800">
-          <MessageCircle className="h-5 w-5" />
-          What's Next?
-        </CardTitle>
-        <p className="text-sm text-green-600">
-          Thanks for touring {propertyAddress}! Let us know how we can help you next.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {userType === 'buyer' && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Button
-                onClick={() => handleAction('schedule_same_agent')}
-                disabled={isSubmitting}
-                variant="outline"
-                className="border-green-300 text-green-700 hover:bg-green-100"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Another Showing
-              </Button>
-              
-              <Button
-                onClick={() => handleAction('work_with_agent')}
-                disabled={isSubmitting}
-                variant="outline"
-                className="border-purple-300 text-purple-700 hover:bg-purple-100"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Work with {agentName || 'This Agent'}
-              </Button>
-              
-              <Button
-                onClick={() => handleAction('schedule_different_property')}
-                disabled={isSubmitting}
-                variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-100"
-              >
-                <Heart className="h-4 w-4 mr-2" />
-                See Other Properties
-              </Button>
-            </div>
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  };
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-green-800">
-                Have a question for your agent?
-              </label>
-              <div className="flex gap-2">
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask about the property, neighborhood, or next steps..."
-                  className="flex-1"
-                  rows={3}
-                />
+  const getShowingDetails = async () => {
+    const { data: showing } = await supabase
+      .from('showing_requests')
+      .select('assigned_agent_id')
+      .eq('id', showingId)
+      .single();
+    
+    return showing;
+  };
+
+  const handleScheduleAnotherTour = async () => {
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    await scheduleAnotherTour(user.id);
+    if (onActionTaken) onActionTaken();
+  };
+
+  const handleHireAgent = async () => {
+    const user = await getCurrentUser();
+    const showing = await getShowingDetails();
+    if (!user || !showing?.assigned_agent_id) return;
+
+    await hireAgent({
+      showingId,
+      buyerId: user.id,
+      agentId: showing.assigned_agent_id,
+      propertyAddress,
+      agentName
+    });
+    if (onActionTaken) onActionTaken();
+  };
+
+  const handleMakeOffer = () => {
+    setShowOfferDialog(true);
+  };
+
+  const handleOfferAgentAssisted = async () => {
+    const user = await getCurrentUser();
+    const showing = await getShowingDetails();
+    if (!user || !showing?.assigned_agent_id) return;
+
+    await makeOfferAgentAssisted({
+      showingId,
+      buyerId: user.id,
+      agentId: showing.assigned_agent_id,
+      propertyAddress,
+      agentName
+    });
+    if (onActionTaken) onActionTaken();
+  };
+
+  const handleOfferFirstLook = async () => {
+    const user = await getCurrentUser();
+    const showing = await getShowingDetails();
+    if (!user) return;
+
+    await makeOfferFirstLook({
+      showingId,
+      buyerId: user.id,
+      agentId: showing?.assigned_agent_id,
+      propertyAddress,
+      agentName
+    });
+    if (onActionTaken) onActionTaken();
+  };
+
+  const handleFavoriteProperty = async () => {
+    if (showNotesInput) {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      await favoriteProperty({
+        showingId,
+        buyerId: user.id,
+        propertyAddress,
+        agentName
+      }, favoriteNotes);
+      
+      setShowNotesInput(false);
+      setFavoriteNotes("");
+      if (onActionTaken) onActionTaken();
+    } else {
+      setShowNotesInput(true);
+    }
+  };
+
+  return (
+    <>
+      <Card className="mt-6 border-green-200 bg-green-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-green-800">
+            <MessageCircle className="h-5 w-5" />
+            What's Next?
+          </CardTitle>
+          <p className="text-sm text-green-600">
+            Thanks for touring {propertyAddress}! Choose your next step:
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {userType === 'buyer' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Button
-                  onClick={sendMessage}
-                  disabled={isSubmitting || !message.trim()}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700"
+                  onClick={handleScheduleAnotherTour}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50 h-auto p-4"
                 >
-                  <Send className="h-4 w-4" />
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Schedule Another Tour</div>
+                      <div className="text-xs opacity-80">Find more properties</div>
+                    </div>
+                  </div>
+                </Button>
+                
+                {agentName && (
+                  <Button
+                    onClick={handleHireAgent}
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-auto p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <User className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">Hire {agentName}</div>
+                        <div className="text-xs opacity-90">Work together long-term</div>
+                      </div>
+                    </div>
+                  </Button>
+                )}
+                
+                <Button
+                  onClick={handleMakeOffer}
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 h-auto p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Make an Offer</div>
+                      <div className="text-xs opacity-90">Ready to buy this one</div>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button
+                  onClick={handleFavoriteProperty}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="border-pink-300 text-pink-700 hover:bg-pink-50 h-auto p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <Heart className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-semibold">Favorite Property</div>
+                      <div className="text-xs opacity-80">Save for later</div>
+                    </div>
+                  </div>
                 </Button>
               </div>
-            </div>
-          </>
-        )}
 
-        {userType === 'agent' && (
-          <div className="text-center p-4 bg-white rounded-lg border">
-            <p className="text-sm text-gray-600 mb-2">
-              Buyer actions and questions will appear here. You can respond directly to maintain engagement.
-            </p>
-            <Badge variant="outline" className="text-green-600 border-green-300">
-              Monitoring buyer activity
-            </Badge>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              {showNotesInput && (
+                <div className="space-y-2 p-3 bg-white rounded-lg border">
+                  <label className="text-sm font-medium text-gray-700">
+                    Add a note about what you liked (optional):
+                  </label>
+                  <Textarea
+                    value={favoriteNotes}
+                    onChange={(e) => setFavoriteNotes(e.target.value)}
+                    placeholder="Great location, loved the kitchen, needs some updates..."
+                    rows={2}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleFavoriteProperty}
+                      size="sm"
+                      disabled={isSubmitting}
+                    >
+                      Save to Favorites
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setShowNotesInput(false);
+                        setFavoriteNotes("");
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {userType === 'agent' && (
+            <div className="text-center p-4 bg-white rounded-lg border">
+              <p className="text-sm text-gray-600 mb-2">
+                Buyer actions will appear here. You'll be notified when they want to hire you, make offers, or schedule more tours.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <OfferTypeDialog
+        isOpen={showOfferDialog}
+        onClose={() => setShowOfferDialog(false)}
+        onSelectAgentAssisted={handleOfferAgentAssisted}
+        onSelectFirstLookGenerator={handleOfferFirstLook}
+        agentName={agentName}
+        propertyAddress={propertyAddress}
+      />
+    </>
   );
 };
 

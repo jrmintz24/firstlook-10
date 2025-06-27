@@ -138,6 +138,15 @@ const handler = async (req: Request): Promise<Response> => {
       case 'auto_complete_showing':
         return await autoCompleteShowing(supabase, showing_request_id);
       
+      case 'hire_agent':
+        return await handleHireAgent(supabase, showing_request_id, data);
+      
+      case 'make_offer_intent':
+        return await handleMakeOfferIntent(supabase, showing_request_id, data);
+      
+      case 'favorite_property':
+        return await handleFavoriteProperty(supabase, showing_request_id, data);
+      
       default:
         throw new Error(`Unknown action: ${action}`);
     }
@@ -501,6 +510,130 @@ async function scheduleWorkflowTriggers(supabase: any, showing_request_id: strin
 
   return new Response(
     JSON.stringify({ success: true, message: 'Workflow triggers scheduled including auto-completion' }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleHireAgent(supabase: any, showing_request_id: string, data: any) {
+  const { buyer_id, agent_id } = data;
+  
+  console.log('Handling hire agent action:', { showing_request_id, buyer_id, agent_id });
+
+  // Create buyer-agent match
+  const { error: matchError } = await supabase
+    .from('buyer_agent_matches')
+    .insert({
+      buyer_id,
+      agent_id,
+      showing_request_id,
+      match_source: 'post_showing'
+    });
+
+  if (matchError) {
+    console.error('Error creating buyer-agent match:', matchError);
+    throw matchError;
+  }
+
+  // Send notification to agent (placeholder for future notification system)
+  console.log('Sending hire notification to agent:', agent_id);
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: 'Agent hire request processed successfully' 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleMakeOfferIntent(supabase: any, showing_request_id: string, data: any) {
+  const { buyer_id, agent_id, property_address, offer_type } = data;
+  
+  console.log('Handling make offer intent:', { showing_request_id, buyer_id, offer_type });
+
+  // Create offer intent
+  const { error: offerError } = await supabase
+    .from('offer_intents')
+    .insert({
+      buyer_id,
+      agent_id,
+      showing_request_id,
+      property_address,
+      offer_type
+    });
+
+  if (offerError) {
+    console.error('Error creating offer intent:', offerError);
+    throw offerError;
+  }
+
+  // If agent-assisted, also create buyer-agent match
+  if (offer_type === 'agent_assisted' && agent_id) {
+    await supabase
+      .from('buyer_agent_matches')
+      .insert({
+        buyer_id,
+        agent_id,
+        showing_request_id,
+        match_source: 'offer_intent'
+      });
+  }
+
+  // Send high-priority notification to agent
+  console.log('Sending offer intent notification to agent:', agent_id);
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: 'Offer intent recorded successfully' 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleFavoriteProperty(supabase: any, showing_request_id: string, data: any) {
+  const { buyer_id, property_address, notes } = data;
+  
+  console.log('Handling favorite property:', { showing_request_id, buyer_id, property_address });
+
+  // Check if already favorited
+  const { data: existing } = await supabase
+    .from('property_favorites')
+    .select('id')
+    .eq('buyer_id', buyer_id)
+    .eq('property_address', property_address)
+    .maybeSingle();
+
+  if (existing) {
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        message: 'Property already favorited' 
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Add to favorites
+  const { error: favoriteError } = await supabase
+    .from('property_favorites')
+    .insert({
+      buyer_id,
+      showing_request_id,
+      property_address,
+      notes
+    });
+
+  if (favoriteError) {
+    console.error('Error favoriting property:', favoriteError);
+    throw favoriteError;
+  }
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: 'Property favorited successfully' 
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }

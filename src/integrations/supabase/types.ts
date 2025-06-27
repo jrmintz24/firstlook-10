@@ -97,6 +97,44 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_agent_matches: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          contact_revealed_at: string | null
+          created_at: string | null
+          id: string
+          match_source: string | null
+          showing_request_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          contact_revealed_at?: string | null
+          created_at?: string | null
+          id?: string
+          match_source?: string | null
+          showing_request_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          contact_revealed_at?: string | null
+          created_at?: string | null
+          id?: string
+          match_source?: string | null
+          showing_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_agent_matches_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_feedback: {
         Row: {
           agent_comments: string | null
@@ -341,6 +379,44 @@ export type Database = {
           },
           {
             foreignKeyName: "messages_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_intents: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          created_at: string | null
+          id: string
+          offer_type: string | null
+          property_address: string
+          showing_request_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          created_at?: string | null
+          id?: string
+          offer_type?: string | null
+          property_address: string
+          showing_request_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          created_at?: string | null
+          id?: string
+          offer_type?: string | null
+          property_address?: string
+          showing_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_intents_showing_request_id_fkey"
             columns: ["showing_request_id"]
             isOneToOne: false
             referencedRelation: "showing_requests"
@@ -599,6 +675,7 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
+          notes: string | null
           property_address: string
           showing_request_id: string | null
         }
@@ -606,6 +683,7 @@ export type Database = {
           buyer_id: string
           created_at?: string
           id?: string
+          notes?: string | null
           property_address: string
           showing_request_id?: string | null
         }
@@ -613,6 +691,7 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           id?: string
+          notes?: string | null
           property_address?: string
           showing_request_id?: string | null
         }

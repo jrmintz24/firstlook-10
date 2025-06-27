@@ -72,6 +72,11 @@ const ShowingRequestCard = ({
     return showingDateTime < now;
   };
 
+  // Check if this is an auto-completed showing (completed status but showing time has passed)
+  const isAutoCompleted = (): boolean => {
+    return showing.status === 'completed' && hasShowingPassed();
+  };
+
   // Enhanced button visibility logic for different user types
   const canSendMessage = showing.assigned_agent_id && 
                         ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
@@ -390,15 +395,17 @@ const ShowingRequestCard = ({
             </div>
           )}
 
-          {/* Show PostShowingCommunication for completed tours AND past confirmed tours */}
-          <PostShowingCommunication
-            showingId={showing.id}
-            userType={userType}
-            showingStatus={showing.status === 'completed' || (hasShowingPassed() && ['confirmed', 'scheduled'].includes(showing.status)) ? 'completed' : showing.status}
-            agentName={showing.assigned_agent_name || undefined}
-            propertyAddress={showing.property_address}
-            onActionTaken={onComplete}
-          />
+          {/* Show PostShowingCommunication only for auto-completed tours (completed status due to 3-day expiration) */}
+          {isAutoCompleted() && (
+            <PostShowingCommunication
+              showingId={showing.id}
+              userType={userType}
+              showingStatus="completed"
+              agentName={showing.assigned_agent_name || undefined}
+              propertyAddress={showing.property_address}
+              onActionTaken={onComplete}
+            />
+          )}
         </CardContent>
       </Card>
 

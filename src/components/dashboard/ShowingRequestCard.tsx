@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -199,6 +198,26 @@ const ShowingRequestCard = ({
               </p>
             </div>
           </div>
+
+          {/* Add special handling for awaiting_agreement status */}
+          {showing.status === 'awaiting_agreement' && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-orange-900 mb-2">Agreement Required</h4>
+                  <p className="text-orange-800 text-sm mb-3">
+                    Great news! Your tour has been confirmed by the agent. Please sign the tour agreement to finalize your appointment.
+                  </p>
+                  <p className="text-orange-700 text-xs">
+                    Check your email for the agreement link, or contact us if you need assistance.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">

@@ -28,6 +28,7 @@ import NotFound from './pages/NotFound'
 import ScrollToTop from './components/ScrollToTop'
 import { useAnalytics } from './hooks/useAnalytics'
 import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
+import SignAgreement from './pages/SignAgreement'
 
 const queryClient = new QueryClient()
 
@@ -114,6 +115,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* Agreement signing page */}
+                <Route path="/sign-agreement" element={<SignAgreement />} />
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

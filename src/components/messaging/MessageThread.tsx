@@ -25,15 +25,52 @@ const MessageThread = ({
 }: MessageThreadProps) => {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [previousMessageCount, setPreviousMessageCount] = useState(messages.length);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Only auto-scroll when new messages are added and user isn't manually scrolling
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const hasNewMessages = messages.length > previousMessageCount;
+    
+    if (hasNewMessages && !isUserScrolling) {
+      scrollToBottom();
+    }
+    
+    setPreviousMessageCount(messages.length);
+  }, [messages.length, previousMessageCount, isUserScrolling]);
+
+  // Handle scroll events to detect user scrolling
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      setIsUserScrolling(true);
+      
+      // Clear existing timeout
+      clearTimeout(scrollTimeout);
+      
+      // Reset scrolling state after user stops scrolling
+      scrollTimeout = setTimeout(() => {
+        setIsUserScrolling(false);
+      }, 1000);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, []);
 
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
@@ -52,6 +89,10 @@ const MessageThread = ({
       
       if (success) {
         setNewMessage("");
+        // Force scroll to bottom after sending a message
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
       }
     } catch (error) {
       console.error('MessageThread: Error sending message:', error);
@@ -103,7 +144,10 @@ const MessageThread = ({
 
       <CardContent className="flex-1 flex flex-col min-h-0">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0">
+        <div 
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0"
+        >
           {messages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <div className="text-sm">No messages yet</div>

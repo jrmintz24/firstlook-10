@@ -31,12 +31,12 @@ export const useAgentConfirmation = () => {
     try {
       console.log('Starting agent confirmation process...', confirmationData);
 
-      // First, get the showing request details including buyer info
+      // First, get the showing request details including buyer info from auth.users
       const { data: showingRequest, error: fetchError } = await supabase
         .from('showing_requests')
         .select(`
           *,
-          profiles!showing_requests_user_id_fkey(email, first_name, last_name)
+          profiles!showing_requests_user_id_fkey(first_name, last_name)
         `)
         .eq('id', confirmationData.requestId)
         .single();
@@ -47,6 +47,14 @@ export const useAgentConfirmation = () => {
       }
 
       console.log('Showing request details:', showingRequest);
+
+      // Get buyer's email from auth.users table
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
+      
+      if (authError || !authUser) {
+        console.error('Error fetching buyer auth details:', authError);
+        throw new Error('Failed to fetch buyer contact details');
+      }
 
       // Update the showing request with agent details and new status
       const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
@@ -72,7 +80,7 @@ export const useAgentConfirmation = () => {
       console.log('Showing request updated successfully');
 
       // Send agreement email to buyer
-      const buyerEmail = showingRequest.profiles?.email;
+      const buyerEmail = authUser.user.email;
       const buyerName = showingRequest.profiles?.first_name || 'Buyer';
 
       if (buyerEmail) {

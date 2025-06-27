@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +9,13 @@ interface PostShowingActionData {
   agentId?: string;
   propertyAddress: string;
   agentName?: string;
+}
+
+interface EligibilityResult {
+  eligible: boolean;
+  reason: string;
+  active_showing_count?: number;
+  subscription_tier?: string;
 }
 
 export const useEnhancedPostShowingActions = () => {
@@ -26,7 +32,10 @@ export const useEnhancedPostShowingActions = () => {
 
       if (error) throw error;
 
-      if (eligibility.eligible) {
+      // Cast the Json response to our expected type
+      const eligibilityResult = eligibility as unknown as EligibilityResult;
+
+      if (eligibilityResult.eligible) {
         // Direct to tour request - user can book independently
         navigate('/');
         toast({

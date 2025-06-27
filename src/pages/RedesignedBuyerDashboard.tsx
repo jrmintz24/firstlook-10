@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useState } from "react";
@@ -40,6 +39,7 @@ const RedesignedBuyerDashboard = () => {
     
     profile,
     selectedShowing,
+    agreements,
     loading,
     authLoading,
     user,
@@ -211,6 +211,7 @@ const RedesignedBuyerDashboard = () => {
               onComplete={() => {}}
               currentUserId={currentUser?.id}
               onSendMessage={handleOpenChat}
+              agreements={agreements}
             />
             
             {pendingRequests.length > 3 && (
@@ -245,6 +246,7 @@ const RedesignedBuyerDashboard = () => {
               onComplete={() => {}}
               currentUserId={currentUser?.id}
               onSendMessage={handleOpenChat}
+              agreements={agreements}
             />
             
             {activeShowings.length > 3 && (

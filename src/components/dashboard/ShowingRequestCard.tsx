@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ interface ShowingRequestCardProps {
   onComplete?: () => void;
   currentUserId?: string;
   onSendMessage?: (showingId: string) => void;
+  agreements?: Record<string, boolean>;
 }
 
 const ShowingRequestCard = ({ 
@@ -50,13 +52,15 @@ const ShowingRequestCard = ({
   userType = 'buyer',
   onComplete,
   currentUserId,
-  onSendMessage
+  onSendMessage,
+  agreements = {}
 }: ShowingRequestCardProps) => {
   const [showChatModal, setShowChatModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   
   const statusInfo = getStatusInfo(showing.status as ShowingStatus);
   const timeline = getEstimatedTimeline(showing.status as ShowingStatus);
+  const isAgreementSigned = agreements[showing.id];
 
   // Only show messaging for confirmed showings that have an assigned agent
   const canSendMessage = showing.assigned_agent_id && 
@@ -117,11 +121,14 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6">
-                <div className="text-sm font-semibold text-blue-900 mb-2">Current Status</div>
-                <div className="text-blue-700 text-sm mb-2">{statusInfo.description}</div>
-                <div className="text-blue-600 text-xs font-medium">{timeline}</div>
-              </div>
+              {/* Only show current status box for awaiting_agreement or non-confirmed statuses */}
+              {showing.status === 'awaiting_agreement' || !['confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status) ? (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6">
+                  <div className="text-sm font-semibold text-blue-900 mb-2">Current Status</div>
+                  <div className="text-blue-700 text-sm mb-2">{statusInfo.description}</div>
+                  <div className="text-blue-600 text-xs font-medium">{timeline}</div>
+                </div>
+              ) : null}
 
               {currentUserId && canSendMessage && (
                 <div className="mb-4">
@@ -226,7 +233,8 @@ const ShowingRequestCard = ({
             </div>
           )}
 
-          {showActions && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled'].includes(showing.status) && (
+          {/* Only show action buttons if agreement not signed and showing actions are enabled */}
+          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'confirmed', 'pending', 'scheduled', 'awaiting_agreement'].includes(showing.status) && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
               {canSendMessage && (
                 <Button 
@@ -266,15 +274,39 @@ const ShowingRequestCard = ({
                 userType={userType}
                 onComplete={onComplete}
               />
-              
+            </div>
+          )}
+
+          {/* Show action buttons for signed agreements but exclude Confirm & Sign and Cancel */}
+          {showActions && isAgreementSigned && ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status) && (
+            <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
+              {canSendMessage && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleChatClick}
+                  className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Chat with Agent
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onCancel(showing.id)}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm"
+                onClick={handleRescheduleClick}
+                className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 shadow-sm"
               >
-                Cancel
+                <Edit className="w-4 h-4" />
+                Reschedule
               </Button>
+              
+              <ShowingCheckoutButton
+                showing={showing}
+                userType={userType}
+                onComplete={onComplete}
+              />
             </div>
           )}
 

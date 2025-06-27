@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ShowingRequestCard from "./ShowingRequestCard";
@@ -26,26 +25,24 @@ interface ShowingRequest {
 interface ShowingListTabProps {
   title: string;
   showings: ShowingRequest[];
-  emptyIcon: LucideIcon;
+  emptyIcon: React.ElementType;
   emptyTitle: string;
   emptyDescription: string;
-  emptyButtonText: string;
-  onRequestShowing: () => void;
+  emptyButtonText?: string;
+  onRequestShowing?: () => void;
   onCancelShowing: (id: string) => void;
   onRescheduleShowing: (id: string) => void;
-  onConfirmShowing?: (request: ShowingRequest) => void;
-  onReportIssue?: (request: ShowingRequest) => void;
-  showActions?: boolean;
-  userType?: 'buyer' | 'agent';
+  onConfirmShowing?: (showing: ShowingRequest) => void;
   onComplete?: () => void;
   currentUserId?: string;
   onSendMessage?: (showingId: string) => void;
+  agreements?: Record<string, boolean>;
 }
 
 const ShowingListTab = ({
   title,
   showings,
-  emptyIcon,
+  emptyIcon: EmptyIcon,
   emptyTitle,
   emptyDescription,
   emptyButtonText,
@@ -53,12 +50,10 @@ const ShowingListTab = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
-  onReportIssue,
-  showActions = true,
-  userType = 'buyer',
   onComplete,
   currentUserId,
-  onSendMessage
+  onSendMessage,
+  agreements = {}
 }: ShowingListTabProps) => {
   if (showings.length === 0) {
     return (
@@ -67,7 +62,7 @@ const ShowingListTab = ({
         description={emptyDescription}
         buttonText={emptyButtonText}
         onButtonClick={onRequestShowing}
-        icon={emptyIcon}
+        icon={EmptyIcon}
       />
     );
   }
@@ -84,36 +79,17 @@ const ShowingListTab = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {showings.map((showing) => (
-          userType === 'agent' ? (
-            <AgentRequestCard
-              key={showing.id}
-              request={showing}
-              onAssign={() => {}}
-              onUpdateStatus={() => {}}
-              onSendMessage={() => onSendMessage?.(showing.id)}
-              onConfirm={onConfirmShowing ? () => onConfirmShowing(showing) : undefined}
-              onReportIssue={onReportIssue ? () => onReportIssue(showing) : undefined}
-              showAssignButton={showing.status === 'pending' && !showing.assigned_agent_id}
-              onComplete={onComplete}
-              currentAgentId={currentUserId}
-            />
-          ) : (
-            <ShowingRequestCard
-              key={showing.id}
-              showing={showing}
-              onCancel={onCancelShowing}
-              onReschedule={onRescheduleShowing}
-              onConfirm={onConfirmShowing ? (id: string) => {
-                const request = showings.find(s => s.id === id);
-                if (request) onConfirmShowing(request);
-              } : undefined}
-              showActions={showActions}
-              userType={userType}
-              onComplete={onComplete}
-              currentUserId={currentUserId}
-              onSendMessage={onSendMessage}
-            />
-          )
+          <ShowingRequestCard
+            key={showing.id}
+            showing={showing}
+            onCancel={onCancelShowing}
+            onReschedule={onRescheduleShowing}
+            onConfirm={onConfirmShowing ? () => onConfirmShowing(showing) : undefined}
+            onComplete={onComplete}
+            currentUserId={currentUserId}
+            onSendMessage={onSendMessage}
+            agreements={agreements}
+          />
         ))}
       </CardContent>
     </Card>

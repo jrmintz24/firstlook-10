@@ -232,8 +232,8 @@ const ShowingRequestCard = ({
             </div>
           )}
 
-          {/* Only show action buttons if showing actions are enabled and for appropriate statuses */}
-          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'pending', 'awaiting_agreement'].includes(showing.status) && (
+          {/* Show action buttons for non-signed agreements (excluding awaiting_agreement which has its own section) */}
+          {showActions && !isAgreementSigned && ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed'].includes(showing.status) && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
               {canSendMessage && (
                 <Button 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X, UserPlus } from "lucide-react";
@@ -111,6 +110,15 @@ const ShowingRequestCard = ({
     }
   };
 
+  // Format time to 12-hour format
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
   return (
     <>
       <Card className="group shadow-sm border border-gray-200/80 hover:shadow-xl hover:border-purple-200/60 transition-all duration-300 bg-white hover:-translate-y-1 transform">
@@ -144,6 +152,26 @@ const ShowingRequestCard = ({
                 {showing.property_address}
               </h3>
 
+              {/* Date and Time - moved to be right after address */}
+              {showing.preferred_date && (
+                <div className="flex items-center gap-8 text-gray-700 mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <span className="font-medium">{new Date(showing.preferred_date).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}</span>
+                  </div>
+                  {showing.preferred_time && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium">{formatTime(showing.preferred_time)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
                 <div className="mb-6 animate-fade-in">
                   <TourProgressTracker showing={showing} userType={userType} />
@@ -168,26 +196,6 @@ const ShowingRequestCard = ({
                     onSendMessage={handleChatClick}
                     compact={false}
                   />
-                </div>
-              )}
-
-              {/* Date and Time */}
-              {showing.preferred_date && (
-                <div className="flex items-center gap-8 text-gray-700 mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-purple-500" />
-                    <span className="font-medium">{new Date(showing.preferred_date).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}</span>
-                  </div>
-                  {showing.preferred_time && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-purple-500" />
-                      <span className="font-medium">{showing.preferred_time}</span>
-                    </div>
-                  )}
                 </div>
               )}
 

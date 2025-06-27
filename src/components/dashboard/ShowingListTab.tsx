@@ -103,7 +103,10 @@ const ShowingListTab = ({
               showing={showing}
               onCancel={onCancelShowing}
               onReschedule={onRescheduleShowing}
-              onConfirm={onConfirmShowing}
+              onConfirm={onConfirmShowing ? (id: string) => {
+                const request = showings.find(s => s.id === id);
+                if (request) onConfirmShowing(request);
+              } : undefined}
               showActions={showActions}
               userType={userType}
               onComplete={onComplete}

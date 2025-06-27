@@ -191,8 +191,8 @@ const ShowingRequestCard = ({
                 </div>
               )}
 
-              {/* Estimated Confirmation Date */}
-              {showing.estimated_confirmation_date && (
+              {/* Estimated Confirmation Date - only show if no agent is assigned yet */}
+              {showing.estimated_confirmation_date && !showing.assigned_agent_name && (
                 <div className="flex items-center gap-3 text-green-700 mb-4 p-3 bg-green-50 rounded-lg border border-green-200 hover:shadow-md transition-all duration-200">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-medium">

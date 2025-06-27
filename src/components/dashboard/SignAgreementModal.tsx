@@ -35,6 +35,10 @@ const SignAgreementModal = ({ isOpen, onClose, onSign, showingDetails }: SignAgr
     onClose();
   };
 
+  const handleAgreeChange = (checked: boolean | "indeterminate") => {
+    setAgree(checked === true);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -126,7 +130,7 @@ const SignAgreementModal = ({ isOpen, onClose, onSign, showingDetails }: SignAgr
             <Checkbox 
               id="agree" 
               checked={agree} 
-              onCheckedChange={setAgree}
+              onCheckedChange={handleAgreeChange}
               className="mt-1"
             />
             <label htmlFor="agree" className="text-sm text-gray-700 leading-relaxed">

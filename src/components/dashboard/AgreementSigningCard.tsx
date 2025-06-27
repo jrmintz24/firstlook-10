@@ -1,10 +1,9 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, User, Phone, FileText, CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { SignAgreementModal } from "./SignAgreementModal";
+import SignAgreementModal from "./SignAgreementModal";
 
 interface TourAgreement {
   id: string;

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +9,8 @@ import {
   MessageCircle,
   CalendarX,
   DollarSign,
-  Eye
+  Eye,
+  FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -158,6 +158,17 @@ const RecentTours = ({
                 <CalendarX className="w-4 h-4 mr-1" />
                 Reschedule
               </Button>
+              {/* Enhanced handling for awaiting_agreement status */}
+              {showing.status === 'awaiting_agreement' && onConfirmShowing && (
+                <Button 
+                  size="sm" 
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+                  onClick={() => onConfirmShowing(showing)}
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  Sign Agreement
+                </Button>
+              )}
               {showing.status === 'agent_confirmed' && onConfirmShowing && (
                 <Button 
                   size="sm" 

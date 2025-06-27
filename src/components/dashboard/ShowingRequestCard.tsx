@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
@@ -199,21 +199,28 @@ const ShowingRequestCard = ({
             </div>
           </div>
 
-          {/* Add special handling for awaiting_agreement status */}
+          {/* Enhanced handling for awaiting_agreement status */}
           {showing.status === 'awaiting_agreement' && (
             <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <AlertCircle className="h-5 w-5 text-orange-600" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h4 className="font-semibold text-orange-900 mb-2">Agreement Required</h4>
                   <p className="text-orange-800 text-sm mb-3">
-                    Great news! Your tour has been confirmed by the agent. Please sign the tour agreement to finalize your appointment.
+                    Your tour has been confirmed by the agent! Please sign the tour agreement below to finalize your appointment.
                   </p>
-                  <p className="text-orange-700 text-xs">
-                    Check your email for the agreement link, or contact us if you need assistance.
+                  <p className="text-orange-700 text-xs mb-3">
+                    You can sign the agreement right here in your dashboard - no need to check email.
                   </p>
+                  <Button
+                    onClick={() => onConfirm && onConfirm(showing.id)}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Sign Agreement Now
+                  </Button>
                 </div>
               </div>
             </div>

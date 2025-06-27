@@ -51,30 +51,31 @@ const UnifiedDashboardLayout = ({
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getUserTypeStyles()}`}>
-      {/* Unified Header */}
-      <div className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200/60 sticky top-0 z-40">
+    <div className={`min-h-screen bg-gradient-to-br ${getUserTypeStyles()} transition-all duration-300`}>
+      {/* Enhanced Header with Animation */}
+      <div className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/60 sticky top-0 z-40 transition-all duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-6">
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              <div className="animate-fade-in">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-sm text-gray-600 hidden sm:block">
+                  <p className="text-sm text-gray-600 hidden sm:block mt-1 animate-fade-in" style={{ animationDelay: '100ms' }}>
                     {subtitle}
                   </p>
                 )}
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 text-sm text-gray-600 px-3 py-1 rounded-full border ${getUserTypeBadge()}`}>
-                <span className="capitalize">{userType}</span>
+            <div className="flex items-center gap-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className={`flex items-center gap-2 text-sm text-gray-600 px-3 py-1.5 rounded-full border transition-all duration-200 hover:shadow-md ${getUserTypeBadge()}`}>
+                <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
+                <span className="capitalize font-medium">{userType}</span>
               </div>
               <div className="text-sm font-medium text-gray-900 hidden sm:block">
-                Welcome, {displayName}
+                Welcome, <span className="text-blue-600">{displayName}</span>
               </div>
             </div>
           </div>
@@ -83,28 +84,36 @@ const UnifiedDashboardLayout = ({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* Main Content */}
+          {/* Enhanced Main Content */}
           <div className="lg:col-span-3">
             <Tabs 
               value={activeTab || defaultTab} 
               onValueChange={onTabChange} 
               className="space-y-6"
             >
-              <TabsList className="grid w-full bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1 shadow-sm" 
-                style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-                {tabs.map((tab) => (
+              <TabsList 
+                className="grid w-full bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-1.5 shadow-sm hover:shadow-md transition-all duration-200" 
+                style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+                role="tablist"
+                aria-label="Dashboard navigation"
+              >
+                {tabs.map((tab, index) => (
                   <TabsTrigger 
                     key={tab.id}
                     value={tab.id} 
-                    className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg text-sm font-medium transition-all duration-200"
+                    className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
                   >
                     <div className="flex items-center gap-2">
-                      <tab.icon className="h-4 w-4" />
+                      <tab.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                       <span className="hidden sm:inline">{tab.title}</span>
                       {tab.count !== undefined && tab.count > 0 && (
                         <Badge 
                           variant="secondary" 
-                          className={`ml-1 text-xs px-1.5 py-0.5 ${tab.color || 'bg-gray-100 text-gray-700'}`}
+                          className={`ml-1 text-xs px-1.5 py-0.5 transition-all duration-200 hover:scale-105 ${tab.color || 'bg-gray-100 text-gray-700'}`}
+                          aria-label={`${tab.count} items`}
                         >
                           {tab.count}
                         </Badge>
@@ -115,17 +124,25 @@ const UnifiedDashboardLayout = ({
               </TabsList>
 
               {tabs.map((tab) => (
-                <TabsContent key={tab.id} value={tab.id} className="mt-6">
+                <TabsContent 
+                  key={tab.id} 
+                  value={tab.id} 
+                  className="mt-6 animate-fade-in focus:outline-none"
+                  role="tabpanel"
+                  aria-labelledby={`tab-${tab.id}`}
+                >
                   {tab.content}
                 </TabsContent>
               ))}
             </Tabs>
           </div>
 
-          {/* Sidebar */}
+          {/* Enhanced Sidebar */}
           {sidebar && (
-            <div className="lg:col-span-1">
-              {sidebar}
+            <div className="lg:col-span-1 animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="sticky top-24 space-y-6">
+                {sidebar}
+              </div>
             </div>
           )}
         </div>

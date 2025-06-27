@@ -1,8 +1,6 @@
 
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
@@ -12,6 +10,8 @@ import MessageIndicator from "@/components/messaging/MessageIndicator";
 import TourProgressTracker from "./TourProgressTracker";
 import ChatInitiator from "@/components/messaging/ChatInitiator";
 import RescheduleModal from "./RescheduleModal";
+import StatusBadge from "./shared/StatusBadge";
+import InteractiveButton from "./shared/InteractiveButton";
 
 interface ShowingRequest {
   id: string;
@@ -89,7 +89,7 @@ const ShowingRequestCard = ({
 
   return (
     <>
-      <Card className="group shadow-sm border border-gray-200/80 hover:shadow-md hover:border-purple-200/60 transition-all duration-200 bg-white">
+      <Card className="group shadow-sm border border-gray-200/80 hover:shadow-xl hover:border-purple-200/60 transition-all duration-300 bg-white hover:-translate-y-1 transform">
         <CardContent className="p-6">
           <PostShowingTrigger
             showingId={showing.id}
@@ -101,33 +101,34 @@ const ShowingRequestCard = ({
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
-                <Badge className={`${statusInfo.bgColor} ${statusInfo.color} border-0 px-3 py-1 text-sm font-medium shadow-sm`}>
-                  <span className="mr-2">{statusInfo.icon}</span>
-                  {statusInfo.label}
-                </Badge>
+                <StatusBadge 
+                  status={showing.status} 
+                  size="md" 
+                  animated={true}
+                />
                 {showing.status_updated_at && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full transition-colors duration-200 hover:bg-gray-200">
                     Updated {new Date(showing.status_updated_at).toLocaleDateString()}
                   </span>
                 )}
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3 group-hover:text-purple-700 transition-colors">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3 group-hover:text-purple-700 transition-colors duration-200">
+                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-all duration-200 group-hover:scale-110">
                   <MapPin className="h-5 w-5 text-purple-600" />
                 </div>
                 {showing.property_address}
               </h3>
 
               {['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
-                <div className="mb-6">
+                <div className="mb-6 animate-fade-in">
                   <TourProgressTracker showing={showing} userType={userType} />
                 </div>
               )}
 
               {/* Current Status - only show for non-confirmed statuses or awaiting_agreement */}
               {(showing.status === 'awaiting_agreement' || !['confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status)) && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mb-6 hover:shadow-md transition-all duration-200">
                   <div className="text-sm font-semibold text-blue-900 mb-2">Current Status</div>
                   <div className="text-blue-700 text-sm mb-2">{statusInfo.description}</div>
                   <div className="text-blue-600 text-xs font-medium">{timeline}</div>
@@ -136,7 +137,7 @@ const ShowingRequestCard = ({
 
               {/* Message Indicator */}
               {currentUserId && canSendMessage && (
-                <div className="mb-4">
+                <div className="mb-4 animate-fade-in">
                   <MessageIndicator
                     showingRequestId={showing.id}
                     userId={currentUserId}
@@ -148,7 +149,7 @@ const ShowingRequestCard = ({
 
               {/* Date and Time */}
               {showing.preferred_date && (
-                <div className="flex items-center gap-8 text-gray-700 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-8 text-gray-700 mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-purple-500" />
                     <span className="font-medium">{new Date(showing.preferred_date).toLocaleDateString('en-US', { 
@@ -168,7 +169,7 @@ const ShowingRequestCard = ({
 
               {/* Estimated Confirmation Date */}
               {showing.estimated_confirmation_date && (
-                <div className="flex items-center gap-3 text-green-700 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center gap-3 text-green-700 mb-4 p-3 bg-green-50 rounded-lg border border-green-200 hover:shadow-md transition-all duration-200">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-medium">
                     Expected confirmation by {new Date(showing.estimated_confirmation_date).toLocaleDateString()}
@@ -178,7 +179,7 @@ const ShowingRequestCard = ({
 
               {/* Agent Information */}
               {showing.assigned_agent_name && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-4 hover:shadow-md transition-all duration-200">
                   <div className="text-sm font-semibold text-green-900 mb-3 flex items-center gap-2">
                     <User className="h-4 w-4" />
                     Your Showing Partner
@@ -186,13 +187,13 @@ const ShowingRequestCard = ({
                   <div className="text-green-800 font-bold text-lg mb-2">{showing.assigned_agent_name}</div>
                   <div className="flex items-center gap-6">
                     {showing.assigned_agent_phone && (
-                      <div className="flex items-center gap-2 text-green-700 text-sm">
+                      <div className="flex items-center gap-2 text-green-700 text-sm hover:text-green-800 transition-colors duration-200">
                         <Phone className="h-3 w-3" />
                         <span>{showing.assigned_agent_phone}</span>
                       </div>
                     )}
                     {showing.assigned_agent_email && (
-                      <div className="flex items-center gap-2 text-green-700 text-sm">
+                      <div className="flex items-center gap-2 text-green-700 text-sm hover:text-green-800 transition-colors duration-200">
                         <Mail className="h-3 w-3" />
                         <span>{showing.assigned_agent_email}</span>
                       </div>
@@ -203,13 +204,13 @@ const ShowingRequestCard = ({
 
               {/* User Message */}
               {showing.message && (
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4 hover:bg-gray-100 transition-colors duration-200">
                   <div className="text-sm font-semibold text-gray-800 mb-2">Your Notes</div>
                   <div className="text-gray-700 text-sm leading-relaxed">{showing.message}</div>
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full inline-block">
+              <p className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full inline-block hover:bg-gray-200 transition-colors duration-200">
                 Requested on {new Date(showing.created_at).toLocaleDateString()}
               </p>
             </div>
@@ -217,7 +218,7 @@ const ShowingRequestCard = ({
 
           {/* Agreement Required Section */}
           {showConfirmButton && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl">
+            <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl hover:shadow-md transition-all duration-200 animate-fade-in">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <AlertCircle className="h-5 w-5 text-orange-600" />
@@ -230,43 +231,43 @@ const ShowingRequestCard = ({
                   <p className="text-orange-700 text-xs mb-3">
                     You can sign the agreement right here in your dashboard - no need to check email.
                   </p>
-                  <Button
+                  <InteractiveButton
                     onClick={() => onConfirm && onConfirm(showing.id)}
                     className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                    icon={FileText}
                   >
-                    <FileText className="h-4 w-4 mr-2" />
                     Sign Agreement Now
-                  </Button>
+                  </InteractiveButton>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Enhanced Action Buttons */}
           {showActions && (
             <div className="flex gap-3 flex-wrap pt-4 border-t border-gray-100">
               {canSendMessage && (
-                <Button 
+                <InteractiveButton 
                   variant="outline" 
                   size="sm" 
                   onClick={handleChatClick}
-                  className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm"
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-sm"
+                  icon={MessageCircle}
                 >
-                  <MessageCircle className="w-4 h-4" />
                   Chat with Agent
-                </Button>
+                </InteractiveButton>
               )}
 
               {showRescheduleButton && (
-                <Button
+                <InteractiveButton
                   variant="outline"
                   size="sm"
                   onClick={handleRescheduleClick}
-                  className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 shadow-sm"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 shadow-sm"
+                  icon={Edit}
                 >
-                  <Edit className="w-4 h-4" />
                   Reschedule
-                </Button>
+                </InteractiveButton>
               )}
               
               <ShowingCheckoutButton

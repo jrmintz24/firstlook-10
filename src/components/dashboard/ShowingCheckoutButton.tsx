@@ -6,6 +6,7 @@ import { usePostShowingWorkflow } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
 import BuyerFeedbackModal from "@/components/post-showing/BuyerFeedbackModal";
 import PostShowingNextStepsModal from "@/components/post-showing/PostShowingNextStepsModal";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShowingCheckoutButtonProps {
   showingId?: string;
@@ -37,6 +38,7 @@ const ShowingCheckoutButton = ({
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showNextStepsModal, setShowNextStepsModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const { checkAttendance } = usePostShowingWorkflow();
   const { toast } = useToast();
 
@@ -44,9 +46,37 @@ const ShowingCheckoutButton = ({
   const shouldShowCheckoutButton = showing.status && 
     ['confirmed', 'scheduled', 'in_progress'].includes(showing.status);
 
+  const getCurrentUserId = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user?.id || "";
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return "";
+    }
+  };
+
   const handleCheckout = async () => {
     try {
       const actualShowingId = showingId || showing.id;
+      
+      // Get current user ID if buyerId is not provided
+      let effectiveBuyerId = buyerId;
+      if (!effectiveBuyerId) {
+        effectiveBuyerId = await getCurrentUserId();
+      }
+      
+      if (!effectiveBuyerId) {
+        toast({
+          title: "Error",
+          description: "Unable to identify user. Please try logging in again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setCurrentUserId(effectiveBuyerId);
+
       await checkAttendance(actualShowingId, {
         user_type: userType,
         attended: true,
@@ -116,14 +146,14 @@ const ShowingCheckoutButton = ({
               onClose={() => setShowFeedbackModal(false)}
               onComplete={handleFeedbackComplete}
               showing={showing}
-              buyerId={buyerId || ''}
+              buyerId={currentUserId || buyerId || ''}
             />
 
             <PostShowingNextStepsModal
               isOpen={showNextStepsModal}
               onClose={handleNextStepsComplete}
               showing={showing}
-              buyerId={buyerId || ''}
+              buyerId={currentUserId || buyerId || ''}
             />
           </>
         )}

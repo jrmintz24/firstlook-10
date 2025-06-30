@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -63,10 +62,23 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   };
 
   const handleFeedbackSubmit = async () => {
-    if (!buyerId) {
+    console.log('Submitting feedback with buyerId:', buyerId);
+    
+    if (!buyerId || buyerId.trim() === '') {
+      console.error('Invalid buyerId:', buyerId);
       toast({
         title: "Error",
-        description: "User information missing. Please try again.",
+        description: "User information is missing. Please refresh the page and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!showing.assigned_agent_id) {
+      console.error('No assigned agent ID:', showing);
+      toast({
+        title: "Error",
+        description: "Agent information is missing. Please contact support.",
         variant: "destructive",
       });
       return;
@@ -75,13 +87,14 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     try {
       const feedback: BuyerFeedback = {
         buyer_id: buyerId,
-        agent_id: showing.assigned_agent_id || "",
+        agent_id: showing.assigned_agent_id,
         property_rating: propertyRating > 0 ? propertyRating : undefined,
         agent_rating: agentRating > 0 ? agentRating : undefined,
         property_comments: propertyComments.trim() || undefined,
         agent_comments: agentComments.trim() || undefined
       };
 
+      console.log('Submitting feedback:', feedback);
       await submitBuyerFeedback(showing.id, feedback);
       
       toast({

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +43,7 @@ export const useBuyerDashboard = () => {
   console.log('useBuyerDashboard: Current user:', currentUser?.id, currentUser?.email);
   console.log('useBuyerDashboard: Auth loading:', authLoading, 'Hook loading:', loading);
 
-  // Categorize requests properly - awaiting_agreement should be in pending
+  // Updated categorization - include awaiting_agreement in pendingRequests
   const pendingRequests = showingRequests.filter(req => 
     ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
   );

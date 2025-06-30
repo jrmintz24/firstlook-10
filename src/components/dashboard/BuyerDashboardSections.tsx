@@ -106,15 +106,15 @@ export const generateBuyerDashboardSections = ({
     ['confirmed', 'scheduled', 'in_progress'].includes(showing.status)
   );
   
-  // Filter showings that are awaiting agreement signature - these should come from ALL requests, not just pendingRequests
-  const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
-  const awaitingAgreementShowings = allShowings.filter(showing => 
+  // Updated logic: pendingRequests now includes awaiting_agreement from useBuyerDashboard
+  // Filter showings that are awaiting agreement signature from the pendingRequests
+  const awaitingAgreementShowings = pendingRequests.filter(showing => 
     showing.status === 'awaiting_agreement'
   );
   
-  // Other pending requests (not awaiting agreement) - exclude awaiting_agreement status
+  // Other pending requests (not awaiting agreement)
   const otherPendingRequests = pendingRequests.filter(showing => 
-    !['awaiting_agreement', 'confirmed', 'scheduled', 'in_progress', 'completed', 'cancelled'].includes(showing.status)
+    showing.status !== 'awaiting_agreement'
   );
   
   // Only show tours that are actually completed

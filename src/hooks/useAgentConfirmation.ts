@@ -59,7 +59,7 @@ export const useAgentConfirmation = () => {
         }
       }
 
-      // Update the showing request with agent details and new status
+      // Update the showing request with agent details and set status to agent_requested
       const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
       
       const { error: updateError } = await supabase
@@ -68,7 +68,7 @@ export const useAgentConfirmation = () => {
           assigned_agent_id: agentProfile.id,
           assigned_agent_name: agentName,
           assigned_agent_phone: agentProfile.phone,
-          status: 'awaiting_agreement',
+          status: 'agent_requested', // Changed from 'awaiting_agreement'
           preferred_date: confirmationData.confirmedDate,
           preferred_time: confirmationData.confirmedTime,
           status_updated_at: new Date().toISOString()
@@ -130,8 +130,8 @@ export const useAgentConfirmation = () => {
 
       // Always show success - dashboard access is primary
       toast({
-        title: "Tour Confirmed",
-        description: `Tour confirmed for ${showingRequest.property_address}. The buyer can sign the agreement in their dashboard.`
+        title: "Tour Requested",
+        description: `Tour request sent for ${showingRequest.property_address}. Waiting for buyer to sign the agreement.`
       });
 
       return true;
@@ -140,7 +140,7 @@ export const useAgentConfirmation = () => {
       console.error('Error in confirmShowing:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to confirm showing. Please try again.",
+        description: error.message || "Failed to request showing. Please try again.",
         variant: "destructive"
       });
       return false;

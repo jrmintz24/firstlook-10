@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle, Calendar, AlertCircle, XCircle, FileText, Zap } from "lucide-react";
+import { Clock, CheckCircle, Calendar, AlertCircle, XCircle, FileText, Zap, UserCheck } from "lucide-react";
 
 interface StatusBadgeProps {
   status: string;
@@ -39,6 +39,13 @@ const StatusBadge = ({ status, size = "sm", animated = false, className = "" }: 
           icon: Zap,
           className: 'bg-gradient-to-r from-purple-100 to-indigo-100 border-purple-200 text-purple-800 shadow-sm',
           iconColor: 'text-purple-600'
+        };
+      case 'agent_requested':
+        return {
+          label: 'Requested by Agent',
+          icon: UserCheck,
+          className: 'bg-gradient-to-r from-orange-100 to-yellow-100 border-orange-200 text-orange-800 shadow-sm',
+          iconColor: 'text-orange-600'
         };
       case 'confirmed':
         return {

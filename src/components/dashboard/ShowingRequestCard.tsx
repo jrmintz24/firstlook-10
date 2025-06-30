@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X, UserPlus } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, AlertCircle, CheckCircle, MessageCircle, Edit, FileText, X, UserPlus, UserCheck } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import PostShowingTrigger from "@/components/post-showing/PostShowingTrigger";
@@ -79,14 +78,14 @@ const ShowingRequestCard = ({
 
   // Enhanced button visibility logic for different user types
   const canSendMessage = showing.assigned_agent_id && 
-                        ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress'].includes(showing.status);
+                        ['confirmed', 'agent_confirmed', 'scheduled', 'in_progress', 'agent_requested'].includes(showing.status);
   
   // Buyer-specific buttons
   const showBuyerRescheduleButton = userType === 'buyer' && 
-    ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
+    ['submitted', 'under_review', 'agent_assigned', 'pending', 'confirmed', 'agent_confirmed', 'scheduled', 'agent_requested'].includes(showing.status);
   
   const showBuyerCancelButton = userType === 'buyer' && 
-    ['submitted', 'under_review', 'agent_assigned', 'pending'].includes(showing.status);
+    ['submitted', 'under_review', 'agent_assigned', 'pending', 'agent_requested'].includes(showing.status);
   
   // Agent-specific buttons
   const showAgentAcceptButton = userType === 'agent' && 
@@ -94,9 +93,9 @@ const ShowingRequestCard = ({
   
   const showAgentRescheduleButton = userType === 'agent' && 
     showing.assigned_agent_id === currentUserId &&
-    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(showing.status);
+    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled', 'agent_requested'].includes(showing.status);
   
-  // Shared buttons
+  // Shared buttons - changed condition for agreement confirmation
   const showConfirmButton = showing.status === 'awaiting_agreement' && onConfirm;
 
   const handleChatClick = () => {
@@ -196,9 +195,30 @@ const ShowingRequestCard = ({
 
               {/* Show tour progress only for buyers, or for agents in non-confirmed statuses */}
               {(userType === 'buyer' || (userType === 'agent' && showing.status === 'pending')) && 
-               ['pending', 'agent_assigned', 'confirmed', 'scheduled'].includes(showing.status) && (
+               ['pending', 'agent_assigned', 'agent_requested', 'confirmed', 'scheduled'].includes(showing.status) && (
                 <div className="mb-5 animate-fade-in">
                   <TourProgressTracker showing={showing} userType={userType} />
+                </div>
+              )}
+
+              {/* Agent Requested Status Display */}
+              {showing.status === 'agent_requested' && (
+                <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-3 rounded-lg border border-orange-200/50 mb-4 hover:shadow-sm transition-all duration-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                      <UserCheck className="h-3 w-3 text-orange-600" />
+                    </div>
+                    <div className="text-sm font-semibold text-orange-900">
+                      {userType === 'agent' ? 'You Requested This Tour' : 'Agent Requested Tour'}
+                    </div>
+                  </div>
+                  <div className="text-orange-800 text-sm mb-1">
+                    {userType === 'agent' 
+                      ? 'Waiting for buyer to sign the tour agreement to confirm this showing.'
+                      : 'Your agent has requested this tour. Please sign the agreement to confirm.'
+                    }
+                  </div>
+                  <div className="text-orange-700 text-xs">{timeline}</div>
                 </div>
               )}
 
@@ -217,7 +237,7 @@ const ShowingRequestCard = ({
               )}
 
               {/* Timeline display for other non-final statuses */}
-              {!['confirmed', 'agent_confirmed', 'scheduled', 'completed', 'cancelled', 'awaiting_agreement'].includes(showing.status) && (
+              {!['confirmed', 'agent_confirmed', 'scheduled', 'completed', 'cancelled', 'awaiting_agreement', 'agent_requested'].includes(showing.status) && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200/50 mb-4 hover:shadow-sm transition-all duration-200">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">

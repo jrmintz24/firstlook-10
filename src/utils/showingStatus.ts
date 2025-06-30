@@ -9,14 +9,14 @@ export type ShowingStatus =
   | 'under_review' 
   | 'agent_assigned' 
   | 'agent_confirmed'
+  | 'agent_requested'
   | 'awaiting_agreement'
   | 'confirmed' 
   | 'scheduled' 
   | 'in_progress' 
   | 'completed' 
   | 'cancelled'
-  | 'no_show'
-  | 'agent_requested';
+  | 'no_show';
 
 interface StatusInfo {
   label: string;
@@ -73,6 +73,15 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
         icon: '✅',
         description: 'Your request has been confirmed by the agent. Awaiting your confirmation.',
         category: 'active'
+      };
+    case 'agent_requested':
+      return {
+        label: 'Agent Requested',
+        color: 'text-orange-700',
+        bgColor: 'bg-orange-100',
+        icon: '🏃‍♂️',
+        description: 'Agent has requested this tour. Awaiting buyer agreement signature.',
+        category: 'pending'
       };
     case 'awaiting_agreement':
       return {
@@ -137,15 +146,6 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
         description: 'Buyer did not show up for the showing.',
         category: 'cancelled'
       };
-    case 'agent_requested':
-      return {
-        label: 'Agent Requested',
-        color: 'text-blue-700',
-        bgColor: 'bg-blue-100',
-        icon: '🤝',
-        description: 'Agent has requested assignment to this showing.',
-        category: 'pending'
-      };
     default:
       return {
         label: 'Unknown',
@@ -164,6 +164,7 @@ export const getStatusIcon = (status: ShowingStatus) => {
     case "submitted":
     case "under_review":
     case "agent_assigned":
+    case "agent_requested":
       return CalendarDays;
     case "confirmed":
     case "agent_confirmed":
@@ -191,6 +192,8 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
       return 'An agent has been assigned and will be in touch to schedule your tour.';
     case 'agent_confirmed':
       return 'Please confirm the scheduled time with your agent.';
+    case 'agent_requested':
+      return 'Agent has requested this tour. Please sign the agreement to confirm.';
     case 'awaiting_agreement':
       return 'Please sign the agreement within 7 days to secure your tour slot';
     case 'confirmed':
@@ -205,8 +208,6 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
       return 'Your tour has been cancelled. Contact us if you have any questions.';
     case 'no_show':
       return 'The showing was marked as a no-show. Please reschedule if you\'re still interested.';
-    case 'agent_requested':
-      return 'An agent has requested assignment to your showing. Awaiting admin approval.';
     default:
       return 'Status timeline unavailable.';
   }
@@ -216,8 +217,8 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
 export const isValidShowingStatus = (status: string): status is ShowingStatus => {
   const validStatuses: ShowingStatus[] = [
     'pending', 'submitted', 'under_review', 'agent_assigned', 'agent_confirmed',
-    'awaiting_agreement', 'confirmed', 'scheduled', 'in_progress', 'completed',
-    'cancelled', 'no_show', 'agent_requested'
+    'agent_requested', 'awaiting_agreement', 'confirmed', 'scheduled', 'in_progress', 'completed',
+    'cancelled', 'no_show'
   ];
   return validStatuses.includes(status as ShowingStatus);
 };

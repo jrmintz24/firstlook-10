@@ -52,9 +52,10 @@ export const useAgentDashboard = () => {
     req.status === 'pending' && !req.assigned_agent_id
   );
   
+  // Include agent_requested tours in assigned requests as they are now claimed by this agent
   const assignedRequests = showingRequests.filter(req => 
     req.assigned_agent_id === profile?.id && 
-    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
+    ['agent_assigned', 'agent_requested', 'confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
   );
   
   const completedRequests = showingRequests

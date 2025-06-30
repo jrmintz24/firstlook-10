@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +9,7 @@ interface EligibilityResult {
   reason: string;
   active_showing_count?: number;
   subscription_tier?: string;
+  [key: string]: any; // Add index signature for Json compatibility
 }
 
 interface HireAgentData {
@@ -51,15 +51,15 @@ export const useEnhancedPostShowingActions = () => {
         user_uuid: buyerId
       });
 
-      // Type the eligibility result properly
-      const eligibility = eligibilityData as EligibilityResult | null;
+      // Type the eligibility result properly with proper casting
+      const eligibility = eligibilityData as unknown as EligibilityResult | null;
 
       // Track the action
       await supabase.from('post_showing_actions').insert({
         showing_request_id: '',
         buyer_id: buyerId,
         action_type: 'schedule_another_tour',
-        action_details: { eligibility }
+        action_details: eligibility as any // Cast to any for Json compatibility
       });
 
       if (eligibility?.eligible) {

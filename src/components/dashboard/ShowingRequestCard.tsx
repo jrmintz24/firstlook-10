@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -235,7 +236,9 @@ const ShowingRequestCard = ({
                   icon={isExpanded ? ChevronUp : ChevronDown}
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="text-gray-500 hover:text-gray-700"
-                />
+                >
+                  {isExpanded ? 'Less' : 'More'}
+                </InteractiveButton>
               </div>
             )}
           </div>

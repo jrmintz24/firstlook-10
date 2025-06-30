@@ -53,12 +53,38 @@ export const usePostShowingActionsTracking = () => {
     return actions[0]; // Already sorted by created_at desc
   };
 
+  const trackAction = async (showingId: string, actionType: string, actionDetails?: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { error } = await supabase
+        .from('post_showing_actions')
+        .insert({
+          showing_request_id: showingId,
+          buyer_id: user.id,
+          action_type: actionType,
+          action_details: actionDetails || {}
+        });
+
+      if (error) throw error;
+
+      // Refresh the actions for this showing
+      await fetchActionsForShowing(showingId);
+      return true;
+    } catch (error) {
+      console.error('Error tracking action:', error);
+      return false;
+    }
+  };
+
   return {
     fetchActionsForShowing,
     getCompletedActions,
     hasCompletedAction,
     getActionDetails,
     getLatestAction,
+    trackAction,
     loading
   };
 };

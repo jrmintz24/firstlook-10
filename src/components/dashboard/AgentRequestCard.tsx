@@ -78,6 +78,12 @@ const AgentRequestCard = ({
     }
   };
 
+  const handleAcceptRequest = () => {
+    if (onConfirm) {
+      onConfirm(request);
+    }
+  };
+
   return (
     <Card className="group shadow-sm border border-gray-100/80 hover:shadow-lg hover:border-gray-200/80 transition-all duration-300">
       <CardContent className="p-4 sm:p-6">
@@ -209,10 +215,11 @@ const AgentRequestCard = ({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          {/* Accept & Confirm Button for pending requests */}
           {showAssignButton && request.status === 'pending' && (
             <Button
-              onClick={() => onConfirm && onConfirm(request)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-sm w-full sm:w-auto"
+              onClick={handleAcceptRequest}
+              className="bg-black hover:bg-gray-800 text-white text-sm w-full sm:w-auto"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Accept & Confirm
@@ -232,7 +239,7 @@ const AgentRequestCard = ({
             <Button 
               variant="outline" 
               onClick={handleMessageClick}
-              className="border-purple-200 text-purple-700 hover:bg-purple-50 text-sm w-full sm:w-auto"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm w-full sm:w-auto"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               Message Client

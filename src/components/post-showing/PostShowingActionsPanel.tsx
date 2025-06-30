@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ const PostShowingActionsPanel = ({
   };
 
   const handleScheduleAnotherTour = async () => {
-    await scheduleAnotherTour(buyerId);
+    await scheduleAnotherTour(buyerId, showingId);
     handleActionComplete('schedule_another_tour');
   };
 

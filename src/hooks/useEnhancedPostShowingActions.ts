@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,19 +37,22 @@ export const useEnhancedPostShowingActions = () => {
   const { toast } = useToast();
   const { favoriteProperty: workflowFavoriteProperty } = usePostShowingWorkflow();
 
-  const scheduleAnotherTour = async (buyerId: string) => {
+  const scheduleAnotherTour = async (buyerId: string, showingId?: string) => {
     setIsSubmitting(true);
     try {
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          buyer_id: buyerId,
-          action_type: 'schedule_another_tour',
-          action_details: {
-            timestamp: new Date().toISOString()
-          }
-        });
+      // Record the action - only if we have a showing ID
+      if (showingId) {
+        await supabase
+          .from('post_showing_actions')
+          .insert({
+            showing_request_id: showingId,
+            buyer_id: buyerId,
+            action_type: 'schedule_another_tour',
+            action_details: {
+              timestamp: new Date().toISOString()
+            }
+          });
+      }
 
       toast({
         title: "Interest Recorded",

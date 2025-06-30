@@ -99,7 +99,6 @@ const BuyerDashboard = () => {
         sections={sections}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        userType="buyer"
         displayName={displayName}
         eligibility={eligibility}
         isSubscribed={isSubscribed}

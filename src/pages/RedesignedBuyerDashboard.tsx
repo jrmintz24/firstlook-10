@@ -1,6 +1,7 @@
 
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
+import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import AgentProfileModal from "@/components/post-showing/AgentProfileModal";
 
 // Redesigned Components
 import RedesignedDashboardHeader from "@/components/dashboard/redesigned/RedesignedDashboardHeader";
@@ -26,6 +28,10 @@ import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 const RedesignedBuyerDashboard = () => {
   // Handle any pending tour requests from signup
   usePendingTourHandler();
+
+  // Additional state for agent workflow
+  const [showAgentModal, setShowAgentModal] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
 
   const {
     // State
@@ -57,6 +63,13 @@ const RedesignedBuyerDashboard = () => {
     handleAgreementSignWithModal,
     handleSendMessage
   } = useBuyerDashboardLogic();
+
+  // Enhanced post-showing actions
+  const {
+    isSubmitting,
+    scheduleAnotherTour,
+    hireAgent
+  } = useEnhancedPostShowingActions();
 
   console.log('RedesignedBuyerDashboard - Render state:', {
     authLoading,
@@ -152,6 +165,60 @@ const RedesignedBuyerDashboard = () => {
     console.log('Opening chat for showing:', showingId);
   };
 
+  // New handlers for WhatsNext actions
+  const handleWorkWithAgent = () => {
+    // Find the most recent completed showing with agent data
+    const completedWithAgent = completedShowings?.find(showing => 
+      showing.assigned_agent_name && showing.assigned_agent_email
+    );
+    
+    if (completedWithAgent) {
+      setSelectedAgent({
+        id: completedWithAgent.assigned_agent_email, // Using email as ID fallback
+        name: completedWithAgent.assigned_agent_name,
+        email: completedWithAgent.assigned_agent_email,
+        phone: completedWithAgent.assigned_agent_phone,
+        showingId: completedWithAgent.id,
+        propertyAddress: completedWithAgent.property_address
+      });
+      setShowAgentModal(true);
+    } else {
+      // No agent data available - could show a message or redirect to find an agent
+      console.log('No agent data available from completed showings');
+    }
+  };
+
+  const handleScheduleAnotherTour = async () => {
+    if (!currentUser?.id) return;
+    
+    // Use the most recent showing ID if available
+    const recentShowingId = completedShowings?.[0]?.id;
+    await scheduleAnotherTour(currentUser.id, recentShowingId);
+  };
+
+  const handleSeeOtherProperties = () => {
+    // For now, redirect to request another tour
+    handleRequestShowing();
+  };
+
+  const handleConfirmHireAgent = async () => {
+    if (!selectedAgent || !currentUser?.id) return;
+    
+    try {
+      await hireAgent({
+        showingId: selectedAgent.showingId,
+        buyerId: currentUser.id,
+        agentId: selectedAgent.id,
+        propertyAddress: selectedAgent.propertyAddress,
+        agentName: selectedAgent.name
+      });
+      setShowAgentModal(false);
+      setSelectedAgent(null);
+    } catch (error) {
+      console.error('Error hiring agent:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -222,7 +289,6 @@ const RedesignedBuyerDashboard = () => {
             )}
           </div>
 
-          {/* Confirmed Tours */}
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -280,6 +346,10 @@ const RedesignedBuyerDashboard = () => {
             hasUpcomingTour={!!nextTour}
             hasCompletedTours={stats.toursCompleted}
             onMakeOffer={handleMakeOffer}
+            onWorkWithAgent={handleWorkWithAgent}
+            onScheduleAnotherTour={handleScheduleAnotherTour}
+            onSeeOtherProperties={handleSeeOtherProperties}
+            isLoading={isSubmitting}
           />
         </div>
 
@@ -333,6 +403,17 @@ const RedesignedBuyerDashboard = () => {
         isOpen={showSubscribeModal}
         onClose={() => setShowSubscribeModal(false)}
         onSubscriptionComplete={handleSubscriptionComplete}
+      />
+
+      {/* Agent Profile Modal */}
+      <AgentProfileModal
+        isOpen={showAgentModal}
+        onClose={() => setShowAgentModal(false)}
+        onConfirmHire={handleConfirmHireAgent}
+        agentName={selectedAgent?.name}
+        agentEmail={selectedAgent?.email}
+        agentPhone={selectedAgent?.phone}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

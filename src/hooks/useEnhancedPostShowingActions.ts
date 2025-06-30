@@ -5,6 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAgentReferralSystem } from './useAgentReferralSystem';
 
+interface EligibilityResult {
+  eligible: boolean;
+  reason: string;
+  active_showing_count?: number;
+  subscription_tier?: string;
+}
+
 interface HireAgentData {
   showingId: string;
   buyerId: string;
@@ -40,9 +47,12 @@ export const useEnhancedPostShowingActions = () => {
       setIsSubmitting(true);
 
       // Check eligibility first
-      const { data: eligibility } = await supabase.rpc('check_showing_eligibility', {
+      const { data: eligibilityData } = await supabase.rpc('check_showing_eligibility', {
         user_uuid: buyerId
       });
+
+      // Type the eligibility result properly
+      const eligibility = eligibilityData as EligibilityResult | null;
 
       // Track the action
       await supabase.from('post_showing_actions').insert({

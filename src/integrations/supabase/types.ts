@@ -476,42 +476,69 @@ export type Database = {
       }
       offer_intents: {
         Row: {
+          additional_terms: Json | null
           agent_id: string
           agent_preference: string | null
+          agent_summary_generated_at: string | null
           buyer_id: string
           buyer_qualification: Json | null
           consultation_requested: boolean | null
           consultation_scheduled_at: string | null
+          contingencies: Json | null
+          contract_type: string | null
           created_at: string | null
+          financing_details: Json | null
           id: string
+          market_analysis: Json | null
+          offer_strategy: Json | null
           offer_type: string | null
           property_address: string
+          property_details: Json | null
+          questionnaire_completed_at: string | null
           showing_request_id: string | null
         }
         Insert: {
+          additional_terms?: Json | null
           agent_id: string
           agent_preference?: string | null
+          agent_summary_generated_at?: string | null
           buyer_id: string
           buyer_qualification?: Json | null
           consultation_requested?: boolean | null
           consultation_scheduled_at?: string | null
+          contingencies?: Json | null
+          contract_type?: string | null
           created_at?: string | null
+          financing_details?: Json | null
           id?: string
+          market_analysis?: Json | null
+          offer_strategy?: Json | null
           offer_type?: string | null
           property_address: string
+          property_details?: Json | null
+          questionnaire_completed_at?: string | null
           showing_request_id?: string | null
         }
         Update: {
+          additional_terms?: Json | null
           agent_id?: string
           agent_preference?: string | null
+          agent_summary_generated_at?: string | null
           buyer_id?: string
           buyer_qualification?: Json | null
           consultation_requested?: boolean | null
           consultation_scheduled_at?: string | null
+          contingencies?: Json | null
+          contract_type?: string | null
           created_at?: string | null
+          financing_details?: Json | null
           id?: string
+          market_analysis?: Json | null
+          offer_strategy?: Json | null
           offer_type?: string | null
           property_address?: string
+          property_details?: Json | null
+          questionnaire_completed_at?: string | null
           showing_request_id?: string | null
         }
         Relationships: [
@@ -520,6 +547,103 @@ export type Database = {
             columns: ["showing_request_id"]
             isOneToOne: false
             referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_preparation_summaries: {
+        Row: {
+          agent_checklist: Json
+          buyer_qualification_summary: Json
+          contingencies_summary: Json
+          contract_type: string
+          created_at: string
+          financing_summary: Json
+          generated_at: string
+          id: string
+          offer_intent_id: string
+          offer_strategy_summary: Json
+          required_documents: Json
+          required_forms: Json
+          special_conditions: Json
+        }
+        Insert: {
+          agent_checklist?: Json
+          buyer_qualification_summary?: Json
+          contingencies_summary?: Json
+          contract_type?: string
+          created_at?: string
+          financing_summary?: Json
+          generated_at?: string
+          id?: string
+          offer_intent_id: string
+          offer_strategy_summary?: Json
+          required_documents?: Json
+          required_forms?: Json
+          special_conditions?: Json
+        }
+        Update: {
+          agent_checklist?: Json
+          buyer_qualification_summary?: Json
+          contingencies_summary?: Json
+          contract_type?: string
+          created_at?: string
+          financing_summary?: Json
+          generated_at?: string
+          id?: string
+          offer_intent_id?: string
+          offer_strategy_summary?: Json
+          required_documents?: Json
+          required_forms?: Json
+          special_conditions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_preparation_summaries_offer_intent_id_fkey"
+            columns: ["offer_intent_id"]
+            isOneToOne: false
+            referencedRelation: "offer_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_questionnaire_responses: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          offer_intent_id: string
+          responses: Json
+          step_name: string
+          step_number: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          offer_intent_id: string
+          responses?: Json
+          step_name: string
+          step_number: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          offer_intent_id?: string
+          responses?: Json
+          step_name?: string
+          step_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_questionnaire_responses_offer_intent_id_fkey"
+            columns: ["offer_intent_id"]
+            isOneToOne: false
+            referencedRelation: "offer_intents"
             referencedColumns: ["id"]
           },
         ]

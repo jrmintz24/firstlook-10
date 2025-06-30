@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { X, MessageSquare } from "lucide-react";
-import PostShowingActionsPanel from "./PostShowingActionsPanel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Heart, FileText, MessageSquare, Star, Building } from "lucide-react";
+import FavoritePropertyModal from "./FavoritePropertyModal";
+import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
+import AgentProfileModal from "./AgentProfileModal";
 
 interface PostShowingNextStepsModalProps {
   isOpen: boolean;
@@ -26,128 +29,130 @@ const PostShowingNextStepsModal = ({
   showing,
   buyerId
 }: PostShowingNextStepsModalProps) => {
-  const [question, setQuestion] = useState("");
-  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
+  const [showOfferDialog, setShowOfferDialog] = useState(false);
+  const [showAgentProfile, setShowAgentProfile] = useState(false);
 
-  const handleSubmitQuestion = async () => {
-    if (!question.trim()) return;
-
-    try {
-      // Submit the question to the follow_up_questions table
-      const { supabase } = await import("@/integrations/supabase/client");
-      
-      await supabase
-        .from('follow_up_questions')
-        .insert({
-          showing_request_id: showing.id,
-          buyer_id: buyerId,
-          question: question.trim()
-        });
-
-      setQuestion("");
-      setShowQuestionForm(false);
-      
-      // Show success message or toast
-      console.log('Question submitted successfully');
-    } catch (error) {
-      console.error('Error submitting question:', error);
-    }
+  const handleFavoriteComplete = () => {
+    setShowFavoriteModal(false);
   };
 
-  const handleActionCompleted = (actionType: string) => {
-    console.log('Action completed:', actionType);
-    // Could show a success message or update UI
+  const handleOfferComplete = () => {
+    setShowOfferDialog(false);
+  };
+
+  const handleAgentProfileClose = () => {
+    setShowAgentProfile(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="relative">
-          <DialogTitle className="text-xl font-bold text-center pr-8">
-            What's Next?
-          </DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute right-0 top-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Thank you message */}
-          <div className="text-center">
-            <p className="text-lg font-medium">
-              Thanks for touring {showing.property_address}! Choose your next step:
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>What's Next?</DialogTitle>
+            <p className="text-gray-600">
+              Choose your next steps for {showing.property_address}
             </p>
-          </div>
+          </DialogHeader>
 
-          {/* Post-showing actions panel */}
-          <PostShowingActionsPanel
-            showingId={showing.id}
-            buyerId={buyerId}
-            agentId={showing.assigned_agent_id}
-            agentName={showing.assigned_agent_name}
-            agentEmail={showing.assigned_agent_email}
-            agentPhone={showing.assigned_agent_phone}
-            propertyAddress={showing.property_address}
-            onActionCompleted={handleActionCompleted}
-          />
-
-          {/* Question for agent section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Have a question for your agent?
-            </h3>
-            
-            {!showQuestionForm ? (
-              <Button 
-                variant="outline" 
-                onClick={() => setShowQuestionForm(true)}
-                className="w-full"
-              >
-                Ask about the property, neighborhood, next steps...
-              </Button>
-            ) : (
-              <div className="space-y-3">
-                <Textarea
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Ask about the property, neighborhood, next steps..."
-                  rows={3}
-                  className="resize-none"
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setShowQuestionForm(false);
-                      setQuestion("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSubmitQuestion} disabled={!question.trim()}>
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Question
-                  </Button>
+          <div className="space-y-4">
+            {/* Make an Offer */}
+            <Card className="border-2 border-green-200 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
+                  onClick={() => setShowOfferDialog(true)}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-green-600" />
+                    Make an Offer
+                  </div>
+                  <Badge variant="secondary" className="bg-green-100 text-green-700">
+                    Recommended
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700 mb-3">
+                  Start the comprehensive offer preparation process. We'll guide you through all the details needed for a competitive, compliant offer in the DC/Maryland market.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="text-xs">GCAAR/MAR Compliant</Badge>
+                  <Badge variant="outline" className="text-xs">Market Analysis</Badge>
+                  <Badge variant="outline" className="text-xs">Agent-Ready</Badge>
                 </div>
-              </div>
-            )}
-          </div>
+              </CardContent>
+            </Card>
 
-          {/* I'll decide later button */}
-          <div className="text-center border-t pt-4">
-            <Button variant="ghost" onClick={onClose} className="text-gray-600">
-              I'll decide later
-            </Button>
+            {/* Save as Favorite */}
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => setShowFavoriteModal(true)}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-red-500" />
+                  Save as Favorite
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700">
+                  Keep this property in your favorites list to compare with others and come back to later.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Connect with Agent */}
+            {showing.assigned_agent_name && (
+              <Card className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => setShowAgentProfile(true)}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="w-5 h-5 text-blue-500" />
+                    Work with {showing.assigned_agent_name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-700">
+                    Connect with your showing agent for ongoing representation and additional properties.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Maybe Later */}
+            <div className="text-center pt-4">
+              <Button variant="outline" onClick={onClose}>
+                I'll decide later
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modals */}
+      <FavoritePropertyModal
+        isOpen={showFavoriteModal}
+        onClose={() => setShowFavoriteModal(false)}
+        onComplete={handleFavoriteComplete}
+        showing={showing}
+        buyerId={buyerId}
+      />
+
+      <EnhancedOfferTypeDialog
+        isOpen={showOfferDialog}
+        onClose={() => setShowOfferDialog(false)}
+        showing={showing}
+        buyerId={buyerId}
+      />
+
+      {showing.assigned_agent_id && (
+        <AgentProfileModal
+          isOpen={showAgentProfile}
+          onClose={handleAgentProfileClose}
+          agentId={showing.assigned_agent_id}
+          buyerId={buyerId}
+          showingId={showing.id}
+        />
+      )}
+    </>
   );
 };
 

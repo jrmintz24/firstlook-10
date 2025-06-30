@@ -57,12 +57,98 @@ async function markShowingCompletedIfReady(supabase: any, showing_request_id: st
       console.error('Error marking showing completed:', error);
     } else {
       console.log('Successfully marked showing as completed');
+      
+      // Trigger enhanced post-showing actions workflow
+      await triggerEnhancedPostShowingWorkflow(supabase, showing_request_id);
     }
 
     return true;
   }
 
   return false;
+}
+
+async function triggerEnhancedPostShowingWorkflow(supabase: any, showing_request_id: string) {
+  console.log('Triggering enhanced post-showing workflow for:', showing_request_id);
+  
+  try {
+    // Get showing details
+    const { data: showing } = await supabase
+      .from('showing_requests')
+      .select(`
+        *,
+        profiles:user_id(*)
+      `)
+      .eq('id', showing_request_id)
+      .single();
+
+    if (!showing) {
+      console.error('Showing not found for enhanced workflow');
+      return;
+    }
+
+    // Create initial attendance record if it doesn't exist
+    const { data: existingAttendance } = await supabase
+      .from('showing_attendance')
+      .select('*')
+      .eq('showing_request_id', showing_request_id)
+      .maybeSingle();
+
+    if (!existingAttendance) {
+      await supabase
+        .from('showing_attendance')
+        .insert({
+          showing_request_id,
+          buyer_checked_out: false,
+          agent_checked_out: false
+        });
+    }
+
+    // Schedule follow-up workflow triggers
+    const now = new Date();
+    
+    // Follow-up nudge after 6 hours if no action taken
+    const followUpTime = new Date(now);
+    followUpTime.setHours(followUpTime.getHours() + 6);
+
+    // Auto-completion after 7 days
+    const autoCompleteTime = new Date(now);
+    autoCompleteTime.setDate(autoCompleteTime.getDate() + 7);
+
+    const triggers = [
+      {
+        showing_request_id,
+        trigger_type: 'enhanced_follow_up_nudge',
+        scheduled_for: followUpTime.toISOString(),
+        payload: { 
+          type: 'buyer_action_nudge',
+          enhanced_workflow: true 
+        }
+      },
+      {
+        showing_request_id,
+        trigger_type: 'enhanced_auto_complete',
+        scheduled_for: autoCompleteTime.toISOString(),
+        payload: { 
+          reason: 'enhanced_auto_complete_after_7_days',
+          enhanced_workflow: true 
+        }
+      }
+    ];
+
+    const { error: triggerError } = await supabase
+      .from('workflow_triggers')
+      .insert(triggers);
+
+    if (triggerError) {
+      console.error('Error creating enhanced workflow triggers:', triggerError);
+    } else {
+      console.log('Enhanced workflow triggers created successfully');
+    }
+
+  } catch (error) {
+    console.error('Error in enhanced post-showing workflow:', error);
+  }
 }
 
 async function autoCompleteShowing(supabase: any, showing_request_id: string) {
@@ -116,6 +202,13 @@ const handler = async (req: Request): Promise<Response> => {
     switch (action) {
       case 'trigger_workflow':
         return await triggerPostShowingWorkflow(supabase, showing_request_id);
+      
+      case 'enhanced_trigger_workflow':
+        await triggerEnhancedPostShowingWorkflow(supabase, showing_request_id);
+        return new Response(
+          JSON.stringify({ success: true, message: 'Enhanced post-showing workflow triggered' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       
       case 'check_attendance':
         return await checkAttendance(supabase, showing_request_id, data);

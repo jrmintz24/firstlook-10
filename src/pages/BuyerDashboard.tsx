@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
@@ -108,43 +107,32 @@ const BuyerDashboard = () => {
     />
   );
 
-  // Create stats component
+  // Create stats component with correct Stat interface
   const stats = (
     <ModernStatsGrid
       stats={[
         {
           title: "Pending Requests",
           value: pendingRequests.length,
-          description: "Tours waiting for confirmation",
-          trend: null,
-          onClick: () => handleStatClick("requested")
+          targetTab: "requested"
         },
         {
-          title: "Confirmed Tours",
+          title: "Confirmed Tours", 
           value: activeShowings.length,
-          description: "Scheduled property visits",
-          trend: null,
-          onClick: () => handleStatClick("confirmed")
+          targetTab: "confirmed"
         },
         {
           title: "Completed Tours",
           value: completedShowings.length,
-          description: "Properties you've visited",
-          trend: null,
-          onClick: () => handleStatClick("history")
+          targetTab: "history"
         },
         {
           title: "Messages",
           value: unreadCount,
-          description: "Unread conversations",
-          trend: null,
-          onClick: () => handleStatClick("messages")
+          targetTab: "messages"
         }
       ]}
-      eligibility={eligibility}
-      isSubscribed={isSubscribed}
-      subscriptionTier={subscriptionTier}
-      onUpgrade={handleUpgradeClick}
+      onStatClick={handleStatClick}
     />
   );
 

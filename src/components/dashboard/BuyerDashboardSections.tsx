@@ -4,6 +4,7 @@ import React from "react";
 
 import EmptyStateCard from "./EmptyStateCard";
 import OfferManagementDashboard from '@/components/offer-management/OfferManagementDashboard';
+import PostShowingActionsPanel from '@/components/post-showing/PostShowingActionsPanel';
 
 interface ShowingRequest {
   id: string;
@@ -162,11 +163,30 @@ export const generateBuyerDashboardSections = ({
             onButtonClick={onRequestShowing}
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {completedShowings.map((showing) => (
-              <div key={showing.id} className="p-4 border rounded-lg">
-                <h3 className="font-medium">{showing.property_address}</h3>
-                <p className="text-sm text-gray-600">Status: {showing.status}</p>
+              <div key={showing.id} className="border rounded-lg">
+                <div className="p-4 border-b">
+                  <h3 className="font-medium">{showing.property_address}</h3>
+                  <p className="text-sm text-gray-600">
+                    Completed: {showing.status_updated_at ? new Date(showing.status_updated_at).toLocaleDateString() : 'Recently'}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <PostShowingActionsPanel
+                    showingId={showing.id}
+                    buyerId={currentUser?.id || ''}
+                    agentId={showing.assigned_agent_id}
+                    agentName={showing.assigned_agent_name}
+                    agentEmail={showing.assigned_agent_email}
+                    agentPhone={showing.assigned_agent_phone}
+                    propertyAddress={showing.property_address}
+                    onActionCompleted={() => {
+                      // Refresh data when actions are completed
+                      fetchShowingRequests();
+                    }}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -205,7 +225,7 @@ export const generateBuyerDashboardSections = ({
     overviewSection,
     requestedSection,
     confirmedSection,
-    offersSection, // Add offers section here
+    offersSection,
     messagesSection,
     historySection,
     profileSection

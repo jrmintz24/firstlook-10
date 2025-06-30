@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Clock, CheckCircle, Calendar, MessageSquare, TrendingUp, Plus, FileText
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { useIsMobile } from "@/hooks/use-mobile";
 import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
+import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
 
 // Components
 import RecentTours from "./RecentTours";
@@ -246,20 +248,48 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       icon: CheckCircle,
       count: completedShowingsList.length,
       content: (
-        <ShowingListTab
-          title="Tour History"
-          showings={completedShowingsList}
-          emptyIcon={CheckCircle}
-          emptyTitle="No Tour History"
-          emptyDescription="You haven't completed any tours yet."
-          emptyButtonText="Request a Tour"
-          onRequestShowing={onRequestTour}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          showActions={false}
-          userType="buyer"
-          currentUserId={userId}
-        />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Tour History</h2>
+          </div>
+          {completedShowingsList.length === 0 ? (
+            <EmptyStateCard
+              icon={CheckCircle}
+              title="No Tour History"
+              description="You haven't completed any tours yet."
+              buttonText="Request a Tour"
+              onButtonClick={onRequestTour}
+            />
+          ) : (
+            <div className="space-y-6">
+              {completedShowingsList.map((showing) => (
+                <Card key={showing.id} className="border rounded-lg">
+                  <div className="p-4 border-b">
+                    <h3 className="font-medium">{showing.property_address}</h3>
+                    <p className="text-sm text-gray-600">
+                      Completed: {showing.status_updated_at ? new Date(showing.status_updated_at).toLocaleDateString() : 'Recently'}
+                    </p>
+                  </div>
+                  <div className="p-4">
+                    <PostShowingActionsPanel
+                      showingId={showing.id}
+                      buyerId={userId}
+                      agentId={showing.assigned_agent_id}
+                      agentName={showing.assigned_agent_name}
+                      agentEmail={showing.assigned_agent_email}
+                      agentPhone={showing.assigned_agent_phone}
+                      propertyAddress={showing.property_address}
+                      onActionCompleted={() => {
+                        // Refresh data when actions are completed
+                        fetchShowingRequests();
+                      }}
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       )
     }
   ];

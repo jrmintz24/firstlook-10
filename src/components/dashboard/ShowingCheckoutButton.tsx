@@ -2,12 +2,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { usePostShowingWorkflow } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
+import BuyerFeedbackModal from "@/components/post-showing/BuyerFeedbackModal";
 import PostShowingNextStepsModal from "@/components/post-showing/PostShowingNextStepsModal";
 
 interface ShowingCheckoutButtonProps {
+  showingId: string;
+  buyerId: string;
+  onCheckout?: () => void;
   showing: {
     id: string;
     property_address: string;
@@ -15,92 +18,96 @@ interface ShowingCheckoutButtonProps {
     assigned_agent_id?: string;
     assigned_agent_email?: string;
     assigned_agent_phone?: string;
-    user_id?: string;
-    status: string;
   };
-  userType: 'buyer' | 'agent';
-  onComplete?: () => void;
 }
 
-const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckoutButtonProps) => {
-  const [showModal, setShowModal] = useState(false);
-  const { user } = useAuth();
+const ShowingCheckoutButton = ({ 
+  showingId, 
+  buyerId, 
+  onCheckout, 
+  showing 
+}: ShowingCheckoutButtonProps) => {
+  const [isCheckedOut, setIsCheckedOut] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showNextStepsModal, setShowNextStepsModal] = useState(false);
+  const { checkAttendance } = usePostShowingWorkflow();
   const { toast } = useToast();
 
-  // Only show for buyers with active showings
-  if (userType !== 'buyer' || !['confirmed', 'scheduled'].includes(showing.status)) {
-    return null;
-  }
-
-  const handleCheckout = () => {
-    setShowModal(true);
-  };
-
-  const handleComplete = async () => {
+  const handleCheckout = async () => {
     try {
-      // Update the showing status to completed
-      const { error } = await supabase
-        .from('showing_requests')
-        .update({ 
-          status: 'completed',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', showing.id);
+      await checkAttendance(showingId, {
+        user_type: 'buyer',
+        attended: true,
+        checked_out: true
+      });
 
-      if (error) {
-        console.error('Error updating showing status:', error);
-        toast({
-          title: "Error",
-          description: "Failed to complete showing. Please try again.",
-          variant: "destructive"
-        });
-        return;
+      setIsCheckedOut(true);
+      setShowFeedbackModal(true);
+      
+      if (onCheckout) {
+        onCheckout();
       }
 
       toast({
         title: "Tour Completed",
-        description: "The showing has been marked as completed. Choose your next steps!",
+        description: "Thanks for touring with us! Please share your feedback.",
       });
-
-      // Call the onComplete callback to refresh data
-      if (onComplete) {
-        onComplete();
-      }
     } catch (error) {
-      console.error('Error completing showing:', error);
+      console.error('Error checking out:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        description: "Failed to complete checkout. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleModalClose = () => {
-    setShowModal(false);
-    // Complete the showing when modal closes
-    handleComplete();
+  const handleFeedbackComplete = () => {
+    setShowFeedbackModal(false);
+    setShowNextStepsModal(true);
   };
 
-  return (
-    <>
-      <Button
-        onClick={handleCheckout}
-        variant="outline"
-        size="sm"
-        className="border-green-200 text-green-700 hover:bg-green-50 rounded-lg font-medium"
-      >
-        <CheckCircle className="h-4 w-4 mr-2" />
-        Complete Showing
-      </Button>
+  const handleNextStepsComplete = () => {
+    setShowNextStepsModal(false);
+  };
 
-      <PostShowingNextStepsModal
-        isOpen={showModal}
-        onClose={handleModalClose}
-        showing={showing}
-        buyerId={user?.id || ""}
-      />
-    </>
+  if (isCheckedOut) {
+    return (
+      <>
+        <Button
+          disabled
+          className="w-full bg-green-600 hover:bg-green-600 text-white"
+        >
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Tour Completed
+        </Button>
+
+        <BuyerFeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          onComplete={handleFeedbackComplete}
+          showing={showing}
+          buyerId={buyerId}
+        />
+
+        <PostShowingNextStepsModal
+          isOpen={showNextStepsModal}
+          onClose={handleNextStepsComplete}
+          showing={showing}
+          buyerId={buyerId}
+        />
+      </>
+    );
+  }
+
+  return (
+    <Button
+      onClick={handleCheckout}
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+    >
+      <CheckCircle className="w-4 h-4 mr-2" />
+      Complete Tour
+    </Button>
   );
 };
 

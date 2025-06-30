@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -20,31 +21,18 @@ interface BuyerFeedbackModalProps {
 }
 
 const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: BuyerFeedbackModalProps) => {
-  const [step, setStep] = useState<'attendance' | 'feedback' | 'actions'>('attendance');
+  const [step, setStep] = useState<'attendance' | 'feedback'>('attendance');
   const [attended, setAttended] = useState<boolean | null>(null);
   const [propertyRating, setPropertyRating] = useState(0);
   const [agentRating, setAgentRating] = useState(0);
   const [propertyComments, setPropertyComments] = useState("");
   const [agentComments, setAgentComments] = useState("");
-  const [followUpQuestion, setFollowUpQuestion] = useState("");
-  const [showNotesInput, setShowNotesInput] = useState(false);
-  const [favoriteNotes, setFavoriteNotes] = useState("");
   
   const { 
     loading, 
     checkAttendance, 
-    submitBuyerFeedback, 
-    askFollowUpQuestion 
+    submitBuyerFeedback
   } = usePostShowingWorkflow();
-
-  const {
-    isSubmitting,
-    scheduleAnotherTour,
-    hireAgent,
-    makeOfferAgentAssisted,
-    makeOfferFirstLook,
-    favoriteProperty
-  } = useEnhancedPostShowingActions();
 
   const handleAttendanceSubmit = async () => {
     if (attended === null) return;
@@ -58,8 +46,8 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     if (attended) {
       setStep('feedback');
     } else {
-      // If didn't attend, skip to actions for rescheduling
-      setStep('actions');
+      // If didn't attend, skip to completion
+      onComplete?.();
     }
   };
 
@@ -74,77 +62,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     };
 
     await submitBuyerFeedback(showing.id, feedback);
-    setStep('actions');
-  };
-
-  const handleScheduleAnotherTour = async () => {
-    await scheduleAnotherTour(buyerId);
-    onClose();
     onComplete?.();
-  };
-
-  const handleHireAgent = async () => {
-    if (!showing.assigned_agent_id) return;
-    
-    await hireAgent({
-      showingId: showing.id,
-      buyerId,
-      agentId: showing.assigned_agent_id,
-      propertyAddress: showing.property_address,
-      agentName: showing.assigned_agent_name
-    });
-    onClose();
-    onComplete?.();
-  };
-
-  const handleMakeOffer = async () => {
-    if (!showing.assigned_agent_id) {
-      // Use FirstLook generator if no agent
-      await makeOfferFirstLook({
-        showingId: showing.id,
-        buyerId,
-        propertyAddress: showing.property_address,
-        agentName: showing.assigned_agent_name
-      });
-    } else {
-      // Use agent-assisted if agent is available
-      await makeOfferAgentAssisted({
-        showingId: showing.id,
-        buyerId,
-        agentId: showing.assigned_agent_id,
-        propertyAddress: showing.property_address,
-        agentName: showing.assigned_agent_name
-      });
-    }
-    onClose();
-    onComplete?.();
-  };
-
-  const handleFavoriteProperty = async () => {
-    if (showNotesInput) {
-      await favoriteProperty({
-        showingId: showing.id,
-        buyerId,
-        propertyAddress: showing.property_address,
-        agentName: showing.assigned_agent_name
-      }, favoriteNotes);
-      
-      setShowNotesInput(false);
-      setFavoriteNotes("");
-      onClose();
-      onComplete?.();
-    } else {
-      setShowNotesInput(true);
-    }
-  };
-
-  const handleAskQuestion = async () => {
-    if (followUpQuestion.trim()) {
-      await askFollowUpQuestion(showing.id, followUpQuestion);
-      setFollowUpQuestion("");
-      onClose();
-      onComplete?.();
-    }
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (
@@ -171,7 +89,6 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
           <DialogTitle>
             {step === 'attendance' && 'How was your showing?'}
             {step === 'feedback' && 'Share your feedback'}
-            {step === 'actions' && "What's Next?"}
           </DialogTitle>
         </DialogHeader>
 
@@ -253,146 +170,11 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setStep('actions')}>
+              <Button variant="outline" onClick={onComplete}>
                 Skip Feedback
               </Button>
               <Button onClick={handleFeedbackSubmit} disabled={loading}>
                 Submit Feedback
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 'actions' && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-medium">Thanks for touring {showing.property_address}! Choose your next step:</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Button
-                onClick={handleScheduleAnotherTour}
-                disabled={isSubmitting}
-                variant="outline"
-                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900">Schedule Another Tour</div>
-                    <div className="text-xs text-gray-500">Find more properties</div>
-                  </div>
-                </div>
-              </Button>
-              
-              {showing.assigned_agent_name && (
-                <Button
-                  onClick={handleHireAgent}
-                  disabled={isSubmitting}
-                  variant="outline"
-                  className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-gray-600" />
-                    <div className="text-left">
-                      <div className="font-semibold text-gray-900">Hire {showing.assigned_agent_name}</div>
-                      <div className="text-xs text-gray-500">Work together long-term</div>
-                    </div>
-                  </div>
-                </Button>
-              )}
-              
-              <Button
-                onClick={handleMakeOffer}
-                disabled={isSubmitting}
-                variant="outline"
-                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900">Make an Offer</div>
-                    <div className="text-xs text-gray-500">Ready to buy this one</div>
-                  </div>
-                </div>
-              </Button>
-              
-              <Button
-                onClick={handleFavoriteProperty}
-                disabled={isSubmitting}
-                variant="outline"
-                className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Heart className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900">Favorite Property</div>
-                    <div className="text-xs text-gray-500">Save for later</div>
-                  </div>
-                </div>
-              </Button>
-            </div>
-
-            {showNotesInput && (
-              <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <label className="text-sm font-medium text-gray-700">
-                  Add a note about what you liked (optional):
-                </label>
-                <Textarea
-                  value={favoriteNotes}
-                  onChange={(e) => setFavoriteNotes(e.target.value)}
-                  placeholder="Great location, loved the kitchen, needs some updates..."
-                  rows={2}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleFavoriteProperty}
-                    size="sm"
-                    disabled={isSubmitting}
-                  >
-                    Save to Favorites
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      setShowNotesInput(false);
-                      setFavoriteNotes("");
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div className="border-t pt-4">
-              <label className="text-sm font-medium mb-2 block">Have a question for your agent?</label>
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Ask about the property, neighborhood, next steps..."
-                  value={followUpQuestion}
-                  onChange={(e) => setFollowUpQuestion(e.target.value)}
-                  rows={2}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleAskQuestion}
-                  disabled={!followUpQuestion.trim() || loading}
-                  className="self-end"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <Button
-                variant="ghost"
-                onClick={onClose}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                I'll decide later
               </Button>
             </div>
           </div>

@@ -1,11 +1,11 @@
-
 import ShowingRequestCard from "./ShowingRequestCard";
 import AgreementSigningCard from "./AgreementSigningCard";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Calendar, CheckCircle, Clock } from "lucide-react";
+import { MessageCircle, Calendar, CheckCircle, Clock, Video, User } from "lucide-react";
 import EmptyStateCard from "./EmptyStateCard";
 import ProfileTab from "./ProfileTab";
 import BuyerMessagingView from "../messaging/BuyerMessagingView";
+import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 
 interface ShowingRequest {
   id: string;
@@ -98,6 +98,9 @@ export const generateBuyerDashboardSections = ({
   onSendMessage,
   onSignAgreement
 }: BuyerDashboardSectionsProps) => {
+  // Use consultation bookings hook
+  const { bookings: consultationBookings } = useConsultationBookings(currentUser?.id, 'buyer');
+
   // Ensure proper filtering of showings by status
   const confirmedShowings = activeShowings.filter(showing => 
     ['confirmed', 'scheduled', 'in_progress'].includes(showing.status)
@@ -116,6 +119,54 @@ export const generateBuyerDashboardSections = ({
   // Only show tours that are actually completed
   const actuallyCompletedShowings = completedShowings.filter(showing => 
     showing.status === 'completed'
+  );
+
+  // Separate upcoming and past consultations
+  const now = new Date();
+  const upcomingConsultations = consultationBookings.filter(booking => 
+    new Date(booking.scheduled_at) > now && booking.status === 'scheduled'
+  );
+  const pastConsultations = consultationBookings.filter(booking => 
+    new Date(booking.scheduled_at) <= now || booking.status === 'completed'
+  );
+
+  const ConsultationCard = ({ booking }: { booking: any }) => (
+    <Card className="border border-gray-200 bg-white">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Video className="h-4 w-4 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium text-gray-900">Agent Consultation</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              {booking.offer_intents?.property_address}
+            </p>
+            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {new Date(booking.scheduled_at).toLocaleDateString()}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {new Date(booking.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span className="flex items-center gap-1">
+                <User className="h-3 w-3" />
+                {booking.duration_minutes} min
+              </span>
+            </div>
+            {booking.status === 'scheduled' && (
+              <div className="mt-2">
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  Upcoming
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return [
@@ -197,10 +248,16 @@ export const generateBuyerDashboardSections = ({
       id: "confirmed",
       title: "Confirmed Tours",
       icon: CheckCircle,
-      count: confirmedShowings.length,
+      count: confirmedShowings.length + upcomingConsultations.length,
       content: (
         <div className="space-y-4">
-          {confirmedShowings.length === 0 ? (
+          {/* Upcoming Consultations */}
+          {upcomingConsultations.map((booking) => (
+            <ConsultationCard key={`consultation-${booking.id}`} booking={booking} />
+          ))}
+
+          {/* Confirmed Showings */}
+          {confirmedShowings.length === 0 && upcomingConsultations.length === 0 ? (
             <EmptyStateCard
               title="No Confirmed Tours"
               description="Once your tour requests are confirmed, they'll appear here."
@@ -250,10 +307,15 @@ export const generateBuyerDashboardSections = ({
       id: "history",
       title: "Completed Tours",
       icon: Clock,
-      count: actuallyCompletedShowings.length,
+      count: actuallyCompletedShowings.length + pastConsultations.length,
       content: (
         <div className="space-y-4">
-          {actuallyCompletedShowings.length === 0 ? (
+          {/* Past Consultations */}
+          {pastConsultations.map((booking) => (
+            <ConsultationCard key={`past-consultation-${booking.id}`} booking={booking} />
+          ))}
+
+          {actuallyCompletedShowings.length === 0 && pastConsultations.length === 0 ? (
             <EmptyStateCard
               title="No Completed Tours"
               description="Your completed tours will appear here for your reference."

@@ -1,193 +1,196 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, FileText, MessageSquare, Star, Building, User } from "lucide-react";
-import FavoritePropertyModal from "./FavoritePropertyModal";
+import { 
+  Heart, 
+  Calendar, 
+  Users, 
+  MessageCircle, 
+  FileText,
+  Star,
+  User
+} from "lucide-react";
 import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
-import AgentProfileModal from "./AgentProfileModal";
 
 interface PostShowingNextStepsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  showing: {
-    id: string;
-    property_address: string;
-    assigned_agent_name?: string;
-    assigned_agent_id?: string;
-    assigned_agent_email?: string;
-    assigned_agent_phone?: string;
-  };
-  buyerId: string;
+  propertyAddress: string;
+  agentId?: string;
+  agentName?: string;
+  buyerId?: string;
+  showingRequestId?: string;
+  onActionTaken?: () => void;
 }
 
 const PostShowingNextStepsModal = ({
   isOpen,
   onClose,
-  showing,
-  buyerId
+  propertyAddress,
+  agentId,
+  agentName,
+  buyerId,
+  showingRequestId,
+  onActionTaken
 }: PostShowingNextStepsModalProps) => {
-  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
   const [showOfferDialog, setShowOfferDialog] = useState(false);
-  const [showAgentProfile, setShowAgentProfile] = useState(false);
 
-  const handleFavoriteComplete = async (notes?: string) => {
-    console.log('Saving favorite with notes:', notes);
-    setShowFavoriteModal(false);
+  const handleOfferInterest = () => {
+    setShowOfferDialog(true);
   };
 
-  const handleOfferComplete = () => {
+  const handleOfferDialogClose = () => {
     setShowOfferDialog(false);
+    onClose();
+    onActionTaken?.();
   };
 
-  const handleAgentProfileClose = () => {
-    setShowAgentProfile(false);
-  };
-
-  const handleConfirmHire = () => {
-    console.log('Confirming agent hire');
-    setShowAgentProfile(false);
+  const handleOtherAction = (actionType: string) => {
+    // Handle other actions (favorite, schedule another tour, etc.)
+    console.log('Action taken:', actionType);
+    onActionTaken?.();
+    onClose();
   };
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl bg-white">
-          <DialogHeader className="text-center">
-            <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">
-              What's Next?
+      <Dialog open={isOpen && !showOfferDialog} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              What's your next step?
             </DialogTitle>
             <p className="text-gray-600">
-              Choose your next steps for {showing.property_address}
+              How did you feel about {propertyAddress}? Let us know what you'd like to do next.
             </p>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            {/* Make an Offer */}
+          <div className="space-y-3">
+            {/* Make an Offer / Work with Agent */}
             <Card 
-              className="border-2 border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group"
-              onClick={() => setShowOfferDialog(true)}
+              className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-green-200"
+              onClick={handleOfferInterest}
             >
-              <CardHeader className="text-center pb-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-200 transition-colors">
-                  <FileText className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <FileText className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">I'm interested in making an offer</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Get help preparing a competitive offer or schedule a consultation with your agent
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge variant="secondary" className="text-xs">Expert guidance</Badge>
+                      <Badge variant="secondary" className="text-xs">Quick setup</Badge>
+                    </div>
+                  </div>
                 </div>
-                <CardTitle className="text-lg font-semibold text-gray-900">
-                  Make an Offer
-                </CardTitle>
-                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                  Recommended
-                </Badge>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-sm text-gray-600 mb-3">
-                  Start the comprehensive offer preparation process. GCAAR/MAR compliant with market analysis.
-                </p>
-                <div className="flex flex-wrap justify-center gap-1">
-                  <Badge variant="outline" className="text-xs bg-gray-50">Market Analysis</Badge>
-                  <Badge variant="outline" className="text-xs bg-gray-50">Agent-Ready</Badge>
+              </CardContent>
+            </Card>
+
+            {/* Schedule Another Tour */}
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
+              onClick={() => handleOtherAction('schedule_another_tour')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">Schedule another tour</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Want to see this property again or bring someone with you?
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Save as Favorite */}
             <Card 
-              className="border-2 border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group"
-              onClick={() => setShowFavoriteModal(true)}
+              className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-pink-200"
+              onClick={() => handleOtherAction('favorite_property')}
             >
-              <CardHeader className="text-center pb-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-200 transition-colors">
-                  <Heart className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-pink-100 rounded-lg">
+                    <Heart className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">Save as favorite</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Keep this property in your favorites list for future reference
+                    </p>
+                  </div>
                 </div>
-                <CardTitle className="text-lg font-semibold text-gray-900">
-                  Save as Favorite
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-sm text-gray-600">
-                  Keep this property in your favorites list to compare with others and come back to later.
-                </p>
               </CardContent>
             </Card>
 
-            {/* Work with Agent */}
-            {showing.assigned_agent_name && (
-              <Card 
-                className="border-2 border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group"
-                onClick={() => setShowAgentProfile(true)}
-              >
-                <CardHeader className="text-center pb-3">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-200 transition-colors">
-                    <Building className="w-6 h-6 text-gray-700" />
-                  </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Work with {showing.assigned_agent_name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Connect with your showing agent for ongoing representation and additional properties.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Send Message */}
+            {/* Ask Questions */}
             <Card 
-              className="border-2 border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all cursor-pointer group"
+              className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-purple-200"
+              onClick={() => handleOtherAction('ask_questions')}
             >
-              <CardHeader className="text-center pb-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-200 transition-colors">
-                  <MessageSquare className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <MessageCircle className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">Ask questions about the property</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Get answers about the neighborhood, pricing, or property details
+                    </p>
+                  </div>
                 </div>
-                <CardTitle className="text-lg font-semibold text-gray-900">
-                  Send Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-sm text-gray-600">
-                  Ask questions or share feedback about the property with your agent.
-                </p>
+              </CardContent>
+            </Card>
+
+            {/* Not Interested */}
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-gray-200"
+              onClick={() => handleOtherAction('not_interested')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <Users className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">Not the right fit</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      This property isn't what I'm looking for, but I'd like to continue searching
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Bottom Action */}
-          <div className="text-center pt-6 border-t">
-            <Button variant="outline" onClick={onClose} className="text-gray-600 hover:text-gray-900">
+          <div className="flex justify-end pt-4">
+            <Button variant="outline" onClick={onClose}>
               I'll decide later
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Modals */}
-      <FavoritePropertyModal
-        isOpen={showFavoriteModal}
-        onClose={() => setShowFavoriteModal(false)}
-        onSave={handleFavoriteComplete}
-        propertyAddress={showing.property_address}
-      />
-
       <EnhancedOfferTypeDialog
         isOpen={showOfferDialog}
-        onClose={() => setShowOfferDialog(false)}
-        showing={showing}
+        onClose={handleOfferDialogClose}
+        propertyAddress={propertyAddress}
+        agentId={agentId}
+        agentName={agentName}
         buyerId={buyerId}
+        showingRequestId={showingRequestId}
       />
-
-      {showing.assigned_agent_name && (
-        <AgentProfileModal
-          isOpen={showAgentProfile}
-          onClose={handleAgentProfileClose}
-          onConfirmHire={handleConfirmHire}
-          agentName={showing.assigned_agent_name}
-          agentEmail={showing.assigned_agent_email}
-          agentPhone={showing.assigned_agent_phone}
-        />
-      )}
     </>
   );
 };

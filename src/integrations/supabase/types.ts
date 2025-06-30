@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agent_availability: {
+        Row: {
+          agent_id: string
+          created_at: string | null
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean | null
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string | null
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string | null
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       agent_feedback: {
         Row: {
           agent_id: string
@@ -281,6 +314,59 @@ export type Database = {
           },
         ]
       }
+      consultation_bookings: {
+        Row: {
+          agent_id: string
+          agent_notes: string | null
+          buyer_id: string
+          buyer_notes: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          meeting_link: string | null
+          offer_intent_id: string
+          scheduled_at: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          agent_notes?: string | null
+          buyer_id: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_link?: string | null
+          offer_intent_id: string
+          scheduled_at: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          agent_notes?: string | null
+          buyer_id?: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_link?: string | null
+          offer_intent_id?: string
+          scheduled_at?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultation_bookings_offer_intent_id_fkey"
+            columns: ["offer_intent_id"]
+            isOneToOne: false
+            referencedRelation: "offer_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_up_questions: {
         Row: {
           agent_id: string | null
@@ -482,12 +568,16 @@ export type Database = {
           agent_summary_generated_at: string | null
           buyer_id: string
           buyer_qualification: Json | null
+          consultation_duration: number | null
+          consultation_notes: string | null
           consultation_requested: boolean | null
           consultation_scheduled_at: string | null
+          consultation_type: string | null
           contingencies: Json | null
           contract_type: string | null
           created_at: string | null
           financing_details: Json | null
+          follow_up_scheduled_at: string | null
           id: string
           market_analysis: Json | null
           offer_strategy: Json | null
@@ -504,12 +594,16 @@ export type Database = {
           agent_summary_generated_at?: string | null
           buyer_id: string
           buyer_qualification?: Json | null
+          consultation_duration?: number | null
+          consultation_notes?: string | null
           consultation_requested?: boolean | null
           consultation_scheduled_at?: string | null
+          consultation_type?: string | null
           contingencies?: Json | null
           contract_type?: string | null
           created_at?: string | null
           financing_details?: Json | null
+          follow_up_scheduled_at?: string | null
           id?: string
           market_analysis?: Json | null
           offer_strategy?: Json | null
@@ -526,12 +620,16 @@ export type Database = {
           agent_summary_generated_at?: string | null
           buyer_id?: string
           buyer_qualification?: Json | null
+          consultation_duration?: number | null
+          consultation_notes?: string | null
           consultation_requested?: boolean | null
           consultation_scheduled_at?: string | null
+          consultation_type?: string | null
           contingencies?: Json | null
           contract_type?: string | null
           created_at?: string | null
           financing_details?: Json | null
+          follow_up_scheduled_at?: string | null
           id?: string
           market_analysis?: Json | null
           offer_strategy?: Json | null

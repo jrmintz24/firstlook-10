@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,10 +63,10 @@ const PostShowingTestSuite = () => {
 
         case 'Post-Showing Workflow Trigger':
           // Test the edge function
-          const { error } = await supabase.functions.invoke('post-showing-workflow', {
+          const { error: functionError } = await supabase.functions.invoke('post-showing-workflow', {
             body: { action: 'health_check' }
           });
-          if (error) throw error;
+          if (functionError) throw functionError;
           break;
 
         case 'Real-time Notifications':
@@ -83,13 +82,13 @@ const PostShowingTestSuite = () => {
 
         case 'Analytics Data Fetching':
           // Test analytics query
-          const { data, error } = await supabase
+          const { data, error: analyticsError } = await supabase
             .from('showing_requests')
             .select('id, status, property_address')
             .eq('status', 'completed')
             .limit(5);
           
-          if (error) throw error;
+          if (analyticsError) throw analyticsError;
           break;
 
         default:
@@ -99,9 +98,9 @@ const PostShowingTestSuite = () => {
       const duration = Date.now() - startTime;
       updateTestStatus(testName, 'success', 'Passed', duration);
 
-    } catch (error) {
+    } catch (testError) {
       const duration = Date.now() - startTime;
-      updateTestStatus(testName, 'error', error instanceof Error ? error.message : 'Unknown error', duration);
+      updateTestStatus(testName, 'error', testError instanceof Error ? testError.message : 'Unknown error', duration);
     }
   };
 

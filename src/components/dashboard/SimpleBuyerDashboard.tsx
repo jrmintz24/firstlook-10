@@ -29,21 +29,19 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   const isMobile = useIsMobile();
   
   const {
-    showings,
     loading,
+    pendingRequests,
+    activeShowings,
+    completedShowings,
     unreadCount,
+    isSubscribed,
     handleCancelShowing,
-    subscriptionStatus,
-    profile
-  } = useBuyerDashboardLogic(userId);
+    fetchShowingRequests
+  } = useBuyerDashboardLogic();
 
-  const pendingShowings = showings.filter(s => s.status === 'pending');
-  const upcomingShowings = showings.filter(s => 
-    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(s.status)
-  );
-  const completedShowings = showings.filter(s => 
-    ['completed', 'cancelled'].includes(s.status)
-  );
+  const pendingShowings = pendingRequests || [];
+  const upcomingShowings = activeShowings || [];
+  const completedShowingsList = completedShowings || [];
 
   const tabs = [
     {
@@ -84,7 +82,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Completed Tours</p>
-                    <p className="text-2xl font-bold text-green-600">{completedShowings.length}</p>
+                    <p className="text-2xl font-bold text-green-600">{completedShowingsList.length}</p>
                   </div>
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
@@ -97,25 +95,24 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">
               <RecentTours 
-                userId={userId}
                 onRequestTour={onRequestTour}
               />
               
-              <TourProgressTracker 
-                userId={userId}
-                subscriptionStatus={subscriptionStatus}
-              />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tour Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Track your tour progress here</p>
+                </CardContent>
+              </Card>
             </div>
             
             {/* Right Column - Sidebar */}
             <div className="space-y-6">
-              <SmartReminders userId={userId} />
+              <SmartReminders />
               
-              <QuickActions 
-                onRequestTour={onRequestTour}
-                hasActiveShowing={pendingShowings.length > 0 || upcomingShowings.length > 0}
-                subscriptionStatus={subscriptionStatus}
-              />
+              <QuickActions />
             </div>
           </div>
         </div>
@@ -176,7 +173,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       id: "messages",
       title: "Messages",
       icon: MessageSquare,
-      count: unreadCount,
+      count: unreadCount || 0,
       content: (
         <MessagingInterface
           userId={userId}
@@ -188,11 +185,11 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       id: "history",
       title: "History",
       icon: CheckCircle,
-      count: completedShowings.length,
+      count: completedShowingsList.length,
       content: (
         <ShowingListTab
           title="Tour History"
-          showings={completedShowings}
+          showings={completedShowingsList}
           emptyIcon={CheckCircle}
           emptyTitle="No Tour History"
           emptyDescription="You haven't completed any tours yet."

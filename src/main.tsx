@@ -2,6 +2,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from './contexts/AuthContext'
 import App from './App.tsx'
 import './index.css'
 
@@ -16,8 +17,10 @@ const root = createRoot(container)
 try {
   root.render(
     <React.StrictMode>
-      <App />
-      <Toaster />
+      <AuthProvider>
+        <App />
+        <Toaster />
+      </AuthProvider>
     </React.StrictMode>
   )
 } catch (error) {

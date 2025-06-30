@@ -3,6 +3,7 @@ import { Clock, CheckCircle, Calendar, MessageSquare, User, FileText, Home } fro
 import React from "react";
 
 import EmptyStateCard from "./EmptyStateCard";
+import ShowingListTab from "./ShowingListTab";
 import OfferManagementDashboard from '@/components/offer-management/OfferManagementDashboard';
 import PostShowingActionsPanel from '@/components/post-showing/PostShowingActionsPanel';
 
@@ -84,27 +85,25 @@ export const generateBuyerDashboardSections = ({
     icon: Clock,
     count: pendingRequests.length,
     content: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Pending Tour Requests</h2>
-        {pendingRequests.length === 0 ? (
-          <EmptyStateCard
-            icon={Clock}
-            title="No Pending Tours"
-            description="You don't have any pending tour requests."
-            buttonText="Request a Tour"
-            onButtonClick={onRequestShowing}
-          />
-        ) : (
-          <div className="space-y-4">
-            {pendingRequests.map((showing) => (
-              <div key={showing.id} className="p-4 border rounded-lg">
-                <h3 className="font-medium">{showing.property_address}</h3>
-                <p className="text-sm text-gray-600">Status: {showing.status}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ShowingListTab
+        title="Pending Tour Requests"
+        showings={pendingRequests}
+        emptyIcon={Clock}
+        emptyTitle="No Pending Tours"
+        emptyDescription="You don't have any pending tour requests."
+        emptyButtonText="Request a Tour"
+        onRequestShowing={onRequestShowing}
+        onCancelShowing={onCancelShowing}
+        onRescheduleShowing={onRescheduleShowing}
+        onConfirmShowing={onConfirmShowing}
+        onSendMessage={(showingId) => {
+          const showing = pendingRequests.find(s => s.id === showingId);
+          if (showing) onSendMessage(showing);
+        }}
+        userType="buyer"
+        currentUserId={currentUser?.id || ''}
+        agreements={agreements}
+      />
     )
   };
 
@@ -114,27 +113,25 @@ export const generateBuyerDashboardSections = ({
     icon: Calendar,
     count: activeShowings.length,
     content: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Upcoming Tours</h2>
-        {activeShowings.length === 0 ? (
-          <EmptyStateCard
-            icon={Calendar}
-            title="No Upcoming Tours"
-            description="You don't have any upcoming tours scheduled."
-            buttonText="Request a Tour"
-            onButtonClick={onRequestShowing}
-          />
-        ) : (
-          <div className="space-y-4">
-            {activeShowings.map((showing) => (
-              <div key={showing.id} className="p-4 border rounded-lg">
-                <h3 className="font-medium">{showing.property_address}</h3>
-                <p className="text-sm text-gray-600">Status: {showing.status}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ShowingListTab
+        title="Upcoming Tours"
+        showings={activeShowings}
+        emptyIcon={Calendar}
+        emptyTitle="No Upcoming Tours"
+        emptyDescription="You don't have any upcoming tours scheduled."
+        emptyButtonText="Request a Tour"
+        onRequestShowing={onRequestShowing}
+        onCancelShowing={onCancelShowing}
+        onRescheduleShowing={onRescheduleShowing}
+        onConfirmShowing={onConfirmShowing}
+        onSendMessage={(showingId) => {
+          const showing = activeShowings.find(s => s.id === showingId);
+          if (showing) onSendMessage(showing);
+        }}
+        userType="buyer"
+        currentUserId={currentUser?.id || ''}
+        agreements={agreements}
+      />
     )
   };
 
@@ -176,7 +173,7 @@ export const generateBuyerDashboardSections = ({
                   <PostShowingActionsPanel
                     showingId={showing.id}
                     buyerId={currentUser?.id || ''}
-                    agentId={showing.assigned_agent_id}
+                    agentId={showing.assigned_agent_email || ''}
                     agentName={showing.assigned_agent_name}
                     agentEmail={showing.assigned_agent_email}
                     agentPhone={showing.assigned_agent_phone}

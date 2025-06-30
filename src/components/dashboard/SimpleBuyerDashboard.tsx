@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +37,12 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
     completedShowings,
     unreadCount,
     isSubscribed,
+    agreements,
     handleCancelShowing,
+    handleRescheduleShowing,
+    handleConfirmShowingWithModal,
+    handleSignAgreementFromCard,
+    handleSendMessage,
     fetchShowingRequests
   } = useBuyerDashboardLogic();
 
@@ -54,17 +60,17 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
 
   const handleChatWithAgent = (showing: any) => {
     console.log('Chat with agent for showing:', showing.id);
-    // Implement chat logic
+    handleSendMessage(showing.id);
   };
 
   const handleReschedule = (showing: any) => {
     console.log('Reschedule showing:', showing.id);
-    // Implement reschedule logic
+    handleRescheduleShowing(showing.id);
   };
 
   const handleConfirmShowing = (showing: any) => {
     console.log('Confirm showing:', showing.id);
-    // Implement confirm logic
+    handleConfirmShowingWithModal(showing);
   };
 
   const tabs = [
@@ -181,9 +187,12 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
           emptyButtonText="Request a Tour"
           onRequestShowing={onRequestTour}
           onCancelShowing={handleCancelShowing}
-          onRescheduleShowing={() => {}}
+          onRescheduleShowing={handleRescheduleShowing}
+          onConfirmShowing={handleConfirmShowing}
+          onSendMessage={handleSendMessage}
           userType="buyer"
           currentUserId={userId}
+          agreements={agreements}
         />
       )
     },
@@ -202,9 +211,12 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
           emptyButtonText="Request a Tour"
           onRequestShowing={onRequestTour}
           onCancelShowing={handleCancelShowing}
-          onRescheduleShowing={() => {}}
+          onRescheduleShowing={handleRescheduleShowing}
+          onConfirmShowing={handleConfirmShowing}
+          onSendMessage={handleSendMessage}
           userType="buyer"
           currentUserId={userId}
+          agreements={agreements}
         />
       )
     },

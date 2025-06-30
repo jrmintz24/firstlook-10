@@ -1,262 +1,272 @@
 
 import { useState } from "react";
-import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
-import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
-import { Link } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Home, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  MessageCircle, 
-  Gift,
-  Settings,
-  Plus,
-  MapPin,
-  TrendingUp
-} from "lucide-react";
+import { Clock, CheckCircle, Calendar, MessageSquare, TrendingUp, Plus } from "lucide-react";
+import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-// Import modals
-import ErrorBoundary from "@/components/ErrorBoundary";
-import PropertyRequestForm from "@/components/PropertyRequestForm";
-import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
-import { SubscribeModal } from "@/components/subscription/SubscribeModal";
-import MakeOfferModal from "@/components/dashboard/MakeOfferModal";
-import ChatInitiator from "@/components/messaging/ChatInitiator";
-import RescheduleModal from "@/components/dashboard/RescheduleModal";
-
-// Import dashboard components
-import DashboardStats from "./DashboardStats";
-import QuickActions from "./QuickActions";
+// Components
 import RecentTours from "./RecentTours";
-import ShowingActionsSummary from "./ShowingActionsSummary";
-import { usePostShowingDashboardData } from "@/hooks/usePostShowingDashboardData";
+import TourProgressTracker from "./TourProgressTracker";
+import SmartReminders from "./SmartReminders";
+import QuickActions from "./QuickActions";
+import ShowingListTab from "./ShowingListTab";
+import EmptyStateCard from "./EmptyStateCard";
+import MessagingInterface from "@/components/messaging/MessagingInterface";
+import BuyerPostShowingHub from "./BuyerPostShowingHub";
 
-const SimpleBuyerDashboard = () => {
-  // Handle any pending tour requests from signup
-  usePendingTourHandler();
+interface SimpleBuyerDashboardProps {
+  userId: string;
+  displayName: string;
+  onRequestTour: () => void;
+}
 
-  // Chat and reschedule state
-  const [chatShowing, setChatShowing] = useState<any>(null);
-  const [rescheduleShowing, setRescheduleShowing] = useState<any>(null);
-
+const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuyerDashboardProps) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const isMobile = useIsMobile();
+  
   const {
-    // State
-    showPropertyForm,
-    setShowPropertyForm,
-    showAgreementModal,
-    setShowAgreementModal,
-    showSubscribeModal,
-    setShowSubscribeModal,
-    
-    // Data
-    profile,
-    selectedShowing,
+    showings,
     loading,
-    authLoading,
-    user,
-    session,
-    currentUser,
-    pendingRequests = [],
-    activeShowings = [],
-    completedShowings = [],
-    unreadCount = 0,
-    
-    // Handlers
-    handleRequestShowing,
-    handleSubscriptionComplete,
-    handleConfirmShowingWithModal,
-    handleAgreementSignWithModal,
-    fetchShowingRequests
-  } = useBuyerDashboardLogic();
+    unreadCount,
+    handleCancelShowing,
+    subscriptionStatus,
+    profile
+  } = useBuyerDashboardLogic(userId);
 
-  // Get post-showing dashboard data
-  const { actionsSummary } = usePostShowingDashboardData(currentUser?.id || '');
+  const pendingShowings = showings.filter(s => s.status === 'pending');
+  const upcomingShowings = showings.filter(s => 
+    ['agent_assigned', 'confirmed', 'agent_confirmed', 'scheduled'].includes(s.status)
+  );
+  const completedShowings = showings.filter(s => 
+    ['completed', 'cancelled'].includes(s.status)
+  );
 
-  // Make offer state
-  const [showMakeOfferModal, setShowMakeOfferModal] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<string>("");
-
-  // Show loading while auth is being determined
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Checking authentication...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user && !session) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="text-lg mb-4">Please sign in to view your dashboard</div>
-          <Link to="/">
-            <Button>Go to Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Loading your dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Safe fallbacks for first-time users
-  const displayName = profile?.first_name || 
-                     currentUser?.user_metadata?.first_name || 
-                     currentUser?.email?.split('@')[0] || 
-                     'User';
-
-  const handleMakeOffer = (propertyAddress: string) => {
-    setSelectedProperty(propertyAddress);
-    setShowMakeOfferModal(true);
-  };
-
-  const handleChatWithAgent = (showing: any) => {
-    if (!showing.assigned_agent_id) {
-      return; // No agent assigned yet
-    }
-    setChatShowing(showing);
-  };
-
-  const handleReschedule = (showing: any) => {
-    setRescheduleShowing(showing);
-  };
-
-  const handleRescheduleSuccess = () => {
-    fetchShowingRequests();
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {displayName}! 👋
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Let's find your dream home together
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              {unreadCount > 0 && (
-                <div className="flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                  <MessageCircle className="w-4 h-4" />
-                  {unreadCount} new message{unreadCount !== 1 ? 's' : ''}
+  const tabs = [
+    {
+      id: "overview",
+      title: "Overview",
+      icon: Calendar,
+      count: 0,
+      content: (
+        <div className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Pending Tours</p>
+                    <p className="text-2xl font-bold text-orange-600">{pendingShowings.length}</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-orange-600" />
                 </div>
-              )}
-              <Button 
-                onClick={handleRequestShowing}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Request Showing
-              </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Upcoming Tours</p>
+                    <p className="text-2xl font-bold text-blue-600">{upcomingShowings.length}</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Completed Tours</p>
+                    <p className="text-2xl font-bold text-green-600">{completedShowings.length}</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Dashboard Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              <RecentTours 
+                userId={userId}
+                onRequestTour={onRequestTour}
+              />
+              
+              <TourProgressTracker 
+                userId={userId}
+                subscriptionStatus={subscriptionStatus}
+              />
+            </div>
+            
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              <SmartReminders userId={userId} />
+              
+              <QuickActions 
+                onRequestTour={onRequestTour}
+                hasActiveShowing={pendingShowings.length > 0 || upcomingShowings.length > 0}
+                subscriptionStatus={subscriptionStatus}
+              />
             </div>
           </div>
         </div>
+      )
+    },
+    {
+      id: "pending",
+      title: "Pending",
+      icon: Clock,
+      count: pendingShowings.length,
+      content: (
+        <ShowingListTab
+          title="Pending Tour Requests"
+          showings={pendingShowings}
+          emptyIcon={Clock}
+          emptyTitle="No Pending Tours"
+          emptyDescription="You don't have any pending tour requests."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={onRequestTour}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={() => {}}
+          userType="buyer"
+          currentUserId={userId}
+        />
+      )
+    },
+    {
+      id: "upcoming",
+      title: "Upcoming",
+      icon: Calendar,
+      count: upcomingShowings.length,
+      content: (
+        <ShowingListTab
+          title="Upcoming Tours"
+          showings={upcomingShowings}
+          emptyIcon={Calendar}
+          emptyTitle="No Upcoming Tours"
+          emptyDescription="You don't have any upcoming tours scheduled."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={onRequestTour}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={() => {}}
+          userType="buyer"
+          currentUserId={userId}
+        />
+      )
+    },
+    {
+      id: "activity",
+      title: "Activity",
+      icon: TrendingUp,
+      count: 0,
+      content: (
+        <BuyerPostShowingHub buyerId={userId} />
+      )
+    },
+    {
+      id: "messages",
+      title: "Messages",
+      icon: MessageSquare,
+      count: unreadCount,
+      content: (
+        <MessagingInterface
+          userId={userId}
+          userType="buyer"
+        />
+      )
+    },
+    {
+      id: "history",
+      title: "History",
+      icon: CheckCircle,
+      count: completedShowings.length,
+      content: (
+        <ShowingListTab
+          title="Tour History"
+          showings={completedShowings}
+          emptyIcon={CheckCircle}
+          emptyTitle="No Tour History"
+          emptyDescription="You haven't completed any tours yet."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={onRequestTour}
+          onCancelShowing={() => {}}
+          onRescheduleShowing={() => {}}
+          showActions={false}
+          userType="buyer"
+          currentUserId={userId}
+        />
+      )
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome back, {displayName}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Find your perfect home with personalized tours
+            </p>
+          </div>
+          
+          <Button onClick={onRequestTour} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Request Tour
+          </Button>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Stats */}
-        <DashboardStats 
-          pendingCount={pendingRequests.length}
-          activeCount={activeShowings.length}
-          completedCount={completedShowings.length}
-          unreadCount={unreadCount || 0}
-        />
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="border-b border-gray-200 mb-6">
+          <TabsList className="bg-transparent border-0 p-0 h-auto">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="relative px-4 py-3 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
+              >
+                <div className="flex items-center gap-2">
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.title}</span>
+                  {tab.count > 0 && (
+                    <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+                      {tab.count}
+                    </Badge>
+                  )}
+                </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-        {/* Quick Actions */}
-        <QuickActions 
-          onRequestShowing={handleRequestShowing}
-          onMakeOffer={() => handleMakeOffer("")}
-        />
-
-        {/* Activity Summary - Show if user has completed tours */}
-        {completedShowings.length > 0 && (
-          <ShowingActionsSummary 
-            completedShowings={completedShowings}
-            actionsSummary={actionsSummary}
-          />
-        )}
-
-        {/* Recent Tours */}
-        <RecentTours 
-          pendingRequests={pendingRequests}
-          activeShowings={activeShowings}
-          completedShowings={completedShowings}
-          onChatWithAgent={handleChatWithAgent}
-          onReschedule={handleReschedule}
-          onMakeOffer={handleMakeOffer}
-          onConfirmShowing={handleConfirmShowingWithModal}
-        />
-      </div>
-
-      {/* Modals */}
-      <ErrorBoundary>
-        <PropertyRequestForm
-          isOpen={showPropertyForm}
-          onClose={setShowPropertyForm}
-        />
-      </ErrorBoundary>
-
-      {selectedShowing && (
-        <SignAgreementModal
-          isOpen={showAgreementModal}
-          onClose={() => setShowAgreementModal(false)}
-          onSign={handleAgreementSignWithModal}
-        />
-      )}
-
-      <SubscribeModal
-        isOpen={showSubscribeModal}
-        onClose={() => setShowSubscribeModal(false)}
-        onSubscriptionComplete={handleSubscriptionComplete}
-      />
-
-      <MakeOfferModal
-        isOpen={showMakeOfferModal}
-        onClose={() => setShowMakeOfferModal(false)}
-        propertyAddress={selectedProperty}
-      />
-
-      {chatShowing && (
-        <ChatInitiator
-          showingRequestId={chatShowing.id}
-          agentId={chatShowing.assigned_agent_id}
-          buyerId={currentUser?.id || ''}
-          propertyAddress={chatShowing.property_address}
-          isOpen={!!chatShowing}
-          onClose={() => setChatShowing(null)}
-        />
-      )}
-
-      {rescheduleShowing && (
-        <RescheduleModal
-          showingRequest={rescheduleShowing}
-          isOpen={!!rescheduleShowing}
-          onClose={() => setRescheduleShowing(null)}
-          onSuccess={handleRescheduleSuccess}
-        />
-      )}
+        {tabs.map((tab) => (
+          <TabsContent key={tab.id} value={tab.id} className="mt-0">
+            {tab.content}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 };

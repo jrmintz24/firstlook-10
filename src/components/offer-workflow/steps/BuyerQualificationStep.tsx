@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,7 +58,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
               <Label htmlFor="preApprovalStatus">Pre-Approval Status *</Label>
               <Select
                 value={formData.preApprovalStatus}
-                onValueChange={(value: any) => handleInputChange('preApprovalStatus', value)}
+                onValueChange={(value) => handleInputChange('preApprovalStatus', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -233,7 +233,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
               <Label htmlFor="currentHomeStatus">Current Home Status</Label>
               <Select
                 value={formData.currentHomeStatus}
-                onValueChange={(value: any) => handleInputChange('currentHomeStatus', value)}
+                onValueChange={(value) => handleInputChange('currentHomeStatus', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />

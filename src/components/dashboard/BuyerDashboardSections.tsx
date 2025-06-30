@@ -1,3 +1,4 @@
+
 import ShowingRequestCard from "./ShowingRequestCard";
 import AgreementSigningCard from "./AgreementSigningCard";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +39,18 @@ interface Profile {
   last_name: string;
   phone: string;
   user_type: string;
+}
+
+// Updated interface to match the component's expectations
+interface ShowingWithAgreement {
+  id: string;
+  property_address: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  status: string;
+  assigned_agent_name: string | null; // Made optional to match actual data
+  assigned_agent_phone: string | null;
+  tour_agreement: Agreement | null;
 }
 
 interface BuyerDashboardSectionsProps {
@@ -118,13 +131,22 @@ export const generateBuyerDashboardSections = ({
             // Find the agreement for this showing
             const tourAgreement = agreements.find(agreement => agreement.showing_request_id === showing.id) || null;
             
+            // Create the showing object with proper typing
+            const showingWithAgreement: ShowingWithAgreement = {
+              id: showing.id,
+              property_address: showing.property_address,
+              preferred_date: showing.preferred_date,
+              preferred_time: showing.preferred_time,
+              status: showing.status,
+              assigned_agent_name: showing.assigned_agent_name || null,
+              assigned_agent_phone: showing.assigned_agent_phone || null,
+              tour_agreement: tourAgreement
+            };
+            
             return (
               <AgreementSigningCard
                 key={`agreement-${showing.id}`}
-                showing={{
-                  ...showing,
-                  tour_agreement: tourAgreement
-                }}
+                showing={showingWithAgreement}
                 onSign={async (showingId: string, signerName: string) => {
                   if (onSignAgreement) {
                     const success = await onSignAgreement(showingId, signerName);

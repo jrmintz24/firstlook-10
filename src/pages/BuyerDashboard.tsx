@@ -61,7 +61,7 @@ const BuyerDashboard = () => {
     created_at: new Date().toISOString()
   }));
 
-  const sections = generateBuyerDashboardSections({
+  const sectionsArray = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
     completedShowings,
@@ -78,6 +78,12 @@ const BuyerDashboard = () => {
     onSendMessage: handleSendMessage,
     onSignAgreement: handleSignAgreementFromCard
   });
+
+  // Convert array to sections object expected by ModernDashboardLayout
+  const sections = sectionsArray.reduce((acc, section) => {
+    acc[section.id] = section;
+    return acc;
+  }, {} as Record<string, any>);
 
   if (loading || authLoading) {
     return (

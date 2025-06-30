@@ -59,22 +59,25 @@ const OfferQuestionnaireWizard = ({
     await saveStepData(currentStep, data);
     if (!isLastStep) {
       goToNextStep();
+    } else if (allStepsComplete) {
+      // Move to summary step
+      const summary = await generateAgentSummary();
+      if (summary) {
+        // Show summary step (step 7)
+        goToStep(7);
+      }
     }
   };
 
-  const handleGenerateSummary = async () => {
-    const summary = await generateAgentSummary();
-    if (summary) {
-      // Move to summary view or close
-      onClose();
-    }
+  const handleSummaryComplete = () => {
+    onClose();
   };
 
   const renderCurrentStep = () => {
-    if (!currentStepData) return null;
+    if (!currentStepData && currentStep !== 7) return null;
 
     const stepProps = {
-      data: currentStepData.data,
+      data: currentStepData?.data || {},
       onComplete: handleStepComplete,
       loading,
       propertyAddress,
@@ -94,9 +97,27 @@ const OfferQuestionnaireWizard = ({
         return <ContingenciesStep {...stepProps} />;
       case 6:
         return <AdditionalTermsStep {...stepProps} />;
+      case 7:
+        return (
+          <AgentSummaryStep
+            offerIntentId={offerIntentId}
+            onComplete={handleSummaryComplete}
+            loading={loading}
+          />
+        );
       default:
         return null;
     }
+  };
+
+  const getStepTitle = () => {
+    if (currentStep === 7) return "Agent Summary";
+    return currentStepData?.title || "";
+  };
+
+  const getStepDescription = () => {
+    if (currentStep === 7) return "Your comprehensive offer preparation is complete";
+    return currentStepData?.description || "";
   };
 
   return (
@@ -115,9 +136,9 @@ const OfferQuestionnaireWizard = ({
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
             <span>Progress: {Math.round(progress)}% Complete</span>
-            <span>Step {currentStep} of {steps.length}</span>
+            <span>Step {currentStep} of {currentStep === 7 ? 7 : steps.length}</span>
           </div>
-          <Progress value={progress} className="w-full" />
+          <Progress value={currentStep === 7 ? 100 : progress} className="w-full" />
         </div>
 
         {/* Step navigation */}
@@ -136,54 +157,70 @@ const OfferQuestionnaireWizard = ({
               <span className="truncate max-w-32">{step.title}</span>
             </Button>
           ))}
+          {(allStepsComplete || currentStep === 7) && (
+            <Button
+              variant={currentStep === 7 ? "default" : "outline"}
+              size="sm"
+              onClick={() => goToStep(7)}
+              className="flex items-center gap-2"
+              disabled={loading}
+            >
+              <CheckCircle className="w-3 h-3" />
+              <span className="hidden sm:inline">7.</span>
+              <span className="truncate max-w-32">Summary</span>
+            </Button>
+          )}
         </div>
 
         {/* Current step content */}
         <div className="flex-1 overflow-y-auto py-4">
-          {currentStepData && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium">{currentStepData.title}</h3>
-                <p className="text-sm text-gray-600">{currentStepData.description}</p>
-              </div>
-              {renderCurrentStep()}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">{getStepTitle()}</h3>
+              <p className="text-sm text-gray-600">{getStepDescription()}</p>
             </div>
-          )}
+            {renderCurrentStep()}
+          </div>
         </div>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={goToPreviousStep}
-            disabled={currentStep === 1 || loading}
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Previous
-          </Button>
+        {currentStep !== 7 && (
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+              disabled={currentStep === 1 || loading}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Previous
+            </Button>
 
-          <div className="flex gap-2">
-            {allStepsComplete && (
-              <Button
-                onClick={handleGenerateSummary}
-                disabled={loading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Generate Agent Summary
-              </Button>
-            )}
-            
-            {!isLastStep && (
-              <Button
-                onClick={goToNextStep}
-                disabled={loading}
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {allStepsComplete && currentStep === steps.length && (
+                <Button
+                  onClick={async () => {
+                    await generateAgentSummary();
+                    goToStep(7);
+                  }}
+                  disabled={loading}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Generate Summary
+                </Button>
+              )}
+              
+              {!isLastStep && (
+                <Button
+                  onClick={goToNextStep}
+                  disabled={loading}
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

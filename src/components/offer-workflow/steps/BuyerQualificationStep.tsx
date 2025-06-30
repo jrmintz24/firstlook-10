@@ -27,7 +27,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
     ...data
   });
 
-  const handleInputChange = (field: keyof BuyerQualificationData, value: any) => {
+  const handleInputChange = (field: keyof BuyerQualificationData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -188,7 +188,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
                   <SelectItem value="very_good">Very Good (700-749)</SelectItem>
                   <SelectItem value="good">Good (650-699)</SelectItem>
                   <SelectItem value="fair">Fair (600-649)</SelectItem>
-                  <SelectItem value="poor">Poor (<600)</SelectItem>
+                  <SelectItem value="poor">Poor (&lt;600)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -198,7 +198,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
             <Checkbox
               id="incomeVerified"
               checked={formData.incomeVerified}
-              onCheckedChange={(checked) => handleInputChange('incomeVerified', checked)}
+              onCheckedChange={(checked) => handleInputChange('incomeVerified', !!checked)}
             />
             <Label htmlFor="incomeVerified">Income has been verified by lender</Label>
           </div>
@@ -252,7 +252,7 @@ const BuyerQualificationStep = ({ data, onComplete, loading }: BuyerQualificatio
               <Checkbox
                 id="needToSellFirst"
                 checked={formData.needToSellFirst}
-                onCheckedChange={(checked) => handleInputChange('needToSellFirst', checked)}
+                onCheckedChange={(checked) => handleInputChange('needToSellFirst', !!checked)}
               />
               <Label htmlFor="needToSellFirst">Need to sell current home before purchasing</Label>
             </div>

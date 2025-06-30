@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import BuyerFeedbackModal from "@/components/post-showing/BuyerFeedbackModal";
+import PostShowingNextStepsModal from "@/components/post-showing/PostShowingNextStepsModal";
 
 interface ShowingCheckoutButtonProps {
   showing: {
@@ -13,6 +13,8 @@ interface ShowingCheckoutButtonProps {
     property_address: string;
     assigned_agent_name?: string;
     assigned_agent_id?: string;
+    assigned_agent_email?: string;
+    assigned_agent_phone?: string;
     user_id?: string;
     status: string;
   };
@@ -57,11 +59,9 @@ const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckou
 
       toast({
         title: "Tour Completed",
-        description: "The showing has been marked as completed and moved to history.",
+        description: "The showing has been marked as completed. Choose your next steps!",
       });
 
-      setShowModal(false);
-      
       // Call the onComplete callback to refresh data
       if (onComplete) {
         onComplete();
@@ -76,6 +76,12 @@ const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckou
     }
   };
 
+  const handleModalClose = () => {
+    setShowModal(false);
+    // Complete the showing when modal closes
+    handleComplete();
+  };
+
   return (
     <>
       <Button
@@ -88,10 +94,9 @@ const ShowingCheckoutButton = ({ showing, userType, onComplete }: ShowingCheckou
         Complete Showing
       </Button>
 
-      <BuyerFeedbackModal
+      <PostShowingNextStepsModal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onComplete={handleComplete}
+        onClose={handleModalClose}
         showing={showing}
         buyerId={user?.id || ""}
       />

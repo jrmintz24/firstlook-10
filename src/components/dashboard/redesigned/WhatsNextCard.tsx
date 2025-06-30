@@ -90,36 +90,42 @@ const WhatsNextCard = ({
         <div className="border-t pt-4 mb-4">
           <p className="text-sm font-medium text-gray-700 mb-3">Post-Tour Actions:</p>
           <div className="grid grid-cols-1 gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2 justify-start"
-              onClick={onScheduleAnotherTour}
-              disabled={isLoading}
-            >
-              <Calendar className="w-4 h-4" />
-              Schedule Another Showing
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2 justify-start"
-              onClick={onWorkWithAgent}
-              disabled={isLoading}
-            >
-              <UserPlus className="w-4 h-4" />
-              Work with Agent
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2 justify-start"
-              onClick={onSeeOtherProperties}
-              disabled={isLoading}
-            >
-              <Heart className="w-4 h-4" />
-              See Other Properties
-            </Button>
+            {onWorkWithAgent && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 justify-start"
+                onClick={onWorkWithAgent}
+                disabled={isLoading}
+              >
+                <UserPlus className="w-4 h-4" />
+                Work with Agent
+              </Button>
+            )}
+            {onScheduleAnotherTour && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 justify-start"
+                onClick={onScheduleAnotherTour}
+                disabled={isLoading}
+              >
+                <Calendar className="w-4 h-4" />
+                Schedule Another Showing
+              </Button>
+            )}
+            {onSeeOtherProperties && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 justify-start"
+                onClick={onSeeOtherProperties}
+                disabled={isLoading}
+              >
+                <Heart className="w-4 h-4" />
+                See Other Properties
+              </Button>
+            )}
           </div>
         </div>
       )}

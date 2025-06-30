@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -77,6 +76,7 @@ const ShowingCheckoutButton = ({
 
       setCurrentUserId(effectiveBuyerId);
 
+      // This will now update the showing status to 'completed' in the hook
       await checkAttendance(actualShowingId, {
         user_type: userType,
         attended: true,
@@ -94,8 +94,11 @@ const ShowingCheckoutButton = ({
         onCheckout();
       }
 
+      // Trigger dashboard refresh to move tour to completed section
       if (onComplete) {
-        onComplete();
+        setTimeout(() => {
+          onComplete();
+        }, 1000); // Small delay to ensure status update is processed
       }
 
       toast({
@@ -121,6 +124,12 @@ const ShowingCheckoutButton = ({
 
   const handleNextStepsComplete = () => {
     setShowNextStepsModal(false);
+    // Trigger another refresh after post-showing actions are completed
+    if (onComplete) {
+      setTimeout(() => {
+        onComplete();
+      }, 500);
+    }
   };
 
   // Don't render if this showing shouldn't have a checkout button
@@ -164,7 +173,7 @@ const ShowingCheckoutButton = ({
   return (
     <Button
       onClick={handleCheckout}
-      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+      className="w-full bg-black hover:bg-gray-800 text-white border border-gray-300"
     >
       <CheckCircle className="w-4 h-4 mr-2" />
       Complete Tour

@@ -73,6 +73,7 @@ export const usePostShowingWorkflow = () => {
   const checkAttendance = async (showing_request_id: string, attendanceData: AttendanceData) => {
     setLoading(true);
     try {
+      // First update the attendance record
       const { data, error } = await supabase.functions.invoke('post-showing-workflow', {
         body: {
           action: 'check_attendance',
@@ -82,6 +83,23 @@ export const usePostShowingWorkflow = () => {
       });
 
       if (error) throw error;
+
+      // If buyer checked out and attended, update the showing status to completed
+      if (attendanceData.user_type === 'buyer' && attendanceData.checked_out && attendanceData.attended) {
+        const { error: statusError } = await supabase
+          .from('showing_requests')
+          .update({ 
+            status: 'completed',
+            status_updated_at: new Date().toISOString()
+          })
+          .eq('id', showing_request_id);
+
+        if (statusError) {
+          console.error('Error updating showing status:', statusError);
+        } else {
+          console.log('Successfully updated showing status to completed');
+        }
+      }
 
       toast({
         title: "Attendance Updated",

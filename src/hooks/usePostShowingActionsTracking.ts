@@ -1,96 +1,64 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-interface ActionEvent {
-  showingId: string;
-  buyerId: string;
-  actionType: string;
-  timestamp: string;
-  success: boolean;
-  details?: any;
-}
 
 export const usePostShowingActionsTracking = () => {
-  const [actionHistory, setActionHistory] = useState<ActionEvent[]>([]);
-  const [isTracking, setIsTracking] = useState(false);
-  const { toast } = useToast();
+  const [actionsData, setActionsData] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(false);
 
-  const trackAction = useCallback(async (
-    showingId: string,
-    buyerId: string,
-    actionType: string,
-    success: boolean,
-    details?: any
-  ) => {
+  const fetchActionsForShowing = async (showingId: string) => {
+    if (actionsData[showingId]) return actionsData[showingId];
+    
+    setLoading(true);
     try {
-      setIsTracking(true);
-
-      const actionEvent: ActionEvent = {
-        showingId,
-        buyerId,
-        actionType,
-        timestamp: new Date().toISOString(),
-        success,
-        details
-      };
-
-      // Add to local state
-      setActionHistory(prev => [...prev, actionEvent]);
-
-      // Track in database
-      await supabase
+      const { data, error } = await supabase
         .from('post_showing_actions')
-        .insert({
-          showing_request_id: showingId,
-          buyer_id: buyerId,
-          action_type: actionType,
-          action_details: {
-            success,
-            timestamp: actionEvent.timestamp,
-            details: details || null
-          }
-        });
+        .select('*')
+        .eq('showing_request_id', showingId)
+        .order('created_at', { ascending: false });
 
-      console.log('Action tracked successfully:', actionEvent);
+      if (error) throw error;
 
+      setActionsData(prev => ({
+        ...prev,
+        [showingId]: data || []
+      }));
+
+      return data || [];
     } catch (error) {
-      console.error('Error tracking action:', error);
-      toast({
-        title: "Tracking Error",
-        description: "Unable to track action. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error fetching post-showing actions:', error);
+      return [];
     } finally {
-      setIsTracking(false);
+      setLoading(false);
     }
-  }, [toast]);
+  };
 
-  const getActionHistory = useCallback((showingId: string) => {
-    return actionHistory.filter(action => action.showingId === showingId);
-  }, [actionHistory]);
+  const getCompletedActions = (showingId: string): string[] => {
+    const actions = actionsData[showingId] || [];
+    return actions.map(action => action.action_type);
+  };
 
-  const getCompletedActions = useCallback((showingId: string) => {
-    return actionHistory
-      .filter(action => action.showingId === showingId && action.success)
-      .map(action => action.actionType);
-  }, [actionHistory]);
+  const hasCompletedAction = (showingId: string, actionType: string): boolean => {
+    const actions = actionsData[showingId] || [];
+    return actions.some(action => action.action_type === actionType);
+  };
 
-  const hasCompletedAction = useCallback((showingId: string, actionType: string) => {
-    return actionHistory.some(
-      action => action.showingId === showingId && 
-                action.actionType === actionType && 
-                action.success
-    );
-  }, [actionHistory]);
+  const getActionDetails = (showingId: string, actionType: string) => {
+    const actions = actionsData[showingId] || [];
+    return actions.find(action => action.action_type === actionType);
+  };
+
+  const getLatestAction = (showingId: string) => {
+    const actions = actionsData[showingId] || [];
+    return actions[0]; // Already sorted by created_at desc
+  };
 
   return {
-    actionHistory,
-    isTracking,
-    trackAction,
-    getActionHistory,
+    fetchActionsForShowing,
     getCompletedActions,
-    hasCompletedAction
+    hasCompletedAction,
+    getActionDetails,
+    getLatestAction,
+    loading
   };
 };

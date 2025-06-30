@@ -79,10 +79,15 @@ export const generateBuyerDashboardSections = ({
   fetchShowingRequests,
   onSendMessage
 }: BuyerDashboardSectionsProps) => {
-  // Keep confirmed showings in the confirmed section regardless of time
-  // Only showings with status 'completed' should be in the completed section
-  const confirmedShowings = activeShowings.filter(showing => ['confirmed', 'scheduled'].includes(showing.status));
-  const actuallyCompletedShowings = completedShowings.filter(showing => showing.status === 'completed');
+  // Ensure proper filtering of showings by status
+  const confirmedShowings = activeShowings.filter(showing => 
+    ['confirmed', 'scheduled', 'in_progress'].includes(showing.status)
+  );
+  
+  // Only show tours that are actually completed
+  const actuallyCompletedShowings = completedShowings.filter(showing => 
+    showing.status === 'completed'
+  );
 
   return [
     {
@@ -197,7 +202,7 @@ export const generateBuyerDashboardSections = ({
                 showing={showing}
                 onCancel={onCancelShowing}
                 onReschedule={onRescheduleShowing}
-                showActions={false}
+                showActions={true} // Keep actions for completed tours to show post-showing actions
                 currentUserId={currentUser?.id}
                 onSendMessage={onSendMessage}
                 onComplete={fetchShowingRequests}

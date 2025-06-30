@@ -99,7 +99,6 @@ const BuyerDashboard = () => {
         sections={sections}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onStatClick={handleStatClick}
         userType="buyer"
         displayName={displayName}
         eligibility={eligibility}
@@ -110,7 +109,7 @@ const BuyerDashboard = () => {
 
       <PropertyRequestForm
         isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
+        onClose={() => setShowPropertyForm()}
       />
 
       {/* Simple Subscribe Modal replacement */}

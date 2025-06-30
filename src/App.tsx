@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -29,6 +30,7 @@ import ScrollToTop from './components/ScrollToTop'
 import { useAnalytics } from './hooks/useAnalytics'
 import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
 import SignAgreement from './pages/SignAgreement'
+import OfferQuestionnaire from './pages/OfferQuestionnaire'
 
 const queryClient = new QueryClient()
 
@@ -92,6 +94,16 @@ function App() {
                   element={
                     <ProtectedRoute requiredUserType="admin">
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Offer Questionnaire - Protected Route */}
+                <Route
+                  path="/offer-questionnaire"
+                  element={
+                    <ProtectedRoute requiredUserType="buyer">
+                      <OfferQuestionnaire />
                     </ProtectedRoute>
                   }
                 />

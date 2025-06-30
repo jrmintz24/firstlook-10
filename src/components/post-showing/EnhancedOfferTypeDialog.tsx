@@ -10,7 +10,8 @@ import {
   Clock, 
   CheckCircle, 
   MessageCircle,
-  Calendar
+  Calendar,
+  Zap
 } from "lucide-react";
 import AgentConsultationQuestionnaire from "../offer-workflow/AgentConsultationQuestionnaire";
 import ConsultationScheduler from "../offer-workflow/ConsultationScheduler";
@@ -51,9 +52,19 @@ const EnhancedOfferTypeDialog = ({
     
     if (type === 'work_with_agent') {
       setCurrentStep('consultation_questions');
-    } else {
-      // For "make_offer", redirect to full questionnaire (existing flow)
-      window.location.href = `/offer-questionnaire?property=${encodeURIComponent(propertyAddress)}&agent=${agentId}`;
+    } else if (type === 'make_offer') {
+      // Navigate to the comprehensive offer questionnaire
+      const params = new URLSearchParams({
+        property: propertyAddress
+      });
+      
+      if (agentId) {
+        params.append('agent', agentId);
+      }
+      
+      // Close the modal and navigate
+      onClose();
+      window.location.href = `/offer-questionnaire?${params.toString()}`;
     }
   };
 
@@ -127,23 +138,26 @@ const EnhancedOfferTypeDialog = ({
 
             <div className="space-y-3">
               <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
+                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-green-200 bg-gradient-to-r from-green-50 to-emerald-50"
                 onClick={() => handleOfferTypeSelection('make_offer')}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
-                      <FileText className="h-5 w-5 text-green-600" />
+                      <Zap className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">Make an Offer</h3>
+                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        Make an Offer
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">Self-Service</Badge>
+                      </h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        Ready to make an offer? Complete our detailed questionnaire and we'll help prepare your offer documents.
+                        Ready to make an offer? Use our comprehensive DC/Baltimore offer questionnaire to create compliant contract documents.
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs">Full questionnaire</Badge>
-                        <Badge variant="secondary" className="text-xs">Contract preparation</Badge>
-                        <Badge variant="secondary" className="text-xs">~15 minutes</Badge>
+                        <Badge variant="outline" className="text-xs border-green-200">GCAAR/MAR Forms</Badge>
+                        <Badge variant="outline" className="text-xs border-green-200">Contract Generation</Badge>
+                        <Badge variant="outline" className="text-xs border-green-200">~15 minutes</Badge>
                       </div>
                     </div>
                   </div>
@@ -151,7 +165,7 @@ const EnhancedOfferTypeDialog = ({
               </Card>
 
               <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
+                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50"
                 onClick={() => handleOfferTypeSelection('work_with_agent')}
               >
                 <CardContent className="p-4">
@@ -160,19 +174,30 @@ const EnhancedOfferTypeDialog = ({
                       <User className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">Work with Agent</h3>
+                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        Work with Agent
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">Guided</Badge>
+                      </h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        Want guidance? Schedule a consultation to discuss this property and get expert advice on your offer strategy.
+                        Want expert guidance? Schedule a consultation to discuss this property and develop your offer strategy together.
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs">30-min consultation</Badge>
-                        <Badge variant="secondary" className="text-xs">Expert guidance</Badge>
-                        <Badge variant="secondary" className="text-xs">~3 minutes setup</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200">30-min consultation</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200">Expert strategy</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200">~3 minutes setup</Badge>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">Which path is right for you?</h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p><strong>Choose "Make an Offer"</strong> if you're ready to submit an offer and want to handle the process yourself.</p>
+                <p><strong>Choose "Work with Agent"</strong> if you want professional guidance on strategy, pricing, or contract terms.</p>
+              </div>
             </div>
           </div>
         );
@@ -232,7 +257,7 @@ const EnhancedOfferTypeDialog = ({
   const getStepTitle = () => {
     switch (currentStep) {
       case 'selection':
-        return 'Choose Your Next Step';
+        return 'Choose Your Offer Strategy';
       case 'consultation_questions':
         return 'Agent Consultation Setup';
       case 'scheduling':

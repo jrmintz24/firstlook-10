@@ -6,6 +6,8 @@ import PropertyRequestForm from "@/components/PropertyRequestForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
+import ModernHeader from "@/components/dashboard/ModernHeader";
+import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 
 const BuyerDashboard = () => {
   const {
@@ -93,17 +95,69 @@ const BuyerDashboard = () => {
     );
   }
 
+  // Create header component
+  const header = (
+    <ModernHeader
+      title="Dashboard"
+      subtitle="Manage your property tours and showings"
+      displayName={displayName}
+      onPrimaryAction={handleRequestShowing}
+      primaryActionText="Request Tour"
+      userType="buyer"
+      notificationCount={unreadCount}
+    />
+  );
+
+  // Create stats component
+  const stats = (
+    <ModernStatsGrid
+      stats={[
+        {
+          title: "Pending Requests",
+          value: pendingRequests.length,
+          description: "Tours waiting for confirmation",
+          trend: null,
+          onClick: () => handleStatClick("requested")
+        },
+        {
+          title: "Confirmed Tours",
+          value: activeShowings.length,
+          description: "Scheduled property visits",
+          trend: null,
+          onClick: () => handleStatClick("confirmed")
+        },
+        {
+          title: "Completed Tours",
+          value: completedShowings.length,
+          description: "Properties you've visited",
+          trend: null,
+          onClick: () => handleStatClick("history")
+        },
+        {
+          title: "Messages",
+          value: unreadCount,
+          description: "Unread conversations",
+          trend: null,
+          onClick: () => handleStatClick("messages")
+        }
+      ]}
+      eligibility={eligibility}
+      isSubscribed={isSubscribed}
+      subscriptionTier={subscriptionTier}
+      onUpgrade={handleUpgradeClick}
+    />
+  );
+
   return (
     <>
       <ModernDashboardLayout
+        header={header}
+        stats={stats}
+        mainContent={null}
+        sidebar={null}
         sections={sections}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        displayName={displayName}
-        eligibility={eligibility}
-        isSubscribed={isSubscribed}
-        subscriptionTier={subscriptionTier}
-        onUpgrade={handleUpgradeClick}
       />
 
       <PropertyRequestForm

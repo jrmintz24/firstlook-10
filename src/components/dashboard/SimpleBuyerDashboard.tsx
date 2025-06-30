@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -274,7 +273,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
                     <PostShowingActionsPanel
                       showingId={showing.id}
                       buyerId={userId}
-                      agentId={showing.assigned_agent_id}
+                      agentId={showing.assigned_agent_email || ''} // Use email as fallback since assigned_agent_id doesn't exist
                       agentName={showing.assigned_agent_name}
                       agentEmail={showing.assigned_agent_email}
                       agentPhone={showing.assigned_agent_phone}

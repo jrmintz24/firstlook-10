@@ -27,8 +27,20 @@ const ChatWidget = ({ userId, unreadCount, className = "" }: ChatWidgetProps) =>
     const conversation = conversations.find(c => c.showing_request_id === selectedConversation);
     if (!conversation) return;
 
-    const otherParty = conversation.messages.find(msg => msg.sender_id !== userId);
-    const receiverId = otherParty?.sender_id === userId ? otherParty?.receiver_id : otherParty?.sender_id;
+    // Find the other party in the conversation by looking at all messages
+    const messages = conversation.messages;
+    let receiverId: string | null = null;
+
+    // Find someone who is not the current user
+    for (const message of messages) {
+      if (message.sender_id !== userId) {
+        receiverId = message.sender_id;
+        break;
+      } else if (message.receiver_id !== userId) {
+        receiverId = message.receiver_id;
+        break;
+      }
+    }
     
     if (receiverId) {
       const success = await sendMessage(selectedConversation, receiverId, newMessage.trim());

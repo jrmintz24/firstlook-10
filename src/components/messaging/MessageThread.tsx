@@ -1,19 +1,19 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, MapPin, Clock } from "lucide-react";
-import { format } from "date-fns";
+import { Send, MapPin, AlertCircle } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { MessageWithShowing } from "@/types/message";
 
 interface MessageThreadProps {
   messages: MessageWithShowing[];
   currentUserId: string;
   onSendMessage: (content: string) => Promise<boolean>;
-  propertyAddress?: string;
-  showingStatus?: string;
+  propertyAddress: string;
+  showingStatus: string;
 }
 
 const MessageThread = ({
@@ -24,198 +24,124 @@ const MessageThread = ({
   showingStatus
 }: MessageThreadProps) => {
   const [newMessage, setNewMessage] = useState("");
-  const [sending, setSending] = useState(false);
-  const [previousMessageCount, setPreviousMessageCount] = useState(messages.length);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [isSending, setIsSending] = useState(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || isSending) return;
 
-  // Only auto-scroll when new messages are added and user isn't manually scrolling
-  useEffect(() => {
-    const hasNewMessages = messages.length > previousMessageCount;
-    
-    if (hasNewMessages && !isUserScrolling) {
-      scrollToBottom();
-    }
-    
-    setPreviousMessageCount(messages.length);
-  }, [messages.length, previousMessageCount, isUserScrolling]);
-
-  // Handle scroll events to detect user scrolling
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    let scrollTimeout: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      setIsUserScrolling(true);
-      
-      // Clear existing timeout
-      clearTimeout(scrollTimeout);
-      
-      // Reset scrolling state after user stops scrolling
-      scrollTimeout = setTimeout(() => {
-        setIsUserScrolling(false);
-      }, 1000);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, []);
-
-  const handleSend = async () => {
-    if (!newMessage.trim() || sending) return;
-
-    console.log('MessageThread: Attempting to send message:', {
-      messageContent: newMessage.trim(),
-      messagesCount: messages.length,
-      currentUserId,
-      hasOnSendMessage: typeof onSendMessage === 'function'
-    });
-
-    setSending(true);
+    setIsSending(true);
     try {
       const success = await onSendMessage(newMessage.trim());
-      console.log('MessageThread: Send result:', success);
-      
       if (success) {
         setNewMessage("");
-        // Force scroll to bottom after sending a message
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
       }
     } catch (error) {
-      console.error('MessageThread: Error sending message:', error);
+      console.error('Error sending message:', error);
     } finally {
-      setSending(false);
+      setIsSending(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case 'confirmed':
-      case 'agent_confirmed':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
+  const sortedMessages = [...messages].sort((a, b) => 
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
 
   const canSendMessages = showingStatus !== 'cancelled';
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 border-b">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-purple-500" />
-              {propertyAddress || 'Property Discussion'}
-            </CardTitle>
-            {showingStatus && (
-              <Badge className={`mt-2 ${getStatusColor(showingStatus)}`}>
-                {showingStatus.charAt(0).toUpperCase() + showingStatus.slice(1).replace('_', ' ')}
-              </Badge>
-            )}
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-purple-500 flex-shrink-0" />
+            <div>
+              <CardTitle className="text-lg">{propertyAddress}</CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="text-xs">
+                  {showingStatus}
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  {messages.length} message{messages.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col min-h-0">
-        {/* Messages */}
-        <div 
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto mb-4 space-y-3 min-h-0"
-        >
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <div className="text-sm">No messages yet</div>
-              <div className="text-xs mt-1">Start the conversation!</div>
+      <CardContent className="flex-1 flex flex-col p-0">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+          {sortedMessages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="text-center">
+                <div className="text-sm">No messages yet</div>
+                <div className="text-xs text-gray-400 mt-1">Start a conversation about this property</div>
+              </div>
             </div>
           ) : (
-            messages.map((message) => {
-              const isOwnMessage = message.sender_id === currentUserId;
+            sortedMessages.map((message, index) => {
+              const isFromCurrentUser = message.sender_id === currentUserId;
+              const showTime = index === 0 || 
+                new Date(message.created_at).getTime() - new Date(sortedMessages[index - 1].created_at).getTime() > 300000; // 5 minutes
+
               return (
-                <div
-                  key={message.id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      isOwnMessage
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <div className="text-sm whitespace-pre-wrap break-words">
-                      {message.content}
+                <div key={message.id} className="space-y-1">
+                  {showTime && (
+                    <div className="text-center text-xs text-gray-400">
+                      {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                     </div>
+                  )}
+                  <div className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`text-xs mt-1 ${
-                        isOwnMessage ? 'text-purple-100' : 'text-gray-500'
+                      className={`max-w-[80%] px-4 py-2 rounded-lg ${
+                        isFromCurrentUser
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-100 text-gray-900'
                       }`}
                     >
-                      {format(new Date(message.created_at), 'MMM d, h:mm a')}
+                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                     </div>
                   </div>
                 </div>
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        {/* Message input */}
-        {canSendMessages ? (
-          <div className="flex gap-2">
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 resize-none"
-              rows={2}
-              disabled={sending}
-            />
-            <Button
-              onClick={handleSend}
-              disabled={!newMessage.trim() || sending}
-              size="sm"
-              className="bg-purple-600 hover:bg-purple-700 self-end"
-            >
-              {sending ? (
-                <Clock className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-4">
-            <div className="text-sm">Messaging is no longer available for this showing</div>
-          </div>
-        )}
+        {/* Message Input */}
+        <div className="border-t p-4">
+          {!canSendMessages ? (
+            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm">This showing has been cancelled. Messages are no longer available.</span>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 min-h-[50px] max-h-32 resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                disabled={isSending}
+              />
+              <Button
+                size="sm"
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || isSending}
+                className="bg-purple-600 hover:bg-purple-700 h-[50px] w-12 p-0"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

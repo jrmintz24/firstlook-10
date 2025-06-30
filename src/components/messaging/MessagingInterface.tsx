@@ -70,12 +70,25 @@ const MessagingInterface = ({
   const handleSendMessage = async (content: string) => {
     if (!selectedConversationId || !selectedConversation) return false;
 
-    // Find the other party in the conversation
+    // Find the other party in the conversation by looking at all messages
     const messages = selectedConversation.messages;
-    const otherParty = messages.find(msg => msg.sender_id !== userId || msg.receiver_id !== userId);
-    const receiverId = otherParty?.sender_id === userId ? otherParty?.receiver_id : otherParty?.sender_id;
+    let receiverId: string | null = null;
 
-    if (!receiverId) return false;
+    // Find someone who is not the current user
+    for (const message of messages) {
+      if (message.sender_id !== userId) {
+        receiverId = message.sender_id;
+        break;
+      } else if (message.receiver_id !== userId) {
+        receiverId = message.receiver_id;
+        break;
+      }
+    }
+
+    if (!receiverId) {
+      console.error('Could not determine receiver ID for conversation');
+      return false;
+    }
 
     return await sendMessage(selectedConversationId, receiverId, content);
   };

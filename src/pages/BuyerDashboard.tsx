@@ -3,7 +3,8 @@ import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
-import SubscribeModal from "@/components/SubscribeModal";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 
 const BuyerDashboard = () => {
@@ -50,11 +51,21 @@ const BuyerDashboard = () => {
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
 
+  // Convert agreements record to array format expected by sections
+  const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
+    id: `agreement-${showing_request_id}`,
+    showing_request_id,
+    signed,
+    signed_at: signed ? new Date().toISOString() : null,
+    agreement_type: 'single_tour',
+    created_at: new Date().toISOString()
+  }));
+
   const sections = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
     completedShowings,
-    agreements,
+    agreements: agreementsArray,
     currentUser,
     profile,
     displayName,
@@ -91,19 +102,24 @@ const BuyerDashboard = () => {
         onUpgrade={handleUpgradeClick}
       />
 
-      {showPropertyForm && (
-        <PropertyRequestForm
-          onClose={() => setShowPropertyForm(false)}
-          onSuccess={fetchShowingRequests}
-        />
-      )}
+      <PropertyRequestForm
+        isOpen={showPropertyForm}
+        onClose={() => setShowPropertyForm(false)}
+      />
 
+      {/* Simple Subscribe Modal replacement */}
       {showSubscribeModal && (
-        <SubscribeModal
-          isOpen={showSubscribeModal}
-          onClose={() => setShowSubscribeModal(false)}
-          onSuccess={handleSubscriptionComplete}
-        />
+        <Dialog open={showSubscribeModal} onOpenChange={() => setShowSubscribeModal(false)}>
+          <DialogContent>
+            <div className="p-6 text-center">
+              <h2 className="text-2xl font-bold mb-4">Upgrade to Premium</h2>
+              <p className="mb-4">Get unlimited property tours and priority support.</p>
+              <Button onClick={handleSubscriptionComplete} className="w-full">
+                Subscribe Now
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {showAgreementModal && selectedShowing && (

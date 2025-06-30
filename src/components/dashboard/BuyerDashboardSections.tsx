@@ -32,10 +32,6 @@ interface Agreement {
   created_at: string;
 }
 
-interface ShowingWithAgreement extends ShowingRequest {
-  tour_agreement: Agreement | null;
-}
-
 interface Profile {
   id: string;
   first_name: string;
@@ -70,14 +66,6 @@ const hasShowingPassed = (showing: ShowingRequest): boolean => {
   const now = new Date();
   
   return showingDateTime < now;
-};
-
-// Helper function to attach agreement data to showings
-const attachAgreementData = (showings: ShowingRequest[], agreements: Agreement[]): ShowingWithAgreement[] => {
-  return showings.map(showing => ({
-    ...showing,
-    tour_agreement: agreements.find(agreement => agreement.showing_request_id === showing.id) || null
-  }));
 };
 
 export const generateBuyerDashboardSections = ({
@@ -117,9 +105,6 @@ export const generateBuyerDashboardSections = ({
     showing.status === 'completed'
   );
 
-  // Attach agreement data to showings that need it
-  const awaitingAgreementWithData = attachAgreementData(awaitingAgreementShowings, agreements);
-
   return [
     {
       id: "requested",
@@ -129,22 +114,30 @@ export const generateBuyerDashboardSections = ({
       content: (
         <div className="space-y-4">
           {/* Agreement signing cards for showings awaiting agreement */}
-          {awaitingAgreementWithData.map((showing) => (
-            <AgreementSigningCard
-              key={`agreement-${showing.id}`}
-              showing={showing}
-              onSign={async (showingId: string, signerName: string) => {
-                if (onSignAgreement) {
-                  const success = await onSignAgreement(showingId, signerName);
-                  if (success) {
-                    fetchShowingRequests();
+          {awaitingAgreementShowings.map((showing) => {
+            // Find the agreement for this showing
+            const tourAgreement = agreements.find(agreement => agreement.showing_request_id === showing.id) || null;
+            
+            return (
+              <AgreementSigningCard
+                key={`agreement-${showing.id}`}
+                showing={{
+                  ...showing,
+                  tour_agreement: tourAgreement
+                }}
+                onSign={async (showingId: string, signerName: string) => {
+                  if (onSignAgreement) {
+                    const success = await onSignAgreement(showingId, signerName);
+                    if (success) {
+                      fetchShowingRequests();
+                    }
+                    return success;
                   }
-                  return success;
-                }
-                return false;
-              }}
-            />
-          ))}
+                  return false;
+                }}
+              />
+            );
+          })}
 
           {/* Regular pending request cards */}
           {otherPendingRequests.map((showing) => (

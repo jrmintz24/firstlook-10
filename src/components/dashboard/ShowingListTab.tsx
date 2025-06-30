@@ -38,6 +38,7 @@ interface ShowingListTabProps {
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
   currentUserId?: string;
+  agreements?: Record<string, boolean>;
 }
 
 const ShowingListTab = ({
@@ -56,7 +57,8 @@ const ShowingListTab = ({
   showActions = true,
   userType = 'buyer',
   onComplete,
-  currentUserId
+  currentUserId,
+  agreements = {}
 }: ShowingListTabProps) => {
   if (showings.length === 0) {
     return (
@@ -122,6 +124,7 @@ const ShowingListTab = ({
             userType={userType}
             onComplete={onComplete}
             onReportIssue={onReportIssue}
+            agreements={agreements}
           />
         );
       })}

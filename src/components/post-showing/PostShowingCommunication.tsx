@@ -71,8 +71,8 @@ const PostShowingCommunication = ({
   }
 
   const handleActionCompleted = async (actionType: string) => {
-    // Track the completed action
-    await trackAction(showingId, currentUser.id, actionType, true);
+    // Track the completed action with correct parameters
+    await trackAction(showingId, actionType, { completed: true });
     
     // Notify parent component
     if (onActionTaken) {

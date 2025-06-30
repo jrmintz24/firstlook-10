@@ -52,8 +52,12 @@ const EnhancedOfferTypeDialog = ({
     if (type === 'work_with_agent') {
       setCurrentStep('consultation_questions');
     } else {
-      // For "make_offer", redirect to full questionnaire (existing flow)
-      window.location.href = `/offer-questionnaire?property=${encodeURIComponent(propertyAddress)}&agent=${agentId}`;
+      // For "make_offer", redirect to the new offer questionnaire page
+      const params = new URLSearchParams({
+        property: propertyAddress,
+        ...(agentId && { agent: agentId })
+      });
+      window.location.href = `/offer-questionnaire?${params.toString()}`;
     }
   };
 
@@ -81,14 +85,9 @@ const EnhancedOfferTypeDialog = ({
           consultation_type: 'property_specific',
           buyer_qualification: {
             propertyInterestLevel: data.propertyInterestLevel,
-            preApprovalStatus: data.preApprovalStatus,
-            budgetRange: data.budgetRange,
             timeline: data.timeline,
             specificQuestions: data.specificQuestions,
-            ongoingRepresentation: data.ongoingRepresentation,
-            additionalComments: data.additionalComments,
-            preferredCommunication: data.preferredCommunication,
-            availabilityPreference: data.availabilityPreference
+            preferredCommunication: data.preferredCommunication
           }
         })
         .select()
@@ -127,7 +126,7 @@ const EnhancedOfferTypeDialog = ({
 
             <div className="space-y-3">
               <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
+                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-green-200"
                 onClick={() => handleOfferTypeSelection('make_offer')}
               >
                 <CardContent className="p-4">
@@ -136,13 +135,13 @@ const EnhancedOfferTypeDialog = ({
                       <FileText className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">Make an Offer</h3>
+                      <h3 className="font-semibold text-gray-900">Make a Competitive Offer</h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        Ready to make an offer? Complete our detailed questionnaire and we'll help prepare your offer documents.
+                        Ready to make an offer? Complete our comprehensive DC/Baltimore offer questionnaire and we'll prepare your complete offer documents.
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs">Full questionnaire</Badge>
-                        <Badge variant="secondary" className="text-xs">Contract preparation</Badge>
+                        <Badge variant="secondary" className="text-xs">Complete questionnaire</Badge>
+                        <Badge variant="secondary" className="text-xs">Professional contracts</Badge>
                         <Badge variant="secondary" className="text-xs">~15 minutes</Badge>
                       </div>
                     </div>
@@ -160,14 +159,14 @@ const EnhancedOfferTypeDialog = ({
                       <User className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">Work with Agent</h3>
+                      <h3 className="font-semibold text-gray-900">Schedule Agent Consultation</h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        Want guidance? Schedule a consultation to discuss this property and get expert advice on your offer strategy.
+                        Want expert guidance first? Schedule a quick consultation to discuss this property, market conditions, and offer strategy.
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         <Badge variant="secondary" className="text-xs">30-min consultation</Badge>
                         <Badge variant="secondary" className="text-xs">Expert guidance</Badge>
-                        <Badge variant="secondary" className="text-xs">~3 minutes setup</Badge>
+                        <Badge variant="secondary" className="text-xs">~2 minutes setup</Badge>
                       </div>
                     </div>
                   </div>

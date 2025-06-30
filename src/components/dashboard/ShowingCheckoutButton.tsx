@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -161,8 +162,12 @@ const ShowingCheckoutButton = ({
             <PostShowingNextStepsModal
               isOpen={showNextStepsModal}
               onClose={handleNextStepsComplete}
-              showing={showing}
+              propertyAddress={showing.property_address}
+              agentId={showing.assigned_agent_id}
+              agentName={showing.assigned_agent_name}
               buyerId={currentUserId || buyerId || ''}
+              showingRequestId={showing.id}
+              onActionTaken={handleNextStepsComplete}
             />
           </>
         )}

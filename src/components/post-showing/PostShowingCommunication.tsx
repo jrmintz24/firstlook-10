@@ -139,13 +139,13 @@ const PostShowingCommunication = ({
 
   return (
     <>
-      <Card className="mt-6 border-green-200 bg-green-50">
+      <Card className="mt-6 border-gray-200 bg-gray-50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-800">
+          <CardTitle className="flex items-center gap-2 text-gray-800">
             <MessageCircle className="h-5 w-5" />
             What's Next?
           </CardTitle>
-          <p className="text-sm text-green-600">
+          <p className="text-sm text-gray-600">
             Thanks for touring {propertyAddress}! Choose your next step:
           </p>
         </CardHeader>
@@ -157,13 +157,13 @@ const PostShowingCommunication = ({
                   onClick={handleScheduleAnotherTour}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50 h-auto p-4"
+                  className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5" />
+                    <Calendar className="h-5 w-5 text-gray-600" />
                     <div className="text-left">
-                      <div className="font-semibold">Schedule Another Tour</div>
-                      <div className="text-xs opacity-80">Find more properties</div>
+                      <div className="font-semibold text-gray-900">Schedule Another Tour</div>
+                      <div className="text-xs text-gray-500">Find more properties</div>
                     </div>
                   </div>
                 </Button>
@@ -172,13 +172,14 @@ const PostShowingCommunication = ({
                   <Button
                     onClick={handleHireAgent}
                     disabled={isSubmitting}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-auto p-4"
+                    variant="outline"
+                    className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <User className="h-5 w-5" />
+                      <User className="h-5 w-5 text-gray-600" />
                       <div className="text-left">
-                        <div className="font-semibold">Hire {agentName}</div>
-                        <div className="text-xs opacity-90">Work together long-term</div>
+                        <div className="font-semibold text-gray-900">Hire {agentName}</div>
+                        <div className="text-xs text-gray-500">Work together long-term</div>
                       </div>
                     </div>
                   </Button>
@@ -187,13 +188,14 @@ const PostShowingCommunication = ({
                 <Button
                   onClick={handleMakeOffer}
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 h-auto p-4"
+                  variant="outline"
+                  className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5" />
+                    <FileText className="h-5 w-5 text-gray-600" />
                     <div className="text-left">
-                      <div className="font-semibold">Make an Offer</div>
-                      <div className="text-xs opacity-90">Ready to buy this one</div>
+                      <div className="font-semibold text-gray-900">Make an Offer</div>
+                      <div className="text-xs text-gray-500">Ready to buy this one</div>
                     </div>
                   </div>
                 </Button>
@@ -202,20 +204,20 @@ const PostShowingCommunication = ({
                   onClick={handleFavoriteProperty}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="border-pink-300 text-pink-700 hover:bg-pink-50 h-auto p-4"
+                  className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <Heart className="h-5 w-5" />
+                    <Heart className="h-5 w-5 text-gray-600" />
                     <div className="text-left">
-                      <div className="font-semibold">Favorite Property</div>
-                      <div className="text-xs opacity-80">Save for later</div>
+                      <div className="font-semibold text-gray-900">Favorite Property</div>
+                      <div className="text-xs text-gray-500">Save for later</div>
                     </div>
                   </div>
                 </Button>
               </div>
 
               {showNotesInput && (
-                <div className="space-y-2 p-3 bg-white rounded-lg border">
+                <div className="space-y-2 p-3 bg-white rounded-lg border border-gray-200">
                   <label className="text-sm font-medium text-gray-700">
                     Add a note about what you liked (optional):
                   </label>

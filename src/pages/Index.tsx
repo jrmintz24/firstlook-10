@@ -17,107 +17,127 @@ import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
 
 export default function Index() {
-  const { user, loading } = useAuth()
-  const { toast } = useToast()
-  const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
-  const tourQuota = useTourQuota()
+  console.log('Index component rendering...')
+  
+  try {
+    const { user, loading } = useAuth()
+    const { toast } = useToast()
+    const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
+    const tourQuota = useTourQuota()
 
-  // Handle redirects for authenticated users
-  useEffect(() => {
-    if (!loading && user) {
-      const userType = user.user_metadata?.user_type;
-      const dashboardPath = userType === 'agent'
-        ? '/agent-dashboard'
-        : userType === 'admin'
-        ? '/admin-dashboard'
-        : '/buyer-dashboard';
+    console.log('Auth state:', { user: !!user, loading })
+
+    // Handle redirects for authenticated users
+    useEffect(() => {
+      if (!loading && user) {
+        const userType = user.user_metadata?.user_type;
+        const dashboardPath = userType === 'agent'
+          ? '/agent-dashboard'
+          : userType === 'admin'
+          ? '/admin-dashboard'
+          : '/buyer-dashboard';
+        
+        console.log('Redirecting authenticated user to:', dashboardPath);
+        window.location.href = dashboardPath;
+      }
+    }, [user, loading]);
+
+    const handleStartTour = () => {
+      console.log('Starting tour...')
+      // Check if user has exceeded their tour quota
+      if (user && tourQuota.isExceeded && !tourQuota.loading) {
+        toast({
+          title: "Tour Limit Reached",
+          description: "You've used all your tours this month. Upgrade your plan for more access.",
+          variant: "destructive"
+        });
+        return;
+      }
       
-      console.log('Redirecting authenticated user to:', dashboardPath);
-      window.location.href = dashboardPath;
+      setShowPropertyRequestForm(true)
     }
-  }, [user, loading]);
 
-  const handleStartTour = () => {
-    // Check if user has exceeded their tour quota
-    if (user && tourQuota.isExceeded && !tourQuota.loading) {
-      toast({
-        title: "Tour Limit Reached",
-        description: "You've used all your tours this month. Upgrade your plan for more access.",
-        variant: "destructive"
-      });
-      return;
+    // Show loading while checking auth state
+    if (loading) {
+      console.log('Showing loading state...')
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      )
     }
-    
-    setShowPropertyRequestForm(true)
-  }
 
-  // Show loading while checking auth state
-  if (loading) {
+    // If user is authenticated, show loading while redirecting
+    if (user) {
+      console.log('User authenticated, showing redirect loading...')
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Redirecting to your dashboard...</p>
+          </div>
+        </div>
+      )
+    }
+
+    console.log('Rendering main Index content...')
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <HeroSection onStartTour={handleStartTour} />
+
+        {/* Value Proposition */}
+        <ValueProposition />
+
+        {/* How It Works */}
+        <HowItWorks />
+
+        {/* Trust Stories */}
+        <TrustStory />
+
+        {/* Industry Context - Why FirstLook Exists */}
+        <IndustryContext />
+
+        {/* Commission Explainer */}
+        <CommissionExplainer />
+
+        {/* Pricing Section */}
+        <PricingSection />
+
+        {/* FAQ Section */}
+        <FAQSection />
+
+        {/* Trust Indicators - moved towards bottom */}
+        <TrustIndicators />
+
+        {/* Final CTA Section */}
+        <FinalCTASection onRequestShowing={handleStartTour} />
+
+        {/* Tour Quota Banner - only show for authenticated users who exceeded quota */}
+        {user && tourQuota.isExceeded && !tourQuota.loading && (
+          <TourQuotaBanner 
+            used={tourQuota.used}
+            limit={tourQuota.limit}
+            planTier={user.user_metadata?.plan_tier || 'free'}
+          />
+        )}
+
+        {/* Property Request Form Modal */}
+        <PropertyRequestForm 
+          isOpen={showPropertyRequestForm}
+          onClose={() => setShowPropertyRequestForm(false)}
+        />
       </div>
     )
-  }
-
-  // If user is authenticated, show loading while redirecting
-  if (user) {
+  } catch (error) {
+    console.error('Error in Index component:', error)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to your dashboard...</p>
+      <div className="min-h-screen bg-red-50 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Page Error</h1>
+          <p className="text-red-500">Please check the console for more details.</p>
         </div>
       </div>
     )
   }
-
-  return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <HeroSection onStartTour={handleStartTour} />
-
-      {/* Value Proposition */}
-      <ValueProposition />
-
-      {/* How It Works */}
-      <HowItWorks />
-
-      {/* Trust Stories */}
-      <TrustStory />
-
-      {/* Industry Context - Why FirstLook Exists */}
-      <IndustryContext />
-
-      {/* Commission Explainer */}
-      <CommissionExplainer />
-
-      {/* Pricing Section */}
-      <PricingSection />
-
-      {/* FAQ Section */}
-      <FAQSection />
-
-      {/* Trust Indicators - moved towards bottom */}
-      <TrustIndicators />
-
-      {/* Final CTA Section */}
-      <FinalCTASection onRequestShowing={handleStartTour} />
-
-      {/* Tour Quota Banner - only show for authenticated users who exceeded quota */}
-      {user && tourQuota.isExceeded && !tourQuota.loading && (
-        <TourQuotaBanner 
-          used={tourQuota.used}
-          limit={tourQuota.limit}
-          planTier={user.user_metadata?.plan_tier || 'free'}
-        />
-      )}
-
-      {/* Property Request Form Modal */}
-      <PropertyRequestForm 
-        isOpen={showPropertyRequestForm}
-        onClose={() => setShowPropertyRequestForm(false)}
-      />
-    </div>
-  )
 }

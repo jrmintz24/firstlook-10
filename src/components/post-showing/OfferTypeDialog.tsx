@@ -2,13 +2,16 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { User, Zap, FileText } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { User, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import BuyerQualificationForm from "./BuyerQualificationForm";
 
 interface OfferTypeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectAgentAssisted: () => void;
-  onSelectFirstLookGenerator: () => void;
+  onSelectAgentAssisted: (qualificationData?: any) => void;
+  onSelectFirstLookGenerator: (qualificationData?: any) => void;
   agentName?: string;
   propertyAddress: string;
 }
@@ -21,73 +24,133 @@ const OfferTypeDialog = ({
   agentName,
   propertyAddress
 }: OfferTypeDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<'agent' | 'generator' | null>(null);
+  const [showQualificationForm, setShowQualificationForm] = useState(false);
 
-  const handleAgentAssisted = async () => {
-    setIsSubmitting(true);
-    await onSelectAgentAssisted();
-    setIsSubmitting(false);
+  const handleOptionSelect = (option: 'agent' | 'generator') => {
+    setSelectedOption(option);
+    setShowQualificationForm(true);
+  };
+
+  const handleQualificationSubmit = (qualificationData: any) => {
+    if (selectedOption === 'agent') {
+      onSelectAgentAssisted(qualificationData);
+    } else {
+      onSelectFirstLookGenerator(qualificationData);
+    }
     onClose();
   };
 
-  const handleFirstLookGenerator = async () => {
-    setIsSubmitting(true);
-    await onSelectFirstLookGenerator();
-    setIsSubmitting(false);
-    onClose();
-  };
+  if (showQualificationForm) {
+    return (
+      <BuyerQualificationForm
+        isOpen={isOpen}
+        onClose={() => {
+          setShowQualificationForm(false);
+          setSelectedOption(null);
+        }}
+        onSubmit={handleQualificationSubmit}
+        propertyAddress={propertyAddress}
+      />
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" />
-            Make an Offer on This Property
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Ready to make an offer on <strong>{propertyAddress}</strong>? Choose how you'd like to proceed:
+          <DialogTitle>How would you like to make your offer?</DialogTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            Choose the best approach for making an offer on {propertyAddress}
           </p>
+        </DialogHeader>
 
-          <div className="space-y-3">
-            {agentName && (
-              <Button
-                onClick={handleAgentAssisted}
-                disabled={isSubmitting}
-                className="w-full h-auto p-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <div className="flex items-start gap-3 text-left">
-                  <User className="h-5 w-5 mt-1 flex-shrink-0" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+          {/* Agent Assisted Option */}
+          {agentName && (
+            <Card className="cursor-pointer border-2 hover:border-blue-300 transition-colors" onClick={() => handleOptionSelect('agent')}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-blue-600" />
+                  </div>
                   <div>
-                    <div className="font-semibold">Work with {agentName}</div>
-                    <div className="text-sm opacity-90">
-                      Get personalized offer coaching and negotiation support from your tour agent
-                    </div>
+                    <h3 className="font-semibold">Work with {agentName}</h3>
+                    <Badge variant="secondary" className="text-xs">Recommended</Badge>
                   </div>
                 </div>
-              </Button>
-            )}
 
-            <Button
-              onClick={handleFirstLookGenerator}
-              disabled={isSubmitting}
-              variant="outline"
-              className="w-full h-auto p-4 border-2 border-orange-200 hover:bg-orange-50"
-            >
-              <div className="flex items-start gap-3 text-left">
-                <Zap className="h-5 w-5 mt-1 flex-shrink-0 text-orange-600" />
-                <div>
-                  <div className="font-semibold text-gray-900">Use FirstLook Offer Generator</div>
-                  <div className="text-sm text-gray-600">
-                    Create a competitive offer instantly with our automated tools
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Expert negotiation and market analysis</span>
                   </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Handle paperwork and legal details</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Up to 1% cash back at closing</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Ongoing support through closing</span>
+                  </div>
+                </div>
+
+                <Button className="w-full" variant="outline">
+                  <span>Choose Agent Assistance</span>
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* FirstLook Generator Option */}
+          <Card className="cursor-pointer border-2 hover:border-purple-300 transition-colors" onClick={() => handleOptionSelect('generator')}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">FirstLook Generator</h3>
+                  <Badge variant="secondary" className="text-xs">Fast & Easy</Badge>
                 </div>
               </div>
-            </Button>
-          </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>AI-powered offer analysis</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Instant competitive pricing</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Professional offer documents</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Submit offers in minutes</span>
+                </div>
+              </div>
+
+              <Button className="w-full" variant="outline">
+                <span>Use Offer Generator</span>
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex justify-center pt-4 border-t">
+          <Button variant="ghost" onClick={onClose}>
+            I'll decide later
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

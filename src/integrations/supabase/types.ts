@@ -67,6 +67,94 @@ export type Database = {
           },
         ]
       }
+      agent_notifications: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          notification_type: string
+          read_at: string | null
+          showing_request_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          read_at?: string | null
+          showing_request_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          read_at?: string | null
+          showing_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_notifications_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_referrals: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          commission_rate: number | null
+          created_at: string
+          id: string
+          referral_date: string
+          referral_type: string
+          showing_request_id: string | null
+          status: string
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          referral_date?: string
+          referral_type?: string
+          showing_request_id?: string | null
+          status?: string
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          commission_rate?: number | null
+          created_at?: string
+          id?: string
+          referral_date?: string
+          referral_type?: string
+          showing_request_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_referrals_showing_request_id_fkey"
+            columns: ["showing_request_id"]
+            isOneToOne: false
+            referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_sync_logs: {
         Row: {
           completed_at: string | null
@@ -389,7 +477,11 @@ export type Database = {
       offer_intents: {
         Row: {
           agent_id: string
+          agent_preference: string | null
           buyer_id: string
+          buyer_qualification: Json | null
+          consultation_requested: boolean | null
+          consultation_scheduled_at: string | null
           created_at: string | null
           id: string
           offer_type: string | null
@@ -398,7 +490,11 @@ export type Database = {
         }
         Insert: {
           agent_id: string
+          agent_preference?: string | null
           buyer_id: string
+          buyer_qualification?: Json | null
+          consultation_requested?: boolean | null
+          consultation_scheduled_at?: string | null
           created_at?: string | null
           id?: string
           offer_type?: string | null
@@ -407,7 +503,11 @@ export type Database = {
         }
         Update: {
           agent_id?: string
+          agent_preference?: string | null
           buyer_id?: string
+          buyer_qualification?: Json | null
+          consultation_requested?: boolean | null
+          consultation_scheduled_at?: string | null
           created_at?: string | null
           id?: string
           offer_type?: string | null
@@ -555,6 +655,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          agent_connected_at: string | null
+          agent_connected_id: string | null
+          budget_max: number | null
+          budget_min: number | null
+          buying_timeline: string | null
           created_at: string
           first_name: string | null
           free_showing_used: boolean | null
@@ -562,11 +667,20 @@ export type Database = {
           last_name: string | null
           license_number: string | null
           phone: string | null
+          pre_approval_amount: number | null
+          pre_approval_status: string | null
+          profile_status: string | null
+          qualification_updated_at: string | null
           subscription_status: string | null
           updated_at: string
           user_type: string | null
         }
         Insert: {
+          agent_connected_at?: string | null
+          agent_connected_id?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buying_timeline?: string | null
           created_at?: string
           first_name?: string | null
           free_showing_used?: boolean | null
@@ -574,11 +688,20 @@ export type Database = {
           last_name?: string | null
           license_number?: string | null
           phone?: string | null
+          pre_approval_amount?: number | null
+          pre_approval_status?: string | null
+          profile_status?: string | null
+          qualification_updated_at?: string | null
           subscription_status?: string | null
           updated_at?: string
           user_type?: string | null
         }
         Update: {
+          agent_connected_at?: string | null
+          agent_connected_id?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buying_timeline?: string | null
           created_at?: string
           first_name?: string | null
           free_showing_used?: boolean | null
@@ -586,11 +709,23 @@ export type Database = {
           last_name?: string | null
           license_number?: string | null
           phone?: string | null
+          pre_approval_amount?: number | null
+          pre_approval_status?: string | null
+          profile_status?: string | null
+          qualification_updated_at?: string | null
           subscription_status?: string | null
           updated_at?: string
           user_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_agent_connected_id_fkey"
+            columns: ["agent_connected_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       properties: {
         Row: {

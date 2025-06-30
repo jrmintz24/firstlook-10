@@ -1,247 +1,269 @@
+
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useAgentReferralSystem } from './useAgentReferralSystem';
 
-interface PostShowingActionData {
+interface HireAgentData {
+  showingId: string;
+  buyerId: string;
+  agentId: string;
+  propertyAddress: string;
+  agentName?: string;
+}
+
+interface MakeOfferData {
   showingId: string;
   buyerId: string;
   agentId?: string;
   propertyAddress: string;
   agentName?: string;
+  buyerQualification?: any;
 }
 
-interface EligibilityResult {
-  eligible: boolean;
-  reason: string;
-  active_showing_count?: number;
-  subscription_tier?: string;
+interface FavoritePropertyData {
+  showingId: string;
+  buyerId: string;
+  propertyAddress: string;
+  agentName?: string;
 }
 
 export const useEnhancedPostShowingActions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { createAgentReferral, sendAgentNotification, updateBuyerQualification } = useAgentReferralSystem();
 
   const scheduleAnotherTour = async (buyerId: string) => {
     try {
-      // Check showing eligibility
-      const { data: eligibility, error } = await supabase.rpc('check_showing_eligibility', {
+      setIsSubmitting(true);
+
+      // Check eligibility first
+      const { data: eligibility } = await supabase.rpc('check_showing_eligibility', {
         user_uuid: buyerId
       });
 
-      if (error) throw error;
+      // Track the action
+      await supabase.from('post_showing_actions').insert({
+        showing_request_id: '',
+        buyer_id: buyerId,
+        action_type: 'schedule_another_tour',
+        action_details: { eligibility }
+      });
 
-      // Cast the Json response to our expected type
-      const eligibilityResult = eligibility as unknown as EligibilityResult;
-
-      if (eligibilityResult.eligible) {
-        // Direct to tour request - user can book independently
-        navigate('/');
+      if (eligibility?.eligible) {
         toast({
-          title: "Ready to Schedule!",
-          description: "You can request another tour anytime. Let's find your next property!",
+          title: "Ready for Another Tour!",
+          description: "You can schedule another tour right away.",
+        });
+      } else if (eligibility?.reason === 'free_showing_used') {
+        toast({
+          title: "Subscribe to Continue",
+          description: "Your free tour has been used. Subscribe to schedule unlimited tours.",
         });
       } else {
-        // Show subscription upgrade modal
         toast({
-          title: "Subscription Required",
-          description: "To schedule more tours, please upgrade your subscription.",
-          variant: "destructive"
+          title: "Tour Scheduled",
+          description: "Redirecting you to find your next property...",
         });
-        // Could trigger subscription modal here
       }
 
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          showing_request_id: buyerId, // This should be showing ID, not buyer ID
-          buyer_id: buyerId,
-          action_type: 'schedule_another_tour'
-        });
-
+      // Navigate to home page for new search
+      navigate('/');
     } catch (error) {
-      console.error('Error checking tour eligibility:', error);
+      console.error('Error in scheduleAnotherTour:', error);
       toast({
         title: "Error",
-        description: "Failed to check tour eligibility. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const hireAgent = async (data: PostShowingActionData) => {
-    if (!data.agentId) return;
-
-    setIsSubmitting(true);
-    try {
-      // Create buyer-agent match and reveal contact info
-      const { error: matchError } = await supabase
-        .from('buyer_agent_matches')
-        .insert({
-          buyer_id: data.buyerId,
-          agent_id: data.agentId,
-          showing_request_id: data.showingId,
-          match_source: 'post_showing'
-        });
-
-      if (matchError) throw matchError;
-
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          showing_request_id: data.showingId,
-          buyer_id: data.buyerId,
-          action_type: 'hire_agent',
-          action_details: {
-            agent_id: data.agentId,
-            agent_name: data.agentName
-          }
-        });
-
-      toast({
-        title: "Agent Hired!",
-        description: `${data.agentName || 'Your agent'} has been notified and will contact you soon with next steps.`,
-      });
-
-    } catch (error) {
-      console.error('Error hiring agent:', error);
-      toast({
-        title: "Error",
-        description: "Failed to connect with agent. Please try again.",
-        variant: "destructive"
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const makeOfferAgentAssisted = async (data: PostShowingActionData) => {
-    if (!data.agentId) return;
-
-    setIsSubmitting(true);
+  const hireAgent = async (data: HireAgentData) => {
     try {
+      setIsSubmitting(true);
+
+      // Create agent referral
+      const referralResult = await createAgentReferral({
+        buyerId: data.buyerId,
+        agentId: data.agentId,
+        showingRequestId: data.showingId,
+        referralType: 'hire_agent'
+      });
+
+      if (!referralResult.success) {
+        throw new Error('Failed to create agent referral');
+      }
+
+      // Send notification to agent
+      await sendAgentNotification({
+        agentId: data.agentId,
+        buyerId: data.buyerId,
+        showingRequestId: data.showingId,
+        notificationType: 'hire_agent',
+        message: `Buyer wants to work with you as their agent after touring ${data.propertyAddress}`,
+        metadata: {
+          propertyAddress: data.propertyAddress,
+          action: 'hire_agent'
+        }
+      });
+
+      // Track the action
+      await supabase.from('post_showing_actions').insert({
+        showing_request_id: data.showingId,
+        buyer_id: data.buyerId,
+        action_type: 'hire_agent',
+        action_details: {
+          agent_id: data.agentId,
+          agent_name: data.agentName,
+          property_address: data.propertyAddress
+        }
+      });
+
+      toast({
+        title: "Agent Connected!",
+        description: `${data.agentName} will be in touch soon to discuss working together.`,
+      });
+
+    } catch (error) {
+      console.error('Error in hireAgent:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Unable to connect with agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const makeOfferAgentAssisted = async (data: MakeOfferData) => {
+    try {
+      setIsSubmitting(true);
+
       // Create offer intent with agent assistance
       const { error: offerError } = await supabase
         .from('offer_intents')
         .insert({
           buyer_id: data.buyerId,
-          agent_id: data.agentId,
+          agent_id: data.agentId!,
           showing_request_id: data.showingId,
           property_address: data.propertyAddress,
-          offer_type: 'agent_assisted'
+          offer_type: 'agent_assisted',
+          agent_preference: 'use_assigned_agent',
+          buyer_qualification: data.buyerQualification
         });
 
       if (offerError) throw offerError;
 
-      // Also create buyer-agent match to reveal contact info
-      await supabase
-        .from('buyer_agent_matches')
-        .insert({
-          buyer_id: data.buyerId,
-          agent_id: data.agentId,
-          showing_request_id: data.showingId,
-          match_source: 'offer_intent'
-        });
+      // Update buyer qualification if provided
+      if (data.buyerQualification) {
+        await updateBuyerQualification(data.buyerId, data.buyerQualification);
+      }
 
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          showing_request_id: data.showingId,
-          buyer_id: data.buyerId,
-          action_type: 'make_offer_agent_assisted',
-          action_details: {
-            agent_id: data.agentId,
-            property_address: data.propertyAddress
+      // Send notification to agent
+      if (data.agentId) {
+        await sendAgentNotification({
+          agentId: data.agentId,
+          buyerId: data.buyerId,
+          showingRequestId: data.showingId,
+          notificationType: 'offer_request',
+          message: `Buyer wants to make an offer on ${data.propertyAddress} with your assistance`,
+          metadata: {
+            propertyAddress: data.propertyAddress,
+            offerType: 'agent_assisted',
+            buyerQualification: data.buyerQualification
           }
         });
+      }
+
+      // Track the action
+      await supabase.from('post_showing_actions').insert({
+        showing_request_id: data.showingId,
+        buyer_id: data.buyerId,
+        action_type: 'make_offer_agent_assisted',
+        action_details: {
+          agent_id: data.agentId,
+          property_address: data.propertyAddress,
+          buyer_qualification: data.buyerQualification
+        }
+      });
 
       toast({
         title: "Offer Request Sent!",
-        description: `${data.agentName || 'Your agent'} will contact you to help create a competitive offer.`,
+        description: `${data.agentName} will help you prepare and submit a competitive offer.`,
       });
 
     } catch (error) {
-      console.error('Error creating agent-assisted offer:', error);
+      console.error('Error in makeOfferAgentAssisted:', error);
       toast({
-        title: "Error",
-        description: "Failed to request offer assistance. Please try again.",
-        variant: "destructive"
+        title: "Offer Request Failed",
+        description: "Unable to process offer request. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const makeOfferFirstLook = async (data: PostShowingActionData) => {
-    setIsSubmitting(true);
+  const makeOfferFirstLook = async (data: MakeOfferData) => {
     try {
+      setIsSubmitting(true);
+
       // Create offer intent with FirstLook generator
       const { error: offerError } = await supabase
         .from('offer_intents')
         .insert({
           buyer_id: data.buyerId,
-          agent_id: data.agentId || null,
+          agent_id: data.agentId || '',
           showing_request_id: data.showingId,
           property_address: data.propertyAddress,
-          offer_type: 'firstlook_generator'
+          offer_type: 'firstlook_generator',
+          buyer_qualification: data.buyerQualification
         });
 
       if (offerError) throw offerError;
 
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          showing_request_id: data.showingId,
-          buyer_id: data.buyerId,
-          action_type: 'make_offer_firstlook',
-          action_details: {
-            property_address: data.propertyAddress
-          }
-        });
+      // Update buyer qualification if provided
+      if (data.buyerQualification) {
+        await updateBuyerQualification(data.buyerId, data.buyerQualification);
+      }
 
-      toast({
-        title: "Redirecting to Offer Generator",
-        description: "Creating your competitive offer automatically...",
+      // Track the action
+      await supabase.from('post_showing_actions').insert({
+        showing_request_id: data.showingId,
+        buyer_id: data.buyerId,
+        action_type: 'make_offer_firstlook',
+        action_details: {
+          property_address: data.propertyAddress,
+          buyer_qualification: data.buyerQualification
+        }
       });
 
-      // Redirect to FirstLook offer generator (placeholder)
-      // navigate('/offer-generator');
+      toast({
+        title: "Offer Generator Started!",
+        description: "We'll help you create a competitive offer using our FirstLook tools.",
+      });
 
     } catch (error) {
-      console.error('Error creating FirstLook offer:', error);
+      console.error('Error in makeOfferFirstLook:', error);
       toast({
-        title: "Error",
-        description: "Failed to access offer generator. Please try again.",
-        variant: "destructive"
+        title: "Offer Generator Failed",
+        description: "Unable to start offer generator. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const favoriteProperty = async (data: PostShowingActionData, notes?: string) => {
-    setIsSubmitting(true);
+  const favoriteProperty = async (data: FavoritePropertyData, notes?: string) => {
     try {
-      // Check if already favorited
-      const { data: existing } = await supabase
-        .from('property_favorites')
-        .select('id')
-        .eq('buyer_id', data.buyerId)
-        .eq('property_address', data.propertyAddress)
-        .maybeSingle();
-
-      if (existing) {
-        toast({
-          title: "Already Favorited",
-          description: "This property is already in your favorites.",
-        });
-        return;
-      }
+      setIsSubmitting(true);
 
       // Add to favorites
       const { error: favoriteError } = await supabase
@@ -255,30 +277,28 @@ export const useEnhancedPostShowingActions = () => {
 
       if (favoriteError) throw favoriteError;
 
-      // Record the action
-      await supabase
-        .from('post_showing_actions')
-        .insert({
-          showing_request_id: data.showingId,
-          buyer_id: data.buyerId,
-          action_type: 'favorite_property',
-          action_details: {
-            property_address: data.propertyAddress,
-            notes: notes
-          }
-        });
+      // Track the action
+      await supabase.from('post_showing_actions').insert({
+        showing_request_id: data.showingId,
+        buyer_id: data.buyerId,
+        action_type: 'favorite_property',
+        action_details: {
+          property_address: data.propertyAddress,
+          notes: notes
+        }
+      });
 
       toast({
         title: "Property Favorited!",
-        description: "Added to your favorites list for easy reference.",
+        description: "Added to your favorites. We'll keep you updated on similar properties.",
       });
 
     } catch (error) {
-      console.error('Error favoriting property:', error);
+      console.error('Error in favoriteProperty:', error);
       toast({
-        title: "Error",
-        description: "Failed to favorite property. Please try again.",
-        variant: "destructive"
+        title: "Save Failed",
+        description: "Unable to save property to favorites. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);

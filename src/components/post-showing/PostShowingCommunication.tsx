@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
 import OfferTypeDialog from "./OfferTypeDialog";
+import AgentProfileModal from "./AgentProfileModal";
 
 interface PostShowingCommunicationProps {
   showingId: string;
@@ -27,6 +28,7 @@ const PostShowingCommunication = ({
   onActionTaken
 }: PostShowingCommunicationProps) => {
   const [showOfferDialog, setShowOfferDialog] = useState(false);
+  const [showAgentProfile, setShowAgentProfile] = useState(false);
   const [favoriteNotes, setFavoriteNotes] = useState("");
   const [showNotesInput, setShowNotesInput] = useState(false);
   const { toast } = useToast();
@@ -53,7 +55,7 @@ const PostShowingCommunication = ({
   const getShowingDetails = async () => {
     const { data: showing } = await supabase
       .from('showing_requests')
-      .select('assigned_agent_id')
+      .select('assigned_agent_id, assigned_agent_email, assigned_agent_phone')
       .eq('id', showingId)
       .single();
     
@@ -68,7 +70,11 @@ const PostShowingCommunication = ({
     if (onActionTaken) onActionTaken();
   };
 
-  const handleHireAgent = async () => {
+  const handleHireAgentClick = () => {
+    setShowAgentProfile(true);
+  };
+
+  const handleConfirmHireAgent = async () => {
     const user = await getCurrentUser();
     const showing = await getShowingDetails();
     if (!user || !showing?.assigned_agent_id) return;
@@ -80,6 +86,8 @@ const PostShowingCommunication = ({
       propertyAddress,
       agentName
     });
+    
+    setShowAgentProfile(false);
     if (onActionTaken) onActionTaken();
   };
 
@@ -87,7 +95,7 @@ const PostShowingCommunication = ({
     setShowOfferDialog(true);
   };
 
-  const handleOfferAgentAssisted = async () => {
+  const handleOfferAgentAssisted = async (qualificationData?: any) => {
     const user = await getCurrentUser();
     const showing = await getShowingDetails();
     if (!user || !showing?.assigned_agent_id) return;
@@ -97,12 +105,13 @@ const PostShowingCommunication = ({
       buyerId: user.id,
       agentId: showing.assigned_agent_id,
       propertyAddress,
-      agentName
+      agentName,
+      buyerQualification: qualificationData
     });
     if (onActionTaken) onActionTaken();
   };
 
-  const handleOfferFirstLook = async () => {
+  const handleOfferFirstLook = async (qualificationData?: any) => {
     const user = await getCurrentUser();
     const showing = await getShowingDetails();
     if (!user) return;
@@ -112,7 +121,8 @@ const PostShowingCommunication = ({
       buyerId: user.id,
       agentId: showing?.assigned_agent_id,
       propertyAddress,
-      agentName
+      agentName,
+      buyerQualification: qualificationData
     });
     if (onActionTaken) onActionTaken();
   };
@@ -170,7 +180,7 @@ const PostShowingCommunication = ({
                 
                 {agentName && (
                   <Button
-                    onClick={handleHireAgent}
+                    onClick={handleHireAgentClick}
                     disabled={isSubmitting}
                     variant="outline"
                     className="h-auto p-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
@@ -268,6 +278,14 @@ const PostShowingCommunication = ({
         onSelectFirstLookGenerator={handleOfferFirstLook}
         agentName={agentName}
         propertyAddress={propertyAddress}
+      />
+
+      <AgentProfileModal
+        isOpen={showAgentProfile}
+        onClose={() => setShowAgentProfile(false)}
+        onConfirmHire={handleConfirmHireAgent}
+        agentName={agentName}
+        isSubmitting={isSubmitting}
       />
     </>
   );

@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useState } from "react";
@@ -76,10 +77,10 @@ const RedesignedBuyerDashboard = () => {
   // Show loading while auth is being determined
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Checking authentication...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="text-lg mb-4 text-gray-900">Checking authentication...</div>
         </div>
       </div>
     );
@@ -87,11 +88,11 @@ const RedesignedBuyerDashboard = () => {
 
   if (!user && !session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="text-lg mb-4">Please sign in to view your dashboard</div>
+          <div className="text-lg mb-4 text-gray-900">Please sign in to view your dashboard</div>
           <Link to="/">
-            <Button>Go to Home</Button>
+            <Button className="bg-black hover:bg-gray-800 text-white">Go to Home</Button>
           </Link>
         </div>
       </div>
@@ -100,10 +101,10 @@ const RedesignedBuyerDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Loading your dashboard...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="text-lg mb-4 text-gray-900">Loading your dashboard...</div>
         </div>
       </div>
     );
@@ -152,7 +153,7 @@ const RedesignedBuyerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-white" style={{ backgroundColor: '#f9fafe' }}>
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <RedesignedDashboardHeader 
         displayName={displayName} 
@@ -171,12 +172,12 @@ const RedesignedBuyerDashboard = () => {
         </div>
 
         {/* Your Journey Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-gray-700" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Your Journey</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">Your Journey</h2>
           </div>
           
           <NextTourCard 
@@ -188,12 +189,12 @@ const RedesignedBuyerDashboard = () => {
         {/* Active Tours Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Requested Tours */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <div className="bg-white border border-gray-200 rounded-lg p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-orange-600" />
+              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-4 h-4 text-gray-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-semibold text-gray-900">
                 Requested Tours ({pendingRequests.length})
               </h3>
             </div>
@@ -215,19 +216,19 @@ const RedesignedBuyerDashboard = () => {
             />
             
             {pendingRequests.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-indigo-600 hover:bg-indigo-50" onClick={() => setActiveTab("requested")}>
+              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("requested")}>
                 View All ({pendingRequests.length})
               </Button>
             )}
           </div>
 
           {/* Confirmed Tours */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <div className="bg-white border border-gray-200 rounded-lg p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-gray-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-semibold text-gray-900">
                 Confirmed Tours ({activeShowings.length})
               </h3>
             </div>
@@ -250,7 +251,7 @@ const RedesignedBuyerDashboard = () => {
             />
             
             {activeShowings.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-indigo-600 hover:bg-indigo-50" onClick={() => setActiveTab("confirmed")}>
+              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("confirmed")}>
                 View All ({activeShowings.length})
               </Button>
             )}
@@ -258,12 +259,12 @@ const RedesignedBuyerDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <Home className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <Home className="w-5 h-5 text-gray-700" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
           </div>
           
           <QuickActionsRow 
@@ -274,7 +275,7 @@ const RedesignedBuyerDashboard = () => {
         </div>
 
         {/* What's Next */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
           <WhatsNextCard 
             hasUpcomingTour={!!nextTour}
             hasCompletedTours={stats.toursCompleted}
@@ -283,12 +284,12 @@ const RedesignedBuyerDashboard = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-gray-700" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Your Progress</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">Your Progress</h2>
           </div>
           
           <StatsAndMessages 

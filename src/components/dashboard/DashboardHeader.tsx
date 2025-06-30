@@ -11,11 +11,11 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ displayName, onRequestShowing, userType = 'buyer' }: DashboardHeaderProps) => {
   return (
-    <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
+    <div className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-3 sm:px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <Link to="/" className="text-xl sm:text-2xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            <Link to="/" className="text-xl sm:text-2xl font-semibold text-black">
               FirstLook
             </Link>
             <p className="text-gray-600 mt-1 font-medium text-sm sm:text-base">
@@ -23,8 +23,8 @@ const DashboardHeader = ({ displayName, onRequestShowing, userType = 'buyer' }: 
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-              userType === 'agent' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'
+            <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${
+              userType === 'agent' ? 'bg-white border-gray-300 text-gray-700' : 'bg-white border-gray-300 text-gray-700'
             }`}>
               {userType === 'agent' ? 'Agent' : 'Buyer'}
             </div>
@@ -36,7 +36,7 @@ const DashboardHeader = ({ displayName, onRequestShowing, userType = 'buyer' }: 
               <Button 
                 onClick={onRequestShowing}
                 size="sm"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
+                className="bg-black hover:bg-gray-800 text-white font-medium"
               >
                 New Tour
               </Button>

@@ -24,9 +24,9 @@ const ModernHeader = ({
 }: ModernHeaderProps) => {
   const getUserTypeColor = () => {
     switch (userType) {
-      case 'agent': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'admin': return 'bg-red-50 text-red-700 border-red-200';
-      default: return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'agent': return 'bg-white text-gray-700 border-gray-300';
+      case 'admin': return 'bg-white text-gray-700 border-gray-300';
+      default: return 'bg-white text-gray-700 border-gray-300';
     }
   };
 
@@ -35,11 +35,11 @@ const ModernHeader = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-6">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="text-2xl font-bold text-gray-900">
+            <Link to="/" className="text-2xl font-semibold text-black">
               FirstLook
             </Link>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+              <h1 className="text-xl font-medium text-gray-900">{title}</h1>
               {subtitle && (
                 <p className="text-sm text-gray-600 mt-1">{subtitle}</p>
               )}
@@ -77,7 +77,7 @@ const ModernHeader = ({
             
             {/* Primary Action */}
             {onPrimaryAction && primaryActionText && (
-              <Button onClick={onPrimaryAction} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={onPrimaryAction} className="bg-black hover:bg-gray-800 text-white">
                 {primaryActionText}
               </Button>
             )}

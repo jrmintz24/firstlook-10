@@ -60,17 +60,19 @@ const InteractiveButton = ({
   const handleMouseUp = () => setIsPressed(false);
   const handleMouseLeave = () => setIsPressed(false);
 
-  // Toned down styling for more balanced look
+  // Minimal black and white styling with strategic colors
   const getVariantStyles = () => {
     switch (variant) {
       case "outline":
-        return "border bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-md transition-all duration-200";
+        return "bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200";
       case "ghost":
-        return "bg-transparent hover:bg-gray-100/80 transition-all duration-200";
+        return "bg-transparent text-gray-700 hover:bg-gray-100 transition-all duration-200";
       case "secondary":
-        return "bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-all duration-200";
+        return "bg-gray-100 text-gray-900 border border-gray-200 hover:bg-gray-200 transition-all duration-200";
+      case "destructive":
+        return "bg-red-600 text-white hover:bg-red-700 transition-all duration-200";
       default:
-        return "bg-gradient-to-r shadow-md hover:shadow-lg transition-all duration-200";
+        return "bg-black text-white hover:bg-gray-800 transition-all duration-200";
     }
   };
 
@@ -85,9 +87,9 @@ const InteractiveButton = ({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       className={`
-        relative overflow-hidden transition-all duration-200 rounded-lg
-        ${isPressed ? 'scale-98' : 'scale-100'}
-        ${success ? 'bg-green-600 hover:bg-green-700' : ''}
+        relative overflow-hidden transition-all duration-200 rounded-lg font-medium
+        ${isPressed ? 'scale-95' : 'scale-100'}
+        ${success ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
         ${loading ? 'cursor-wait' : ''}
         ${getVariantStyles()}
         ${className}
@@ -97,7 +99,7 @@ const InteractiveButton = ({
       {ripples.map(ripple => (
         <span
           key={ripple.id}
-          className="absolute bg-white/30 rounded-full pointer-events-none animate-ping"
+          className="absolute bg-white/20 rounded-full pointer-events-none animate-ping"
           style={{
             left: ripple.x - 10,
             top: ripple.y - 10,

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,38 +76,50 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
         <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Pending Tours</p>
-                    <p className="text-2xl font-bold text-orange-600">{pendingShowings.length}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Pending Tours</p>
+                    <p className="text-3xl font-bold text-orange-600 leading-none">
+                      {pendingShowings.length}
+                    </p>
                   </div>
-                  <Clock className="h-8 w-8 text-orange-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <Clock className="h-8 w-8 text-orange-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="p-4">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Upcoming Tours</p>
-                    <p className="text-2xl font-bold text-blue-600">{upcomingShowings.length}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Upcoming Tours</p>
+                    <p className="text-3xl font-bold text-blue-600 leading-none">
+                      {upcomingShowings.length}
+                    </p>
                   </div>
-                  <Calendar className="h-8 w-8 text-blue-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <Calendar className="h-8 w-8 text-blue-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="p-4">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Completed Tours</p>
-                    <p className="text-2xl font-bold text-green-600">{completedShowingsList.length}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Completed Tours</p>
+                    <p className="text-3xl font-bold text-green-600 leading-none">
+                      {completedShowingsList.length}
+                    </p>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -47,31 +47,47 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-900">{showingStats.total}</div>
-            <div className="text-sm text-gray-600">Tours Completed</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-900 leading-none mb-1">
+                {showingStats.total}
+              </div>
+              <div className="text-sm text-gray-600">Tours Completed</div>
+            </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-900">{showingStats.favorites}</div>
-            <div className="text-sm text-gray-600">Properties Favorited</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-900 leading-none mb-1">
+                {showingStats.favorites}
+              </div>
+              <div className="text-sm text-gray-600">Properties Favorited</div>
+            </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-900">{showingStats.agentConnections}</div>
-            <div className="text-sm text-gray-600">Agent Connections</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-900 leading-none mb-1">
+                {showingStats.agentConnections}
+              </div>
+              <div className="text-sm text-gray-600">Agent Connections</div>
+            </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-900">{showingStats.withActions}</div>
-            <div className="text-sm text-gray-600">Actions Taken</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-900 leading-none mb-1">
+                {showingStats.withActions}
+              </div>
+              <div className="text-sm text-gray-600">Actions Taken</div>
+            </div>
           </CardContent>
         </Card>
       </div>

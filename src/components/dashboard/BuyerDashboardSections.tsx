@@ -1,18 +1,32 @@
+
 import { Clock, CheckCircle, Calendar, MessageSquare, User, FileText, Home } from "lucide-react";
 import React from "react";
-import { ShowingRequest } from "@/types";
 
-import ShowingList from "./ShowingList";
-import ProfileCard from "./ProfileCard";
-import MessagingInterface from "@/components/messaging/MessagingInterface";
 import EmptyStateCard from "./EmptyStateCard";
 import OfferManagementDashboard from '@/components/offer-management/OfferManagementDashboard';
+
+interface ShowingRequest {
+  id: string;
+  property_address: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  message: string | null;
+  status: string;
+  created_at: string;
+  assigned_agent_name?: string | null;
+  assigned_agent_phone?: string | null;
+  assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
+  estimated_confirmation_date?: string | null;
+  status_updated_at?: string | null;
+  user_id?: string | null;
+}
 
 interface BuyerDashboardSectionsProps {
   pendingRequests: ShowingRequest[];
   activeShowings: ShowingRequest[];
   completedShowings: ShowingRequest[];
-  agreements: { [showing_request_id: string]: boolean };
+  agreements: Record<string, boolean>;
   currentUser: any;
   profile: any;
   displayName: string;
@@ -69,26 +83,27 @@ export const generateBuyerDashboardSections = ({
     icon: Clock,
     count: pendingRequests.length,
     content: (
-      <ShowingList
-        title="Pending Tour Requests"
-        showings={pendingRequests}
-        emptyState={
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Pending Tour Requests</h2>
+        {pendingRequests.length === 0 ? (
           <EmptyStateCard
             icon={Clock}
             title="No Pending Tours"
             description="You don't have any pending tour requests."
             buttonText="Request a Tour"
-            onClick={onRequestShowing}
+            onButtonClick={onRequestShowing}
           />
-        }
-        onCancelShowing={onCancelShowing}
-        onRescheduleShowing={onRescheduleShowing}
-        onConfirmShowing={onConfirmShowing}
-        fetchShowingRequests={fetchShowingRequests}
-        onSendMessage={onSendMessage}
-        agreements={agreements}
-        onSignAgreement={onSignAgreement}
-      />
+        ) : (
+          <div className="space-y-4">
+            {pendingRequests.map((showing) => (
+              <div key={showing.id} className="p-4 border rounded-lg">
+                <h3 className="font-medium">{showing.property_address}</h3>
+                <p className="text-sm text-gray-600">Status: {showing.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     )
   };
 
@@ -98,26 +113,27 @@ export const generateBuyerDashboardSections = ({
     icon: Calendar,
     count: activeShowings.length,
     content: (
-      <ShowingList
-        title="Upcoming Tours"
-        showings={activeShowings}
-        emptyState={
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Upcoming Tours</h2>
+        {activeShowings.length === 0 ? (
           <EmptyStateCard
             icon={Calendar}
             title="No Upcoming Tours"
             description="You don't have any upcoming tours scheduled."
             buttonText="Request a Tour"
-            onClick={onRequestShowing}
+            onButtonClick={onRequestShowing}
           />
-        }
-        onCancelShowing={onCancelShowing}
-        onRescheduleShowing={onRescheduleShowing}
-        onConfirmShowing={onConfirmShowing}
-        fetchShowingRequests={fetchShowingRequests}
-        onSendMessage={onSendMessage}
-        agreements={agreements}
-        onSignAgreement={onSignAgreement}
-      />
+        ) : (
+          <div className="space-y-4">
+            {activeShowings.map((showing) => (
+              <div key={showing.id} className="p-4 border rounded-lg">
+                <h3 className="font-medium">{showing.property_address}</h3>
+                <p className="text-sm text-gray-600">Status: {showing.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     )
   };
 
@@ -126,7 +142,7 @@ export const generateBuyerDashboardSections = ({
     title: "Messages",
     icon: MessageSquare,
     count: unreadCount,
-    content: <MessagingInterface userId={currentUser?.id} userType="buyer" />
+    content: <div className="p-4">Messages content coming soon...</div>
   };
 
   const historySection: DashboardSection = {
@@ -135,23 +151,27 @@ export const generateBuyerDashboardSections = ({
     icon: CheckCircle,
     count: completedShowings.length,
     content: (
-      <ShowingList
-        title="Tour History"
-        showings={completedShowings}
-        emptyState={
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Tour History</h2>
+        {completedShowings.length === 0 ? (
           <EmptyStateCard
             icon={CheckCircle}
             title="No Tour History"
             description="You haven't completed any tours yet."
             buttonText="Request a Tour"
-            onClick={onRequestShowing}
+            onButtonClick={onRequestShowing}
           />
-        }
-        showActions={false}
-        onSendMessage={onSendMessage}
-        agreements={agreements}
-        onSignAgreement={onSignAgreement}
-      />
+        ) : (
+          <div className="space-y-4">
+            {completedShowings.map((showing) => (
+              <div key={showing.id} className="p-4 border rounded-lg">
+                <h3 className="font-medium">{showing.property_address}</h3>
+                <p className="text-sm text-gray-600">Status: {showing.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     )
   };
 
@@ -159,7 +179,12 @@ export const generateBuyerDashboardSections = ({
     id: "profile",
     title: "Profile",
     icon: User,
-    content: <ProfileCard profile={profile} displayName={displayName} />
+    content: (
+      <div className="p-4">
+        <h2 className="text-xl font-semibold">Profile</h2>
+        <p>Welcome, {displayName}!</p>
+      </div>
+    )
   };
 
   // Add the offers section

@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
@@ -52,21 +53,16 @@ const BuyerDashboard = () => {
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
 
-  // Convert agreements record to array format expected by sections
-  const agreementsArray = Object.entries(agreements).map(([showing_request_id, signed]) => ({
-    id: `agreement-${showing_request_id}`,
-    showing_request_id,
-    signed,
-    signed_at: signed ? new Date().toISOString() : null,
-    agreement_type: 'single_tour',
-    created_at: new Date().toISOString()
-  }));
+  // Convert agreements record to the expected format for sections
+  const agreementsRecord = Object.fromEntries(
+    Object.entries(agreements).map(([key, value]) => [key, value])
+  );
 
   const sectionsArray = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
     completedShowings,
-    agreements: agreementsArray,
+    agreements: agreementsRecord,
     currentUser,
     profile,
     displayName,
@@ -76,8 +72,8 @@ const BuyerDashboard = () => {
     onRescheduleShowing: handleRescheduleShowing,
     onConfirmShowing: handleConfirmShowingWithModal,
     fetchShowingRequests,
-    onSendMessage: handleSendMessage,
-    onSignAgreement: handleSignAgreementFromCard
+    onSendMessage: (showing) => handleSendMessage(showing.id),
+    onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName)
   });
 
   // Convert array to sections object expected by ModernDashboardLayout

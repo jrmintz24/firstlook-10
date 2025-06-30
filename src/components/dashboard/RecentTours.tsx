@@ -1,38 +1,30 @@
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Clock, 
-  CheckCircle, 
-  Calendar, 
   MapPin, 
-  MessageCircle,
-  CalendarX,
-  DollarSign,
-  Eye,
-  FileText
+  Calendar, 
+  Clock, 
+  MessageCircle, 
+  FileText, 
+  CheckCircle2,
+  AlertCircle,
+  User,
+  Phone
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-
-interface ShowingRequest {
-  id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_id?: string | null;
-  assigned_agent_name?: string | null;
-}
+import PostShowingActions from "./PostShowingActions";
+import { usePostShowingDashboardData } from "@/hooks/usePostShowingDashboardData";
 
 interface RecentToursProps {
-  pendingRequests: ShowingRequest[];
-  activeShowings: ShowingRequest[];
-  completedShowings: ShowingRequest[];
-  onChatWithAgent: (showing: ShowingRequest) => void;
-  onReschedule: (showing: ShowingRequest) => void;
+  pendingRequests: any[];
+  activeShowings: any[];
+  completedShowings: any[];
+  onChatWithAgent: (showing: any) => void;
+  onReschedule: (showing: any) => void;
   onMakeOffer: (propertyAddress: string) => void;
-  onConfirmShowing?: (showing: ShowingRequest) => void;
+  onConfirmShowing: (showing: any) => void;
 }
 
 const RecentTours = ({
@@ -44,257 +36,211 @@ const RecentTours = ({
   onMakeOffer,
   onConfirmShowing
 }: RecentToursProps) => {
+  const [expandedShowing, setExpandedShowing] = useState<string | null>(null);
+  
+  // Get current user ID for dashboard data
+  const currentUserId = pendingRequests[0]?.user_id || activeShowings[0]?.user_id || completedShowings[0]?.user_id || '';
+  const { actionsSummary } = usePostShowingDashboardData(currentUserId);
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-      case 'submitted':
-      case 'under_review':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'agent_assigned':
-        return 'bg-blue-100 text-blue-800';
-      case 'confirmed':
-      case 'agent_confirmed':
-      case 'scheduled':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-gray-100 text-gray-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
-      case 'submitted':
-        return 'Pending Review';
-      case 'under_review':
-        return 'Under Review';
-      case 'agent_assigned':
-        return 'Agent Assigned';
-      case 'confirmed':
-      case 'agent_confirmed':
-        return 'Confirmed';
-      case 'scheduled':
-        return 'Scheduled';
-      case 'completed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Cancelled';
-      default:
-        return status;
+      case 'pending': return <AlertCircle className="w-3 h-3" />;
+      case 'confirmed': return <Calendar className="w-3 h-3" />;
+      case 'completed': return <CheckCircle2 className="w-3 h-3" />;
+      default: return <Clock className="w-3 h-3" />;
     }
   };
 
-  const renderShowingCard = (showing: ShowingRequest, type: 'pending' | 'active' | 'completed') => (
-    <Card key={showing.id} className="hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <span className="font-medium truncate">{showing.property_address}</span>
-          </div>
-          <Badge className={`text-xs ${getStatusColor(showing.status)}`}>
-            {getStatusText(showing.status)}
-          </Badge>
-        </div>
+  const renderShowingCard = (showing: any) => {
+    const isExpanded = expandedShowing === showing.id;
+    
+    return (
+      <Card key={showing.id} className="border-gray-200 hover:border-gray-300 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-gray-500" />
+                <h3 className="font-medium text-gray-900 truncate">{showing.property_address}</h3>
+              </div>
+              
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                {showing.preferred_date && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(showing.preferred_date).toLocaleDateString()}
+                  </div>
+                )}
+                {showing.preferred_time && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {showing.preferred_time}
+                  </div>
+                )}
+              </div>
 
-        {showing.preferred_date && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-            <Calendar className="h-4 w-4" />
-            {new Date(showing.preferred_date).toLocaleDateString()}
-            {showing.preferred_time && (
-              <span>at {showing.preferred_time}</span>
+              {showing.assigned_agent_name && (
+                <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                  <User className="w-3 h-3" />
+                  <span>Agent: {showing.assigned_agent_name}</span>
+                </div>
+              )}
+            </div>
+
+            <Badge className={`${getStatusColor(showing.status)} border`}>
+              {getStatusIcon(showing.status)}
+              <span className="ml-1 capitalize">{showing.status}</span>
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {showing.status === 'pending' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onConfirmShowing(showing)}
+              >
+                Confirm Tour
+              </Button>
             )}
-          </div>
-        )}
 
-        {showing.assigned_agent_name && (
-          <div className="text-sm text-gray-600 mb-3">
-            Agent: {showing.assigned_agent_name}
-          </div>
-        )}
-
-        <div className="text-xs text-gray-500 mb-4">
-          Requested {formatDistanceToNow(new Date(showing.created_at), { addSuffix: true })}
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {type === 'pending' && (
-            <>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => onReschedule(showing)}
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-              >
-                <CalendarX className="w-4 h-4 mr-1" />
-                Reschedule
-              </Button>
-            </>
-          )}
-
-          {type === 'active' && (
-            <>
-              {showing.assigned_agent_id && (
-                <Button 
-                  size="sm" 
+            {showing.status === 'confirmed' && (
+              <>
+                <Button
                   variant="outline"
-                  onClick={() => onChatWithAgent(showing)}
-                  className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                  size="sm"
+                  onClick={() => onReschedule(showing)}
                 >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  Chat
+                  Reschedule
                 </Button>
-              )}
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => onReschedule(showing)}
-                className="text-blue-600 border-blue-600 hover:bg-blue-50"
-              >
-                <CalendarX className="w-4 h-4 mr-1" />
-                Reschedule
-              </Button>
-              {/* Enhanced handling for awaiting_agreement status */}
-              {showing.status === 'awaiting_agreement' && onConfirmShowing && (
-                <Button 
-                  size="sm" 
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-                  onClick={() => onConfirmShowing(showing)}
-                >
-                  <FileText className="w-4 h-4 mr-1" />
-                  Sign Agreement
-                </Button>
-              )}
-              {showing.status === 'agent_confirmed' && onConfirmShowing && (
-                <Button 
-                  size="sm" 
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => onConfirmShowing(showing)}
-                >
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Confirm
-                </Button>
-              )}
-            </>
-          )}
+                {showing.assigned_agent_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onChatWithAgent(showing)}
+                  >
+                    <MessageCircle className="w-3 h-3 mr-1" />
+                    Message Agent
+                  </Button>
+                )}
+              </>
+            )}
 
-          {type === 'completed' && showing.status === 'completed' && (
-            <Button 
-              size="sm" 
-              variant="outline"
+            {showing.status === 'completed' && (
+              <Button
+                variant={isExpanded ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setExpandedShowing(isExpanded ? null : showing.id)}
+              >
+                {isExpanded ? 'Hide Actions' : 'Show Actions'}
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => onMakeOffer(showing.property_address)}
-              className="text-green-600 border-green-600 hover:bg-green-50"
+              className="text-green-600 hover:text-green-700"
             >
-              <DollarSign className="w-4 h-4 mr-1" />
+              <FileText className="w-3 h-3 mr-1" />
               Make Offer
             </Button>
+          </div>
+
+          {/* Expanded post-showing actions */}
+          {isExpanded && showing.status === 'completed' && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <PostShowingActions
+                showingId={showing.id}
+                userType="buyer"
+                showingStatus={showing.status}
+                agentName={showing.assigned_agent_name}
+                agentId={showing.assigned_agent_id}
+                agentEmail={showing.assigned_agent_email}
+                agentPhone={showing.assigned_agent_phone}
+                propertyAddress={showing.property_address}
+                buyerId={showing.user_id}
+                onActionTaken={() => {
+                  // Optional: refresh data or show success message
+                  console.log('Action taken for showing:', showing.id);
+                }}
+              />
+            </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const allShowings = [
+    ...pendingRequests.map(s => ({ ...s, priority: 3 })),
+    ...activeShowings.map(s => ({ ...s, priority: 2 })),
+    ...completedShowings.slice(0, 5).map(s => ({ ...s, priority: 1 }))
+  ].sort((a, b) => b.priority - a.priority);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Pending Tours */}
+    <div className="space-y-6">
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-5 w-5 text-yellow-600" />
-            Pending Tours ({pendingRequests.length})
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Recent Tours</span>
+            <Badge variant="secondary">
+              {allShowings.length} total
+            </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {pendingRequests.length === 0 ? (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 font-medium">No pending tours</p>
-              <p className="text-sm text-gray-500">Ready to start your search?</p>
+        <CardContent className="space-y-4">
+          {allShowings.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>No tours scheduled yet</p>
+              <p className="text-sm">Request your first property tour to get started!</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {pendingRequests.slice(0, 3).map(showing => 
-                renderShowingCard(showing, 'pending')
-              )}
-              {pendingRequests.length > 3 && (
-                <div className="text-center">
-                  <Button variant="ghost" size="sm" className="text-blue-600">
-                    View All ({pendingRequests.length})
-                  </Button>
-                </div>
-              )}
+            <div className="space-y-3">
+              {allShowings.map(renderShowingCard)}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Active Tours */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            Active Tours ({activeShowings.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activeShowings.length === 0 ? (
-            <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 font-medium">No active tours</p>
-              <p className="text-sm text-gray-500">Confirmed tours will appear here</p>
+      {/* Activity Summary for completed tours */}
+      {completedShowings.length > 0 && (
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-blue-900">
+              <CheckCircle2 className="h-5 w-5" />
+              Your Tour Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-blue-900">{completedShowings.length}</div>
+                <div className="text-sm text-blue-600">Completed Tours</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-900">{actionsSummary.favoritedProperties}</div>
+                <div className="text-sm text-green-600">Favorites</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-900">{actionsSummary.agentConnections}</div>
+                <div className="text-sm text-purple-600">Agent Connections</div>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {activeShowings.slice(0, 3).map(showing => 
-                renderShowingCard(showing, 'active')
-              )}
-              {activeShowings.length > 3 && (
-                <div className="text-center">
-                  <Button variant="ghost" size="sm" className="text-blue-600">
-                    View All ({activeShowings.length})
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Completed Tours */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Eye className="h-5 w-5 text-blue-600" />
-            Recent History ({completedShowings.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {completedShowings.length === 0 ? (
-            <div className="text-center py-8">
-              <Eye className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 font-medium">No tour history</p>
-              <p className="text-sm text-gray-500">Completed tours will appear here</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {completedShowings.slice(0, 3).map(showing => 
-                renderShowingCard(showing, 'completed')
-              )}
-              {completedShowings.length > 3 && (
-                <div className="text-center">
-                  <Button variant="ghost" size="sm" className="text-blue-600">
-                    View All ({completedShowings.length})
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

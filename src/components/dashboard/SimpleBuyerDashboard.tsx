@@ -31,6 +31,8 @@ import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import DashboardStats from "./DashboardStats";
 import QuickActions from "./QuickActions";
 import RecentTours from "./RecentTours";
+import ShowingActionsSummary from "./ShowingActionsSummary";
+import { usePostShowingDashboardData } from "@/hooks/usePostShowingDashboardData";
 
 const SimpleBuyerDashboard = () => {
   // Handle any pending tour requests from signup
@@ -69,6 +71,9 @@ const SimpleBuyerDashboard = () => {
     handleAgreementSignWithModal,
     fetchShowingRequests
   } = useBuyerDashboardLogic();
+
+  // Get post-showing dashboard data
+  const { actionsSummary } = usePostShowingDashboardData(currentUser?.id || '');
 
   // Make offer state
   const [showMakeOfferModal, setShowMakeOfferModal] = useState(false);
@@ -184,6 +189,14 @@ const SimpleBuyerDashboard = () => {
           onRequestShowing={handleRequestShowing}
           onMakeOffer={() => handleMakeOffer("")}
         />
+
+        {/* Activity Summary - Show if user has completed tours */}
+        {completedShowings.length > 0 && (
+          <ShowingActionsSummary 
+            completedShowings={completedShowings}
+            actionsSummary={actionsSummary}
+          />
+        )}
 
         {/* Recent Tours */}
         <RecentTours 

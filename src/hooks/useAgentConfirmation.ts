@@ -59,7 +59,7 @@ export const useAgentConfirmation = () => {
         }
       }
 
-      // Update the showing request with agent details and set status to agent_requested
+      // Update the showing request with agent details and set status to awaiting_agreement
       const agentName = `${agentProfile.first_name} ${agentProfile.last_name}`.trim();
       
       const { error: updateError } = await supabase
@@ -68,7 +68,7 @@ export const useAgentConfirmation = () => {
           assigned_agent_id: agentProfile.id,
           assigned_agent_name: agentName,
           assigned_agent_phone: agentProfile.phone,
-          status: 'agent_requested', // Changed from 'awaiting_agreement'
+          status: 'awaiting_agreement', // Changed from 'agent_requested' to 'awaiting_agreement'
           preferred_date: confirmationData.confirmedDate,
           preferred_time: confirmationData.confirmedTime,
           status_updated_at: new Date().toISOString()

@@ -1,4 +1,5 @@
 import ShowingRequestCard from "./ShowingRequestCard";
+import AgreementSigningCard from "./AgreementSigningCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircle, Calendar, CheckCircle, Clock } from "lucide-react";
 import EmptyStateCard from "./EmptyStateCard";
@@ -26,6 +27,13 @@ interface Agreement {
   id: string;
   showing_request_id: string;
   signed: boolean;
+  signed_at: string | null;
+  agreement_type: string;
+  created_at: string;
+}
+
+interface ShowingWithAgreement extends ShowingRequest {
+  tour_agreement: Agreement | null;
 }
 
 interface Profile {
@@ -51,6 +59,7 @@ interface BuyerDashboardSectionsProps {
   onConfirmShowing: (showing: ShowingRequest) => void;
   fetchShowingRequests: () => void;
   onSendMessage: (showingId: string) => void;
+  onSignAgreement?: (showingId: string, signerName: string) => Promise<boolean>;
 }
 
 // Helper function to check if a showing has passed its scheduled time
@@ -61,6 +70,14 @@ const hasShowingPassed = (showing: ShowingRequest): boolean => {
   const now = new Date();
   
   return showingDateTime < now;
+};
+
+// Helper function to attach agreement data to showings
+const attachAgreementData = (showings: ShowingRequest[], agreements: Agreement[]): ShowingWithAgreement[] => {
+  return showings.map(showing => ({
+    ...showing,
+    tour_agreement: agreements.find(agreement => agreement.showing_request_id === showing.id) || null
+  }));
 };
 
 export const generateBuyerDashboardSections = ({
@@ -77,11 +94,22 @@ export const generateBuyerDashboardSections = ({
   onRescheduleShowing,
   onConfirmShowing,
   fetchShowingRequests,
-  onSendMessage
+  onSendMessage,
+  onSignAgreement
 }: BuyerDashboardSectionsProps) => {
   // Ensure proper filtering of showings by status
   const confirmedShowings = activeShowings.filter(showing => 
     ['confirmed', 'scheduled', 'in_progress'].includes(showing.status)
+  );
+  
+  // Filter showings that are awaiting agreement signature
+  const awaitingAgreementShowings = pendingRequests.filter(showing => 
+    showing.status === 'awaiting_agreement'
+  );
+  
+  // Other pending requests (not awaiting agreement)
+  const otherPendingRequests = pendingRequests.filter(showing => 
+    !['awaiting_agreement'].includes(showing.status)
   );
   
   // Only show tours that are actually completed
@@ -89,15 +117,56 @@ export const generateBuyerDashboardSections = ({
     showing.status === 'completed'
   );
 
+  // Attach agreement data to showings that need it
+  const awaitingAgreementWithData = attachAgreementData(awaitingAgreementShowings, agreements);
+
   return [
     {
       id: "requested",
       title: "Requested Tours",
       icon: Calendar,
-      count: pendingRequests.length,
+      count: otherPendingRequests.length + awaitingAgreementShowings.length,
       content: (
         <div className="space-y-4">
-          {pendingRequests.length === 0 ? (
+          {/* Agreement signing cards for showings awaiting agreement */}
+          {awaitingAgreementWithData.map((showing) => (
+            <AgreementSigningCard
+              key={`agreement-${showing.id}`}
+              showing={showing}
+              onSign={async (showingId: string, signerName: string) => {
+                if (onSignAgreement) {
+                  const success = await onSignAgreement(showingId, signerName);
+                  if (success) {
+                    fetchShowingRequests();
+                  }
+                  return success;
+                }
+                return false;
+              }}
+            />
+          ))}
+
+          {/* Regular pending request cards */}
+          {otherPendingRequests.map((showing) => (
+            <ShowingRequestCard
+              key={showing.id}
+              showing={showing}
+              onCancel={onCancelShowing}
+              onReschedule={onRescheduleShowing}
+              onConfirm={(id: string) => {
+                const showingToConfirm = otherPendingRequests.find(s => s.id === id);
+                if (showingToConfirm) {
+                  onConfirmShowing(showingToConfirm);
+                }
+              }}
+              currentUserId={currentUser?.id}
+              onSendMessage={onSendMessage}
+              onComplete={fetchShowingRequests}
+            />
+          ))}
+
+          {/* Empty state only if no pending requests at all */}
+          {otherPendingRequests.length === 0 && awaitingAgreementShowings.length === 0 && (
             <EmptyStateCard
               title="No Pending Requests"
               description="You don't have any tour requests pending. Ready to explore some properties?"
@@ -105,24 +174,6 @@ export const generateBuyerDashboardSections = ({
               onButtonClick={onRequestShowing}
               icon={Calendar}
             />
-          ) : (
-            pendingRequests.map((showing) => (
-              <ShowingRequestCard
-                key={showing.id}
-                showing={showing}
-                onCancel={onCancelShowing}
-                onReschedule={onRescheduleShowing}
-                onConfirm={(id: string) => {
-                  const showingToConfirm = pendingRequests.find(s => s.id === id);
-                  if (showingToConfirm) {
-                    onConfirmShowing(showingToConfirm);
-                  }
-                }}
-                currentUserId={currentUser?.id}
-                onSendMessage={onSendMessage}
-                onComplete={fetchShowingRequests}
-              />
-            ))
           )}
         </div>
       )

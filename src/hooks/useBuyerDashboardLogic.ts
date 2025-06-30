@@ -177,6 +177,99 @@ export const useBuyerDashboardLogic = () => {
     await fetchShowingRequests();
   };
 
+  // New handler for signing agreements directly from dashboard cards
+  const handleSignAgreementFromCard = async (showingId: string, signerName: string): Promise<boolean> => {
+    if (!currentUser) {
+      console.error('No current user for agreement signing');
+      return false;
+    }
+
+    console.log('Signing agreement for showing:', showingId, 'with name:', signerName);
+
+    try {
+      // First, try to find existing agreement
+      const { data: existingAgreement, error: findError } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('showing_request_id', showingId)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
+
+      console.log('Existing agreement check:', { existingAgreement, findError });
+
+      if (findError) {
+        console.error('Error finding existing agreement:', findError);
+        throw new Error('Failed to check existing agreement');
+      }
+
+      if (existingAgreement) {
+        // Update existing agreement
+        const { error: updateError } = await supabase
+          .from('tour_agreements')
+          .update({
+            signed: true,
+            signed_at: new Date().toISOString()
+          })
+          .eq('id', existingAgreement.id);
+
+        if (updateError) {
+          console.error('Error updating agreement:', updateError);
+          throw new Error('Failed to sign agreement');
+        }
+      } else {
+        // Create new agreement
+        const { error: insertError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: showingId,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: true,
+            signed_at: new Date().toISOString(),
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+
+        if (insertError) {
+          console.error('Error creating agreement:', insertError);
+          throw new Error('Failed to create and sign agreement');
+        }
+      }
+
+      // Update showing status to confirmed
+      const { error: statusError } = await supabase
+        .from('showing_requests')
+        .update({
+          status: 'confirmed',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', showingId);
+
+      if (statusError) {
+        console.error('Error updating showing status:', statusError);
+        // Don't throw here as agreement is already signed
+      }
+
+      toast({
+        title: "Agreement Signed",
+        description: "You have successfully signed the tour agreement. Your showing is now confirmed!",
+      });
+
+      // Track agreement signing
+      trackShowingBooking('agreement_signed');
+
+      return true;
+    } catch (error: any) {
+      console.error('Exception signing agreement:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign agreement. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const handleSendMessage = async (showingId: string) => {
     console.log('Opening messaging for showing:', showingId);
     
@@ -245,6 +338,7 @@ export const useBuyerDashboardLogic = () => {
     handleSubscriptionComplete,
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
+    handleSignAgreementFromCard,
     handleSendMessage,
     handleStatClick,
     handleCancelShowing,

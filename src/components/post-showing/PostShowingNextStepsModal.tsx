@@ -33,7 +33,9 @@ const PostShowingNextStepsModal = ({
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showAgentProfile, setShowAgentProfile] = useState(false);
 
-  const handleFavoriteComplete = () => {
+  const handleFavoriteComplete = async (notes?: string) => {
+    // Handle favorite save logic here
+    console.log('Saving favorite with notes:', notes);
     setShowFavoriteModal(false);
   };
 
@@ -42,6 +44,12 @@ const PostShowingNextStepsModal = ({
   };
 
   const handleAgentProfileClose = () => {
+    setShowAgentProfile(false);
+  };
+
+  const handleConfirmHire = () => {
+    // Handle agent hiring logic here
+    console.log('Confirming agent hire');
     setShowAgentProfile(false);
   };
 
@@ -131,9 +139,8 @@ const PostShowingNextStepsModal = ({
       <FavoritePropertyModal
         isOpen={showFavoriteModal}
         onClose={() => setShowFavoriteModal(false)}
-        onComplete={handleFavoriteComplete}
-        showing={showing}
-        buyerId={buyerId}
+        onSave={handleFavoriteComplete}
+        propertyAddress={showing.property_address}
       />
 
       <EnhancedOfferTypeDialog
@@ -143,13 +150,14 @@ const PostShowingNextStepsModal = ({
         buyerId={buyerId}
       />
 
-      {showing.assigned_agent_id && (
+      {showing.assigned_agent_name && (
         <AgentProfileModal
           isOpen={showAgentProfile}
           onClose={handleAgentProfileClose}
-          agentId={showing.assigned_agent_id}
-          buyerId={buyerId}
-          showingId={showing.id}
+          onConfirmHire={handleConfirmHire}
+          agentName={showing.assigned_agent_name}
+          agentEmail={showing.assigned_agent_email}
+          agentPhone={showing.assigned_agent_phone}
         />
       )}
     </>

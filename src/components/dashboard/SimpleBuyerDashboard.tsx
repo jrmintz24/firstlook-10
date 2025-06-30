@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,9 +45,9 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   // Combine all showings for SmartReminders
   const allShowings = [...pendingShowings, ...upcomingShowings, ...completedShowingsList];
 
-  const handleMakeOffer = (propertyAddress: string) => {
-    console.log('Make offer for:', propertyAddress);
-    // Implement make offer logic
+  const handleMakeOffer = () => {
+    console.log('Make offer button clicked');
+    // Implement make offer logic - could open a modal or navigate to make offer page
   };
 
   const handleChatWithAgent = (showing: any) => {
@@ -123,7 +122,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
                 completedShowings={completedShowingsList}
                 onChatWithAgent={handleChatWithAgent}
                 onReschedule={handleReschedule}
-                onMakeOffer={handleMakeOffer}
+                onMakeOffer={(address: string) => handleMakeOffer()}
                 onConfirmShowing={handleConfirmShowing}
               />
               
@@ -146,7 +145,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
               
               <QuickActions 
                 onRequestShowing={onRequestTour}
-                onMakeOffer={(address) => handleMakeOffer(address)}
+                onMakeOffer={handleMakeOffer}
               />
             </div>
           </div>

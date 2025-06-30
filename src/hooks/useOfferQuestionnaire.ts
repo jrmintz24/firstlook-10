@@ -19,6 +19,7 @@ export interface BuyerQualificationData {
 }
 
 export interface PropertyAnalysisData {
+  propertyAddress?: string;
   propertyType: string;
   listingPrice: number;
   daysOnMarket?: number;

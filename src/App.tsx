@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import Auth from './pages/Auth';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
-import AuthCallback from './pages/AuthCallback';
+import { Login } from './pages/Login';
+import { SignUp } from './pages/SignUp';
+import { AuthCallback } from './pages/AuthCallback';
 import BuyerAuth from './pages/BuyerAuth';
 import AgentAuth from './pages/AgentAuth';
 import AgentLanding from './pages/AgentLanding';
@@ -23,7 +24,7 @@ import Subscriptions from './pages/Subscriptions';
 import FAQ from './pages/FAQ';
 import NotFound from './pages/NotFound';
 import OfferQuestionnaire from './pages/OfferQuestionnaire';
-import ProtectedRoute from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';

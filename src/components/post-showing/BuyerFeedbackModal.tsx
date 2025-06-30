@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, Heart, Calendar, User, FileText, MessageSquare } from "lucide-react";
+import { Star } from "lucide-react";
 import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
-import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
+import { useToast } from "@/hooks/use-toast";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -34,35 +34,70 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     submitBuyerFeedback
   } = usePostShowingWorkflow();
 
+  const { toast } = useToast();
+
   const handleAttendanceSubmit = async () => {
     if (attended === null) return;
     
-    await checkAttendance(showing.id, {
-      user_type: 'buyer',
-      attended,
-      checked_out: true
-    });
-    
-    if (attended) {
-      setStep('feedback');
-    } else {
-      // If didn't attend, skip to completion
-      onComplete?.();
+    try {
+      await checkAttendance(showing.id, {
+        user_type: 'buyer',
+        attended,
+        checked_out: true
+      });
+      
+      if (attended) {
+        setStep('feedback');
+      } else {
+        // If didn't attend, skip to completion
+        onComplete?.();
+      }
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit attendance. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleFeedbackSubmit = async () => {
-    const feedback: BuyerFeedback = {
-      buyer_id: buyerId,
-      agent_id: showing.assigned_agent_id || "",
-      property_rating: propertyRating || undefined,
-      agent_rating: agentRating || undefined,
-      property_comments: propertyComments || undefined,
-      agent_comments: agentComments || undefined
-    };
+    if (!buyerId) {
+      toast({
+        title: "Error",
+        description: "User information missing. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    await submitBuyerFeedback(showing.id, feedback);
-    onComplete?.();
+    try {
+      const feedback: BuyerFeedback = {
+        buyer_id: buyerId,
+        agent_id: showing.assigned_agent_id || "",
+        property_rating: propertyRating > 0 ? propertyRating : undefined,
+        agent_rating: agentRating > 0 ? agentRating : undefined,
+        property_comments: propertyComments.trim() || undefined,
+        agent_comments: agentComments.trim() || undefined
+      };
+
+      await submitBuyerFeedback(showing.id, feedback);
+      
+      toast({
+        title: "Feedback Submitted",
+        description: "Thank you for your feedback!",
+      });
+      
+      onComplete?.();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit feedback. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (
@@ -81,6 +116,14 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       </div>
     </div>
   );
+
+  const handleSkipFeedback = () => {
+    toast({
+      title: "Feedback Skipped",
+      description: "You can always provide feedback later.",
+    });
+    onComplete?.();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -121,7 +164,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
                 onClick={handleAttendanceSubmit} 
                 disabled={attended === null || loading}
               >
-                Continue
+                {loading ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
           </div>
@@ -170,11 +213,11 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={onComplete}>
+              <Button variant="outline" onClick={handleSkipFeedback} disabled={loading}>
                 Skip Feedback
               </Button>
               <Button onClick={handleFeedbackSubmit} disabled={loading}>
-                Submit Feedback
+                {loading ? 'Submitting...' : 'Submit Feedback'}
               </Button>
             </div>
           </div>

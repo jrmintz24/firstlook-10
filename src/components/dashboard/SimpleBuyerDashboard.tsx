@@ -1,12 +1,12 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle, Calendar, MessageSquare, TrendingUp, Plus } from "lucide-react";
+import { Clock, CheckCircle, Calendar, MessageSquare, TrendingUp, Plus, FileText } from "lucide-react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { useIsMobile } from "@/hooks/use-mobile";
+import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
 
 // Components
 import RecentTours from "./RecentTours";
@@ -204,6 +204,18 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
           onRescheduleShowing={() => {}}
           userType="buyer"
           currentUserId={userId}
+        />
+      )
+    },
+    {
+      id: "offers",
+      title: "My Offers",
+      icon: FileText,
+      count: 0,
+      content: (
+        <OfferManagementDashboard 
+          buyerId={userId} 
+          onCreateOffer={onRequestTour}
         />
       )
     },

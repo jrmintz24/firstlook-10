@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Calendar, Heart, User, FileText, CheckCircle } from "lucide-react";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
-import OfferTypeDialog from "./OfferTypeDialog";
+import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
 
@@ -38,8 +39,6 @@ const PostShowingActionsPanel = ({
     isSubmitting,
     scheduleAnotherTour,
     hireAgent,
-    makeOfferAgentAssisted,
-    makeOfferFirstLook,
     favoriteProperty
   } = useEnhancedPostShowingActions();
 
@@ -79,34 +78,10 @@ const PostShowingActionsPanel = ({
     setShowOfferDialog(true);
   };
 
-  const handleOfferAgentAssisted = async (qualificationData?: any) => {
-    if (!agentId) return;
-
-    await makeOfferAgentAssisted({
-      showingId,
-      buyerId,
-      agentId,
-      propertyAddress,
-      agentName,
-      buyerQualification: qualificationData
-    });
-    
+  const handleOfferDialogClose = () => {
     setShowOfferDialog(false);
-    handleActionComplete('make_offer_agent_assisted');
-  };
-
-  const handleOfferFirstLook = async (qualificationData?: any) => {
-    await makeOfferFirstLook({
-      showingId,
-      buyerId,
-      agentId,
-      propertyAddress,
-      agentName,
-      buyerQualification: qualificationData
-    });
-    
-    setShowOfferDialog(false);
-    handleActionComplete('make_offer_firstlook');
+    // Mark offer action as completed when user goes through either flow
+    handleActionComplete('make_offer');
   };
 
   const handleFavoriteProperty = async (notes?: string) => {
@@ -229,13 +204,14 @@ const PostShowingActionsPanel = ({
         </CardContent>
       </Card>
 
-      <OfferTypeDialog
+      <EnhancedOfferTypeDialog
         isOpen={showOfferDialog}
-        onClose={() => setShowOfferDialog(false)}
-        onSelectAgentAssisted={handleOfferAgentAssisted}
-        onSelectFirstLookGenerator={handleOfferFirstLook}
-        agentName={agentName}
+        onClose={handleOfferDialogClose}
         propertyAddress={propertyAddress}
+        agentId={agentId}
+        agentName={agentName}
+        buyerId={buyerId}
+        showingRequestId={showingId}
       />
 
       <AgentProfileModal

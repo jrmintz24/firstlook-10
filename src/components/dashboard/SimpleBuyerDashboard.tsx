@@ -43,6 +43,29 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   const upcomingShowings = activeShowings || [];
   const completedShowingsList = completedShowings || [];
 
+  // Combine all showings for SmartReminders
+  const allShowings = [...pendingShowings, ...upcomingShowings, ...completedShowingsList];
+
+  const handleMakeOffer = (propertyAddress: string) => {
+    console.log('Make offer for:', propertyAddress);
+    // Implement make offer logic
+  };
+
+  const handleChatWithAgent = (showing: any) => {
+    console.log('Chat with agent for showing:', showing.id);
+    // Implement chat logic
+  };
+
+  const handleReschedule = (showing: any) => {
+    console.log('Reschedule showing:', showing.id);
+    // Implement reschedule logic
+  };
+
+  const handleConfirmShowing = (showing: any) => {
+    console.log('Confirm showing:', showing.id);
+    // Implement confirm logic
+  };
+
   const tabs = [
     {
       id: "overview",
@@ -95,7 +118,13 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">
               <RecentTours 
-                onRequestTour={onRequestTour}
+                pendingRequests={pendingShowings}
+                activeShowings={upcomingShowings}
+                completedShowings={completedShowingsList}
+                onChatWithAgent={handleChatWithAgent}
+                onReschedule={handleReschedule}
+                onMakeOffer={handleMakeOffer}
+                onConfirmShowing={handleConfirmShowing}
               />
               
               <Card>
@@ -110,9 +139,15 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
             
             {/* Right Column - Sidebar */}
             <div className="space-y-6">
-              <SmartReminders />
+              <SmartReminders 
+                showingRequests={allShowings}
+                userType="buyer"
+              />
               
-              <QuickActions />
+              <QuickActions 
+                onRequestShowing={onRequestTour}
+                onMakeOffer={(address) => handleMakeOffer(address)}
+              />
             </div>
           </div>
         </div>

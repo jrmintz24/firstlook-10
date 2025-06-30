@@ -73,11 +73,20 @@ export const usePostShowingDashboardData = (userId: string) => {
     fetchDashboardData();
   }, [userId, toast]);
 
+  // Calculate actions summary
+  const actionsSummary = {
+    totalActions: postShowingActions.length,
+    favoritedProperties: favorites.length,
+    agentConnections: agentConnections.length,
+    offerIntents: postShowingActions.filter(action => action.action_type === 'offer_intent').length
+  };
+
   return {
     completedShowings,
     postShowingActions,
     favorites,
     agentConnections,
-    loading
+    loading,
+    actionsSummary
   };
 };

@@ -46,7 +46,7 @@ cp .env.example .env
 
 Then fill in the following values:
 
-- `VITE_GOOGLE_PLACES_API_KEY` – API key from Google Cloud Console for the Places API.
+- `VITE_GOOGLE_PLACES_API_KEY` – API key from Google Cloud Console for the Places API. This key is used by the Supabase edge function and also as a fallback in the frontend if that function is unavailable.
 - `RENTCAST_API_KEY` – your API key from RentCast.
 - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` – found in your Supabase project settings.
 

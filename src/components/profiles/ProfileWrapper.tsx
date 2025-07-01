@@ -94,19 +94,19 @@ const ProfileWrapper = () => {
       const completionPercentage = calculateCompletionPercentage(updatedProfile);
       updatedProfile.profile_completion_percentage = completionPercentage;
 
-      // Transform to Supabase format - serialize complex objects as JSON
+      // Transform to Supabase format - cast complex objects to Json type
       const supabaseData = {
         id: user.id,
-        first_name: updatedProfile.first_name,
-        last_name: updatedProfile.last_name,
-        phone: updatedProfile.phone,
-        user_type: updatedProfile.user_type,
-        photo_url: updatedProfile.photo_url,
-        buyer_preferences: updatedProfile.buyer_preferences,
-        agent_details: updatedProfile.agent_details,
-        communication_preferences: updatedProfile.communication_preferences,
-        onboarding_completed: updatedProfile.onboarding_completed,
-        profile_completion_percentage: updatedProfile.profile_completion_percentage,
+        first_name: updatedProfile.first_name || null,
+        last_name: updatedProfile.last_name || null,
+        phone: updatedProfile.phone || null,
+        user_type: updatedProfile.user_type || 'buyer',
+        photo_url: updatedProfile.photo_url || null,
+        buyer_preferences: updatedProfile.buyer_preferences as any,
+        agent_details: updatedProfile.agent_details as any,
+        communication_preferences: updatedProfile.communication_preferences as any,
+        onboarding_completed: updatedProfile.onboarding_completed || false,
+        profile_completion_percentage: updatedProfile.profile_completion_percentage || 0,
         updated_at: new Date().toISOString()
       };
 

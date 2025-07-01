@@ -255,6 +255,8 @@ const AgentConversationsView = ({ agentId }: AgentConversationsViewProps) => {
               messages={selectedConversation.messages}
               currentUserId={agentId}
               onSendMessage={handleSendMessage}
+              onMarkAsRead={() => markMessagesAsRead(selectedConversationId!)}
+              conversationType="property"
               propertyAddress={selectedConversation.property_address}
               showingStatus={selectedConversation.status}
             />

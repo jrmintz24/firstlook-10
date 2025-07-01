@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +112,8 @@ const MessagingInterface = ({
             messages={selectedConversation.messages}
             currentUserId={userId}
             onSendMessage={handleSendMessage}
+            onMarkAsRead={() => markMessagesAsRead(selectedConversationId!)}
+            conversationType="property"
             propertyAddress={selectedConversation.property_address}
             showingStatus={selectedConversation.status}
           />
@@ -179,6 +180,8 @@ const MessagingInterface = ({
               messages={selectedConversation.messages}
               currentUserId={userId}
               onSendMessage={handleSendMessage}
+              onMarkAsRead={() => markMessagesAsRead(selectedConversationId!)}
+              conversationType="property"
               propertyAddress={selectedConversation.property_address}
               showingStatus={selectedConversation.status}
             />
@@ -242,6 +245,8 @@ const MessagingInterface = ({
               messages={selectedConversation.messages}
               currentUserId={userId}
               onSendMessage={handleSendMessage}
+              onMarkAsRead={() => markMessagesAsRead(selectedConversationId!)}
+              conversationType="property"
               propertyAddress={selectedConversation.property_address}
               showingStatus={selectedConversation.status}
             />

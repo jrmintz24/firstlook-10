@@ -39,23 +39,30 @@ const AddressAutocomplete = ({
   }, [debouncedSearchTerm]);
 
   const fetchAddresses = async (searchTerm: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.error("Google Maps API key is missing. Please set the NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable.");
-      return;
-    }
-
-    const encodedSearchTerm = encodeURIComponent(searchTerm);
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodedSearchTerm}&types=geocode&key=${apiKey}`;
-
     try {
-      const response = await fetch(url);
+      // Use the Supabase edge function instead of direct Google API call
+      const response = await fetch('https://uugchegukccccuqpcsqhl.supabase.co/functions/v1/google-places', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input: searchTerm })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (data.status === 'OK') {
+      if (data.status === 'OK' && data.predictions) {
         const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
         setResults(formattedAddresses);
         setIsOpen(true);
+      } else if (data.error) {
+        console.error('Error from edge function:', data.error);
+        setResults([]);
+        setIsOpen(false);
       } else {
         console.error('Error fetching addresses:', data.error_message || data.status);
         setResults([]);

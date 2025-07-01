@@ -10,6 +10,8 @@ interface Conversation {
   property_address: string;
   messages: any[];
   unread_count: number;
+  status: string;
+  last_message_at: string;
 }
 
 export const useMessages = (userId: string | null) => {
@@ -51,12 +53,19 @@ export const useMessages = (userId: string | null) => {
             showing_request_id: showingId,
             property_address: message.showing_request?.property_address || 'Unknown Property',
             messages: [],
-            unread_count: 0
+            unread_count: 0,
+            status: message.showing_request?.status || 'unknown',
+            last_message_at: message.created_at
           });
         }
         
         const conversation = conversationMap.get(showingId);
         conversation.messages.push(message);
+        
+        // Update last_message_at to the most recent message
+        if (new Date(message.created_at) > new Date(conversation.last_message_at)) {
+          conversation.last_message_at = message.created_at;
+        }
         
         if (message.receiver_id === userId && !message.read_at) {
           conversation.unread_count++;

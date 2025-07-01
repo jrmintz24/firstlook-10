@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -97,7 +98,6 @@ export const usePropertyRequest = (onClose?: () => void) => {
       // Store current form data in localStorage before redirecting to auth
       console.log('usePropertyRequest: Storing tour request for unauthenticated user:', formData);
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
-      setShowQuickSignIn(true);
       setShowAuthModal(true);
       return;
     }
@@ -122,20 +122,6 @@ export const usePropertyRequest = (onClose?: () => void) => {
     if (onClose) {
       onClose();
     }
-  };
-
-  const handleQuickSignInSuccess = () => {
-    console.log('usePropertyRequest: Quick sign in successful');
-    setShowQuickSignIn(false);
-    setShowAuthModal(false);
-    
-    // Navigate to dashboard and let the pending tour handler take over
-    navigate('/buyer-dashboard', { replace: true });
-    
-    toast({
-      title: "Account Created!",
-      description: "Redirecting to your dashboard to complete the tour request...",
-    });
   };
 
   const resetForm = () => {
@@ -164,7 +150,6 @@ export const usePropertyRequest = (onClose?: () => void) => {
     handleNext,
     handleBack,
     handleContinueToSubscriptions,
-    handleQuickSignInSuccess,
     handleAddProperty,
     handleRemoveProperty,
     handleCancelPendingShowing,

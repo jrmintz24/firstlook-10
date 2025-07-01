@@ -4,7 +4,7 @@ import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import PropertySelectionStep from "@/components/property-request/PropertySelectionStep";
 import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
-import QuickSignInModal from "@/components/property-request/QuickSignInModal";
+import StreamlinedSignupModal from "@/components/property-request/StreamlinedSignupModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 
 interface PropertyRequestFormProps {
@@ -31,6 +31,12 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
     handleContinueToSubscriptions,
     handleCancelPendingShowing,
   } = usePropertyRequest();
+
+  const handleSignupSuccess = () => {
+    console.log('PropertyRequestForm: Signup successful, processing tour request');
+    setShowAuthModal(false);
+    handleContinueToSubscriptions();
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -85,12 +91,12 @@ const PropertyRequestForm = ({ isOpen, onClose }: PropertyRequestFormProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Quick Sign-In Modal */}
+      {/* Streamlined Signup Modal */}
       {showAuthModal && (
-        <QuickSignInModal 
+        <StreamlinedSignupModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)}
-          onSuccess={handleContinueToSubscriptions}
+          onSuccess={handleSignupSuccess}
         />
       )}
 

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -51,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Handle onboarding check for sign-in events only
+      // Handle profile creation and onboarding for sign-in events
       if (event === 'SIGNED_IN' && session?.user && !onboardingChecked) {
         console.log('AuthProvider: Checking onboarding status for user:', session.user.id);
         
@@ -72,31 +73,108 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Use setTimeout to prevent blocking the auth state change
         setTimeout(async () => {
           try {
-            const { data: profile, error } = await supabase
+            // First, check if profile exists and create/update if needed
+            const { data: existingProfile, error: profileFetchError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            // Check for signup form data
+            const signupFormData = localStorage.getItem('signupFormData');
+            let formData = null;
+            if (signupFormData) {
+              try {
+                formData = JSON.parse(signupFormData);
+                localStorage.removeItem('signupFormData');
+              } catch (e) {
+                console.error('Error parsing signup form data:', e);
+              }
+            }
+
+            if (profileFetchError?.code === 'PGRST116' || !existingProfile) {
+              // Profile doesn't exist, create it
+              console.log('AuthProvider: Creating new profile with signup data');
+              
+              const profileData = {
+                id: session.user.id,
+                first_name: formData?.firstName || session.user.user_metadata?.first_name || null,
+                last_name: formData?.lastName || session.user.user_metadata?.last_name || null,
+                phone: formData?.phone || session.user.user_metadata?.phone || null,
+                user_type: 'buyer',
+                buyer_preferences: {
+                  budget: formData?.budget || null,
+                  desiredAreas: formData?.desiredAreas ? formData.desiredAreas.split(',').map(s => s.trim()) : null
+                },
+                agent_details: {},
+                communication_preferences: {},
+                onboarding_completed: true, // Skip full onboarding for streamlined signup
+                profile_completion_percentage: 85, // High completion since we collected key info
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+
+              const { error: createError } = await supabase
+                .from('profiles')
+                .insert([profileData]);
+
+              if (createError) {
+                console.error('AuthProvider: Error creating profile:', createError);
+              } else {
+                console.log('AuthProvider: Profile created successfully');
+              }
+            } else if (formData) {
+              // Profile exists but we have new signup data to update
+              console.log('AuthProvider: Updating existing profile with signup data');
+              
+              const updates = {
+                first_name: formData.firstName || existingProfile.first_name,
+                last_name: formData.lastName || existingProfile.last_name,
+                phone: formData.phone || existingProfile.phone,
+                buyer_preferences: {
+                  ...existingProfile.buyer_preferences,
+                  budget: formData.budget || existingProfile.buyer_preferences?.budget,
+                  desiredAreas: formData.desiredAreas ? 
+                    formData.desiredAreas.split(',').map(s => s.trim()) : 
+                    existingProfile.buyer_preferences?.desiredAreas
+                },
+                onboarding_completed: true,
+                profile_completion_percentage: 85,
+                updated_at: new Date().toISOString()
+              };
+
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', session.user.id);
+
+              if (updateError) {
+                console.error('AuthProvider: Error updating profile:', updateError);
+              }
+            }
+
+            // Check onboarding status
+            const { data: profile } = await supabase
               .from('profiles')
               .select('onboarding_completed')
               .eq('id', session.user.id)
               .single();
 
-            console.log('AuthProvider: Profile onboarding status:', profile, error);
+            console.log('AuthProvider: Profile onboarding status:', profile);
 
-            // Only redirect if onboarding is explicitly false or profile doesn't exist
-            if (error?.code === 'PGRST116' || !profile || profile.onboarding_completed === false) {
+            // Only redirect to full onboarding if explicitly false and no tour pending
+            const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+            if (profile && profile.onboarding_completed === false && !pendingTourRequest) {
               console.log('AuthProvider: Redirecting to onboarding');
               setOnboardingChecked(true);
               window.location.href = '/onboarding';
             } else {
-              console.log('AuthProvider: Onboarding completed, staying on current page');
+              console.log('AuthProvider: Onboarding completed or tour pending, staying on current page');
               setOnboardingChecked(true);
             }
           } catch (error) {
-            console.error('AuthProvider: Error checking onboarding status:', error);
-            // Only redirect on "not found" error
-            if (error.code === 'PGRST116') {
-              console.log('AuthProvider: Profile not found, redirecting to onboarding');
-              setOnboardingChecked(true);
-              window.location.href = '/onboarding';
-            }
+            console.error('AuthProvider: Error in post-signin processing:', error);
+            setOnboardingChecked(true);
           }
         }, 100);
       }

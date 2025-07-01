@@ -7,7 +7,7 @@ import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
-import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
+import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
 
 // Redesigned Components - loaded lazily
@@ -21,20 +21,14 @@ import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
 
 // Tour sections - loaded on demand
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
-import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
+import { Clock, CheckCircle, Home, Calendar, TrendingUp, MessageCircle } from "lucide-react";
 
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import { useOptimizedPendingTours } from "@/hooks/useOptimizedPendingTours";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
 
 const OptimizedBuyerDashboard = () => {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
-
-  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
-    setChatDefaultTab(defaultTab);
-    setChatOpen(true);
-  };
+  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'messages'>('dashboard');
 
   const {
     // State
@@ -73,7 +67,7 @@ const OptimizedBuyerDashboard = () => {
     handleSendMessage,
     handleRescheduleShowing,
     handleRescheduleSuccess
-  } = useOptimizedBuyerLogic({ onOpenChat: handleOpenChat });
+  } = useOptimizedBuyerLogic();
 
   // Process pending tours without blocking initial load
   useOptimizedPendingTours(currentUser?.id || null);
@@ -153,186 +147,234 @@ const OptimizedBuyerDashboard = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-        {/* Journey Progress Bar */}
-        <div className="mb-8 sm:mb-10">
-          <JourneyProgressBar 
-            currentStep={getCurrentStep}
-            completedTours={stats.toursCompleted}
-            activeShowings={activeShowings?.length || 0}
-          />
-        </div>
-
-        {/* Your Journey Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-gray-700" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Your Journey</h2>
+        {/* Main Navigation Tabs */}
+        <div className="mb-8">
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+            <button
+              onClick={() => setActiveMainTab('dashboard')}
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                activeMainTab === 'dashboard'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Home className="w-4 h-4 inline mr-2" />
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveMainTab('messages')}
+              className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
+                activeMainTab === 'messages'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <MessageCircle className="w-4 h-4 inline mr-2" />
+              Messages
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
           </div>
-          
-          <NextTourCard 
-            showing={nextTour}
-            onMessageAgent={handleSendMessage}
-          />
         </div>
 
-        {/* Tours Grid - Show counts immediately, load details progressively */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Dashboard Content */}
+        {activeMainTab === 'dashboard' && (
+          <>
+            {/* Journey Progress Bar */}
+            <div className="mb-8 sm:mb-10">
+              <JourneyProgressBar 
+                currentStep={getCurrentStep}
+                completedTours={stats.toursCompleted}
+                activeShowings={activeShowings?.length || 0}
+              />
+            </div>
+
+            {/* Your Journey Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-gray-700" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900">Your Journey</h2>
+              </div>
+              
+              <NextTourCard 
+                showing={nextTour}
+                onMessageAgent={handleSendMessage}
+              />
+            </div>
+
+            {/* Tours Grid - Show counts immediately, load details progressively */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div className="bg-white border border-gray-200 rounded-lg p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Requested Tours ({showingCounts.pending})
+                  </h3>
+                </div>
+                
+                <Suspense fallback={<div className="h-32 bg-gray-50 rounded animate-pulse" />}>
+                  {detailLoading ? (
+                    <div className="space-y-3">
+                      <div className="h-16 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-16 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  ) : (
+                    <ShowingListTab
+                      title=""
+                      showings={pendingRequests.slice(0, 3)}
+                      emptyIcon={Clock}
+                      emptyTitle="No pending requests"
+                      emptyDescription="Ready to find your dream home?"
+                      emptyButtonText="Request Your Free Showing"
+                      onRequestShowing={handleRequestShowing}
+                      onCancelShowing={() => {}}
+                      onRescheduleShowing={handleRescheduleShowing}
+                      onConfirmShowing={handleConfirmShowingWithModal}
+                      onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
+                      onComplete={() => {}}
+                      currentUserId={currentUser?.id}
+                      onSendMessage={handleSendMessage}
+                      agreements={agreements}
+                    />
+                  )}
+                </Suspense>
+                
+                {pendingRequests.length > 3 && (
+                  <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("requested")}>
+                    View All ({pendingRequests.length})
+                  </Button>
+                )}
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-lg p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Confirmed Tours ({showingCounts.active})
+                  </h3>
+                </div>
+                
+                <Suspense fallback={<div className="h-32 bg-gray-50 rounded animate-pulse" />}>
+                  {detailLoading ? (
+                    <div className="space-y-3">
+                      <div className="h-16 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-16 bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  ) : (
+                    <ShowingListTab
+                      title=""
+                      showings={activeShowings.slice(0, 3)}
+                      emptyIcon={CheckCircle}
+                      emptyTitle="No confirmed tours"
+                      emptyDescription="Confirmed tours will appear here"
+                      emptyButtonText="Request Your Free Showing"
+                      onRequestShowing={handleRequestShowing}
+                      onCancelShowing={() => {}}
+                      onRescheduleShowing={handleRescheduleShowing}
+                      onConfirmShowing={handleConfirmShowingWithModal}
+                      onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
+                      onComplete={() => {}}
+                      currentUserId={currentUser?.id}
+                      onSendMessage={handleSendMessage}
+                      agreements={agreements}
+                    />
+                  )}
+                </Suspense>
+                
+                {activeShowings.length > 3 && (
+                  <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("confirmed")}>
+                    View All ({activeShowings.length})
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <Home className="w-5 h-5 text-gray-700" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
+              </div>
+              
+              <QuickActionsRow 
+                onBookTour={handleRequestShowing}
+                onViewHistory={handleViewHistory}
+                onAskQuestion={handleAskQuestion}
+              />
+            </div>
+
+            {/* Enhanced What's Next */}
+            <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
+              <EnhancedWhatsNextCard 
+                buyerId={currentUser?.id}
+                completedShowings={completedShowings || []}
+                onMakeOffer={handleMakeOffer}
+                onWorkWithAgent={() => {}}
+                onScheduleAnotherTour={handleScheduleAnotherTour}
+                onSeeOtherProperties={handleSeeOtherProperties}
+                isLoading={isSubmitting}
+              />
+            </div>
+
+            {/* Stats Section */}
+            <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-gray-700" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900">Your Progress</h2>
+              </div>
+              
+              <StatsAndMessages 
+                stats={stats}
+                unreadMessages={unreadCount || 0}
+                onOpenInbox={() => setActiveMainTab('messages')}
+              />
+            </div>
+
+            {/* Badges Section */}
+            {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
+              <div className="mb-8 sm:mb-10">
+                <BadgesSection 
+                  completedTours={stats.toursCompleted}
+                  propertiesViewed={stats.propertiesViewed}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Messages Content */}
+        {activeMainTab === 'messages' && (
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                Requested Tours ({showingCounts.pending})
-              </h3>
-            </div>
-            
-            <Suspense fallback={<div className="h-32 bg-gray-50 rounded animate-pulse" />}>
-              {detailLoading ? (
-                <div className="space-y-3">
-                  <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                  <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                </div>
-              ) : (
-                <ShowingListTab
-                  title=""
-                  showings={pendingRequests.slice(0, 3)}
-                  emptyIcon={Clock}
-                  emptyTitle="No pending requests"
-                  emptyDescription="Ready to find your dream home?"
-                  emptyButtonText="Request Your Free Showing"
-                  onRequestShowing={handleRequestShowing}
-                  onCancelShowing={() => {}}
-                  onRescheduleShowing={handleRescheduleShowing}
-                  onConfirmShowing={handleConfirmShowingWithModal}
-                  onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
-                  onComplete={() => {}}
-                  currentUserId={currentUser?.id}
-                  onSendMessage={handleSendMessage}
-                  agreements={agreements}
-                />
+              <MessageCircle className="w-6 h-6 text-gray-700" />
+              <h2 className="text-2xl font-semibold text-gray-900">Messages</h2>
+              {unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-sm rounded-full px-2 py-1">
+                  {unreadCount} unread
+                </span>
               )}
-            </Suspense>
-            
-            {pendingRequests.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("requested")}>
-                View All ({pendingRequests.length})
-              </Button>
-            )}
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                Confirmed Tours ({showingCounts.active})
-              </h3>
             </div>
             
-            <Suspense fallback={<div className="h-32 bg-gray-50 rounded animate-pulse" />}>
-              {detailLoading ? (
-                <div className="space-y-3">
-                  <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                  <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                </div>
-              ) : (
-                <ShowingListTab
-                  title=""
-                  showings={activeShowings.slice(0, 3)}
-                  emptyIcon={CheckCircle}
-                  emptyTitle="No confirmed tours"
-                  emptyDescription="Confirmed tours will appear here"
-                  emptyButtonText="Request Your Free Showing"
-                  onRequestShowing={handleRequestShowing}
-                  onCancelShowing={() => {}}
-                  onRescheduleShowing={handleRescheduleShowing}
-                  onConfirmShowing={handleConfirmShowingWithModal}
-                  onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
-                  onComplete={() => {}}
-                  currentUserId={currentUser?.id}
-                  onSendMessage={handleSendMessage}
-                  agreements={agreements}
-                />
-              )}
-            </Suspense>
-            
-            {activeShowings.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("confirmed")}>
-                View All ({activeShowings.length})
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Home className="w-5 h-5 text-gray-700" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
-          </div>
-          
-          <QuickActionsRow 
-            onBookTour={handleRequestShowing}
-            onViewHistory={handleViewHistory}
-            onAskQuestion={handleAskQuestion}
-          />
-        </div>
-
-        {/* Enhanced What's Next */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <EnhancedWhatsNextCard 
-            buyerId={currentUser?.id}
-            completedShowings={completedShowings || []}
-            onMakeOffer={handleMakeOffer}
-            onWorkWithAgent={() => {}}
-            onScheduleAnotherTour={handleScheduleAnotherTour}
-            onSeeOtherProperties={handleSeeOtherProperties}
-            isLoading={isSubmitting}
-          />
-        </div>
-
-        {/* Stats Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-gray-700" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Your Progress</h2>
-          </div>
-          
-          <StatsAndMessages 
-            stats={stats}
-            unreadMessages={unreadCount || 0}
-            onOpenInbox={() => handleOpenChat('property')}
-          />
-        </div>
-
-        {/* Badges Section */}
-        {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
-          <div className="mb-8 sm:mb-10">
-            <BadgesSection 
-              completedTours={stats.toursCompleted}
-              propertiesViewed={stats.propertiesViewed}
-            />
+            <InlineMessagesPanel />
           </div>
         )}
       </div>
 
       {/* Help Widget */}
       <HelpWidget />
-
-      {/* Unified Chat Widget */}
-      <UnifiedChatWidget
-        isOpen={chatOpen}
-        onToggle={() => setChatOpen(!chatOpen)}
-        defaultTab={chatDefaultTab}
-      />
 
       {/* Modals */}
       <ErrorBoundary>

@@ -102,8 +102,108 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, toast]);
 
+  // Enhanced sendMessage with better receiver detection
+  const sendMessage = useCallback(async (showingRequestId: string, receiverId: string | null, content: string) => {
+    if (!userId || !content.trim()) {
+      console.log('SendMessage failed: Missing userId or content');
+      return false;
+    }
+
+    // If no receiver ID provided, try to find it from existing messages
+    let actualReceiverId = receiverId;
+    if (!actualReceiverId) {
+      const conversationMessages = messages.filter(msg => msg.showing_request_id === showingRequestId);
+      
+      // Find someone who is not the current user
+      for (const message of conversationMessages) {
+        if (message.sender_id !== userId) {
+          actualReceiverId = message.sender_id;
+          break;
+        }
+        if (message.receiver_id !== userId) {
+          actualReceiverId = message.receiver_id;
+          break;
+        }
+      }
+    }
+
+    if (!actualReceiverId) {
+      // Try to get agent from showing request
+      try {
+        const { data: showingData } = await supabase
+          .from('showing_requests')
+          .select('assigned_agent_id, assigned_agent_email')
+          .eq('id', showingRequestId)
+          .maybeSingle();
+
+        if (showingData?.assigned_agent_id) {
+          actualReceiverId = showingData.assigned_agent_id;
+        } else if (showingData?.assigned_agent_email) {
+          // Try to find agent by email
+          const { data: agentProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', showingData.assigned_agent_email)
+            .maybeSingle();
+          
+          if (agentProfile) {
+            actualReceiverId = agentProfile.id;
+          }
+        }
+      } catch (error) {
+        console.error('Error finding receiver:', error);
+      }
+    }
+
+    if (!actualReceiverId) {
+      console.log('SendMessage failed: Could not determine receiver');
+      toast({
+        title: "Error",
+        description: "Unable to determine message recipient.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      console.log('Sending message:', { showingRequestId, receiverId: actualReceiverId, content: content.substring(0, 50) });
+      
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          showing_request_id: showingRequestId,
+          sender_id: userId,
+          receiver_id: actualReceiverId,
+          content: content.trim(),
+          conversation_type: 'property'
+        });
+
+      if (error) {
+        console.error('Error sending message:', error);
+        toast({
+          title: "Error",
+          description: "Failed to send message.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Refresh messages after sending
+      debouncedFetchMessages();
+      return true;
+    } catch (error) {
+      console.error('Exception in sendMessage:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [userId, messages, debouncedFetchMessages, toast]);
+
   // Memoize expensive operations
-  const { markMessagesAsRead, sendMessage } = useMessageOperations(userId, debouncedFetchMessages, toast);
+  const { markMessagesAsRead } = useMessageOperations(userId, debouncedFetchMessages, toast);
   const { getMessagesForShowing, getConversations } = useConversations(messages, userId);
   
   // Clear cache when user changes

@@ -1,3 +1,4 @@
+
 import { useState, Suspense } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
@@ -10,48 +11,11 @@ import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
-import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
+import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 
 const BuyerDashboard = () => {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
-  const [targetShowingId, setTargetShowingId] = useState<string | undefined>();
-  const [targetShowingData, setTargetShowingData] = useState<any>(undefined);
-
-  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
-    setChatDefaultTab(defaultTab);
-    
-    if (showingId) {
-      // Find the showing data
-      const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
-      const showingData = allShowings.find(s => s.id === showingId);
-      
-      setTargetShowingId(showingId);
-      setTargetShowingData(showingData ? {
-        id: showingData.id,
-        property_address: showingData.property_address,
-        assigned_agent_email: showingData.assigned_agent_email, // Use email instead of id
-        assigned_agent_name: showingData.assigned_agent_name
-      } : undefined);
-    } else {
-      setTargetShowingId(undefined);
-      setTargetShowingData(undefined);
-    }
-    
-    setChatOpen(true);
-  };
-
-  const handleChatToggle = () => {
-    if (!chatOpen) {
-      // Reset targeting when opening fresh
-      setTargetShowingId(undefined);
-      setTargetShowingData(undefined);
-    }
-    setChatOpen(!chatOpen);
-  };
-
   const {
     showPropertyForm,
     setShowPropertyForm,
@@ -90,7 +54,7 @@ const BuyerDashboard = () => {
     handleRescheduleShowing,
     handleRescheduleSuccess,
     fetchShowingRequests
-  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
+  } = useBuyerDashboardLogic();
 
   // Add the pending tour handler to process any pending tour requests
   const { triggerPendingTourProcessing } = usePendingTourHandler();
@@ -101,11 +65,12 @@ const BuyerDashboard = () => {
                      currentUser?.email?.split('@')[0] || 'User';
 
   const handleOpenMessages = () => {
-    handleOpenChat('property');
+    setActiveTab("messages");
   };
 
   const handleOpenSupport = () => {
-    handleOpenChat('support');
+    // We can add support functionality here later
+    console.log("Support requested");
   };
 
   const agreementsRecord = Object.fromEntries(
@@ -139,10 +104,20 @@ const BuyerDashboard = () => {
     onSendMessage: (showing) => handleSendMessage(showing.id)
   });
 
+  // Add the messages section to the dashboard
+  const messagesSection = {
+    id: "messages",
+    title: "Messages",
+    component: <InlineMessagesPanel />
+  };
+
   const sections = sectionsArray.reduce((acc, section) => {
     acc[section.id] = section;
     return acc;
   }, {} as Record<string, any>);
+
+  // Add messages section
+  sections.messages = messagesSection;
 
   const stats = (
     <div className="space-y-4">
@@ -188,15 +163,6 @@ const BuyerDashboard = () => {
         sections={sections}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-      />
-
-      {/* Unified Chat Widget with enhanced targeting */}
-      <UnifiedChatWidget
-        isOpen={chatOpen}
-        onToggle={handleChatToggle}
-        defaultTab={chatDefaultTab}
-        targetShowingId={targetShowingId}
-        showingData={targetShowingData}
       />
 
       <PropertyRequestForm

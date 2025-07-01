@@ -71,7 +71,8 @@ const ShowingRequestCard = ({
   onReportIssue,
   onSignAgreement
 }: ShowingRequestCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Auto-expand completed tours to show post-tour actions
+  const [isExpanded, setIsExpanded] = useState(showing.status === 'completed');
   const { 
     fetchActionsForShowing, 
     getCompletedActions, 
@@ -244,6 +245,31 @@ const ShowingRequestCard = ({
                   <span>Requested {formatDate(showing.created_at)}</span>
                 </div>
               </div>
+
+              {/* Show post-tour actions preview for completed tours */}
+              {showing.status === 'completed' && !isExpanded && (
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">
+                        Post-Tour Actions Available
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExpanded(true)}
+                      className="text-blue-700 hover:text-blue-900 h-6 px-2"
+                    >
+                      View Actions
+                    </Button>
+                  </div>
+                  <div className="text-xs text-blue-700 mt-1">
+                    Make an offer, schedule another tour, or save to favorites
+                  </div>
+                </div>
+              )}
 
               {/* Agent Requested Alert Box */}
               {isAgentRequestedStatus && userType === 'agent' && (

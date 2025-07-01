@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import EmptyStateCard from "./EmptyStateCard";
 import ConsultationsSection from "./ConsultationsSection";
 import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
+import ShowingListTab from "./ShowingListTab";
 
 // Add this interface for consultations
 interface Consultation {
@@ -70,34 +71,24 @@ export const generateBuyerDashboardSections = ({
       count: pendingCount,
       color: "bg-orange-100 text-orange-700",
       component: (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Pending Requests</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {pendingCount > 0 ? (
-              pendingRequests.map((showing) => (
-                <div key={showing.id} className="mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">{showing.property_address}</div>
-                    <Badge variant="secondary">{showing.status}</Badge>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Requested: {new Date(showing.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyStateCard
-                title="No Pending Requests"
-                description="Start by requesting a property tour."
-                buttonText="Request a Tour"
-                onButtonClick={onRequestShowing}
-                icon={Clock}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ShowingListTab
+          title="Pending Requests"
+          showings={pendingRequests}
+          emptyIcon={Clock}
+          emptyTitle="No Pending Requests"
+          emptyDescription="Start by requesting a property tour."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={onRequestShowing}
+          onCancelShowing={onCancelShowing}
+          onRescheduleShowing={onRescheduleShowing}
+          onConfirmShowing={onConfirmShowing}
+          onSendMessage={onSendMessage}
+          onSignAgreement={onSignAgreement}
+          showActions={true}
+          userType="buyer"
+          currentUserId={currentUser?.id}
+          agreements={agreements}
+        />
       )
     },
     {
@@ -107,38 +98,24 @@ export const generateBuyerDashboardSections = ({
       count: confirmedCount,
       color: "bg-blue-100 text-blue-700",
       component: (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Confirmed Tours</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {confirmedCount > 0 ? (
-              activeShowings.map((showing) => (
-                <div key={showing.id} className="mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">{showing.property_address}</div>
-                    {agreements[showing.id] ? (
-                      <Badge variant="outline">Agreement Signed</Badge>
-                    ) : (
-                      <Badge variant="default">Awaiting Agreement</Badge>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Scheduled: {new Date(showing.preferred_date || '').toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyStateCard
-                title="No Confirmed Tours"
-                description="Check back once your request is confirmed."
-                buttonText=""
-                onButtonClick={() => {}}
-                icon={Calendar}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ShowingListTab
+          title="Confirmed Tours"
+          showings={activeShowings}
+          emptyIcon={Calendar}
+          emptyTitle="No Confirmed Tours"
+          emptyDescription="Check back once your request is confirmed."
+          emptyButtonText=""
+          onRequestShowing={onRequestShowing}
+          onCancelShowing={onCancelShowing}
+          onRescheduleShowing={onRescheduleShowing}
+          onConfirmShowing={onConfirmShowing}
+          onSendMessage={onSendMessage}
+          onSignAgreement={onSignAgreement}
+          showActions={true}
+          userType="buyer"
+          currentUserId={currentUser?.id}
+          agreements={agreements}
+        />
       )
     },
     {
@@ -148,34 +125,25 @@ export const generateBuyerDashboardSections = ({
       count: historyCount,
       color: "bg-green-100 text-green-700",
       component: (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Tour History</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {historyCount > 0 ? (
-              completedShowings.map((showing) => (
-                <div key={showing.id} className="mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">{showing.property_address}</div>
-                    <Badge variant="secondary">{showing.status}</Badge>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Completed: {new Date(showing.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <EmptyStateCard
-                title="No Past Tours"
-                description="Your completed and cancelled tours will appear here."
-                buttonText=""
-                onButtonClick={() => {}}
-                icon={CheckCircle}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <ShowingListTab
+          title="Tour History"
+          showings={completedShowings}
+          emptyIcon={CheckCircle}
+          emptyTitle="No Past Tours"
+          emptyDescription="Your completed and cancelled tours will appear here."
+          emptyButtonText=""
+          onRequestShowing={onRequestShowing}
+          onCancelShowing={onCancelShowing}
+          onRescheduleShowing={onRescheduleShowing}
+          onConfirmShowing={onConfirmShowing}
+          onSendMessage={onSendMessage}
+          onSignAgreement={onSignAgreement}
+          showActions={true}
+          userType="buyer"
+          onComplete={fetchShowingRequests}
+          currentUserId={currentUser?.id}
+          agreements={agreements}
+        />
       )
     },
     

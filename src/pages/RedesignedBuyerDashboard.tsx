@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
@@ -20,6 +19,7 @@ import StatsAndMessages from "@/components/dashboard/redesigned/StatsAndMessages
 import WhatsNextCard from "@/components/dashboard/redesigned/WhatsNextCard";
 import BadgesSection from "@/components/dashboard/redesigned/BadgesSection";
 import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
+import EnhancedWhatsNextCard from "@/components/dashboard/redesigned/EnhancedWhatsNextCard";
 
 // Tour sections
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
@@ -165,39 +165,20 @@ const RedesignedBuyerDashboard = () => {
     console.log('Opening chat for showing:', showingId);
   };
 
-  // New handlers for WhatsNext actions
-  const handleWorkWithAgent = () => {
-    // Find the most recent completed showing with agent data
-    const completedWithAgent = completedShowings?.find(showing => 
-      showing.assigned_agent_name && showing.assigned_agent_email
-    );
-    
-    if (completedWithAgent) {
-      setSelectedAgent({
-        id: completedWithAgent.assigned_agent_email, // Using email as ID fallback
-        name: completedWithAgent.assigned_agent_name,
-        email: completedWithAgent.assigned_agent_email,
-        phone: completedWithAgent.assigned_agent_phone,
-        showingId: completedWithAgent.id,
-        propertyAddress: completedWithAgent.property_address
-      });
-      setShowAgentModal(true);
-    } else {
-      // No agent data available - could show a message or redirect to find an agent
-      console.log('No agent data available from completed showings');
-    }
+  // Enhanced handlers for WhatsNext actions
+  const handleWorkWithAgent = (agentData: any) => {
+    setSelectedAgent(agentData);
+    setShowAgentModal(true);
   };
 
   const handleScheduleAnotherTour = async () => {
     if (!currentUser?.id) return;
     
-    // Use the most recent showing ID if available
     const recentShowingId = completedShowings?.[0]?.id;
     await scheduleAnotherTour(currentUser.id, recentShowingId);
   };
 
   const handleSeeOtherProperties = () => {
-    // For now, redirect to request another tour
     handleRequestShowing();
   };
 
@@ -340,11 +321,11 @@ const RedesignedBuyerDashboard = () => {
           />
         </div>
 
-        {/* What's Next */}
+        {/* Enhanced What's Next */}
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <WhatsNextCard 
-            hasUpcomingTour={!!nextTour}
-            hasCompletedTours={stats.toursCompleted}
+          <EnhancedWhatsNextCard 
+            buyerId={currentUser?.id}
+            completedShowings={completedShowings || []}
             onMakeOffer={handleMakeOffer}
             onWorkWithAgent={handleWorkWithAgent}
             onScheduleAnotherTour={handleScheduleAnotherTour}

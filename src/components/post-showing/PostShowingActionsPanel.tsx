@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingAct
 import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
+import { PostShowingWorkflowService } from '@/services/postShowingWorkflowService';
 
 interface PostShowingActionsPanelProps {
   showingId: string;
@@ -42,8 +42,20 @@ const PostShowingActionsPanel = ({
     favoriteProperty
   } = useEnhancedPostShowingActions();
 
-  const handleActionComplete = (actionType: string) => {
+  const handleActionComplete = async (actionType: string) => {
     setCompletedActions(prev => new Set([...prev, actionType]));
+    
+    // Notify workflow service and agent
+    if (agentId) {
+      await PostShowingWorkflowService.notifyAgentOfBuyerAction({
+        showingId,
+        buyerId,
+        agentId,
+        actionType,
+        actionDetails: { property_address: propertyAddress, agent_name: agentName }
+      });
+    }
+
     if (onActionCompleted) {
       onActionCompleted(actionType);
     }
@@ -51,7 +63,7 @@ const PostShowingActionsPanel = ({
 
   const handleScheduleAnotherTour = async () => {
     await scheduleAnotherTour(buyerId, showingId);
-    handleActionComplete('schedule_another_tour');
+    await handleActionComplete('schedule_another_tour');
   };
 
   const handleHireAgentClick = () => {
@@ -71,17 +83,16 @@ const PostShowingActionsPanel = ({
     });
     
     setShowAgentProfile(false);
-    handleActionComplete('hire_agent');
+    await handleActionComplete('hire_agent');
   };
 
   const handleMakeOffer = () => {
     setShowOfferDialog(true);
   };
 
-  const handleOfferDialogClose = () => {
+  const handleOfferDialogClose = async () => {
     setShowOfferDialog(false);
-    // Mark offer action as completed when user goes through either flow
-    handleActionComplete('make_offer');
+    await handleActionComplete('make_offer');
   };
 
   const handleFavoriteProperty = async (notes?: string) => {
@@ -93,7 +104,7 @@ const PostShowingActionsPanel = ({
     }, notes);
     
     setShowFavoriteModal(false);
-    handleActionComplete('favorite_property');
+    await handleActionComplete('favorite_property');
   };
 
   const actions = [

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -15,10 +14,39 @@ import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
 const BuyerDashboard = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
+  const [targetShowingId, setTargetShowingId] = useState<string | undefined>();
+  const [targetShowingData, setTargetShowingData] = useState<any>(undefined);
 
   const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
     setChatDefaultTab(defaultTab);
+    
+    if (showingId) {
+      // Find the showing data
+      const allShowings = [...pendingRequests, ...activeShowings, ...completedShowings];
+      const showingData = allShowings.find(s => s.id === showingId);
+      
+      setTargetShowingId(showingId);
+      setTargetShowingData(showingData ? {
+        id: showingData.id,
+        property_address: showingData.property_address,
+        assigned_agent_id: showingData.assigned_agent_id,
+        assigned_agent_name: showingData.assigned_agent_name
+      } : undefined);
+    } else {
+      setTargetShowingId(undefined);
+      setTargetShowingData(undefined);
+    }
+    
     setChatOpen(true);
+  };
+
+  const handleChatToggle = () => {
+    if (!chatOpen) {
+      // Reset targeting when opening fresh
+      setTargetShowingId(undefined);
+      setTargetShowingData(undefined);
+    }
+    setChatOpen(!chatOpen);
   };
 
   const {
@@ -150,11 +178,13 @@ const BuyerDashboard = () => {
         onTabChange={setActiveTab}
       />
 
-      {/* Unified Chat Widget */}
+      {/* Unified Chat Widget with enhanced targeting */}
       <UnifiedChatWidget
         isOpen={chatOpen}
-        onToggle={() => setChatOpen(!chatOpen)}
+        onToggle={handleChatToggle}
         defaultTab={chatDefaultTab}
+        targetShowingId={targetShowingId}
+        showingData={targetShowingData}
       />
 
       <PropertyRequestForm

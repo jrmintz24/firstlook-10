@@ -1,102 +1,94 @@
 
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Send, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface Message {
   id: string;
   content: string;
   sender_id: string;
-  receiver_id: string | null;
+  receiver_id: string;
   created_at: string;
-  read_at: string | null;
+  read_at?: string;
   sender_profile?: {
-    first_name: string | null;
-    last_name: string | null;
-    user_type: string | null;
+    first_name?: string;
+    last_name?: string;
+    user_type?: string;
   };
 }
 
 interface MessageThreadProps {
   messages: Message[];
-  onSendMessage: (content: string, receiverId?: string) => Promise<boolean>;
-  onMarkAsRead?: () => void;
-  conversationType?: 'property' | 'support';
-  isNewConversation?: boolean;
-  // Legacy props for backward compatibility
-  currentUserId?: string;
-  propertyAddress?: string;
-  showingStatus?: string;
+  onSendMessage: (content: string, receiverId: string) => Promise<boolean>;
+  onMarkAsRead: () => void;
+  conversationType: 'property' | 'support';
 }
 
-const MessageThread = ({ 
-  messages, 
-  onSendMessage, 
-  onMarkAsRead, 
-  conversationType = 'property',
-  isNewConversation = false,
-  currentUserId,
-  propertyAddress,
-  showingStatus
-}: MessageThreadProps) => {
-  const { user } = useAuth();
-  const [newMessage, setNewMessage] = useState("");
+const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType }: MessageThreadProps) => {
+  const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const { user } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Use currentUserId if provided (legacy), otherwise use auth user
-  const userId = currentUserId || user?.id;
-
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Mark messages as read when opened
+  // Mark messages as read when thread is viewed
   useEffect(() => {
-    if (onMarkAsRead && messages.length > 0) {
+    if (messages.length > 0 && user?.id) {
       const hasUnreadMessages = messages.some(msg => 
-        msg.receiver_id === userId && !msg.read_at
+        msg.receiver_id === user.id && !msg.read_at
       );
       if (hasUnreadMessages) {
         onMarkAsRead();
       }
     }
-  }, [messages, onMarkAsRead, userId]);
+  }, [messages, user?.id, onMarkAsRead]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || sending) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user?.id || sending) return;
+
+    // Find the other participant (receiver)
+    let receiverId: string | null = null;
+    for (const message of messages) {
+      if (message.sender_id !== user.id) {
+        receiverId = message.sender_id;
+        break;
+      } else if (message.receiver_id !== user.id) {
+        receiverId = message.receiver_id;
+        break;
+      }
+    }
+
+    if (!receiverId) {
+      console.error('Could not determine receiver for message');
+      return;
+    }
 
     setSending(true);
     try {
-      let success = false;
-      
-      if (conversationType === 'property') {
-        // For property messages, we need to determine the receiver
-        const otherParticipants = messages
-          .map(msg => msg.sender_id === userId ? msg.receiver_id : msg.sender_id)
-          .filter((id, index, arr) => id && id !== userId && arr.indexOf(id) === index);
-        
-        const receiverId = otherParticipants[0] || '';
-        console.log('Sending message to receiverId:', receiverId);
-        success = await onSendMessage(newMessage.trim(), receiverId);
-      } else {
-        // Support messages
-        success = await onSendMessage(newMessage.trim());
-      }
-
+      const success = await onSendMessage(newMessage.trim(), receiverId);
       if (success) {
-        setNewMessage("");
+        setNewMessage('');
       }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -106,94 +98,100 @@ const MessageThread = ({
     const isToday = date.toDateString() === now.toDateString();
     
     if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleTimeString(undefined, { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
     }
+    
+    return date.toLocaleDateString(undefined, { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
-  const getSenderName = (message: Message) => {
-    if (message.sender_id === userId) {
-      return 'You';
-    }
-    
-    if (message.sender_profile) {
-      const { first_name, last_name, user_type } = message.sender_profile;
-      const name = [first_name, last_name].filter(Boolean).join(' ');
-      return name || (user_type === 'admin' ? 'Support Team' : 'Agent');
-    }
-    
-    return conversationType === 'support' ? 'Support Team' : 'Agent';
-  };
+  const sortedMessages = messages.sort((a, b) => 
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
 
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 p-3" ref={scrollAreaRef}>
-        {isNewConversation && messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-sm">Start the conversation by sending a message below.</p>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-sm">No messages yet. Start the conversation!</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {messages.map((message) => {
-              const isOwnMessage = message.sender_id === userId;
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div className="space-y-4">
+          {sortedMessages.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <User className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No messages yet</p>
+              <p className="text-xs text-gray-400 mt-1">Start the conversation below</p>
+            </div>
+          ) : (
+            sortedMessages.map((message) => {
+              const isOwnMessage = message.sender_id === user?.id;
+              const senderName = message.sender_profile 
+                ? `${message.sender_profile.first_name || ''} ${message.sender_profile.last_name || ''}`.trim()
+                : isOwnMessage ? 'You' : 'Agent';
+
               return (
                 <div
                   key={message.id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                  className={cn(
+                    "flex",
+                    isOwnMessage ? "justify-end" : "justify-start"
+                  )}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                    className={cn(
+                      "max-w-[80%] rounded-lg px-3 py-2 shadow-sm",
                       isOwnMessage
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-900 border"
+                    )}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs opacity-70">
-                        {getSenderName(message)}
-                      </span>
-                      <span className="text-xs opacity-50">
-                        {formatMessageTime(message.created_at)}
-                      </span>
+                    <div className="text-sm">{message.content}</div>
+                    <div
+                      className={cn(
+                        "text-xs mt-1 flex items-center justify-between",
+                        isOwnMessage ? "text-blue-100" : "text-gray-500"
+                      )}
+                    >
+                      <span>{senderName}</span>
+                      <span>{formatMessageTime(message.created_at)}</span>
                     </div>
-                    <p className="text-sm break-words">{message.content}</p>
                   </div>
                 </div>
               );
-            })}
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </ScrollArea>
 
-      <form onSubmit={handleSendMessage} className="p-3 border-t">
-        <div className="flex gap-2">
-          <Input
+      {/* Message Input */}
+      <div className="border-t p-4">
+        <div className="flex gap-3">
+          <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={
-              conversationType === 'support'
-                ? "Type your message..."
-                : "Send a message..."
-            }
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            className="flex-1 min-h-[44px] max-h-24 resize-none text-sm border-gray-200 focus:border-blue-300 focus:ring-blue-200"
             disabled={sending}
-            className="flex-1"
           />
           <Button
-            type="submit"
-            disabled={!newMessage.trim() || sending}
-            className="bg-black hover:bg-gray-800"
             size="sm"
+            onClick={handleSendMessage}
+            disabled={!newMessage.trim() || sending}
+            className="bg-blue-600 hover:bg-blue-700 h-11 w-11 p-0 self-end flex-shrink-0"
           >
-            <Send className="h-4 w-4" />
+            <Send className="w-4 h-4" />
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

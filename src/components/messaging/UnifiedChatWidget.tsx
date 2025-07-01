@@ -11,13 +11,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import PropertyChatsTab from "./PropertyChatsTab";
 import SupportChatTab from "./SupportChatTab";
 
+interface ShowingData {
+  id: string;
+  property_address: string;
+  assigned_agent_id?: string;
+  assigned_agent_name?: string;
+}
+
 interface UnifiedChatWidgetProps {
   isOpen: boolean;
   onToggle: () => void;
   defaultTab?: 'property' | 'support';
+  targetShowingId?: string;
+  showingData?: ShowingData;
 }
 
-const UnifiedChatWidget = ({ isOpen, onToggle, defaultTab = 'property' }: UnifiedChatWidgetProps) => {
+const UnifiedChatWidget = ({ 
+  isOpen, 
+  onToggle, 
+  defaultTab = 'property',
+  targetShowingId,
+  showingData 
+}: UnifiedChatWidgetProps) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -47,6 +62,13 @@ const UnifiedChatWidget = ({ isOpen, onToggle, defaultTab = 'property' }: Unifie
       setActiveTab(defaultTab);
     }
   }, [defaultTab]);
+
+  // Handle targeted showing - switch to property tab and pass the target
+  useEffect(() => {
+    if (targetShowingId && isOpen) {
+      setActiveTab('property');
+    }
+  }, [targetShowingId, isOpen]);
 
   // Don't render if no user
   if (!user?.id) {
@@ -132,6 +154,9 @@ const UnifiedChatWidget = ({ isOpen, onToggle, defaultTab = 'property' }: Unifie
                 onSendMessage={sendPropertyMessage}
                 onMarkAsRead={markPropertyMessagesAsRead}
                 loading={propertyLoading}
+                targetShowingId={targetShowingId}
+                showingData={showingData}
+                userId={user.id}
               />
             </TabsContent>
 

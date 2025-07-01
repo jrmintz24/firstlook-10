@@ -69,10 +69,10 @@ export const useMessages = (userId: string | null) => {
       if (error) throw error;
 
       // Filter out expired messages and cache result
-      const now = new Date();
+      const currentTime = new Date();
       const activeMessages = (data || []).filter(msg => {
         if (!msg.access_expires_at) return true;
-        return new Date(msg.access_expires_at) > now;
+        return new Date(msg.access_expires_at) > currentTime;
       });
 
       // Update cache

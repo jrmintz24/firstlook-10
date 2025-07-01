@@ -60,8 +60,6 @@ const RedesignedBuyerDashboard = () => {
     agreements,
     loading,
     authLoading,
-    user,
-    session,
     currentUser,
     pendingRequests = [],
     activeShowings = [],
@@ -88,10 +86,9 @@ const RedesignedBuyerDashboard = () => {
   console.log('RedesignedBuyerDashboard - Render state:', {
     authLoading,
     loading,
-    hasUser: !!user,
-    hasSession: !!session,
-    userEmail: user?.email || session?.user?.email,
-    userId: user?.id || session?.user?.id,
+    hasCurrentUser: !!currentUser,
+    userEmail: currentUser?.email,
+    userId: currentUser?.id,
     profileExists: !!profile,
     profileData: profile,
     showingCounts: {
@@ -113,7 +110,7 @@ const RedesignedBuyerDashboard = () => {
     );
   }
 
-  if (!user && !session) {
+  if (!currentUser) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">

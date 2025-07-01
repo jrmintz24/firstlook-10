@@ -32,7 +32,7 @@ const BuyerDashboard = () => {
       setTargetShowingData(showingData ? {
         id: showingData.id,
         property_address: showingData.property_address,
-        assigned_agent_id: showingData.assigned_agent_id,
+        assigned_agent_email: showingData.assigned_agent_email, // Use email instead of id
         assigned_agent_name: showingData.assigned_agent_name
       } : undefined);
     } else {

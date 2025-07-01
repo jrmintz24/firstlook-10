@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +29,11 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   const [activeTab, setActiveTab] = useState("overview");
   const isMobile = useIsMobile();
   
+  // Add dummy onOpenChat handler
+  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
+    console.log('Chat opened', { defaultTab, showingId });
+  };
+  
   const {
     loading,
     pendingRequests,
@@ -44,7 +48,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
     handleSignAgreementFromCard,
     handleSendMessage,
     fetchShowingRequests
-  } = useBuyerDashboardLogic();
+  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
   const pendingShowings = pendingRequests || [];
   const upcomingShowings = activeShowings || [];

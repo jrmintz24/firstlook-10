@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Combobox, ComboboxInput, ComboboxList, ComboboxOption, ComboboxPopover } from "@reach/combobox";
 import "@reach/combobox/styles.css";
 import { useDebounce } from "@/hooks/useDebounce";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddressAutocompleteProps {
   value: string;
@@ -41,38 +43,33 @@ const AddressAutocomplete = ({
     console.log('🔍 Starting address search for:', searchTerm);
     
     try {
-      // Use the correct Supabase edge function URL with the right project ID
       console.log('📡 Making request to google-places edge function...');
-      const response = await fetch('https://58695556-20e3-43d8-8b39-34dee2d61caa.supabase.co/functions/v1/google-places', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ input: searchTerm })
+      
+      // Use Supabase client to invoke the edge function
+      const { data, error } = await supabase.functions.invoke('google-places', {
+        body: { input: searchTerm }
       });
 
-      console.log('📡 Response status:', response.status);
+      console.log('📡 Response received:', { data, error });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ HTTP error! status:', response.status, 'response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        console.error('❌ Error from edge function:', error);
+        setResults([]);
+        setIsOpen(false);
+        return;
       }
 
-      const data = await response.json();
-      console.log('📍 Google Places response:', data);
-
-      if (data.status === 'OK' && data.predictions) {
+      if (data && data.status === 'OK' && data.predictions) {
         const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
         console.log('✅ Formatted addresses:', formattedAddresses);
         setResults(formattedAddresses);
         setIsOpen(true);
-      } else if (data.error) {
+      } else if (data && data.error) {
         console.error('❌ Error from edge function:', data.error);
         setResults([]);
         setIsOpen(false);
       } else {
-        console.error('❌ Error fetching addresses:', data.error_message || data.status);
+        console.error('❌ Error fetching addresses:', data?.error_message || data?.status);
         setResults([]);
         setIsOpen(false);
       }

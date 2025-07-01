@@ -1,58 +1,27 @@
+import { Calendar, CheckCircle, Clock, MessageSquare, MapPin } from "lucide-react";
 
-import { Clock, CheckCircle, Calendar } from "lucide-react";
-import React from "react";
-
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import EmptyStateCard from "./EmptyStateCard";
-import ShowingListTab from "./ShowingListTab";
-import PostShowingActionsPanel from '@/components/post-showing/PostShowingActionsPanel';
+import ConsultationsSection from "./ConsultationsSection";
 
-interface ShowingRequest {
+// Add this interface for consultations
+interface Consultation {
   id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_name?: string | null;
-  assigned_agent_phone?: string | null;
-  assigned_agent_email?: string | null;
-  assigned_agent_id?: string | null;
-  estimated_confirmation_date?: string | null;
-  status_updated_at?: string | null;
-  user_id?: string | null;
+  propertyAddress: string;
+  scheduledAt: string;
+  consultationType: 'phone' | 'video';
+  agentName?: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
 }
 
-interface BuyerDashboardSectionsProps {
-  pendingRequests: ShowingRequest[];
-  activeShowings: ShowingRequest[];
-  completedShowings: ShowingRequest[];
-  agreements: Record<string, boolean>;
-  currentUser: any;
-  profile: any;
-  displayName: string;
-  unreadCount: number;
-  onRequestShowing: () => void;
-  onCancelShowing: (id: string) => void;
-  onRescheduleShowing: (id: string) => void;
-  onConfirmShowing: (showing: ShowingRequest) => void;
-  onSignAgreement: (showing: ShowingRequest) => void;
-  fetchShowingRequests: () => void;
-  onSendMessage: (showing: ShowingRequest) => void;
-}
-
-interface DashboardSection {
-  id: string;
-  title: string;
-  icon: React.ComponentType<any>;
-  count?: number;
-  content: React.ReactNode;
-}
-
+// Update the generateBuyerDashboardSections function parameters to include consultations
 export const generateBuyerDashboardSections = ({
   pendingRequests,
   activeShowings,
   completedShowings,
+  consultations = [], // Add this parameter
   agreements,
   currentUser,
   profile,
@@ -64,119 +33,207 @@ export const generateBuyerDashboardSections = ({
   onConfirmShowing,
   onSignAgreement,
   fetchShowingRequests,
-  onSendMessage
-}: BuyerDashboardSectionsProps): DashboardSection[] => {
+  onSendMessage,
+  onJoinConsultation,
+  onRescheduleConsultation
+}: {
+  pendingRequests: any[];
+  activeShowings: any[];
+  completedShowings: any[];
+  consultations?: Consultation[];
+  agreements: Record<string, boolean>;
+  currentUser: any;
+  profile: any;
+  displayName: string;
+  unreadCount: number;
+  onRequestShowing: () => void;
+  onCancelShowing: (id: string) => void;
+  onRescheduleShowing: (showing: any) => void;
+  onConfirmShowing: (showing: any) => void;
+  onSignAgreement: (showing: any) => void;
+  fetchShowingRequests: () => void;
+  onSendMessage: (showing: any) => void;
+  onJoinConsultation?: (consultationId: string) => void;
+  onRescheduleConsultation?: (consultationId: string) => void;
+}) => {
+  const pendingCount = pendingRequests.length;
+  const confirmedCount = activeShowings.length;
+  const historyCount = completedShowings.length;
 
-  const requestedSection: DashboardSection = {
-    id: "requested",
-    title: "Requested",
-    icon: Clock,
-    count: pendingRequests.length,
-    content: (
-      <ShowingListTab
-        title="Pending Tour Requests"
-        showings={pendingRequests}
-        emptyIcon={Clock}
-        emptyTitle="No Pending Tours"
-        emptyDescription="You don't have any pending tour requests."
-        emptyButtonText="Request a Tour"
-        onRequestShowing={onRequestShowing}
-        onCancelShowing={onCancelShowing}
-        onRescheduleShowing={onRescheduleShowing}
-        onConfirmShowing={onConfirmShowing}
-        onSignAgreement={onSignAgreement}
-        onSendMessage={(showingId) => {
-          const showing = pendingRequests.find(s => s.id === showingId);
-          if (showing) onSendMessage(showing);
-        }}
-        userType="buyer"
-        currentUserId={currentUser?.id || ''}
-        agreements={agreements}
-      />
-    )
-  };
-
-  const confirmedSection: DashboardSection = {
-    id: "confirmed",
-    title: "Confirmed",
-    icon: Calendar,
-    count: activeShowings.length,
-    content: (
-      <ShowingListTab
-        title="Upcoming Tours"
-        showings={activeShowings}
-        emptyIcon={Calendar}
-        emptyTitle="No Upcoming Tours"
-        emptyDescription="You don't have any upcoming tours scheduled."
-        emptyButtonText="Request a Tour"
-        onRequestShowing={onRequestShowing}
-        onCancelShowing={onCancelShowing}
-        onRescheduleShowing={onRescheduleShowing}
-        onConfirmShowing={onConfirmShowing}
-        onSignAgreement={onSignAgreement}
-        onSendMessage={(showingId) => {
-          const showing = activeShowings.find(s => s.id === showingId);
-          if (showing) onSendMessage(showing);
-        }}
-        userType="buyer"
-        currentUserId={currentUser?.id || ''}
-        agreements={agreements}
-      />
-    )
-  };
-
-  const historySection: DashboardSection = {
-    id: "history",
-    title: "History",
-    icon: CheckCircle,
-    count: completedShowings.length,
-    content: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Tour History</h2>
-        {completedShowings.length === 0 ? (
-          <EmptyStateCard
-            icon={CheckCircle}
-            title="No Tour History"
-            description="You haven't completed any tours yet."
-            buttonText="Request a Tour"
-            onButtonClick={onRequestShowing}
-          />
-        ) : (
-          <div className="space-y-6">
-            {completedShowings.map((showing) => (
-              <div key={showing.id} className="border rounded-lg">
-                <div className="p-4 border-b">
-                  <h3 className="font-medium">{showing.property_address}</h3>
-                  <p className="text-sm text-gray-600">
-                    Completed: {showing.status_updated_at ? new Date(showing.status_updated_at).toLocaleDateString() : 'Recently'}
-                  </p>
+  const sections = [
+    {
+      id: "requested",
+      title: "Requested",
+      icon: Clock,
+      count: pendingCount,
+      color: "bg-orange-100 text-orange-700",
+      component: (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Pending Requests</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {pendingCount > 0 ? (
+              pendingRequests.map((showing) => (
+                <div key={showing.id} className="mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{showing.property_address}</div>
+                    <Badge variant="secondary">{showing.status}</Badge>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Requested: {new Date(showing.created_at).toLocaleDateString()}
+                  </div>
                 </div>
-                <div className="p-4">
-                  <PostShowingActionsPanel
-                    showingId={showing.id}
-                    buyerId={currentUser?.id || ''}
-                    agentId={showing.assigned_agent_email || ''}
-                    agentName={showing.assigned_agent_name}
-                    agentEmail={showing.assigned_agent_email}
-                    agentPhone={showing.assigned_agent_phone}
-                    propertyAddress={showing.property_address}
-                    onActionCompleted={() => {
-                      // Refresh data when actions are completed
-                      fetchShowingRequests();
-                    }}
-                  />
+              ))
+            ) : (
+              <EmptyStateCard
+                title="No Pending Requests"
+                description="Start by requesting a property tour."
+                buttonText="Request a Tour"
+                onButtonClick={onRequestShowing}
+                icon={Clock}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )
+    },
+    {
+      id: "confirmed",
+      title: "Confirmed",
+      icon: Calendar,
+      count: confirmedCount,
+      color: "bg-blue-100 text-blue-700",
+      component: (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Confirmed Tours</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {confirmedCount > 0 ? (
+              activeShowings.map((showing) => (
+                <div key={showing.id} className="mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{showing.property_address}</div>
+                    {agreements[showing.id] ? (
+                      <Badge variant="outline">Agreement Signed</Badge>
+                    ) : (
+                      <Badge variant="default">Awaiting Agreement</Badge>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Scheduled: {new Date(showing.preferred_date || '').toLocaleDateString()}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  };
-
-  return [
-    requestedSection,
-    confirmedSection,
-    historySection
+              ))
+            ) : (
+              <EmptyStateCard
+                title="No Confirmed Tours"
+                description="Check back once your request is confirmed."
+                buttonText=""
+                onButtonClick={() => {}}
+                icon={Calendar}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )
+    },
+    {
+      id: "history",
+      title: "History",
+      icon: CheckCircle,
+      count: historyCount,
+      color: "bg-green-100 text-green-700",
+      component: (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Tour History</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {historyCount > 0 ? (
+              completedShowings.map((showing) => (
+                <div key={showing.id} className="mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{showing.property_address}</div>
+                    <Badge variant="secondary">{showing.status}</Badge>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Completed: {new Date(showing.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyStateCard
+                title="No Past Tours"
+                description="Your completed and cancelled tours will appear here."
+                buttonText=""
+                onButtonClick={() => {}}
+                icon={CheckCircle}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )
+    },
+    
+    // Add consultations section after the existing sections
+    {
+      id: "consultations",
+      title: "Consultations",
+      icon: Calendar,
+      count: consultations.filter(c => c.status === 'scheduled' && new Date(c.scheduledAt) >= new Date()).length,
+      color: "bg-purple-100 text-purple-700",
+      component: (
+        <ConsultationsSection
+          consultations={consultations}
+          onJoinCall={onJoinConsultation}
+          onReschedule={onRescheduleConsultation}
+        />
+      )
+    },
+    {
+      id: "messages",
+      title: "Messages",
+      icon: MessageSquare,
+      count: unreadCount,
+      color: "bg-red-100 text-red-700",
+      component: (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Messages</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <p>You have {unreadCount} unread messages.</p>
+            <Button onClick={() => {}}>View Messages</Button>
+          </CardContent>
+        </Card>
+      )
+    },
+    {
+      id: "profile",
+      title: "Profile",
+      icon: MapPin,
+      count: 0,
+      color: "bg-indigo-100 text-indigo-700",
+      component: (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Your Profile</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <p>Welcome, {displayName}!</p>
+            {profile && (
+              <>
+                <p>Email: {currentUser?.email}</p>
+                <p>Phone: {profile.phone}</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )
+    }
   ];
+
+  return sections;
 };

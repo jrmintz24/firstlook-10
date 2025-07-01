@@ -1,4 +1,4 @@
-import { useState, Suspense } from "react";
+import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -13,6 +13,7 @@ import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
+import { toast } from "@/components/ui/toast";
 
 const BuyerDashboard = () => {
   const {
@@ -76,10 +77,49 @@ const BuyerDashboard = () => {
     Object.entries(agreements).map(([key, value]) => [key, value])
   );
 
+  // Add mock consultations data
+  const mockConsultations = [
+    {
+      id: "1",
+      propertyAddress: "123 Main St, Washington, DC",
+      scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+      consultationType: 'video' as const,
+      agentName: "Sarah Johnson",
+      status: 'scheduled' as const
+    },
+    {
+      id: "2", 
+      propertyAddress: "456 Oak Ave, Arlington, VA",
+      scheduledAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Yesterday
+      consultationType: 'phone' as const,
+      agentName: "Mike Chen",
+      status: 'completed' as const
+    }
+  ];
+
   // Handle successful form submission - refresh data
   const handleFormSuccess = () => {
     fetchShowingRequests();
   };
+
+  // Add consultation handlers
+  const handleJoinConsultation = useCallback((consultationId: string) => {
+    console.log('Joining consultation:', consultationId);
+    // In a real implementation, this would open the video call
+    toast({
+      title: "Video Call Starting",
+      description: "Opening video consultation...",
+    });
+  }, [toast]);
+
+  const handleRescheduleConsultation = useCallback((consultationId: string) => {
+    console.log('Rescheduling consultation:', consultationId);
+    // In a real implementation, this would open a reschedule modal
+    toast({
+      title: "Reschedule Consultation",
+      description: "Feature coming soon!",
+    });
+  }, [toast]);
 
   // Show loading skeleton while data is being fetched
   if (loading || authLoading) {
@@ -94,6 +134,7 @@ const BuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
+    consultations: mockConsultations, // Add this line
     agreements: agreementsRecord,
     currentUser,
     profile,
@@ -105,7 +146,9 @@ const BuyerDashboard = () => {
     onConfirmShowing: handleConfirmShowingWithModal,
     onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
     fetchShowingRequests,
-    onSendMessage: (showing) => handleSendMessage(showing.id)
+    onSendMessage: (showing) => handleSendMessage(showing.id),
+    onJoinConsultation: handleJoinConsultation, // Add this line
+    onRescheduleConsultation: handleRescheduleConsultation // Add this line
   });
 
   // Add the messages section to the dashboard

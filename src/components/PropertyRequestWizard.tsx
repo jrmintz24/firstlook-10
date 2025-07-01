@@ -29,6 +29,8 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
     handleContinueToSubscriptions,
     handleAddProperty,
     handleRemoveProperty,
+    handleCancelPendingShowing,
+    pendingShowingAddress,
     resetForm
   } = usePropertyRequest(() => {
     onClose();
@@ -132,6 +134,8 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
       <FreeShowingLimitModal
         isOpen={showFreeShowingLimitModal}
         onClose={() => setShowFreeShowingLimitModal(false)}
+        onCancelPendingShowing={handleCancelPendingShowing}
+        pendingShowingAddress={pendingShowingAddress}
       />
     </>
   );

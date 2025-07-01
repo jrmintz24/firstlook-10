@@ -120,11 +120,7 @@ const ShowingListTab = ({
                 onConfirmShowing(showingToConfirm);
               }
             }}
-            onSignAgreement={() => {
-              if (onSignAgreement) {
-                onSignAgreement(showing);
-              }
-            }}
+            onSignAgreement={onSignAgreement}
             currentUserId={currentUserId}
             onSendMessage={onSendMessage}
             showActions={showActions}

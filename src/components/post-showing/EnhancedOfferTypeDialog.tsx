@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -58,6 +57,7 @@ const EnhancedOfferTypeDialog = ({
         property: propertyAddress
       });
       
+      // Only add agent if one is provided
       if (agentId) {
         params.append('agent', agentId);
       }
@@ -164,39 +164,43 @@ const EnhancedOfferTypeDialog = ({
                 </CardContent>
               </Card>
 
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50"
-                onClick={() => handleOfferTypeSelection('work_with_agent')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                        Work with Agent
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">Guided</Badge>
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Want expert guidance? Schedule a consultation to discuss this property and develop your offer strategy together.
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs border-blue-200">30-min consultation</Badge>
-                        <Badge variant="outline" className="text-xs border-blue-200">Expert strategy</Badge>
-                        <Badge variant="outline" className="text-xs border-blue-200">~3 minutes setup</Badge>
+              {agentId && agentName && (
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50"
+                  onClick={() => handleOfferTypeSelection('work_with_agent')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <User className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          Work with Agent
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">Guided</Badge>
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Want expert guidance? Schedule a consultation to discuss this property and develop your offer strategy together.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs border-blue-200">30-min consultation</Badge>
+                          <Badge variant="outline" className="text-xs border-blue-200">Expert strategy</Badge>
+                          <Badge variant="outline" className="text-xs border-blue-200">~3 minutes setup</Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium text-gray-900 mb-2">Which path is right for you?</h4>
               <div className="text-sm text-gray-600 space-y-1">
                 <p><strong>Choose "Make an Offer"</strong> if you're ready to submit an offer and want to handle the process yourself.</p>
-                <p><strong>Choose "Work with Agent"</strong> if you want professional guidance on strategy, pricing, or contract terms.</p>
+                {agentId && agentName && (
+                  <p><strong>Choose "Work with Agent"</strong> if you want professional guidance on strategy, pricing, or contract terms.</p>
+                )}
               </div>
             </div>
           </div>

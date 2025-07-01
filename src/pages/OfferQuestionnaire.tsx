@@ -40,16 +40,28 @@ const OfferQuestionnaire = () => {
     if (!user || !propertyAddress) return;
 
     try {
+      // Create a default agent ID for self-service offers if no agent is provided
+      const offerData: any = {
+        buyer_id: user.id,
+        property_address: propertyAddress,
+        offer_type: 'firstlook_generator',
+        contract_type: propertyAddress.includes('Montgomery') ? 'gcaar' : 
+                     propertyAddress.includes('DC') || propertyAddress.includes('Washington') ? 'gcaar' : 'mar'
+      };
+
+      // If agent is provided, use it; otherwise create a self-service offer with a system agent ID
+      if (agentId) {
+        offerData.agent_id = agentId;
+      } else {
+        // For self-service offers, we'll use a special system agent ID or the user's ID
+        // This is a workaround for the NOT NULL constraint
+        offerData.agent_id = user.id; // Using buyer's ID as a placeholder
+        offerData.offer_type = 'self_service';
+      }
+
       const { data: offerIntent, error } = await supabase
         .from('offer_intents')
-        .insert({
-          buyer_id: user.id,
-          agent_id: agentId,
-          property_address: propertyAddress,
-          offer_type: 'firstlook_generator',
-          contract_type: propertyAddress.includes('Montgomery') ? 'gcaar' : 
-                       propertyAddress.includes('DC') || propertyAddress.includes('Washington') ? 'gcaar' : 'mar'
-        })
+        .insert(offerData)
         .select()
         .single();
 

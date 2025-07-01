@@ -8,18 +8,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Clock, MessageCircle, DollarSign } from "lucide-react";
+import { Phone, Video } from "lucide-react";
 
 interface AgentConsultationData {
-  propertyInterestLevel: string;
+  offerReadiness: string;
+  offerPrice: string;
   preApprovalStatus: string;
-  budgetRange: string;
-  timeline: string;
-  preferredCommunication: string;
-  availabilityPreference: string;
-  specificQuestions: string;
-  ongoingRepresentation: boolean;
-  additionalComments: string;
+  closingTimeline: string;
+  contingencies: string[];
+  otherContingency: string;
+  callType: string;
+  additionalContext: string;
 }
 
 interface AgentConsultationQuestionnaireProps {
@@ -36,15 +35,14 @@ const AgentConsultationQuestionnaire = ({
   isSubmitting = false
 }: AgentConsultationQuestionnaireProps) => {
   const [formData, setFormData] = useState<AgentConsultationData>({
-    propertyInterestLevel: "",
+    offerReadiness: "",
+    offerPrice: "",
     preApprovalStatus: "",
-    budgetRange: "",
-    timeline: "",
-    preferredCommunication: "",
-    availabilityPreference: "",
-    specificQuestions: "",
-    ongoingRepresentation: false,
-    additionalComments: ""
+    closingTimeline: "",
+    contingencies: [],
+    otherContingency: "",
+    callType: "",
+    additionalContext: ""
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,177 +50,190 @@ const AgentConsultationQuestionnaire = ({
     onComplete(formData);
   };
 
-  const isFormValid = formData.propertyInterestLevel && 
+  const handleContingencyChange = (contingency: string, checked: boolean) => {
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        contingencies: [...prev.contingencies, contingency]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        contingencies: prev.contingencies.filter(c => c !== contingency)
+      }));
+    }
+  };
+
+  const isFormValid = formData.offerReadiness && 
                      formData.preApprovalStatus && 
-                     formData.timeline &&
-                     formData.preferredCommunication;
+                     formData.closingTimeline &&
+                     formData.callType;
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5 text-blue-600" />
-          Schedule Agent Consultation
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl font-semibold text-gray-900">
+          📝 Agent-Led Offer Intake
         </CardTitle>
-        <p className="text-sm text-gray-600">
-          Let's gather some basic information so your agent can provide the best guidance for {propertyAddress}
+        <p className="text-sm font-medium text-gray-700">
+          Property: {propertyAddress}
         </p>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Property Interest Level */}
+          {/* 1. Offer Readiness */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">How interested are you in this property?</Label>
+            <Label className="text-base font-medium">1. 💵 Offer Readiness</Label>
+            <p className="text-sm text-gray-600 mb-2">Are you ready to submit an offer on this property?</p>
             <RadioGroup 
-              value={formData.propertyInterestLevel} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, propertyInterestLevel: value }))}
+              value={formData.offerReadiness} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, offerReadiness: value }))}
+              className="space-y-2"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="very_interested" id="very_interested" />
-                <Label htmlFor="very_interested">Very interested - ready to make an offer</Label>
+                <RadioGroupItem value="ready" id="ready" />
+                <Label htmlFor="ready" className="text-sm">✅ Yes, I'm ready</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="interested" id="interested" />
-                <Label htmlFor="interested">Interested - want to learn more</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="exploring" id="exploring" />
-                <Label htmlFor="exploring">Just exploring - early in my search</Label>
+                <RadioGroupItem value="details" id="details" />
+                <Label htmlFor="details" className="text-sm">🕐 I want to finalize a few details with the agent first</Label>
               </div>
             </RadioGroup>
           </div>
 
-          {/* Pre-approval Status */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">What's your financing status?</Label>
-            <Select value={formData.preApprovalStatus} onValueChange={(value) => setFormData(prev => ({ ...prev, preApprovalStatus: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pre_approved">Pre-approved with lender</SelectItem>
-                <SelectItem value="pre_qualified">Pre-qualified (initial approval)</SelectItem>
-                <SelectItem value="cash">Paying cash</SelectItem>
-                <SelectItem value="need_help">Need help getting pre-approved</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* 2. Purchase Details */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium">2. 💰 Purchase Details</Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="offerPrice" className="text-sm font-medium">Your intended offer price:</Label>
+              <Input
+                id="offerPrice"
+                placeholder="e.g., $450,000 or range: $440k-460k"
+                value={formData.offerPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, offerPrice: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Do you have mortgage pre-approval or proof of funds?</Label>
+              <RadioGroup 
+                value={formData.preApprovalStatus} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, preApprovalStatus: value }))}
+                className="space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="approved_yes" />
+                  <Label htmlFor="approved_yes" className="text-sm">✅ Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="in_progress" id="in_progress" />
+                  <Label htmlFor="in_progress" className="text-sm">🕐 In progress</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="not_yet" id="not_yet" />
+                  <Label htmlFor="not_yet" className="text-sm">❌ Not yet</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
 
-          {/* Budget Range */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">Budget range (optional)</Label>
-            <Select value={formData.budgetRange} onValueChange={(value) => setFormData(prev => ({ ...prev, budgetRange: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select range (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="under_500k">Under $500K</SelectItem>
-                <SelectItem value="500k_750k">$500K - $750K</SelectItem>
-                <SelectItem value="750k_1m">$750K - $1M</SelectItem>
-                <SelectItem value="1m_1.5m">$1M - $1.5M</SelectItem>
-                <SelectItem value="over_1.5m">Over $1.5M</SelectItem>
-                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* 3. Timeline & Contingencies */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium">3. 🗓️ Timeline & Contingencies</Label>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Desired closing timeline:</Label>
+              <Select value={formData.closingTimeline} onValueChange={(value) => setFormData(prev => ({ ...prev, closingTimeline: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select timeline" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30_days">30 days</SelectItem>
+                  <SelectItem value="45_days">45 days</SelectItem>
+                  <SelectItem value="60_plus_days">60+ days</SelectItem>
+                  <SelectItem value="unsure">Unsure</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Contingencies you're planning to include:</Label>
+              <div className="space-y-2">
+                {[
+                  { id: 'financing', label: 'Financing' },
+                  { id: 'inspection', label: 'Inspection' },
+                  { id: 'appraisal', label: 'Appraisal' },
+                  { id: 'none', label: 'None' }
+                ].map((contingency) => (
+                  <div key={contingency.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={contingency.id}
+                      checked={formData.contingencies.includes(contingency.id)}
+                      onCheckedChange={(checked) => handleContingencyChange(contingency.id, !!checked)}
+                    />
+                    <Label htmlFor={contingency.id} className="text-sm">{contingency.label}</Label>
+                  </div>
+                ))}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="other"
+                    checked={formData.contingencies.includes('other')}
+                    onCheckedChange={(checked) => handleContingencyChange('other', !!checked)}
+                  />
+                  <Label htmlFor="other" className="text-sm">Other:</Label>
+                  <Input
+                    placeholder="Specify..."
+                    value={formData.otherContingency}
+                    onChange={(e) => setFormData(prev => ({ ...prev, otherContingency: e.target.value }))}
+                    className="flex-1 text-sm"
+                    disabled={!formData.contingencies.includes('other')}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Timeline */}
+          {/* 4. Coaching Call Type */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">What's your timeline?</Label>
+            <Label className="text-base font-medium">4. 🎧 Coaching Call Type</Label>
+            <p className="text-sm text-gray-600 mb-2">How would you like to meet with your agent?</p>
             <RadioGroup 
-              value={formData.timeline} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, timeline: value }))}
+              value={formData.callType} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, callType: value }))}
+              className="space-y-2"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="asap" id="asap" />
-                <Label htmlFor="asap">ASAP - ready to move quickly</Label>
+                <RadioGroupItem value="phone" id="phone" />
+                <Label htmlFor="phone" className="text-sm flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Phone Call
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="1_3_months" id="1_3_months" />
-                <Label htmlFor="1_3_months">1-3 months</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="3_6_months" id="3_6_months" />
-                <Label htmlFor="3_6_months">3-6 months</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="exploring" id="timeline_exploring" />
-                <Label htmlFor="timeline_exploring">Just exploring</Label>
+                <RadioGroupItem value="video" id="video" />
+                <Label htmlFor="video" className="text-sm flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  Zoom Video Call
+                </Label>
               </div>
             </RadioGroup>
+            <p className="text-xs text-gray-500 mt-2">Scheduling will take place on the next screen.</p>
           </div>
 
-          {/* Communication Preference */}
+          {/* 5. Additional Context */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">How do you prefer to communicate?</Label>
-            <Select value={formData.preferredCommunication} onValueChange={(value) => setFormData(prev => ({ ...prev, preferredCommunication: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select preference" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="phone">Phone calls</SelectItem>
-                <SelectItem value="video">Video calls</SelectItem>
-                <SelectItem value="text">Text messages</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Availability Preference */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">When are you typically available?</Label>
-            <Select value={formData.availabilityPreference} onValueChange={(value) => setFormData(prev => ({ ...prev, availabilityPreference: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select availability" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekday_mornings">Weekday mornings</SelectItem>
-                <SelectItem value="weekday_afternoons">Weekday afternoons</SelectItem>
-                <SelectItem value="weekday_evenings">Weekday evenings</SelectItem>
-                <SelectItem value="weekends">Weekends</SelectItem>
-                <SelectItem value="flexible">Flexible</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Specific Questions */}
-          <div className="space-y-3">
-            <Label htmlFor="questions" className="text-base font-medium">
-              Any specific questions about this property?
+            <Label htmlFor="context" className="text-base font-medium">
+              5. 🧠 Additional Context (Optional)
             </Label>
+            <p className="text-sm text-gray-600 mb-2">Any deal-specific questions or notes for the agent?</p>
             <Textarea
-              id="questions"
-              placeholder="e.g., What's the neighborhood like? Are there any known issues? What's a competitive offer price?"
-              value={formData.specificQuestions}
-              onChange={(e) => setFormData(prev => ({ ...prev, specificQuestions: e.target.value }))}
+              id="context"
+              placeholder="e.g., Concerns about neighborhood, questions about recent sales, specific property features you want to discuss..."
+              value={formData.additionalContext}
+              onChange={(e) => setFormData(prev => ({ ...prev, additionalContext: e.target.value }))}
               className="min-h-[80px]"
-            />
-          </div>
-
-          {/* Ongoing Representation */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="ongoing"
-              checked={formData.ongoingRepresentation}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, ongoingRepresentation: !!checked }))}
-            />
-            <Label htmlFor="ongoing" className="text-sm">
-              I'm interested in ongoing representation for my home search
-            </Label>
-          </div>
-
-          {/* Additional Comments */}
-          <div className="space-y-3">
-            <Label htmlFor="comments" className="text-base font-medium">
-              Anything else you'd like the agent to know?
-            </Label>
-            <Textarea
-              id="comments"
-              placeholder="Any additional information that would be helpful..."
-              value={formData.additionalComments}
-              onChange={(e) => setFormData(prev => ({ ...prev, additionalComments: e.target.value }))}
-              className="min-h-[60px]"
             />
           </div>
 

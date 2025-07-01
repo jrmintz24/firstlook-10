@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Message, MessageWithShowing } from "@/types/message";
@@ -13,7 +13,7 @@ export const useMessages = (userId: string | null) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const { toast } = useToast();
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -63,7 +63,7 @@ export const useMessages = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, toast]);
 
   const { markMessagesAsRead, sendMessage } = useMessageOperations(userId, fetchMessages, toast);
   const { getMessagesForShowing, getConversations } = useConversations(messages, userId);
@@ -72,7 +72,7 @@ export const useMessages = (userId: string | null) => {
 
   useEffect(() => {
     fetchMessages();
-  }, [userId]);
+  }, [fetchMessages]);
 
   return {
     messages,

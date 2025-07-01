@@ -1,7 +1,6 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
 import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
 
 interface User {
@@ -17,10 +16,9 @@ interface User {
 interface NavigationAuthProps {
   user: User | null;
   onSignOut: () => void;
-  unreadCount?: number;
 }
 
-const NavigationAuth = ({ user, onSignOut, unreadCount = 0 }: NavigationAuthProps) => {
+const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
   if (user) {
     const userType = user.user_metadata?.user_type;
     const dashboardLink = 
@@ -42,18 +40,6 @@ const NavigationAuth = ({ user, onSignOut, unreadCount = 0 }: NavigationAuthProp
             Dashboard
           </Button>
         </Link>
-        
-        {/* Notifications */}
-        <div className="relative">
-          <Button variant="ghost" size="sm" className="relative text-purple-600 hover:bg-purple-50">
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Button>
-        </div>
         
         {/* User Dropdown Menu */}
         <UserDropdownMenu 

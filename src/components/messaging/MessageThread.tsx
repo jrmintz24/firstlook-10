@@ -83,6 +83,7 @@ const MessageThread = ({
           .filter((id, index, arr) => id && id !== userId && arr.indexOf(id) === index);
         
         const receiverId = otherParticipants[0] || '';
+        console.log('Sending message to receiverId:', receiverId);
         success = await onSendMessage(newMessage.trim(), receiverId);
       } else {
         // Support messages
@@ -92,6 +93,8 @@ const MessageThread = ({
       if (success) {
         setNewMessage("");
       }
+    } catch (error) {
+      console.error('Error sending message:', error);
     } finally {
       setSending(false);
     }

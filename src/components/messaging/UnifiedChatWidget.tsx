@@ -48,6 +48,11 @@ const UnifiedChatWidget = ({ isOpen, onToggle, defaultTab = 'property' }: Unifie
     }
   }, [defaultTab]);
 
+  // Don't render if no user
+  if (!user?.id) {
+    return null;
+  }
+
   if (!isOpen) {
     return (
       <Button

@@ -15,7 +15,7 @@ const QuickActionsCard = ({ unreadCount = 0, onOpenMessages }: QuickActionsCardP
       <CardContent className="p-3">
         <div className="flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
-            <Link to="/offer-questionnaire" className="flex items-center gap-1">
+            <Link to="/my-offers" className="flex items-center gap-1">
               <FileText className="w-3 h-3" />
               <span className="hidden sm:inline">Offers</span>
             </Link>

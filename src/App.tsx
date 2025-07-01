@@ -31,6 +31,7 @@ import { useAnalytics } from './hooks/useAnalytics'
 import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
 import SignAgreement from './pages/SignAgreement'
 import OfferQuestionnaire from './pages/OfferQuestionnaire'
+import MyOffers from './pages/MyOffers'
 
 const queryClient = new QueryClient()
 
@@ -94,6 +95,16 @@ function App() {
                   element={
                     <ProtectedRoute requiredUserType="admin">
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* My Offers - Protected Route */}
+                <Route
+                  path="/my-offers"
+                  element={
+                    <ProtectedRoute requiredUserType="buyer">
+                      <MyOffers />
                     </ProtectedRoute>
                   }
                 />

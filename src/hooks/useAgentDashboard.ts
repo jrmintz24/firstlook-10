@@ -191,6 +191,92 @@ export const useAgentDashboard = () => {
     }
   };
 
+  const handleCancelShowing = async (requestId: string) => {
+    console.log('Cancelling showing:', requestId);
+    
+    try {
+      const { error } = await supabase
+        .from('showing_requests')
+        .update({
+          status: 'cancelled',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('Error cancelling showing:', error);
+        toast({
+          title: "Error",
+          description: "Failed to cancel showing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Showing Cancelled",
+        description: "The showing has been cancelled successfully.",
+      });
+      
+      fetchAgentData();
+    } catch (error) {
+      console.error('Exception cancelling showing:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while cancelling.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRescheduleShowing = async (requestId: string, newDate: string, newTime?: string, reason?: string) => {
+    console.log('Rescheduling showing:', { requestId, newDate, newTime, reason });
+    
+    try {
+      const updateData: any = {
+        preferred_date: newDate,
+        preferred_time: newTime || null,
+        status: 'pending', // Reset to pending for re-confirmation
+        status_updated_at: new Date().toISOString()
+      };
+
+      if (reason) {
+        updateData.message = `Reschedule request: ${reason}`;
+      }
+
+      const { error } = await supabase
+        .from('showing_requests')
+        .update(updateData)
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('Error rescheduling showing:', error);
+        toast({
+          title: "Error",
+          description: "Failed to reschedule showing. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      toast({
+        title: "Showing Rescheduled",
+        description: "The showing has been rescheduled successfully.",
+      });
+      
+      fetchAgentData();
+      return true;
+    } catch (error) {
+      console.error('Exception rescheduling showing:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while rescheduling.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (authLoading) {
       console.log('Auth still loading...');
@@ -217,6 +303,8 @@ export const useAgentDashboard = () => {
     loading,
     authLoading,
     handleStatusUpdate,
+    handleCancelShowing,
+    handleRescheduleShowing,
     fetchAgentData
   };
 };

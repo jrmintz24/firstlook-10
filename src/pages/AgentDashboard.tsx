@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -15,6 +16,7 @@ import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
+import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 
 const AgentDashboard = () => {
@@ -26,6 +28,8 @@ const AgentDashboard = () => {
     loading,
     authLoading,
     handleStatusUpdate,
+    handleCancelShowing,
+    handleRescheduleShowing,
     fetchAgentData
   } = useAgentDashboard();
 
@@ -33,6 +37,7 @@ const AgentDashboard = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReportIssueModal, setShowReportIssueModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("pending");
   const isMobile = useIsMobile();
@@ -58,6 +63,14 @@ const AgentDashboard = () => {
     setShowReportIssueModal(true);
   };
 
+  const handleReschedule = (requestId: string) => {
+    const request = [...assignedRequests, ...pendingRequests].find(r => r.id === requestId);
+    if (request) {
+      setSelectedRequest(request);
+      setShowRescheduleModal(true);
+    }
+  };
+
   const handleConfirmSuccess = async (confirmationData: any) => {
     if (!profile) return;
     
@@ -78,6 +91,12 @@ const AgentDashboard = () => {
 
   const handleReportIssueSuccess = () => {
     setShowReportIssueModal(false);
+    setSelectedRequest(null);
+    fetchAgentData();
+  };
+
+  const handleRescheduleSuccess = () => {
+    setShowRescheduleModal(false);
     setSelectedRequest(null);
     fetchAgentData();
   };
@@ -137,8 +156,8 @@ const AgentDashboard = () => {
           emptyDescription="All caught up! New showing requests will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleReschedule}
           onConfirmShowing={handleConfirmShowing}
           onReportIssue={handleReportIssue}
           userType="agent"
@@ -162,8 +181,8 @@ const AgentDashboard = () => {
           emptyDescription="Confirmed showings will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleReschedule}
           onReportIssue={handleReportIssue}
           userType="agent"
           onComplete={fetchAgentData}
@@ -207,8 +226,8 @@ const AgentDashboard = () => {
           emptyDescription="Completed and cancelled showings will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
+          onCancelShowing={() => {}} // Disable for completed showings
+          onRescheduleShowing={() => {}} // Disable for completed showings
           showActions={false}
           userType="agent"
           onComplete={fetchAgentData}
@@ -274,6 +293,13 @@ const AgentDashboard = () => {
             request={selectedRequest}
             agentId={currentUser?.id || ''}
             onComplete={handleReportIssueSuccess}
+          />
+
+          <RescheduleModal
+            isOpen={showRescheduleModal}
+            onClose={() => setShowRescheduleModal(false)}
+            showingRequest={selectedRequest}
+            onSuccess={handleRescheduleSuccess}
           />
         </>
       )}

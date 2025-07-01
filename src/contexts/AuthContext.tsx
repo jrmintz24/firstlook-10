@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -48,8 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Check if user needs onboarding after successful sign up
-      if (event === 'SIGNED_UP' || (event === 'SIGNED_IN' && session?.user)) {
+      // Check if user needs onboarding after successful sign up or sign in
+      if (event === 'SIGNED_IN' && session?.user) {
         try {
           const { data: profile } = await supabase
             .from('profiles')
@@ -125,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signIn,
     signOut,
+    signInWithProvider,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

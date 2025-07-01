@@ -188,6 +188,27 @@ export type Database = {
           },
         ]
       }
+      agent_specialties: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       api_sync_logs: {
         Row: {
           completed_at: string | null
@@ -888,22 +909,63 @@ export type Database = {
           },
         ]
       }
+      profile_photos: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          photo_url: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           agent_connected_at: string | null
           agent_connected_id: string | null
+          agent_details: Json | null
           budget_max: number | null
           budget_min: number | null
+          buyer_preferences: Json | null
           buying_timeline: string | null
+          communication_preferences: Json | null
           created_at: string
           first_name: string | null
           free_showing_used: boolean | null
           id: string
           last_name: string | null
           license_number: string | null
+          onboarding_completed: boolean | null
           phone: string | null
+          photo_url: string | null
           pre_approval_amount: number | null
           pre_approval_status: string | null
+          profile_completion_percentage: number | null
           profile_status: string | null
           qualification_updated_at: string | null
           subscription_status: string | null
@@ -913,18 +975,24 @@ export type Database = {
         Insert: {
           agent_connected_at?: string | null
           agent_connected_id?: string | null
+          agent_details?: Json | null
           budget_max?: number | null
           budget_min?: number | null
+          buyer_preferences?: Json | null
           buying_timeline?: string | null
+          communication_preferences?: Json | null
           created_at?: string
           first_name?: string | null
           free_showing_used?: boolean | null
           id: string
           last_name?: string | null
           license_number?: string | null
+          onboarding_completed?: boolean | null
           phone?: string | null
+          photo_url?: string | null
           pre_approval_amount?: number | null
           pre_approval_status?: string | null
+          profile_completion_percentage?: number | null
           profile_status?: string | null
           qualification_updated_at?: string | null
           subscription_status?: string | null
@@ -934,18 +1002,24 @@ export type Database = {
         Update: {
           agent_connected_at?: string | null
           agent_connected_id?: string | null
+          agent_details?: Json | null
           budget_max?: number | null
           budget_min?: number | null
+          buyer_preferences?: Json | null
           buying_timeline?: string | null
+          communication_preferences?: Json | null
           created_at?: string
           first_name?: string | null
           free_showing_used?: boolean | null
           id?: string
           last_name?: string | null
           license_number?: string | null
+          onboarding_completed?: boolean | null
           phone?: string | null
+          photo_url?: string | null
           pre_approval_amount?: number | null
           pre_approval_status?: string | null
+          profile_completion_percentage?: number | null
           profile_status?: string | null
           qualification_updated_at?: string | null
           subscription_status?: string | null

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, BarChart3 } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -291,16 +292,20 @@ const AgentDashboard = () => {
 
   return (
     <>
-      <UnifiedDashboardLayout
-        title={`Welcome back, ${displayName}`}
-        subtitle="Manage your showing requests and connect with buyers"
-        userType="agent"
-        displayName={displayName}
-        tabs={dashboardTabs}
-        sidebar={sidebar}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {/* Remove the redundant header, use only the main navigation */}
+      <div className="pt-6">
+        <UnifiedDashboardLayout
+          title={`Welcome back, ${displayName}`}
+          subtitle="Manage your showing requests and connect with buyers"
+          userType="agent"
+          displayName={displayName}
+          tabs={dashboardTabs}
+          sidebar={sidebar}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          showHeader={false} // Don't show the internal header
+        />
+      </div>
 
       {/* Modals */}
       {selectedRequest && (

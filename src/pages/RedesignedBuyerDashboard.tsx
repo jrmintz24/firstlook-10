@@ -11,7 +11,6 @@ import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import AgentProfileModal from "@/components/post-showing/AgentProfileModal";
 
 // Redesigned Components
-import RedesignedDashboardHeader from "@/components/dashboard/redesigned/RedesignedDashboardHeader";
 import JourneyProgressBar from "@/components/dashboard/redesigned/JourneyProgressBar";
 import NextTourCard from "@/components/dashboard/redesigned/NextTourCard";
 import QuickActionsRow from "@/components/dashboard/redesigned/QuickActionsRow";
@@ -203,12 +202,6 @@ const RedesignedBuyerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <RedesignedDashboardHeader 
-        displayName={displayName} 
-        unreadCount={unreadCount || 0}
-      />
-
       {/* Main Dashboard Content - Single Column Layout */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {/* Journey Progress Bar with Better Spacing */}

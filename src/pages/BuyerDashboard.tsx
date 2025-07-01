@@ -1,12 +1,12 @@
+
 import { useState } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
-import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
-import ModernHeader from "@/components/dashboard/ModernHeader";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
@@ -100,18 +100,6 @@ const BuyerDashboard = () => {
     );
   }
 
-  const header = (
-    <ModernHeader
-      title="Dashboard"
-      subtitle="Manage your property tours and showings"
-      displayName={displayName}
-      onPrimaryAction={handleRequestShowing}
-      primaryActionText="Request Tour"
-      userType="buyer"
-      notificationCount={unreadCount}
-    />
-  );
-
   const stats = (
     <div className="space-y-4">
       <ModernStatsGrid
@@ -145,8 +133,8 @@ const BuyerDashboard = () => {
 
   return (
     <>
-      <ModernDashboardLayout
-        header={header}
+      <DashboardLayout
+        header={null} // Remove the redundant header
         stats={stats}
         mainContent={null}
         sidebar={null}

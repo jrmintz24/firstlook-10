@@ -2,11 +2,15 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useMessages } from "@/hooks/useMessages";
 
 export const useNavigation = () => {
   const { user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Get unread count for notifications
+  const { unreadCount } = useMessages(user?.id || null);
 
   const handleSignOut = async () => {
     try {
@@ -29,6 +33,7 @@ export const useNavigation = () => {
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     handleSignOut,
-    closeMobileMenu
+    closeMobileMenu,
+    unreadCount
   };
 };

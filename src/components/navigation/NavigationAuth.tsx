@@ -1,7 +1,8 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from "lucide-react";
+import { Bell } from "lucide-react";
+import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
 
 interface User {
   id: string;
@@ -12,9 +13,10 @@ interface User {
 interface NavigationAuthProps {
   user: User | null;
   onSignOut: () => void;
+  unreadCount?: number;
 }
 
-const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
+const NavigationAuth = ({ user, onSignOut, unreadCount = 0 }: NavigationAuthProps) => {
   if (user) {
     const userType = user.user_metadata?.user_type;
     const dashboardLink = 
@@ -24,22 +26,33 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
         ? '/agent-dashboard'
         : '/buyer-dashboard';
 
+    // Get display name for the user
+    const displayName = user.user_metadata?.first_name || 
+                       user.email?.split('@')[0] || 
+                       'User';
+
     return (
       <div className="flex items-center space-x-3">
         <Link to={dashboardLink}>
-          <Button variant="ghost" className="flex items-center gap-2 text-purple-600 hover:bg-purple-50">
-            <User className="w-4 h-4" />
+          <Button variant="ghost" className="text-purple-600 hover:bg-purple-50">
             Dashboard
           </Button>
         </Link>
-        <Button 
-          variant="outline" 
-          onClick={onSignOut}
-          className="flex items-center gap-2 border-purple-200 text-purple-600 hover:bg-purple-50"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </Button>
+        
+        {/* Notifications */}
+        <div className="relative">
+          <Button variant="ghost" size="sm" className="relative text-purple-600 hover:bg-purple-50">
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Button>
+        </div>
+        
+        {/* User Dropdown Menu */}
+        <UserDropdownMenu displayName={displayName} onSignOut={onSignOut} />
       </div>
     );
   }

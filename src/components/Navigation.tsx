@@ -12,7 +12,8 @@ const Navigation = () => {
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     handleSignOut,
-    closeMobileMenu
+    closeMobileMenu,
+    unreadCount
   } = useNavigation();
 
   return (
@@ -33,7 +34,11 @@ const Navigation = () => {
             <NavigationLinks />
 
             {/* Auth Section */}
-            <NavigationAuth user={user} onSignOut={handleSignOut} />
+            <NavigationAuth 
+              user={user} 
+              onSignOut={handleSignOut} 
+              unreadCount={unreadCount}
+            />
           </div>
         </div>
 

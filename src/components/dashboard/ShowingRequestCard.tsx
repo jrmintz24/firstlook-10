@@ -18,7 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   Star,
-  Home
+  Home,
+  FileText,
+  AlertCircle
 } from "lucide-react";
 import { usePostShowingActionsTracking } from "@/hooks/usePostShowingActionsTracking";
 import { useEffect } from "react";
@@ -117,8 +119,10 @@ const ShowingRequestCard = ({
         return { label: 'Agent Assigned', color: 'text-indigo-500' };
       case 'agent_confirmed':
         return { label: 'Agent Confirmed', color: 'text-green-500' };
+      case 'awaiting_agreement':
+        return { label: 'Awaiting Agreement', color: 'text-orange-500' };
       case 'confirmed':
-        return { label: 'Confirmed', color: 'text-green-500' };
+        return { label: 'Confirmed', color: 'text-green-500' };  
       case 'scheduled':
         return { label: 'Scheduled', color: 'text-teal-500' };
       case 'completed':
@@ -156,16 +160,34 @@ const ShowingRequestCard = ({
     }
   };
 
-  // Check if agreement is required (based on status and whether it's already signed)
+  // Enhanced agreement requirement detection
   const isAgreementRequired = () => {
-    // Agreement is required for statuses that indicate the tour is scheduled/confirmed
-    const requiresAgreement = ['agent_confirmed', 'confirmed', 'scheduled'].includes(showing.status);
-    const alreadySigned = agreements[showing.id];
-    return requiresAgreement && !alreadySigned;
+    // Check if the status explicitly indicates agreement is needed
+    const agreementStatuses = ['agent_confirmed', 'awaiting_agreement'];
+    const statusRequiresAgreement = agreementStatuses.includes(showing.status);
+    
+    // Check if agreement has already been signed
+    const alreadySigned = agreements[showing.id] === true;
+    
+    // Check if there's an assigned agent (requirement for agreement)
+    const hasAssignedAgent = showing.assigned_agent_id && showing.assigned_agent_name;
+    
+    console.log('Agreement check:', {
+      showingId: showing.id,
+      status: showing.status,
+      statusRequiresAgreement,
+      alreadySigned,
+      hasAssignedAgent,
+      agreementsRecord: agreements
+    });
+    
+    return statusRequiresAgreement && !alreadySigned && hasAssignedAgent;
   };
 
+  const agreementRequired = isAgreementRequired();
+
   return (
-    <Card className="border border-gray-200 bg-white shadow-none hover:shadow-sm transition-all duration-200">
+    <Card className={`border ${agreementRequired ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'} shadow-none hover:shadow-sm transition-all duration-200`}>
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Header */}
@@ -186,9 +208,10 @@ const ShowingRequestCard = ({
                   className="font-medium"
                 />
                 
-                {/* Agreement Required Badge */}
-                {isAgreementRequired() && (
-                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                {/* Agreement Required Badge - More Prominent */}
+                {agreementRequired && (
+                  <Badge className="bg-orange-100 text-orange-800 border-orange-300 font-medium">
+                    <FileText className="w-3 h-3 mr-1" />
                     Agreement Required
                   </Badge>
                 )}
@@ -208,6 +231,23 @@ const ShowingRequestCard = ({
                   <span>Requested {formatDate(showing.created_at)}</span>
                 </div>
               </div>
+
+              {/* Agreement Alert Box */}
+              {agreementRequired && (
+                <div className="mt-3 p-3 bg-orange-100 rounded-lg border border-orange-200">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-orange-900">
+                        Tour Agreement Required
+                      </p>
+                      <p className="text-xs text-orange-700 mt-1">
+                        Please sign the single-day tour agreement to confirm your appointment with {showing.assigned_agent_name}.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Post-Showing Action Highlight */}
               {showing.status === 'completed' && latestAction && (
@@ -233,14 +273,15 @@ const ShowingRequestCard = ({
             {/* Action Buttons */}
             {showActions && (
               <div className="flex items-center gap-2 ml-4">
-                {/* Sign Agreement Button - Prominent placement */}
-                {onSignAgreement && isAgreementRequired() && (
+                {/* Sign Agreement Button - Most Prominent */}
+                {onSignAgreement && agreementRequired && (
                   <InteractiveButton
                     variant="default"
                     size="sm"
                     onClick={() => onSignAgreement(showing)}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                    className="bg-orange-600 hover:bg-orange-700 text-white font-medium shadow-sm"
                   >
+                    <FileText className="w-4 h-4 mr-1" />
                     Sign Agreement
                   </InteractiveButton>
                 )}
@@ -301,19 +342,6 @@ const ShowingRequestCard = ({
                   )}
                 </div>
               )}
-
-              {/* Message Agent */}
-              {onSendMessage && showing.assigned_agent_id && (
-                <InteractiveButton
-                  variant="outline"
-                  size="sm"
-                  icon={MessageCircle}
-                  onClick={() => onSendMessage(showing.id)}
-                  className="border-gray-300 w-full"
-                >
-                  Message Agent
-                </InteractiveButton>
-              )}
               
               {/* Post-Showing Actions for Completed Tours */}
               {showing.status === 'completed' && userType === 'buyer' && (
@@ -331,18 +359,32 @@ const ShowingRequestCard = ({
                 />
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons in Expanded Section */}
               {showActions && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {/* Sign Agreement Button - Also in expanded section for emphasis */}
-                  {onSignAgreement && isAgreementRequired() && (
+                  {onSignAgreement && agreementRequired && (
                     <InteractiveButton
                       variant="default"
                       size="sm"
                       onClick={() => onSignAgreement(showing)}
-                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                      className="bg-orange-600 hover:bg-orange-700 text-white font-medium w-full sm:w-auto"
                     >
+                      <FileText className="w-4 h-4 mr-2" />
                       Sign Tour Agreement
+                    </InteractiveButton>
+                  )}
+
+                  {/* Message Agent */}
+                  {onSendMessage && showing.assigned_agent_id && (
+                    <InteractiveButton
+                      variant="outline"
+                      size="sm"
+                      icon={MessageCircle}
+                      onClick={() => onSendMessage(showing.id)}
+                      className="border-gray-300 w-full sm:w-auto"
+                    >
+                      Message Agent
                     </InteractiveButton>
                   )}
 

@@ -23,17 +23,33 @@ interface Message {
 
 interface MessageThreadProps {
   messages: Message[];
-  onSendMessage: (content: string, receiverId: string) => Promise<boolean>;
+  onSendMessage: (content: string, receiverId?: string) => Promise<boolean>;
   onMarkAsRead: () => void;
   conversationType: 'property' | 'support';
+  currentUserId?: string;
+  propertyAddress?: string;
+  showingStatus?: string;
+  isNewConversation?: boolean;
 }
 
-const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType }: MessageThreadProps) => {
+const MessageThread = ({ 
+  messages, 
+  onSendMessage, 
+  onMarkAsRead, 
+  conversationType,
+  currentUserId,
+  propertyAddress,
+  showingStatus,
+  isNewConversation = false
+}: MessageThreadProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const { user } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Use currentUserId prop if provided, otherwise use auth user
+  const effectiveUserId = currentUserId || user?.id;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -42,39 +58,34 @@ const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType
 
   // Mark messages as read when thread is viewed
   useEffect(() => {
-    if (messages.length > 0 && user?.id) {
+    if (messages.length > 0 && effectiveUserId && !isNewConversation) {
       const hasUnreadMessages = messages.some(msg => 
-        msg.receiver_id === user.id && !msg.read_at
+        msg.receiver_id === effectiveUserId && !msg.read_at
       );
       if (hasUnreadMessages) {
         onMarkAsRead();
       }
     }
-  }, [messages, user?.id, onMarkAsRead]);
+  }, [messages, effectiveUserId, onMarkAsRead, isNewConversation]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user?.id || sending) return;
+    if (!newMessage.trim() || !effectiveUserId || sending) return;
 
     // Find the other participant (receiver)
     let receiverId: string | null = null;
     for (const message of messages) {
-      if (message.sender_id !== user.id) {
+      if (message.sender_id !== effectiveUserId) {
         receiverId = message.sender_id;
         break;
-      } else if (message.receiver_id !== user.id) {
+      } else if (message.receiver_id !== effectiveUserId) {
         receiverId = message.receiver_id;
         break;
       }
     }
 
-    if (!receiverId) {
-      console.error('Could not determine receiver for message');
-      return;
-    }
-
     setSending(true);
     try {
-      const success = await onSendMessage(newMessage.trim(), receiverId);
+      const success = await onSendMessage(newMessage.trim(), receiverId || undefined);
       if (success) {
         setNewMessage('');
       }
@@ -120,10 +131,20 @@ const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header if property info provided */}
+      {propertyAddress && (
+        <div className="p-3 border-b bg-gray-50">
+          <p className="font-medium text-sm">{propertyAddress}</p>
+          {showingStatus && (
+            <p className="text-xs text-gray-500">Status: {showingStatus}</p>
+          )}
+        </div>
+      )}
+
       {/* Messages Area */}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
-          {sortedMessages.length === 0 ? (
+          {sortedMessages.length === 0 && !isNewConversation ? (
             <div className="text-center py-8 text-gray-500">
               <User className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">No messages yet</p>
@@ -131,7 +152,7 @@ const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType
             </div>
           ) : (
             sortedMessages.map((message) => {
-              const isOwnMessage = message.sender_id === user?.id;
+              const isOwnMessage = message.sender_id === effectiveUserId;
               const senderName = message.sender_profile 
                 ? `${message.sender_profile.first_name || ''} ${message.sender_profile.last_name || ''}`.trim()
                 : isOwnMessage ? 'You' : 'Agent';
@@ -178,7 +199,7 @@ const MessageThread = ({ messages, onSendMessage, onMarkAsRead, conversationType
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
+            placeholder={isNewConversation ? "Start your conversation..." : "Type your message..."}
             className="flex-1 min-h-[44px] max-h-24 resize-none text-sm border-gray-200 focus:border-blue-300 focus:ring-blue-200"
             disabled={sending}
           />

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -145,179 +144,193 @@ const EnhancedOfferTypeDialog = ({
     switch (currentStep) {
       case 'selection':
         return (
-          <div className="space-y-6">
-            <p className="text-gray-600 mb-6">
-              How would you like to proceed with {propertyAddress}?
-            </p>
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
+              <p className="text-gray-600 text-lg">
+                How would you like to move forward with
+              </p>
+              <p className="font-medium text-gray-900 text-lg">
+                {propertyAddress}?
+              </p>
+            </div>
 
-            <div className="space-y-4">
-              {/* Make an Offer - Free with Membership */}
+            <div className="space-y-6">
+              {/* Make an Offer - Free Option */}
               <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-green-300 bg-gradient-to-r from-green-50 to-emerald-50"
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-gray-300 bg-white"
                 onClick={() => handleOfferTypeSelection('make_offer')}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <Zap className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          ⚡ Make an Offer
-                        </h3>
-                        <Badge className="bg-green-100 text-green-800 border-green-200">
-                          Free with Membership
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-gray-700 font-medium mb-2">
-                        Confident and ready to go?
-                      </p>
-                      <p className="text-gray-600 text-sm mb-4">
-                        Use our guided offer builder to generate professional, compliant contracts — no agent required.
-                      </p>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span>Step-by-step questionnaire</span>
+                <CardContent className="p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center">
+                          <Zap className="h-6 w-6 text-white" />
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span>Auto-filled contract docs</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span>Designed for DC/Baltimore standards</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span>~15 minutes</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-green-700">
-                          <span>💰 Free with your FirstLook membership</span>
+                        <div>
+                          <h3 className="text-2xl font-semibold text-gray-900">
+                            Make an Offer
+                          </h3>
+                          <Badge className="mt-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-50">
+                            Included with Membership
+                          </Badge>
                         </div>
                       </div>
-                      
-                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                        Start Offer
-                      </Button>
                     </div>
+                    
+                    <div className="space-y-4">
+                      <p className="text-lg font-medium text-gray-900">
+                        Confident and ready to go on your own?
+                      </p>
+                      <p className="text-gray-600">
+                        Use our step-by-step offer builder to create a professional, fully compliant contract on your own.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-4">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span>Guided questionnaire</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span>Auto-filled offer documents</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span>Tailored to local contract standards</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <Clock className="h-5 w-5 text-gray-500" />
+                          <span>Takes ~15 minutes</span>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-green-50 rounded-2xl p-4">
+                        <p className="text-green-800 font-medium text-center">
+                          💸 Free with your FirstLook membership
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <Button className="w-full bg-black hover:bg-gray-800 text-white text-lg py-6 rounded-2xl transition-all duration-200 hover:scale-[1.02]">
+                      Start Offer
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Work with a Licensed Agent */}
+              {/* Work with Agent - Premium Option */}
               <Card 
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-purple-300 bg-gradient-to-r from-purple-50 to-indigo-50"
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-gray-300 bg-white"
                 onClick={() => handleOfferTypeSelection('work_with_agent')}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-purple-100 rounded-lg">
-                      <Brain className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          🧠 Work with a Licensed Agent
-                        </h3>
-                        <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                          Best for confident buyers
-                        </Badge>
+                <CardContent className="p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center">
+                          <Brain className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-semibold text-gray-900">
+                            Work with a Licensed Agent
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-2xl font-bold text-gray-900">$699</span>
+                            <Badge className="bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100">
+                              Rebate Qualified*
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <p className="text-lg font-medium text-purple-700 mb-2">
-                        $699 + optional $399
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <p className="text-lg font-medium text-gray-900">
+                        Want expert strategy and peace of mind?
+                      </p>
+                      <p className="text-gray-600">
+                        Partner with a top local agent for coaching, pricing advice, and contract review — ideal if you want to maximize leverage or navigate a competitive market.
                       </p>
                       
-                      <p className="text-gray-700 font-medium mb-2">
-                        Want expert guidance?
-                      </p>
-                      <p className="text-gray-600 text-sm mb-4">
-                        Get coaching from a top local agent to develop your strategy, evaluate pricing, and write a winning offer.
-                      </p>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <User className="h-4 w-4 text-purple-600" />
-                          <span>30-min Strategy Consultation</span>
+                      <div className="grid grid-cols-1 gap-3 py-4">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <MessageCircle className="h-5 w-5 text-black" />
+                          <span>30-minute Strategy Session</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <CheckCircle className="h-4 w-4 text-purple-600" />
-                          <span>Pricing advice & offer coaching</span>
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <CheckCircle className="h-5 w-5 text-black" />
+                          <span>Pricing + offer guidance</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <FileText className="h-4 w-4 text-purple-600" />
-                          <span>Offer document review</span>
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <FileText className="h-5 w-5 text-black" />
+                          <span>Contract review before you submit</span>
                         </div>
                         
                         {/* Expandable coordination details */}
-                        <div className="border-t pt-2 mt-3">
+                        <div className="border-t pt-4 mt-4">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setShowCoordinationDetails(!showCoordinationDetails);
                             }}
-                            className="flex items-center gap-2 text-sm text-purple-700 hover:text-purple-800 w-full text-left"
+                            className="flex items-center gap-3 text-gray-700 hover:text-gray-900 w-full text-left transition-colors"
                           >
                             {showCoordinationDetails ? (
-                              <ChevronUp className="h-4 w-4" />
+                              <ChevronUp className="h-5 w-5" />
                             ) : (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown className="h-5 w-5" />
                             )}
                             <span className="font-medium">
-                              ➕ Add transaction coordination for $399
+                              ➕ Add-on: Complete Transaction Coordination ($399)
                             </span>
-                            <Badge variant="outline" className="ml-auto text-xs">
-                              Optional Add-On Available
-                            </Badge>
                           </button>
                           
                           {showCoordinationDetails && (
-                            <div className="mt-2 pl-6 space-y-1 text-sm text-gray-600">
-                              <p>We'll manage paperwork, deadlines, and follow-through</p>
-                              <ul className="list-disc list-inside space-y-1 ml-2">
-                                <li>Contract management & deadline tracking</li>
-                                <li>Coordination with title company & lender</li>
-                                <li>Inspection & appraisal scheduling</li>
-                                <li>Closing preparation & document review</li>
+                            <div className="mt-4 pl-8 space-y-2 text-gray-600 bg-gray-50 rounded-xl p-4">
+                              <p className="font-medium text-gray-900">Full transaction support through closing:</p>
+                              <ul className="space-y-1 text-sm">
+                                <li>• Contract management & deadline tracking</li>
+                                <li>• Coordination with title company & lender</li>
+                                <li>• Inspection & appraisal scheduling</li>
+                                <li>• Closing preparation & document review</li>
                               </ul>
                             </div>
                           )}
                         </div>
-                        
-                        <div className="flex items-center gap-2 text-sm text-gray-700 pt-2">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span>~3 minutes to schedule</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-purple-700">
-                          <span>💰 $699 coaching | + $399 optional add-on</span>
-                        </div>
                       </div>
                       
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                        Book Expert Help
-                      </Button>
+                      <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-sm">Just 3 minutes to schedule</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          💰 Offer Coaching/Creation + Optional $399 Transaction Services
+                        </p>
+                      </div>
                     </div>
+                    
+                    <Button className="w-full bg-black hover:bg-gray-800 text-white text-lg py-6 rounded-2xl transition-all duration-200 hover:scale-[1.02]">
+                      Book Expert Help
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Help Section */}
-            <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-gray-50 rounded-2xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
-                ❓ Which path is right for you?
+                ❓ Need help choosing?
               </h4>
-              <div className="text-sm text-gray-700 space-y-2">
+              <div className="space-y-3 text-gray-700">
                 <p>
-                  <strong>Choose "Make an Offer"</strong> if you're confident writing an offer and want to move quickly.
+                  <span className="font-medium">Pick "Make an Offer"</span> if you're comfortable moving fast and want to take control.
                 </p>
                 <p>
-                  <strong>Choose "Work with Agent"</strong> if you want pricing guidance, offer review, or full support from contract to close.
+                  <span className="font-medium">Pick "Work with an Agent"</span> if you'd like personalized strategy, support, or help writing a winning offer.
                 </p>
               </div>
             </div>
@@ -350,24 +363,26 @@ const EnhancedOfferTypeDialog = ({
         if (!agentId) {
           // Confirmation for admin assignment case
           return (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-blue-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-blue-50 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold">Request Submitted!</h3>
-              <p className="text-gray-600">
-                We've received your request to work with an agent for {propertyAddress}. Our team will assign a qualified agent and they'll reach out to you within 24 hours.
-              </p>
-              <div className="p-4 bg-gray-50 rounded-lg text-left">
-                <h4 className="font-medium mb-2">What's Next:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+              <div className="space-y-2">
+                <h3 className="text-2xl font-semibold text-gray-900">Request Submitted!</h3>
+                <p className="text-gray-600 text-lg">
+                  We've received your request to work with an agent for {propertyAddress}. Our team will assign a qualified agent and they'll reach out to you within 24 hours.
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-2xl p-6 text-left">
+                <h4 className="font-semibold text-gray-900 mb-3">What's Next:</h4>
+                <ul className="space-y-2 text-gray-700">
                   <li>• We'll review your information and match you with a qualified agent</li>
                   <li>• The assigned agent will contact you within 24 hours</li>
                   <li>• You'll schedule a consultation to discuss your offer strategy</li>
                   <li>• The agent will guide you through the entire offer process</li>
                 </ul>
               </div>
-              <Button onClick={onClose} className="w-full">
+              <Button onClick={onClose} className="w-full bg-black hover:bg-gray-800 text-white py-6 rounded-2xl">
                 Got it
               </Button>
             </div>
@@ -375,24 +390,26 @@ const EnhancedOfferTypeDialog = ({
         } else {
           // Confirmation for direct agent scheduling
           return (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-green-50 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold">Consultation Scheduled!</h3>
-              <p className="text-gray-600">
-                Your consultation with {agentName} has been scheduled. You'll receive a confirmation email with the meeting details.
-              </p>
-              <div className="p-4 bg-gray-50 rounded-lg text-left">
-                <h4 className="font-medium mb-2">What's Next:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+              <div className="space-y-2">
+                <h3 className="text-2xl font-semibold text-gray-900">Consultation Scheduled!</h3>
+                <p className="text-gray-600 text-lg">
+                  Your consultation with {agentName} has been scheduled. You'll receive a confirmation email with the meeting details.
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-2xl p-6 text-left">
+                <h4 className="font-semibold text-gray-900 mb-3">What's Next:</h4>
+                <ul className="space-y-2 text-gray-700">
                   <li>• You'll receive a calendar invite</li>
                   <li>• The agent will review your information beforehand</li>
                   <li>• Come prepared with any additional questions</li>
                   <li>• After the call, you can decide on next steps</li>
                 </ul>
               </div>
-              <Button onClick={onClose} className="w-full">
+              <Button onClick={onClose} className="w-full bg-black hover:bg-gray-800 text-white py-6 rounded-2xl">
                 Got it
               </Button>
             </div>
@@ -407,7 +424,7 @@ const EnhancedOfferTypeDialog = ({
   const getStepTitle = () => {
     switch (currentStep) {
       case 'selection':
-        return 'Choose Your Offer Strategy';
+        return '🧭 Choose Your Offer Strategy';
       case 'consultation_questions':
         return 'Agent Consultation Setup';
       case 'scheduling':
@@ -421,13 +438,9 @@ const EnhancedOfferTypeDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {currentStep === 'selection' && <MessageCircle className="h-5 w-5" />}
-            {currentStep === 'consultation_questions' && <User className="h-5 w-5" />}
-            {currentStep === 'scheduling' && <Calendar className="h-5 w-5" />}
-            {currentStep === 'confirmation' && <CheckCircle className="h-5 w-5" />}
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="text-3xl font-semibold text-gray-900 text-center">
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>

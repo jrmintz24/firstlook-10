@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Combobox, ComboboxInput, ComboboxList, ComboboxOption, ComboboxPopover } from "@reach/combobox";
-import "@reach/combobox/styles.css";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
+import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddressAutocompleteProps {
   value: string;
@@ -25,14 +28,14 @@ const AddressAutocomplete = ({
   const [searchTerm, setSearchTerm] = useState(value);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [results, setResults] = useState<string[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setSearchTerm(value);
   }, [value]);
 
   useEffect(() => {
-    if (debouncedSearchTerm) {
+    if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchAddresses(debouncedSearchTerm);
     } else {
       setResults([]);
@@ -45,7 +48,6 @@ const AddressAutocomplete = ({
     try {
       console.log('📡 Making request to google-places edge function...');
       
-      // Use Supabase client to invoke the edge function
       const { data, error } = await supabase.functions.invoke('google-places', {
         body: { input: searchTerm }
       });
@@ -55,7 +57,6 @@ const AddressAutocomplete = ({
       if (error) {
         console.error('❌ Error from edge function:', error);
         setResults([]);
-        setIsOpen(false);
         return;
       }
 
@@ -63,35 +64,23 @@ const AddressAutocomplete = ({
         const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
         console.log('✅ Formatted addresses:', formattedAddresses);
         setResults(formattedAddresses);
-        setIsOpen(true);
       } else if (data && data.error) {
         console.error('❌ Error from edge function:', data.error);
         setResults([]);
-        setIsOpen(false);
       } else {
         console.error('❌ Error fetching addresses:', data?.error_message || data?.status);
         setResults([]);
-        setIsOpen(false);
       }
     } catch (error) {
       console.error('❌ Error fetching addresses:', error);
       setResults([]);
-      setIsOpen(false);
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchTerm(newValue);
-    onChange(newValue);
-    setIsOpen(true);
   };
 
   const handleSelect = (address: string) => {
     setSearchTerm(address);
     onChange(address);
-    setResults([]);
-    setIsOpen(false);
+    setOpen(false);
   };
 
   return (
@@ -101,24 +90,50 @@ const AddressAutocomplete = ({
           {label}
         </label>
       )}
-      <Combobox onSelect={handleSelect}>
-        <ComboboxInput
-          id={id}
-          value={searchTerm}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-          className="w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        />
-        {isOpen && results.length > 0 && (
-          <ComboboxPopover className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            <ComboboxList>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            id={id}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+          >
+            {value || placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder={placeholder}
+              value={searchTerm}
+              onValueChange={(search) => {
+                setSearchTerm(search);
+                onChange(search);
+              }}
+            />
+            <CommandList>
+              <CommandEmpty>No addresses found.</CommandEmpty>
               {results.map((result, index) => (
-                <ComboboxOption key={index} value={result} className="px-3 py-2 hover:bg-gray-100 cursor-pointer" />
+                <CommandItem
+                  key={index}
+                  value={result}
+                  onSelect={() => handleSelect(result)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === result ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {result}
+                </CommandItem>
               ))}
-            </ComboboxList> 
-          </ComboboxPopover>
-        )}
-      </Combobox>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

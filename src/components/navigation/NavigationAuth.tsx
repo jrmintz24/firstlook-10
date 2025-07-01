@@ -7,7 +7,11 @@ import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
 interface User {
   id: string;
   email?: string;
-  user_metadata?: { user_type?: string };
+  user_metadata?: { 
+    user_type?: string;
+    first_name?: string;
+    last_name?: string;
+  };
 }
 
 interface NavigationAuthProps {
@@ -26,7 +30,7 @@ const NavigationAuth = ({ user, onSignOut, unreadCount = 0 }: NavigationAuthProp
         ? '/agent-dashboard'
         : '/buyer-dashboard';
 
-    // Get display name for the user
+    // Get display name for the user - now with proper type handling
     const displayName = user.user_metadata?.first_name || 
                        user.email?.split('@')[0] || 
                        'User';
@@ -52,7 +56,12 @@ const NavigationAuth = ({ user, onSignOut, unreadCount = 0 }: NavigationAuthProp
         </div>
         
         {/* User Dropdown Menu */}
-        <UserDropdownMenu displayName={displayName} onSignOut={onSignOut} />
+        <UserDropdownMenu 
+          displayName={displayName} 
+          onSignOut={onSignOut}
+          showProfileLink={true}
+          showOffersLink={userType === 'buyer'}
+        />
       </div>
     );
   }

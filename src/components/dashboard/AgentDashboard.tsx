@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, BarChart3 } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -303,7 +302,6 @@ const AgentDashboard = () => {
           sidebar={sidebar}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          showHeader={false} // Don't show the internal header
         />
       </div>
 

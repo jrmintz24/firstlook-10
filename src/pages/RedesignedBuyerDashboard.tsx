@@ -73,7 +73,8 @@ const RedesignedBuyerDashboard = () => {
     handleSignAgreementFromCard,
     handleSendMessage,
     handleRescheduleShowing,
-    handleRescheduleSuccess
+    handleRescheduleSuccess,
+    fetchShowingRequests
   } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
   // Enhanced post-showing actions
@@ -97,6 +98,11 @@ const RedesignedBuyerDashboard = () => {
       completed: completedShowings.length
     }
   });
+
+  // Handle successful form submission - refresh data
+  const handleFormSuccess = () => {
+    fetchShowingRequests();
+  };
 
   // Show loading while auth is being determined
   if (authLoading) {
@@ -378,6 +384,7 @@ const RedesignedBuyerDashboard = () => {
         <PropertyRequestForm
           isOpen={showPropertyForm}
           onClose={() => setShowPropertyForm(false)}
+          onSuccess={handleFormSuccess}
         />
       </ErrorBoundary>
 

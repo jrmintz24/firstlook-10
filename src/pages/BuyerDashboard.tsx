@@ -77,6 +77,11 @@ const BuyerDashboard = () => {
     Object.entries(agreements).map(([key, value]) => [key, value])
   );
 
+  // Handle successful form submission - refresh data
+  const handleFormSuccess = () => {
+    fetchShowingRequests();
+  };
+
   // Show loading skeleton while data is being fetched
   if (loading || authLoading) {
     return (
@@ -168,6 +173,7 @@ const BuyerDashboard = () => {
       <PropertyRequestForm
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
+        onSuccess={handleFormSuccess}
       />
 
       {showSubscribeModal && (

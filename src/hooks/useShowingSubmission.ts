@@ -8,7 +8,7 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { getPropertiesToSubmit, getPreferredOptions, getEstimatedConfirmationDate } from "@/utils/propertyRequestUtils";
 
-export const useShowingSubmission = (formData: PropertyRequestFormData) => {
+export const useShowingSubmission = (formData: PropertyRequestFormData, onSuccess?: () => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -91,6 +91,11 @@ export const useShowingSubmission = (formData: PropertyRequestFormData) => {
 
       // Clear any pending tour data
       localStorage.removeItem('pendingTourRequest');
+      
+      // Call the success callback to refresh dashboard data
+      if (onSuccess) {
+        onSuccess();
+      }
       
       toast({
         title: "Request Submitted Successfully! 🎉",

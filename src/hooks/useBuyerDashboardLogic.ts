@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -187,32 +188,86 @@ export const useBuyerDashboardLogic = () => {
     }
   };
 
-  // Enhanced agreement signing with immediate UI update
+  // Fixed agreement signing with proper error handling and token generation
   const handleAgreementSignWithModal = async (signerName: string) => {
-    if (!selectedShowing || !currentUser?.id) return;
+    if (!selectedShowing || !currentUser?.id) {
+      console.error('Missing selectedShowing or currentUser');
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('tour_agreements')
-        .upsert({
-          showing_request_id: selectedShowing.id,
-          buyer_id: currentUser.id,
-          agent_id: selectedShowing.assigned_agent_id,
-          signed: true,
-          signed_at: new Date().toISOString(),
-          agreement_type: 'single_tour'
-        });
+      console.log('Starting agreement signing process for:', selectedShowing.id);
 
-      if (error) throw error;
+      // First, check if agreement already exists
+      let { data: existingAgreement, error: findError } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('showing_request_id', selectedShowing.id)
+        .eq('buyer_id', currentUser.id)
+        .single();
+
+      if (findError && findError.code !== 'PGRST116') {
+        console.error('Error finding existing agreement:', findError);
+        throw new Error('Failed to check existing agreement');
+      }
+
+      // Create agreement if it doesn't exist
+      if (!existingAgreement) {
+        console.log('Creating new tour agreement...');
+        
+        // Generate a simple token without base64url encoding
+        const tokenArray = new Uint8Array(16);
+        crypto.getRandomValues(tokenArray);
+        const emailToken = Array.from(tokenArray, byte => byte.toString(16).padStart(2, '0')).join('');
+
+        const { data: newAgreement, error: createError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: selectedShowing.id,
+            buyer_id: currentUser.id,
+            agent_id: selectedShowing.assigned_agent_id,
+            agreement_type: 'single_tour',
+            signed: false,
+            email_token: emailToken,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          })
+          .select('*')
+          .single();
+
+        if (createError) {
+          console.error('Error creating agreement:', createError);
+          throw new Error('Failed to create agreement');
+        }
+        
+        existingAgreement = newAgreement;
+      }
+
+      // Sign the agreement
+      const { error: signError } = await supabase
+        .from('tour_agreements')
+        .update({
+          signed: true,
+          signed_at: new Date().toISOString()
+        })
+        .eq('id', existingAgreement.id);
+
+      if (signError) {
+        console.error('Error signing agreement:', signError);
+        throw new Error('Failed to sign agreement');
+      }
 
       // Update the showing status to confirmed
       const { error: statusError } = await supabase
         .from('showing_requests')
-        .update({ status: 'confirmed' })
+        .update({ 
+          status: 'confirmed',
+          status_updated_at: new Date().toISOString()
+        })
         .eq('id', selectedShowing.id);
 
       if (statusError) {
         console.error('Error updating showing status:', statusError);
+        // Don't throw here as the agreement was signed successfully
       }
 
       // Immediately update local state
@@ -240,11 +295,11 @@ export const useBuyerDashboardLogic = () => {
       setShowAgreementModal(false);
       setSelectedShowing(null);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing agreement:', error);
       toast({
         title: "Error",
-        description: "Failed to sign agreement. Please try again.",
+        description: error.message || "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }

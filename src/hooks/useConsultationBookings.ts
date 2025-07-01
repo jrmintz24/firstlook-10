@@ -16,14 +16,13 @@ interface ConsultationBooking {
   buyer_notes?: string;
   created_at: string;
   updated_at: string;
-}
-
-interface OfferIntent {
-  id: string;
-  property_address: string;
-  buyer_qualification: any;
-  consultation_type: string;
-  created_at: string;
+  offer_intents?: {
+    id: string;
+    property_address: string;
+    buyer_qualification: any;
+    consultation_type: string;
+    created_at: string;
+  };
 }
 
 export const useConsultationBookings = (userId?: string, userType: 'buyer' | 'agent' = 'buyer') => {

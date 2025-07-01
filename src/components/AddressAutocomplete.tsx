@@ -5,6 +5,10 @@ import "@reach/combobox/styles.css";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 
+// Google API key for fallback requests when the Supabase
+// edge function is unavailable.
+const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
@@ -41,10 +45,10 @@ const AddressAutocomplete = ({
 
   const fetchAddresses = async (searchTerm: string) => {
     console.log('🔍 Starting address search for:', searchTerm);
-    
+
     try {
       console.log('📡 Making request to google-places edge function...');
-      
+
       // Use Supabase client to invoke the edge function
       const { data, error } = await supabase.functions.invoke('google-places', {
         body: { input: searchTerm }
@@ -52,29 +56,42 @@ const AddressAutocomplete = ({
 
       console.log('📡 Response received:', { data, error });
 
-      if (error) {
-        console.error('❌ Error from edge function:', error);
-        setResults([]);
-        setIsOpen(false);
-        return;
+      if (error || !data || data.status !== 'OK') {
+        throw error || new Error('Edge function error');
       }
 
-      if (data && data.status === 'OK' && data.predictions) {
-        const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
+      if (data.predictions) {
+        const formattedAddresses = data.predictions.map((p: any) => p.description);
         console.log('✅ Formatted addresses:', formattedAddresses);
         setResults(formattedAddresses);
         setIsOpen(true);
-      } else if (data && data.error) {
-        console.error('❌ Error from edge function:', data.error);
-        setResults([]);
-        setIsOpen(false);
-      } else {
-        console.error('❌ Error fetching addresses:', data?.error_message || data?.status);
-        setResults([]);
-        setIsOpen(false);
+        return;
       }
-    } catch (error) {
-      console.error('❌ Error fetching addresses:', error);
+    } catch (edgeError) {
+      console.error('❌ Edge function failed:', edgeError);
+
+      // Fallback to direct Google Places API if key is provided
+      if (GOOGLE_PLACES_API_KEY) {
+        try {
+          console.log('🌐 Fallback to Google Places API...');
+          const url =
+            `https://maps.googleapis.com/maps/api/place/autocomplete/json` +
+            `?input=${encodeURIComponent(searchTerm)}` +
+            `&types=address&components=country:us&key=${GOOGLE_PLACES_API_KEY}`;
+          const response = await fetch(url);
+          const googleData = await response.json();
+          if (googleData.status === 'OK' && googleData.predictions) {
+            const formatted = googleData.predictions.map((p: any) => p.description);
+            setResults(formatted);
+            setIsOpen(true);
+            return;
+          }
+          console.error('❌ Google API error:', googleData);
+        } catch (googleError) {
+          console.error('❌ Error fetching from Google API:', googleError);
+        }
+      }
+
       setResults([]);
       setIsOpen(false);
     }

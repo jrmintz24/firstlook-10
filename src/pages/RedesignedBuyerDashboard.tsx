@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
+import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import AgentProfileModal from "@/components/post-showing/AgentProfileModal";
 
@@ -41,6 +42,8 @@ const RedesignedBuyerDashboard = () => {
     setShowAgreementModal,
     showSubscribeModal,
     setShowSubscribeModal,
+    showRescheduleModal,
+    setShowRescheduleModal,
     activeTab,
     setActiveTab,
     
@@ -62,7 +65,9 @@ const RedesignedBuyerDashboard = () => {
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
     handleSignAgreementFromCard,
-    handleSendMessage
+    handleSendMessage,
+    handleRescheduleShowing,
+    handleRescheduleSuccess
   } = useBuyerDashboardLogic();
 
   // Enhanced post-showing actions
@@ -251,7 +256,7 @@ const RedesignedBuyerDashboard = () => {
               emptyButtonText="Request Your Free Showing"
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
-              onRescheduleShowing={() => {}}
+              onRescheduleShowing={handleRescheduleShowing}
               onConfirmShowing={handleConfirmShowingWithModal}
               onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
@@ -286,7 +291,7 @@ const RedesignedBuyerDashboard = () => {
               emptyButtonText="Request Your Free Showing"
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
-              onRescheduleShowing={() => {}}
+              onRescheduleShowing={handleRescheduleShowing}
               onConfirmShowing={handleConfirmShowingWithModal}
               onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
@@ -381,6 +386,15 @@ const RedesignedBuyerDashboard = () => {
             time: selectedShowing.preferred_time,
             agentName: selectedShowing.assigned_agent_name
           }}
+        />
+      )}
+
+      {selectedShowing && (
+        <RescheduleModal
+          showingRequest={selectedShowing}
+          isOpen={showRescheduleModal}
+          onClose={() => setShowRescheduleModal(false)}
+          onSuccess={handleRescheduleSuccess}
         />
       )}
 

@@ -4,6 +4,7 @@ import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
+import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -22,6 +23,8 @@ const BuyerDashboard = () => {
     setShowAgreementModal,
     showSubscribeModal,
     setShowSubscribeModal,
+    showRescheduleModal,
+    setShowRescheduleModal,
     activeTab,
     setActiveTab,
     
@@ -49,6 +52,7 @@ const BuyerDashboard = () => {
     handleStatClick,
     handleCancelShowing,
     handleRescheduleShowing,
+    handleRescheduleSuccess,
     fetchShowingRequests
   } = useBuyerDashboardLogic();
 
@@ -180,6 +184,15 @@ const BuyerDashboard = () => {
             time: selectedShowing.preferred_time,
             agentName: selectedShowing.assigned_agent_name
           }}
+        />
+      )}
+
+      {showRescheduleModal && selectedShowing && (
+        <RescheduleModal
+          showingRequest={selectedShowing}
+          isOpen={showRescheduleModal}
+          onClose={() => setShowRescheduleModal(false)}
+          onSuccess={handleRescheduleSuccess}
         />
       )}
     </>

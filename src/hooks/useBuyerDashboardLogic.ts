@@ -31,6 +31,7 @@ export const useBuyerDashboardLogic = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedShowing, setSelectedShowing] = useState<ShowingRequest | null>(null);
   const [activeTab, setActiveTab] = useState("requested");
   const [pendingRequests, setPendingRequests] = useState<ShowingRequest[]>([]);
@@ -347,8 +348,18 @@ export const useBuyerDashboardLogic = () => {
   };
 
   const handleRescheduleShowing = (showingId: string) => {
-    // Implementation for rescheduling showings
     console.log('Reschedule showing:', showingId);
+    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
+    if (showing) {
+      setSelectedShowing(showing);
+      setShowRescheduleModal(true);
+    }
+  };
+
+  const handleRescheduleSuccess = () => {
+    setShowRescheduleModal(false);
+    setSelectedShowing(null);
+    fetchShowingRequests(); // Refresh the data
   };
 
   const isSubscribed = eligibility?.eligible && eligibility?.reason === 'subscribed';
@@ -362,6 +373,8 @@ export const useBuyerDashboardLogic = () => {
     setShowAgreementModal,
     showSubscribeModal,
     setShowSubscribeModal,
+    showRescheduleModal,
+    setShowRescheduleModal,
     activeTab,
     setActiveTab,
     
@@ -392,6 +405,7 @@ export const useBuyerDashboardLogic = () => {
     handleStatClick,
     handleCancelShowing,
     handleRescheduleShowing,
+    handleRescheduleSuccess,
     fetchShowingRequests
   };
 };

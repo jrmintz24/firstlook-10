@@ -2,6 +2,7 @@
 import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
+import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyRequestWizard from "@/components/PropertyRequestWizard";
@@ -59,6 +60,14 @@ const BuyerDashboard = () => {
     fetchShowingRequests
   } = useBuyerDashboardLogic();
 
+  // Fetch real consultation bookings data
+  const { 
+    bookings: consultationBookings, 
+    loading: consultationsLoading,
+    updateBookingStatus,
+    rescheduleBooking 
+  } = useConsultationBookings(currentUser?.id, 'buyer');
+
   // Add the pending tour handler to process any pending tour requests
   usePendingTourHandler();
 
@@ -80,25 +89,15 @@ const BuyerDashboard = () => {
     Object.entries(agreements).map(([key, value]) => [key, value])
   );
 
-  // Add mock consultations data
-  const mockConsultations = [
-    {
-      id: "1",
-      propertyAddress: "123 Main St, Washington, DC",
-      scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-      consultationType: 'video' as const,
-      agentName: "Sarah Johnson",
-      status: 'scheduled' as const
-    },
-    {
-      id: "2", 
-      propertyAddress: "456 Oak Ave, Arlington, VA",
-      scheduledAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Yesterday
-      consultationType: 'phone' as const,
-      agentName: "Mike Chen",
-      status: 'completed' as const
-    }
-  ];
+  // Transform consultation bookings to match the expected format
+  const consultations = consultationBookings.map(booking => ({
+    id: booking.id,
+    propertyAddress: booking.offer_intents?.property_address || 'Property consultation',
+    scheduledAt: booking.scheduled_at,
+    consultationType: (booking.offer_intents?.consultation_type === 'phone' ? 'phone' : 'video') as 'phone' | 'video',
+    agentName: 'Your Agent', // This would come from agent profile in a real implementation
+    status: booking.status as 'scheduled' | 'completed' | 'cancelled'
+  }));
 
   // Handle successful form submission - refresh data
   const handleFormSuccess = () => {
@@ -115,9 +114,9 @@ const BuyerDashboard = () => {
     });
   }, [toast]);
 
-  const handleRescheduleConsultation = useCallback((consultationId: string) => {
+  const handleRescheduleConsultation = useCallback(async (consultationId: string) => {
     console.log('Rescheduling consultation:', consultationId);
-    // In a real implementation, this would open a reschedule modal
+    // For now, just show a message - in real implementation this would open a reschedule modal
     toast({
       title: "Reschedule Consultation",
       description: "Feature coming soon!",
@@ -137,7 +136,7 @@ const BuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
-    consultations: mockConsultations,
+    consultations,
     agreements: agreementsRecord,
     currentUser,
     profile,

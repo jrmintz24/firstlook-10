@@ -39,8 +39,11 @@ const AddressAutocomplete = ({
   }, [debouncedSearchTerm]);
 
   const fetchAddresses = async (searchTerm: string) => {
+    console.log('🔍 Starting address search for:', searchTerm);
+    
     try {
       // Use the Supabase edge function instead of direct Google API call
+      console.log('📡 Making request to google-places edge function...');
       const response = await fetch('https://uugchegukccccuqpcsqhl.supabase.co/functions/v1/google-places', {
         method: 'POST',
         headers: {
@@ -49,27 +52,33 @@ const AddressAutocomplete = ({
         body: JSON.stringify({ input: searchTerm })
       });
 
+      console.log('📡 Response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ HTTP error! status:', response.status, 'response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('📍 Google Places response:', data);
 
       if (data.status === 'OK' && data.predictions) {
         const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
+        console.log('✅ Formatted addresses:', formattedAddresses);
         setResults(formattedAddresses);
         setIsOpen(true);
       } else if (data.error) {
-        console.error('Error from edge function:', data.error);
+        console.error('❌ Error from edge function:', data.error);
         setResults([]);
         setIsOpen(false);
       } else {
-        console.error('Error fetching addresses:', data.error_message || data.status);
+        console.error('❌ Error fetching addresses:', data.error_message || data.status);
         setResults([]);
         setIsOpen(false);
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error);
+      console.error('❌ Error fetching addresses:', error);
       setResults([]);
       setIsOpen(false);
     }

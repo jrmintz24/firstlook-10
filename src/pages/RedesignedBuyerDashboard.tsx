@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
@@ -178,10 +177,8 @@ const RedesignedBuyerDashboard = () => {
   };
 
   const handleScheduleAnotherTour = async () => {
-    if (!currentUser?.id) return;
-    
-    const recentShowingId = completedShowings?.[0]?.id;
-    await scheduleAnotherTour(currentUser.id, recentShowingId);
+    // Open the property request form instead of calling the API
+    handleRequestShowing();
   };
 
   const handleSeeOtherProperties = () => {

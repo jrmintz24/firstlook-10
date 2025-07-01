@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -342,9 +341,56 @@ export const useBuyerDashboardLogic = () => {
     setActiveTab(targetTab);
   };
 
-  const handleCancelShowing = (showingId: string) => {
-    // Implementation for cancelling showings
-    console.log('Cancel showing:', showingId);
+  const handleCancelShowing = async (showingId: string) => {
+    if (!currentUser?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('showing_requests')
+        .update({ 
+          status: 'cancelled',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', showingId)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        console.error('Error cancelling showing:', error);
+        toast({
+          title: "Error",
+          description: "Failed to cancel the showing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update local state by removing from pending/active and adding to completed
+      const updateLocalState = () => {
+        const showingToMove = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
+        if (showingToMove) {
+          const updatedShowing = { ...showingToMove, status: 'cancelled' };
+          
+          setPendingRequests(prev => prev.filter(s => s.id !== showingId));
+          setActiveShowings(prev => prev.filter(s => s.id !== showingId));
+          setCompletedShowings(prev => [updatedShowing, ...prev]);
+        }
+      };
+
+      updateLocalState();
+
+      toast({
+        title: "Showing Cancelled",
+        description: "Your showing request has been cancelled successfully.",
+      });
+
+    } catch (error) {
+      console.error('Error in handleCancelShowing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel the showing. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRescheduleShowing = (showingId: string) => {

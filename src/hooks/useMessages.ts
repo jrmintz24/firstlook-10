@@ -88,19 +88,19 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, toast]);
 
-  // Optimized debounced fetch function
-  const debouncedFetchMessages = useCallback(() => {
+  // Simple debounced fetch function without circular dependencies
+  const triggerFetch = () => {
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current);
     }
     
     fetchTimeoutRef.current = setTimeout(() => {
       fetchMessages();
-    }, 200); // Reduced debounce time
-  }, [fetchMessages]);
+    }, 200);
+  };
 
-  // Enhanced sendMessage with better receiver detection
-  const sendMessage = useCallback(async (showingRequestId: string, receiverId: string | null, content: string) => {
+  // Simplified sendMessage function without complex dependencies
+  const sendMessage = async (showingRequestId: string, receiverId: string | null, content: string) => {
     if (!userId || !content.trim()) {
       console.log('SendMessage failed: Missing userId or content');
       return false;
@@ -186,7 +186,7 @@ export const useMessages = (userId: string | null) => {
       }
 
       // Refresh messages after sending
-      debouncedFetchMessages();
+      triggerFetch();
       return true;
     } catch (error) {
       console.error('Exception in sendMessage:', error);
@@ -197,7 +197,7 @@ export const useMessages = (userId: string | null) => {
       });
       return false;
     }
-  }, [userId, messages, debouncedFetchMessages, toast]);
+  };
 
   // Simple conversations getter without complex dependencies
   const getConversations = () => {
@@ -285,7 +285,7 @@ export const useMessages = (userId: string | null) => {
           filter: `conversation_type=eq.property`
         }, 
         () => {
-          debouncedFetchMessages();
+          triggerFetch();
         }
       )
       .subscribe();
@@ -293,7 +293,7 @@ export const useMessages = (userId: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, debouncedFetchMessages]);
+  }, [userId, fetchMessages]);
 
   useEffect(() => {
     fetchMessages();
@@ -311,7 +311,7 @@ export const useMessages = (userId: string | null) => {
     messages,
     loading,
     unreadCount,
-    fetchMessages: debouncedFetchMessages,
+    fetchMessages: triggerFetch,
     sendMessage,
     getMessagesForShowing,
     getConversations,

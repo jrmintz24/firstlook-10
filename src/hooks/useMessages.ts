@@ -38,31 +38,33 @@ export const useMessages = (userId: string | null) => {
   });
 
   // Memoized conversations getter
-  const getConversations = useMemo((): Conversation[] => {
-    const conversationMap = new Map();
-    
-    messages.forEach(message => {
-      const showingId = message.showing_request_id;
-      if (!showingId) return;
+  const getConversations = useMemo(() => {
+    return (): Conversation[] => {
+      const conversationMap = new Map();
       
-      if (!conversationMap.has(showingId)) {
-        conversationMap.set(showingId, {
-          showing_request_id: showingId,
-          property_address: message.showing_request?.property_address || 'Unknown Property',
-          messages: [],
-          unread_count: 0
-        });
-      }
+      messages.forEach(message => {
+        const showingId = message.showing_request_id;
+        if (!showingId) return;
+        
+        if (!conversationMap.has(showingId)) {
+          conversationMap.set(showingId, {
+            showing_request_id: showingId,
+            property_address: message.showing_request?.property_address || 'Unknown Property',
+            messages: [],
+            unread_count: 0
+          });
+        }
+        
+        const conversation = conversationMap.get(showingId);
+        conversation.messages.push(message);
+        
+        if (message.receiver_id === userId && !message.read_at) {
+          conversation.unread_count++;
+        }
+      });
       
-      const conversation = conversationMap.get(showingId);
-      conversation.messages.push(message);
-      
-      if (message.receiver_id === userId && !message.read_at) {
-        conversation.unread_count++;
-      }
-    });
-    
-    return Array.from(conversationMap.values());
+      return Array.from(conversationMap.values());
+    };
   }, [messages, userId]);
 
   // Simple messages getter for showing

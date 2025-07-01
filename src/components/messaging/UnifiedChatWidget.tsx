@@ -40,7 +40,7 @@ const UnifiedChatWidget = ({
   // Property messages
   const {
     unreadCount: propertyUnreadCount,
-    getConversations: getPropertyConversations,
+    getConversations,
     sendMessage: sendPropertyMessage,
     markMessagesAsRead: markPropertyMessagesAsRead,
     loading: propertyLoading
@@ -150,7 +150,7 @@ const UnifiedChatWidget = ({
 
             <TabsContent value="property" className="flex-1 px-4 pb-4 mt-2">
               <PropertyChatsTab
-                conversations={getPropertyConversations()}
+                conversations={getConversations()}
                 onSendMessage={sendPropertyMessage}
                 onMarkAsRead={markPropertyMessagesAsRead}
                 loading={propertyLoading}

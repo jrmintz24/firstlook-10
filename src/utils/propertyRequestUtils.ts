@@ -13,12 +13,34 @@ export const convertTo24Hour = (time: string): string => {
 };
 
 export const getPropertiesToSubmit = (formData: any): string[] => {
-  return formData.selectedProperties.length > 0 
-    ? formData.selectedProperties 
-    : [formData.propertyAddress];
+  // Handle both new and old format
+  if (formData.properties && formData.properties.length > 0) {
+    return formData.properties.map((prop: any) => prop.address).filter(Boolean);
+  }
+  
+  if (formData.selectedProperties && formData.selectedProperties.length > 0) {
+    return formData.selectedProperties;
+  }
+  
+  if (formData.propertyAddress) {
+    return [formData.propertyAddress];
+  }
+  
+  return [];
 };
 
 export const getPreferredOptions = (formData: any) => {
+  // Handle new format first
+  if (formData.preferredOptions && formData.preferredOptions.length > 0) {
+    return formData.preferredOptions
+      .filter((option: any) => option.date || option.time)
+      .map((option: any) => ({
+        date: option.date,
+        time: option.time ? convertTo24Hour(option.time) : ''
+      }));
+  }
+  
+  // Handle old format
   return [1, 2, 3]
     .map((num) => {
       const date = formData[`preferredDate${num}`] as string;

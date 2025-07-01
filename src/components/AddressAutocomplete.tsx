@@ -1,149 +1,96 @@
-
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState, useEffect } from 'react';
+import { Combobox, ComboboxInput, ComboboxList, ComboboxOption, ComboboxPopover } from "@reach/combobox";
+import "@reach/combobox/styles.css";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  label?: string;
-  id?: string;
+  className?: string;
 }
 
-const AddressAutocomplete = ({ 
-  value, 
-  onChange, 
-  placeholder = "Start typing an address...", 
-  label = "Property Address",
-  id = "address-autocomplete"
-}: AddressAutocompleteProps) => {
-  interface PlacePrediction {
-    place_id: string;
-    description: string;
-    structured_formatting?: {
-      main_text: string;
-      secondary_text: string;
-    };
-  }
-
-  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isInputFocused, setIsInputFocused] = useState(false);
-
-  const fetchSuggestions = useCallback(async (input: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log('Fetching suggestions for:', input);
-      
-      const { data, error } = await supabase.functions.invoke('google-places', {
-        body: { input }
-      });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        setError('Failed to fetch address suggestions');
-        setSuggestions([]);
-        return;
-      }
-
-      if (data && data.predictions) {
-        console.log('Received suggestions:', data.predictions);
-        setSuggestions(data.predictions);
-        if (isInputFocused) {
-          setShowSuggestions(true);
-        }
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } catch (err) {
-      console.error('Error fetching suggestions:', err);
-      setError('Failed to fetch address suggestions');
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isInputFocused]);
+const AddressAutocomplete = ({ value, onChange, placeholder = "Enter an address...", className }: AddressAutocompleteProps) => {
+  const [searchTerm, setSearchTerm] = useState(value);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [results, setResults] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!isInputFocused) return;
+    setSearchTerm(value);
+  }, [value]);
 
-    const timeoutId = setTimeout(async () => {
-      if (value.length > 2) {
-        await fetchSuggestions(value);
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      fetchAddresses(debouncedSearchTerm);
+    } else {
+      setResults([]);
+    }
+  }, [debouncedSearchTerm]);
+
+  const fetchAddresses = async (searchTerm: string) => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.error("Google Maps API key is missing. Please set the NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable.");
+      return;
+    }
+
+    const encodedSearchTerm = encodeURIComponent(searchTerm);
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodedSearchTerm}&types=geocode&key=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
+        setResults(formattedAddresses);
+        setIsOpen(true);
       } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
+        console.error('Error fetching addresses:', data.error_message || data.status);
+        setResults([]);
+        setIsOpen(false);
       }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [value, isInputFocused, fetchSuggestions]);
-
-  const handleSuggestionClick = (suggestion: PlacePrediction) => {
-    onChange(suggestion.description);
-    setShowSuggestions(false);
-    inputRef.current?.blur();
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+      setResults([]);
+      setIsOpen(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    onChange(newValue);
+    setIsOpen(true);
   };
 
-  const handleInputFocus = () => {
-    setIsInputFocused(true);
-    if (suggestions.length > 0) {
-      setShowSuggestions(true);
-    }
-  };
-
-  const handleInputBlur = () => {
-    setIsInputFocused(false);
-    // Delay hiding suggestions to allow clicking on them
-    setTimeout(() => setShowSuggestions(false), 150);
+  const handleSelect = (address: string) => {
+    setSearchTerm(address);
+    onChange(address);
+    setResults([]);
+    setIsOpen(false);
   };
 
   return (
-    <div className="relative">
-      {label && <Label htmlFor={id}>{label}</Label>}
-      <Input
-        ref={inputRef}
-        id={id}
-        value={value}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        placeholder={isLoading ? "Loading suggestions..." : placeholder}
-        autoComplete="off"
-      />
-      
-      {error && (
-        <p className="text-xs text-red-500 mt-1">
-          {error} - You can still enter addresses manually
-        </p>
-      )}
-
-      {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
-          {suggestions.map((suggestion, index) => (
-            <div
-              key={suggestion.place_id || index}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              <div className="text-sm font-medium">{suggestion.structured_formatting?.main_text}</div>
-              <div className="text-xs text-gray-500">{suggestion.structured_formatting?.secondary_text}</div>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className={`relative ${className || ''}`}>
+      <Combobox onSelect={handleSelect}>
+        <ComboboxInput
+          value={searchTerm}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          className="w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+        {isOpen && results.length > 0 && (
+          <ComboboxPopover className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ComboboxList>
+              {results.map((result, index) => (
+                <ComboboxOption key={index} value={result} className="px-3 py-2 hover:bg-gray-100 cursor-pointer" />
+              ))}
+            </ComboboxList>
+          </ComboboxPopover>
+        )}
+      </Combobox>
     </div>
   );
 };

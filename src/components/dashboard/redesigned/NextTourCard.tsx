@@ -69,6 +69,10 @@ const NextTourCard = ({ showing, onMessageAgent }: NextTourCardProps) => {
     }
   };
 
+  const handleMessageClick = () => {
+    onMessageAgent(showing.id);
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-start justify-between mb-4">
@@ -113,7 +117,7 @@ const NextTourCard = ({ showing, onMessageAgent }: NextTourCardProps) => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onMessageAgent(showing.id)}
+              onClick={handleMessageClick}
               className="flex items-center gap-2"
             >
               <MessageCircle className="w-4 h-4" />

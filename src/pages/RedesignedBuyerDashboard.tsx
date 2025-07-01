@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
@@ -10,6 +11,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import AgentProfileModal from "@/components/post-showing/AgentProfileModal";
+import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
 
 // Redesigned Components
 import JourneyProgressBar from "@/components/dashboard/redesigned/JourneyProgressBar";
@@ -29,9 +31,16 @@ const RedesignedBuyerDashboard = () => {
   // Handle any pending tour requests from signup
   usePendingTourHandler();
 
-  // Additional state for agent workflow
+  // Additional state for agent workflow and chat
   const [showAgentModal, setShowAgentModal] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
+
+  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
+    setChatDefaultTab(defaultTab);
+    setChatOpen(true);
+  };
 
   const {
     // State
@@ -67,7 +76,7 @@ const RedesignedBuyerDashboard = () => {
     handleSendMessage,
     handleRescheduleShowing,
     handleRescheduleSuccess
-  } = useBuyerDashboardLogic();
+  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
   // Enhanced post-showing actions
   const {
@@ -166,10 +175,6 @@ const RedesignedBuyerDashboard = () => {
     console.log("Make offer clicked");
   };
 
-  const handleOpenChat = (showingId: string) => {
-    console.log('Opening chat for showing:', showingId);
-  };
-
   // Enhanced handlers for WhatsNext actions
   const handleWorkWithAgent = (agentData: any) => {
     setSelectedAgent(agentData);
@@ -258,7 +263,7 @@ const RedesignedBuyerDashboard = () => {
               onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
-              onSendMessage={handleOpenChat}
+              onSendMessage={handleSendMessage}
               agreements={agreements}
             />
             
@@ -293,7 +298,7 @@ const RedesignedBuyerDashboard = () => {
               onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
-              onSendMessage={handleOpenChat}
+              onSendMessage={handleSendMessage}
               agreements={agreements}
             />
             
@@ -346,7 +351,7 @@ const RedesignedBuyerDashboard = () => {
           <StatsAndMessages 
             stats={stats}
             unreadMessages={unreadCount || 0}
-            onOpenInbox={() => {}}
+            onOpenInbox={() => handleOpenChat('property')}
           />
         </div>
 
@@ -363,6 +368,13 @@ const RedesignedBuyerDashboard = () => {
 
       {/* Help Widget */}
       <HelpWidget />
+
+      {/* Unified Chat Widget */}
+      <UnifiedChatWidget
+        isOpen={chatOpen}
+        onToggle={() => setChatOpen(!chatOpen)}
+        defaultTab={chatDefaultTab}
+      />
 
       {/* Modals */}
       <ErrorBoundary>

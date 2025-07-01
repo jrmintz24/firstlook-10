@@ -16,6 +16,11 @@ const BuyerDashboard = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
 
+  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
+    setChatDefaultTab(defaultTab);
+    setChatOpen(true);
+  };
+
   const {
     showPropertyForm,
     setShowPropertyForm,
@@ -54,19 +59,17 @@ const BuyerDashboard = () => {
     handleRescheduleShowing,
     handleRescheduleSuccess,
     fetchShowingRequests
-  } = useBuyerDashboardLogic();
+  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
 
   const handleOpenMessages = () => {
-    setChatDefaultTab('property');
-    setChatOpen(true);
+    handleOpenChat('property');
   };
 
   const handleOpenSupport = () => {
-    setChatDefaultTab('support');
-    setChatOpen(true);
+    handleOpenChat('support');
   };
 
   const agreementsRecord = Object.fromEntries(

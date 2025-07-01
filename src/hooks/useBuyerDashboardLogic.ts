@@ -21,7 +21,12 @@ interface ShowingRequest {
   user_id?: string | null;
 }
 
-export const useBuyerDashboardLogic = () => {
+interface UseBuyerDashboardLogicProps {
+  onOpenChat?: (defaultTab?: 'property' | 'support', showingId?: string) => void;
+}
+
+export const useBuyerDashboardLogic = (props?: UseBuyerDashboardLogicProps) => {
+  const { onOpenChat } = props || {};
   const { user, session } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -333,8 +338,15 @@ export const useBuyerDashboardLogic = () => {
   };
 
   const handleSendMessage = (showingId: string) => {
-    // Implementation for sending messages
-    console.log('Send message for showing:', showingId);
+    console.log('Opening chat for showing:', showingId);
+    if (onOpenChat) {
+      onOpenChat('property', showingId);
+    } else {
+      toast({
+        title: "Chat",
+        description: "Opening chat for this property...",
+      });
+    }
   };
 
   const handleStatClick = (targetTab: string) => {

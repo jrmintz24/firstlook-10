@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, Suspense } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -10,6 +11,8 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
+import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 
 const BuyerDashboard = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -104,6 +107,15 @@ const BuyerDashboard = () => {
     Object.entries(agreements).map(([key, value]) => [key, value])
   );
 
+  // Show loading skeleton while data is being fetched
+  if (loading || authLoading) {
+    return (
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardSkeleton />
+      </Suspense>
+    );
+  }
+
   const sectionsArray = generateBuyerDashboardSections({
     pendingRequests,
     activeShowings,
@@ -127,36 +139,31 @@ const BuyerDashboard = () => {
     return acc;
   }, {} as Record<string, any>);
 
-  if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
   const stats = (
     <div className="space-y-4">
-      <ModernStatsGrid
-        stats={[
-          {
-            title: "Pending Requests",
-            value: pendingRequests.length,
-            targetTab: "requested"
-          },
-          {
-            title: "Confirmed Tours", 
-            value: activeShowings.length,
-            targetTab: "confirmed"
-          },
-          {
-            title: "Completed Tours",
-            value: completedShowings.length,
-            targetTab: "history"
-          }
-        ]}
-        onStatClick={handleStatClick}
-      />
+      <div className="flex justify-between items-center">
+        <ModernStatsGrid
+          stats={[
+            {
+              title: "Pending Requests",
+              value: pendingRequests.length,
+              targetTab: "requested"
+            },
+            {
+              title: "Confirmed Tours", 
+              value: activeShowings.length,
+              targetTab: "confirmed"
+            },
+            {
+              title: "Completed Tours",
+              value: completedShowings.length,
+              targetTab: "history"
+            }
+          ]}
+          onStatClick={handleStatClick}
+        />
+        <ConnectionStatus userId={currentUser?.id || null} />
+      </div>
       
       <QuickActionsCard 
         unreadCount={unreadCount}
@@ -169,7 +176,7 @@ const BuyerDashboard = () => {
   return (
     <>
       <DashboardLayout
-        header={null} // Remove the redundant header
+        header={null}
         stats={stats}
         mainContent={null}
         sidebar={null}

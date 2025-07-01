@@ -8,15 +8,21 @@ interface ConnectionManager {
   isConnecting: boolean;
   channel: any;
   backoffDelays: number[];
+  circuitBreakerOpen: boolean;
+  lastFailureTime: number;
+  circuitBreakerTimeout: number;
 }
 
 export const useMessageSubscriptionManager = () => {
   const connectionManager = useRef<ConnectionManager>({
     retryCount: 0,
-    maxRetries: 5,
+    maxRetries: 3, // Reduced from 5
     isConnecting: false,
     channel: null,
-    backoffDelays: [2000, 4000, 8000, 16000, 32000] // Exponential backoff
+    backoffDelays: [1000, 2000, 4000], // Reduced delays
+    circuitBreakerOpen: false,
+    lastFailureTime: 0,
+    circuitBreakerTimeout: 30000 // 30 seconds
   });
 
   const cleanupConnection = useCallback(() => {
@@ -29,9 +35,28 @@ export const useMessageSubscriptionManager = () => {
     manager.isConnecting = false;
   }, []);
 
+  const isCircuitBreakerOpen = useCallback(() => {
+    const manager = connectionManager.current;
+    if (!manager.circuitBreakerOpen) return false;
+    
+    const now = Date.now();
+    if (now - manager.lastFailureTime > manager.circuitBreakerTimeout) {
+      manager.circuitBreakerOpen = false;
+      manager.retryCount = 0;
+      return false;
+    }
+    return true;
+  }, []);
+
   const createSubscription = useCallback((userId: string, fetchMessages: () => void) => {
     const manager = connectionManager.current;
     
+    // Circuit breaker check
+    if (isCircuitBreakerOpen()) {
+      console.log('Circuit breaker is open, skipping subscription');
+      return null;
+    }
+
     // Prevent multiple simultaneous connections
     if (manager.isConnecting || manager.channel) {
       console.log('Subscription already exists or is connecting, skipping');
@@ -40,14 +65,16 @@ export const useMessageSubscriptionManager = () => {
 
     // Check retry limit
     if (manager.retryCount >= manager.maxRetries) {
-      console.error('Max retries reached for message subscription');
+      console.error('Max retries reached, opening circuit breaker');
+      manager.circuitBreakerOpen = true;
+      manager.lastFailureTime = Date.now();
       return null;
     }
 
     manager.isConnecting = true;
     console.log(`Setting up message subscription for user: ${userId} (attempt ${manager.retryCount + 1})`);
 
-    const channelName = `messages-user-${userId}-${Date.now()}`;
+    const channelName = `messages-user-${userId}`;
     
     const channel = supabase
       .channel(channelName)
@@ -61,7 +88,8 @@ export const useMessageSubscriptionManager = () => {
         },
         (payload) => {
           console.log('Message subscription event:', payload);
-          fetchMessages();
+          // Debounce the fetch to prevent excessive calls
+          setTimeout(fetchMessages, 100);
         }
       )
       .subscribe((status) => {
@@ -83,7 +111,7 @@ export const useMessageSubscriptionManager = () => {
           
           // Retry with exponential backoff
           if (manager.retryCount < manager.maxRetries) {
-            const delay = manager.backoffDelays[manager.retryCount] || 32000;
+            const delay = manager.backoffDelays[manager.retryCount] || 4000;
             console.log(`Retrying message subscription in ${delay}ms`);
             
             setTimeout(() => {
@@ -91,7 +119,9 @@ export const useMessageSubscriptionManager = () => {
               createSubscription(userId, fetchMessages);
             }, delay);
           } else {
-            console.error('Max retries reached, giving up on message subscription');
+            console.error('Max retries reached for message subscription');
+            manager.circuitBreakerOpen = true;
+            manager.lastFailureTime = Date.now();
           }
         } else if (status === 'CLOSED') {
           console.log('Message subscription closed');
@@ -102,10 +132,12 @@ export const useMessageSubscriptionManager = () => {
 
     manager.channel = channel;
     return channel;
-  }, []);
+  }, [isCircuitBreakerOpen]);
 
   const resetConnection = useCallback(() => {
-    connectionManager.current.retryCount = 0;
+    const manager = connectionManager.current;
+    manager.retryCount = 0;
+    manager.circuitBreakerOpen = false;
   }, []);
 
   return {
@@ -115,7 +147,8 @@ export const useMessageSubscriptionManager = () => {
     getConnectionStatus: () => ({
       isConnecting: connectionManager.current.isConnecting,
       retryCount: connectionManager.current.retryCount,
-      maxRetries: connectionManager.current.maxRetries
+      maxRetries: connectionManager.current.maxRetries,
+      circuitBreakerOpen: connectionManager.current.circuitBreakerOpen
     })
   };
 };

@@ -137,7 +137,7 @@ const BuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
-    consultations: mockConsultations, // Add this line
+    consultations: mockConsultations,
     agreements: agreementsRecord,
     currentUser,
     profile,
@@ -150,24 +150,15 @@ const BuyerDashboard = () => {
     onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
     fetchShowingRequests,
     onSendMessage: (showing) => handleSendMessage(showing.id),
-    onJoinConsultation: handleJoinConsultation, // Add this line
-    onRescheduleConsultation: handleRescheduleConsultation // Add this line
+    onJoinConsultation: handleJoinConsultation,
+    onRescheduleConsultation: handleRescheduleConsultation
   });
 
-  // Add the messages section to the dashboard
-  const messagesSection = {
-    id: "messages",
-    title: "Messages",
-    component: <InlineMessagesPanel />
-  };
-
+  // Convert sections array to record format for DashboardLayout
   const sections = sectionsArray.reduce((acc, section) => {
     acc[section.id] = section;
     return acc;
   }, {} as Record<string, any>);
-
-  // Add messages section
-  sections.messages = messagesSection;
 
   const stats = (
     <div className="space-y-4">

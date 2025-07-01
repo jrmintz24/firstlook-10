@@ -1,3 +1,4 @@
+
 import { Calendar, CheckCircle, Clock, MessageSquare, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EmptyStateCard from "./EmptyStateCard";
 import ConsultationsSection from "./ConsultationsSection";
+import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 
 // Add this interface for consultations
 interface Consultation {
@@ -198,17 +200,7 @@ export const generateBuyerDashboardSections = ({
       icon: MessageSquare,
       count: unreadCount,
       color: "bg-red-100 text-red-700",
-      component: (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Messages</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <p>You have {unreadCount} unread messages.</p>
-            <Button onClick={() => {}}>View Messages</Button>
-          </CardContent>
-        </Card>
-      )
+      component: <InlineMessagesPanel />
     },
     {
       id: "profile",

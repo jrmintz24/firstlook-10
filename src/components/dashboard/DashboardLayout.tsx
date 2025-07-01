@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface DashboardSection {
   id: string;
   title: string;
-  content: ReactNode;
+  component: ReactNode;
   count?: number;
   icon?: any;
 }
@@ -87,7 +87,7 @@ const DashboardLayout = ({
 
             {sectionsArray.map((section) => (
               <TabsContent key={section.id} value={section.id}>
-                {section.content}
+                {section.component}
               </TabsContent>
             ))}
           </Tabs>

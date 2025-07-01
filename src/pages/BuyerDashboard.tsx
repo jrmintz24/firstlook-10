@@ -1,3 +1,4 @@
+
 import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
@@ -13,9 +14,11 @@ import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
-import { toast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 const BuyerDashboard = () => {
+  const { toast } = useToast();
+  
   const {
     showPropertyForm,
     setShowPropertyForm,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
@@ -12,7 +11,7 @@ import FAQSection from '../components/buyer-os/FAQSection'
 import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
-import PropertyRequestForm from '../components/PropertyRequestForm'
+import PropertyRequestWizard from '../components/PropertyRequestWizard'
 import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
 
@@ -101,7 +100,7 @@ export default function Index() {
       )}
 
       {/* Property Request Form Modal */}
-      <PropertyRequestForm 
+      <PropertyRequestWizard 
         isOpen={showPropertyRequestForm}
         onClose={() => setShowPropertyRequestForm(false)}
       />

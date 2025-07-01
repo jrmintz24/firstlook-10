@@ -1,10 +1,9 @@
-
 import { useState, Suspense } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import PropertyRequestForm from "@/components/PropertyRequestForm";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -170,7 +169,7 @@ const BuyerDashboard = () => {
         onTabChange={setActiveTab}
       />
 
-      <PropertyRequestForm
+      <PropertyRequestWizard
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}

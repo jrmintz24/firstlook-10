@@ -1,9 +1,8 @@
-
 import { useState, Suspense, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import PropertyRequestForm from "@/components/PropertyRequestForm";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
@@ -378,7 +377,7 @@ const OptimizedBuyerDashboard = () => {
 
       {/* Modals */}
       <ErrorBoundary>
-        <PropertyRequestForm
+        <PropertyRequestWizard
           isOpen={showPropertyForm}
           onClose={() => setShowPropertyForm(false)}
         />

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -69,10 +70,10 @@ const EnhancedOfferTypeDialog = ({
   };
 
   const handleConsultationComplete = async (data: any) => {
-    if (!agentId || !buyerId) {
+    if (!buyerId) {
       toast({
         title: "Error",
-        description: "Missing agent or buyer information",
+        description: "Buyer information is required",
         variant: "destructive"
       });
       return;
@@ -80,15 +81,17 @@ const EnhancedOfferTypeDialog = ({
 
     setLoading(true);
     try {
-      // Create offer intent record
+      // Create offer intent record - use system agent ID or buyerId if no agent assigned
+      const effectiveAgentId = agentId || buyerId; // Use buyer as placeholder if no agent
+      
       const { data: offerIntent, error } = await supabase
         .from('offer_intents')
         .insert({
           buyer_id: buyerId,
-          agent_id: agentId,
+          agent_id: effectiveAgentId,
           showing_request_id: showingRequestId,
           property_address: propertyAddress,
-          offer_type: 'work_with_agent',
+          offer_type: agentId ? 'work_with_agent' : 'admin_assign_agent',
           consultation_type: 'property_specific',
           buyer_qualification: {
             propertyInterestLevel: data.propertyInterestLevel,
@@ -99,7 +102,8 @@ const EnhancedOfferTypeDialog = ({
             ongoingRepresentation: data.ongoingRepresentation,
             additionalComments: data.additionalComments,
             preferredCommunication: data.preferredCommunication,
-            availabilityPreference: data.availabilityPreference
+            availabilityPreference: data.availabilityPreference,
+            needsAgentAssignment: !agentId // Flag for admin to know agent assignment is needed
           }
         })
         .select()
@@ -109,7 +113,13 @@ const EnhancedOfferTypeDialog = ({
 
       setOfferIntentId(offerIntent.id);
       setConsultationData(data);
-      setCurrentStep('scheduling');
+      
+      // If no agent assigned, show confirmation that admin will assign
+      if (!agentId) {
+        setCurrentStep('confirmation');
+      } else {
+        setCurrentStep('scheduling');
+      }
     } catch (error) {
       console.error('Error creating offer intent:', error);
       toast({
@@ -164,43 +174,48 @@ const EnhancedOfferTypeDialog = ({
                 </CardContent>
               </Card>
 
-              {agentId && agentName && (
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50"
-                  onClick={() => handleOfferTypeSelection('work_with_agent')}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <User className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                          Work with Agent
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">Guided</Badge>
-                        </h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Want expert guidance? Schedule a consultation to discuss this property and develop your offer strategy together.
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <Badge variant="outline" className="text-xs border-blue-200">30-min consultation</Badge>
-                          <Badge variant="outline" className="text-xs border-blue-200">Expert strategy</Badge>
-                          <Badge variant="outline" className="text-xs border-blue-200">~3 minutes setup</Badge>
-                        </div>
+              {/* Always show agent option - either with specific agent or admin assignment */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50"
+                onClick={() => handleOfferTypeSelection('work_with_agent')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        {agentName ? `Work with ${agentName}` : 'Work with Agent'}
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                          {agentName ? 'Guided' : 'Agent Assignment'}
+                        </Badge>
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {agentName 
+                          ? 'Want expert guidance? Schedule a consultation to discuss this property and develop your offer strategy together.'
+                          : 'Want expert guidance? We\'ll connect you with a qualified agent to discuss this property and develop your offer strategy.'
+                        }
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs border-blue-200">30-min consultation</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200">Expert strategy</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200">~3 minutes setup</Badge>
+                        {!agentName && (
+                          <Badge variant="outline" className="text-xs border-orange-200">Agent will be assigned</Badge>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium text-gray-900 mb-2">Which path is right for you?</h4>
               <div className="text-sm text-gray-600 space-y-1">
                 <p><strong>Choose "Make an Offer"</strong> if you're ready to submit an offer and want to handle the process yourself.</p>
-                {agentId && agentName && (
-                  <p><strong>Choose "Work with Agent"</strong> if you want professional guidance on strategy, pricing, or contract terms.</p>
-                )}
+                <p><strong>Choose "Work with Agent"</strong> if you want professional guidance on strategy, pricing, or contract terms{!agentName && ' - we\'ll assign you a qualified agent'}.</p>
               </div>
             </div>
           </div>
@@ -229,29 +244,57 @@ const EnhancedOfferTypeDialog = ({
         ) : null;
 
       case 'confirmation':
-        return (
-          <div className="text-center space-y-4">
-            <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+        if (!agentId) {
+          // Confirmation for admin assignment case
+          return (
+            <div className="text-center space-y-4">
+              <div className="p-4 bg-blue-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold">Request Submitted!</h3>
+              <p className="text-gray-600">
+                We've received your request to work with an agent for {propertyAddress}. Our team will assign a qualified agent and they'll reach out to you within 24 hours.
+              </p>
+              <div className="p-4 bg-gray-50 rounded-lg text-left">
+                <h4 className="font-medium mb-2">What's Next:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• We'll review your information and match you with a qualified agent</li>
+                  <li>• The assigned agent will contact you within 24 hours</li>
+                  <li>• You'll schedule a consultation to discuss your offer strategy</li>
+                  <li>• The agent will guide you through the entire offer process</li>
+                </ul>
+              </div>
+              <Button onClick={onClose} className="w-full">
+                Got it
+              </Button>
             </div>
-            <h3 className="text-xl font-semibold">Consultation Scheduled!</h3>
-            <p className="text-gray-600">
-              Your consultation with {agentName} has been scheduled. You'll receive a confirmation email with the meeting details.
-            </p>
-            <div className="p-4 bg-gray-50 rounded-lg text-left">
-              <h4 className="font-medium mb-2">What's Next:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• You'll receive a calendar invite</li>
-                <li>• The agent will review your information beforehand</li>
-                <li>• Come prepared with any additional questions</li>
-                <li>• After the call, you can decide on next steps</li>
-              </ul>
+          );
+        } else {
+          // Confirmation for direct agent scheduling
+          return (
+            <div className="text-center space-y-4">
+              <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold">Consultation Scheduled!</h3>
+              <p className="text-gray-600">
+                Your consultation with {agentName} has been scheduled. You'll receive a confirmation email with the meeting details.
+              </p>
+              <div className="p-4 bg-gray-50 rounded-lg text-left">
+                <h4 className="font-medium mb-2">What's Next:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• You'll receive a calendar invite</li>
+                  <li>• The agent will review your information beforehand</li>
+                  <li>• Come prepared with any additional questions</li>
+                  <li>• After the call, you can decide on next steps</li>
+                </ul>
+              </div>
+              <Button onClick={onClose} className="w-full">
+                Got it
+              </Button>
             </div>
-            <Button onClick={onClose} className="w-full">
-              Got it
-            </Button>
-          </div>
-        );
+          );
+        }
 
       default:
         return null;
@@ -267,7 +310,7 @@ const EnhancedOfferTypeDialog = ({
       case 'scheduling':
         return 'Schedule Your Consultation';
       case 'confirmation':
-        return 'All Set!';
+        return !agentId ? 'Request Submitted!' : 'All Set!';
       default:
         return '';
     }

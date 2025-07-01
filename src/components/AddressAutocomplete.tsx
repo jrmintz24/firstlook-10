@@ -42,7 +42,7 @@ const AddressAutocomplete = ({
     console.log('🔍 Starting address search for:', searchTerm);
     
     try {
-      // Use the Supabase edge function instead of direct Google API call
+      // Use the correct Supabase edge function URL
       console.log('📡 Making request to google-places edge function...');
       const response = await fetch('https://uugchegukccccuqpcsqhl.supabase.co/functions/v1/google-places', {
         method: 'POST',

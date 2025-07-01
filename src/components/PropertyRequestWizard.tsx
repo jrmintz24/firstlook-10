@@ -6,7 +6,7 @@ import PropertySelectionStep from "@/components/property-request/PropertySelecti
 import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
-import { FreeShowingLimitModal } from "@/components/showing-limits/FreeShowingLimitModal";
+import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 
 interface PropertyRequestWizardProps {
   isOpen: boolean;
@@ -101,6 +101,11 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
     }
   };
 
+  const handleAuthSuccess = () => {
+    // After successful authentication, continue with the tour submission
+    handleContinueToSubscriptions();
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -121,6 +126,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
       <QuickSignInModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
       />
 
       <FreeShowingLimitModal

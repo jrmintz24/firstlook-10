@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +80,8 @@ const OnboardingWizard = () => {
   const fetchProfile = async () => {
     if (!user?.id) return;
 
+    console.log('OnboardingWizard: Fetching profile for user:', user.id);
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -108,15 +109,13 @@ const OnboardingWizard = () => {
           created_at: data.created_at,
           updated_at: data.updated_at
         };
+        
+        console.log('OnboardingWizard: Profile loaded:', enhancedProfile);
         setProfile(enhancedProfile);
         
-        // If user has already completed onboarding, redirect them to dashboard
-        if (enhancedProfile.onboarding_completed) {
-          const dashboardUrl = enhancedProfile.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-          window.location.href = dashboardUrl;
-          return;
-        }
+        // Remove the redirect logic from here - let AuthContext handle it
       } else {
+        console.log('OnboardingWizard: No profile found, creating default');
         const defaultProfile: EnhancedProfile = {
           id: user.id,
           user_type: 'buyer',
@@ -234,9 +233,12 @@ const OnboardingWizard = () => {
   };
 
   const handleComplete = async () => {
+    console.log('OnboardingWizard: Completing onboarding');
     await updateProfile({ onboarding_completed: true });
-    // Use a more direct approach to navigate after completion
+    
+    // Direct navigation to dashboard
     const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+    console.log('OnboardingWizard: Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;
   };
 

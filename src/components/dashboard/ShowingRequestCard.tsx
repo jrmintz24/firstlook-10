@@ -117,6 +117,8 @@ const ShowingRequestCard = ({
         return { label: 'Pending', color: 'text-gray-500' };
       case 'agent_assigned':
         return { label: 'Agent Assigned', color: 'text-indigo-500' };
+      case 'agent_requested':
+        return { label: 'Agent Requested', color: 'text-orange-500' };
       case 'agent_confirmed':
         return { label: 'Agent Confirmed', color: 'text-green-500' };
       case 'awaiting_agreement':
@@ -186,8 +188,11 @@ const ShowingRequestCard = ({
 
   const agreementRequired = isAgreementRequired();
 
+  // Special handling for agent_requested status
+  const isAgentRequestedStatus = showing.status === 'agent_requested';
+
   return (
-    <Card className={`border ${agreementRequired ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'} shadow-none hover:shadow-sm transition-all duration-200`}>
+    <Card className={`border ${agreementRequired ? 'border-orange-300 bg-orange-50' : isAgentRequestedStatus ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'} shadow-none hover:shadow-sm transition-all duration-200`}>
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Header */}
@@ -207,6 +212,14 @@ const ShowingRequestCard = ({
                   size="sm"
                   className="font-medium"
                 />
+                
+                {/* Agent Requested Special Badge */}
+                {isAgentRequestedStatus && userType === 'agent' && (
+                  <Badge className="bg-orange-100 text-orange-800 border-orange-300 font-medium">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Waiting for Agreement
+                  </Badge>
+                )}
                 
                 {/* Agreement Required Badge - More Prominent */}
                 {agreementRequired && (
@@ -231,6 +244,23 @@ const ShowingRequestCard = ({
                   <span>Requested {formatDate(showing.created_at)}</span>
                 </div>
               </div>
+
+              {/* Agent Requested Alert Box */}
+              {isAgentRequestedStatus && userType === 'agent' && (
+                <div className="mt-3 p-3 bg-orange-100 rounded-lg border border-orange-200">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-orange-900">
+                        Tour Request Sent
+                      </p>
+                      <p className="text-xs text-orange-700 mt-1">
+                        You've requested this tour. The buyer needs to sign the tour agreement to confirm the appointment.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Agreement Alert Box */}
               {agreementRequired && (

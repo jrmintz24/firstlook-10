@@ -1,4 +1,3 @@
-
 import { CalendarDays, Hourglass, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export type ShowingStatusCategory = 'pending' | 'active' | 'completed' | 'cancelled';
@@ -65,6 +64,15 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
         description: 'An agent has been assigned to your request and will contact you soon.',
         category: 'pending'
       };
+    case 'agent_requested':
+      return {
+        label: 'Agent Requested',
+        color: 'text-orange-700',
+        bgColor: 'bg-orange-100',
+        icon: '📋',
+        description: 'You have requested this tour. Waiting for buyer to sign the tour agreement.',
+        category: 'pending'
+      };
     case 'agent_confirmed':
       return {
         label: 'Agent Confirmed',
@@ -73,15 +81,6 @@ export const getStatusInfo = (status: ShowingStatus): StatusInfo => {
         icon: '✅',
         description: 'Your request has been confirmed by the agent. Awaiting your confirmation.',
         category: 'active'
-      };
-    case 'agent_requested':
-      return {
-        label: 'Agent Requested',
-        color: 'text-orange-700',
-        bgColor: 'bg-orange-100',
-        icon: '🏃‍♂️',
-        description: 'Agent has requested this tour. Awaiting buyer agreement signature.',
-        category: 'pending'
       };
     case 'awaiting_agreement':
       return {
@@ -190,10 +189,10 @@ export const getEstimatedTimeline = (status: ShowingStatus): string => {
       return 'Our team is reviewing your request to find the best agent match.';
     case 'agent_assigned':
       return 'An agent has been assigned and will be in touch to schedule your tour.';
+    case 'agent_requested':
+      return 'You have requested this tour. The buyer needs to sign the agreement to confirm.';
     case 'agent_confirmed':
       return 'Please confirm the scheduled time with your agent.';
-    case 'agent_requested':
-      return 'Agent has requested this tour. Please sign the agreement to confirm.';
     case 'awaiting_agreement':
       return 'Please sign the agreement within 7 days to secure your tour slot';
     case 'confirmed':

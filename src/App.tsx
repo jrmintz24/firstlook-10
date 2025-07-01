@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -32,6 +33,7 @@ import SignAgreement from './pages/SignAgreement'
 import OfferQuestionnaire from './pages/OfferQuestionnaire'
 import MyOffers from './pages/MyOffers'
 import Profile from './pages/Profile'
+import Onboarding from './pages/Onboarding'
 
 const queryClient = new QueryClient()
 
@@ -61,6 +63,16 @@ function App() {
                 <Route path="/buyer-auth" element={<BuyerAuth />} />
                 <Route path="/agent-auth" element={<AgentAuth />} />
                 <Route path="/admin-auth" element={<AdminAuth />} />
+
+                {/* Onboarding - Protected Route */}
+                <Route
+                  path="/onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  }
+                />
 
                 {/* Dashboards with specific user type requirements */}
                 <Route

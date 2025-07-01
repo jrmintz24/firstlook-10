@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -8,8 +7,8 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, metadata?: Record<string, unknown> & { user_type?: string }) => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   signInWithProvider: (
     provider: 'google' | 'github' | 'discord' | 'facebook'
@@ -27,48 +26,56 @@ export const useAuth = () => {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [initialized, setInitialized] = useState(false)
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    // Listen for auth changes first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      
-      console.log('AuthContext - Auth state changed:', _event, session?.user?.email, session?.user?.user_metadata?.user_type)
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (initialized) {
-        setLoading(false)
-      }
-    })
-
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      console.log('AuthContext - Initial session:', session?.user?.email, session?.user?.user_metadata?.user_type)
-      setSession(session)
-      setUser(session?.user ?? null)
-      setInitialized(true)
-      setLoading(false)
-    })
+      console.log('Initial session:', session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    }
-  }, [initialized])
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
 
-  const signIn = async (email: string, password: string): Promise<void> => {
-    const { error } = await authService.signIn(email, password)
-    if (error) throw error
-  }
+      // Check if user needs onboarding after successful sign up
+      if (event === 'SIGNED_UP' || (event === 'SIGNED_IN' && session?.user)) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', session.user.id)
+            .single();
+
+          // If profile doesn't exist or onboarding not completed, redirect to onboarding
+          if (!profile || !profile.onboarding_completed) {
+            // Small delay to ensure UI is ready
+            setTimeout(() => {
+              window.location.href = '/onboarding';
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+          // On error, assume they need onboarding
+          setTimeout(() => {
+            window.location.href = '/onboarding';
+          }, 100);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (
     email: string, 
@@ -76,6 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     metadata: Record<string, unknown> & { user_type?: string } = { user_type: 'buyer' }
   ): Promise<void> => {
     const { error } = await authService.signUp(email, password, metadata)
+    if (error) throw error
+  }
+
+  const signIn = async (email: string, password: string): Promise<void> => {
+    const { error } = await authService.signIn(email, password)
     if (error) throw error
   }
 
@@ -110,11 +122,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
-    signIn,
     signUp,
+    signIn,
     signOut,
-    signInWithProvider,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

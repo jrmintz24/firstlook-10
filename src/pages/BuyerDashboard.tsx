@@ -152,7 +152,7 @@ const BuyerDashboard = () => {
 
       <PropertyRequestForm
         isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm()}
+        onClose={() => setShowPropertyForm(false)}
       />
 
       {showSubscribeModal && (

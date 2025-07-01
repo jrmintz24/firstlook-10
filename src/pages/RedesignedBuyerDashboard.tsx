@@ -1,3 +1,4 @@
+
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
@@ -365,7 +366,7 @@ const RedesignedBuyerDashboard = () => {
       <ErrorBoundary>
         <PropertyRequestForm
           isOpen={showPropertyForm}
-          onClose={setShowPropertyForm}
+          onClose={() => setShowPropertyForm(false)}
         />
       </ErrorBoundary>
 

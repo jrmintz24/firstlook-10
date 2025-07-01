@@ -1,6 +1,6 @@
-
 import { useState, Suspense } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
+import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyRequestForm from "@/components/PropertyRequestForm";
@@ -91,6 +91,11 @@ const BuyerDashboard = () => {
     handleRescheduleSuccess,
     fetchShowingRequests
   } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
+
+  // Add the pending tour handler to process any pending tour requests
+  const { triggerPendingTourProcessing } = usePendingTourHandler();
+
+  console.log('BuyerDashboard: Pending tour handler initialized');
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';

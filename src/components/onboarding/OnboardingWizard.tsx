@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePendingTourHandler } from '@/hooks/usePendingTourHandler';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -19,6 +19,7 @@ import type { EnhancedProfile } from '@/types/profile';
 const OnboardingWizard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { triggerPendingTourProcessing } = usePendingTourHandler();
   const [profile, setProfile] = useState<EnhancedProfile | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -266,19 +267,24 @@ const OnboardingWizard = () => {
     console.log('OnboardingWizard: Completing onboarding');
     await updateProfile({ onboarding_completed: true });
     
-    // Check for pending tour request
+    // Check for pending tour request and trigger processing
     const pendingTourRequest = localStorage.getItem('pendingTourRequest');
     if (pendingTourRequest) {
-      console.log('OnboardingWizard: Found pending tour request, processing...');
-      // Let the pending tour handler take over
+      console.log('OnboardingWizard: Found pending tour request, triggering processing...');
+      
+      // Use setTimeout to ensure the profile is updated and the dashboard is ready
       setTimeout(() => {
+        console.log('OnboardingWizard: Manually triggering pending tour processing');
+        triggerPendingTourProcessing();
+        
+        // Navigate to dashboard after triggering tour processing
         const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
         window.location.href = dashboardUrl;
       }, 1000);
     } else {
-      // Direct navigation to dashboard
+      // Direct navigation to dashboard if no pending tour
       const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-      console.log('OnboardingWizard: Redirecting to:', dashboardUrl);
+      console.log('OnboardingWizard: No pending tour, redirecting to:', dashboardUrl);
       window.location.href = dashboardUrl;
     }
   };

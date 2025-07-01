@@ -96,6 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Profile doesn't exist, create it
               console.log('AuthProvider: Creating new profile with signup data');
               
+              // Safely access buyer_preferences with proper typing
+              const existingBuyerPrefs = existingProfile?.buyer_preferences as Record<string, any> || {};
+              
               const profileData = {
                 id: session.user.id,
                 first_name: formData?.firstName || session.user.user_metadata?.first_name || null,
@@ -127,16 +130,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Profile exists but we have new signup data to update
               console.log('AuthProvider: Updating existing profile with signup data');
               
+              // Safely access buyer_preferences with proper typing
+              const existingBuyerPrefs = existingProfile.buyer_preferences as Record<string, any> || {};
+              
               const updates = {
                 first_name: formData.firstName || existingProfile.first_name,
                 last_name: formData.lastName || existingProfile.last_name,
                 phone: formData.phone || existingProfile.phone,
                 buyer_preferences: {
-                  ...existingProfile.buyer_preferences,
-                  budget: formData.budget || existingProfile.buyer_preferences?.budget,
+                  ...existingBuyerPrefs,
+                  budget: formData.budget || existingBuyerPrefs.budget,
                   desiredAreas: formData.desiredAreas ? 
                     formData.desiredAreas.split(',').map(s => s.trim()) : 
-                    existingProfile.buyer_preferences?.desiredAreas
+                    existingBuyerPrefs.desiredAreas
                 },
                 onboarding_completed: true,
                 profile_completion_percentage: 85,

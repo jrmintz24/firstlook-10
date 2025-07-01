@@ -20,7 +20,7 @@ export const useMessages = (userId: string | null) => {
     }
 
     try {
-      console.log('Fetching messages for user:', userId);
+      console.log('Fetching property messages for user:', userId);
       
       const { data, error } = await supabase
         .from('messages')
@@ -29,10 +29,11 @@ export const useMessages = (userId: string | null) => {
           showing_request:showing_requests(property_address, status),
           sender_profile:profiles!sender_id(first_name, last_name, user_type)
         `)
+        .eq('conversation_type', 'property')
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
-      console.log('Messages fetch result:', { data, error });
+      console.log('Property messages fetch result:', { data, error });
 
       if (error) throw error;
 
@@ -43,7 +44,7 @@ export const useMessages = (userId: string | null) => {
         return new Date(msg.access_expires_at) > now;
       });
 
-      console.log('Active messages:', activeMessages);
+      console.log('Active property messages:', activeMessages);
       setMessages(activeMessages);
       
       // Count unread messages (received messages that haven't been read)
@@ -53,7 +54,7 @@ export const useMessages = (userId: string | null) => {
       setUnreadCount(unread);
       
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching property messages:', error);
       toast({
         title: "Error",
         description: "Failed to load messages.",

@@ -509,32 +509,38 @@ export type Database = {
         Row: {
           access_expires_at: string | null
           content: string
+          conversation_type: string | null
           created_at: string
           id: string
           read_at: string | null
           receiver_id: string | null
           sender_id: string | null
           showing_request_id: string | null
+          support_conversation_id: string | null
         }
         Insert: {
           access_expires_at?: string | null
           content: string
+          conversation_type?: string | null
           created_at?: string
           id?: string
           read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           showing_request_id?: string | null
+          support_conversation_id?: string | null
         }
         Update: {
           access_expires_at?: string | null
           content?: string
+          conversation_type?: string | null
           created_at?: string
           id?: string
           read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           showing_request_id?: string | null
+          support_conversation_id?: string | null
         }
         Relationships: [
           {
@@ -556,6 +562,13 @@ export type Database = {
             columns: ["showing_request_id"]
             isOneToOne: false
             referencedRelation: "showing_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_support_conversation_id_fkey"
+            columns: ["support_conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -1267,6 +1280,45 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      support_conversations: {
+        Row: {
+          admin_id: string | null
+          buyer_id: string
+          closed_at: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          priority: string | null
+          status: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          buyer_id: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          priority?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          buyer_id?: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          priority?: string | null
+          status?: string | null
+          subject?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

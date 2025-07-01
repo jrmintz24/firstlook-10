@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
@@ -9,10 +9,13 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernHeader from "@/components/dashboard/ModernHeader";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
+import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
 
 const BuyerDashboard = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
+
   const {
-    // State
     showPropertyForm,
     setShowPropertyForm,
     showAgreementModal,
@@ -22,7 +25,6 @@ const BuyerDashboard = () => {
     activeTab,
     setActiveTab,
     
-    // Data
     profile,
     selectedShowing,
     agreements,
@@ -37,7 +39,6 @@ const BuyerDashboard = () => {
     subscriptionTier,
     unreadCount,
     
-    // Handlers
     handleRequestShowing,
     handleUpgradeClick,
     handleSubscriptionComplete,
@@ -54,7 +55,16 @@ const BuyerDashboard = () => {
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
 
-  // Convert agreements record to the expected format for sections
+  const handleOpenMessages = () => {
+    setChatDefaultTab('property');
+    setChatOpen(true);
+  };
+
+  const handleOpenSupport = () => {
+    setChatDefaultTab('support');
+    setChatOpen(true);
+  };
+
   const agreementsRecord = Object.fromEntries(
     Object.entries(agreements).map(([key, value]) => [key, value])
   );
@@ -77,7 +87,6 @@ const BuyerDashboard = () => {
     onSendMessage: (showing) => handleSendMessage(showing.id)
   });
 
-  // Convert array to sections object expected by ModernDashboardLayout
   const sections = sectionsArray.reduce((acc, section) => {
     acc[section.id] = section;
     return acc;
@@ -91,7 +100,6 @@ const BuyerDashboard = () => {
     );
   }
 
-  // Create header component
   const header = (
     <ModernHeader
       title="Dashboard"
@@ -104,7 +112,6 @@ const BuyerDashboard = () => {
     />
   );
 
-  // Create tour-focused stats component with integrated quick actions
   const stats = (
     <div className="space-y-4">
       <ModernStatsGrid
@@ -130,7 +137,8 @@ const BuyerDashboard = () => {
       
       <QuickActionsCard 
         unreadCount={unreadCount}
-        onOpenMessages={() => console.log('Open messages')}
+        onOpenMessages={handleOpenMessages}
+        onOpenSupport={handleOpenSupport}
       />
     </div>
   );
@@ -147,12 +155,18 @@ const BuyerDashboard = () => {
         onTabChange={setActiveTab}
       />
 
+      {/* Unified Chat Widget */}
+      <UnifiedChatWidget
+        isOpen={chatOpen}
+        onToggle={() => setChatOpen(!chatOpen)}
+        defaultTab={chatDefaultTab}
+      />
+
       <PropertyRequestForm
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm()}
       />
 
-      {/* Simple Subscribe Modal replacement */}
       {showSubscribeModal && (
         <Dialog open={showSubscribeModal} onOpenChange={() => setShowSubscribeModal(false)}>
           <DialogContent>

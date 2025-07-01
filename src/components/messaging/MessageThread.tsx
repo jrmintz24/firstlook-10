@@ -1,149 +1,187 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Send, MapPin, AlertCircle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { MessageWithShowing } from "@/types/message";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface MessageThreadProps {
-  messages: MessageWithShowing[];
-  currentUserId: string;
-  onSendMessage: (content: string) => Promise<boolean>;
-  propertyAddress: string;
-  showingStatus: string;
+interface Message {
+  id: string;
+  content: string;
+  sender_id: string;
+  receiver_id: string | null;
+  created_at: string;
+  read_at: string | null;
+  sender_profile?: {
+    first_name: string | null;
+    last_name: string | null;
+    user_type: string | null;
+  };
 }
 
-const MessageThread = ({
-  messages,
-  currentUserId,
-  onSendMessage,
-  propertyAddress,
-  showingStatus
+interface MessageThreadProps {
+  messages: Message[];
+  onSendMessage: (content: string, receiverId?: string) => Promise<boolean>;
+  onMarkAsRead?: () => void;
+  conversationType: 'property' | 'support';
+  isNewConversation?: boolean;
+}
+
+const MessageThread = ({ 
+  messages, 
+  onSendMessage, 
+  onMarkAsRead, 
+  conversationType,
+  isNewConversation = false 
 }: MessageThreadProps) => {
+  const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [sending, setSending] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending) return;
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    setIsSending(true);
+  // Mark messages as read when opened
+  useEffect(() => {
+    if (onMarkAsRead && messages.length > 0) {
+      const hasUnreadMessages = messages.some(msg => 
+        msg.receiver_id === user?.id && !msg.read_at
+      );
+      if (hasUnreadMessages) {
+        onMarkAsRead();
+      }
+    }
+  }, [messages, onMarkAsRead, user?.id]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || sending) return;
+
+    setSending(true);
     try {
-      const success = await onSendMessage(newMessage.trim());
+      let success = false;
+      
+      if (conversationType === 'property') {
+        // For property messages, we need to determine the receiver
+        const otherParticipants = messages
+          .map(msg => msg.sender_id === user?.id ? msg.receiver_id : msg.sender_id)
+          .filter((id, index, arr) => id && id !== user?.id && arr.indexOf(id) === index);
+        
+        const receiverId = otherParticipants[0] || '';
+        success = await onSendMessage(newMessage.trim(), receiverId);
+      } else {
+        // Support messages
+        success = await onSendMessage(newMessage.trim());
+      }
+
       if (success) {
         setNewMessage("");
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
     } finally {
-      setIsSending(false);
+      setSending(false);
     }
   };
 
-  const sortedMessages = [...messages].sort((a, b) => 
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
+  const formatMessageTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  };
 
-  const canSendMessages = showingStatus !== 'cancelled';
+  const getSenderName = (message: Message) => {
+    if (message.sender_id === user?.id) {
+      return 'You';
+    }
+    
+    if (message.sender_profile) {
+      const { first_name, last_name, user_type } = message.sender_profile;
+      const name = [first_name, last_name].filter(Boolean).join(' ');
+      return name || (user_type === 'admin' ? 'Support Team' : 'Agent');
+    }
+    
+    return conversationType === 'support' ? 'Support Team' : 'Agent';
+  };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 border-b">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-purple-500 flex-shrink-0" />
-            <div>
-              <CardTitle className="text-lg">{propertyAddress}</CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {showingStatus}
-                </Badge>
-                <span className="text-xs text-gray-500">
-                  {messages.length} message{messages.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-            </div>
+    <div className="flex flex-col h-full">
+      <ScrollArea className="flex-1 p-3" ref={scrollAreaRef}>
+        {isNewConversation && messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-8">
+            <p className="text-sm">Start the conversation by sending a message below.</p>
           </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-          {sortedMessages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <div className="text-center">
-                <div className="text-sm">No messages yet</div>
-                <div className="text-xs text-gray-400 mt-1">Start a conversation about this property</div>
-              </div>
-            </div>
-          ) : (
-            sortedMessages.map((message, index) => {
-              const isFromCurrentUser = message.sender_id === currentUserId;
-              const showTime = index === 0 || 
-                new Date(message.created_at).getTime() - new Date(sortedMessages[index - 1].created_at).getTime() > 300000; // 5 minutes
-
+        ) : messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-8">
+            <p className="text-sm">No messages yet. Start the conversation!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((message) => {
+              const isOwnMessage = message.sender_id === user?.id;
               return (
-                <div key={message.id} className="space-y-1">
-                  {showTime && (
-                    <div className="text-center text-xs text-gray-400">
-                      {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                <div
+                  key={message.id}
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                      isOwnMessage
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs opacity-70">
+                        {getSenderName(message)}
+                      </span>
+                      <span className="text-xs opacity-50">
+                        {formatMessageTime(message.created_at)}
+                      </span>
                     </div>
-                  )}
-                  <div className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                        isFromCurrentUser
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                    </div>
+                    <p className="text-sm break-words">{message.content}</p>
                   </div>
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </ScrollArea>
 
-        {/* Message Input */}
-        <div className="border-t p-4">
-          {!canSendMessages ? (
-            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-lg">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm">This showing has been cancelled. Messages are no longer available.</span>
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 min-h-[50px] max-h-32 resize-none"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                disabled={isSending}
-              />
-              <Button
-                size="sm"
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || isSending}
-                className="bg-purple-600 hover:bg-purple-700 h-[50px] w-12 p-0"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
+      <form onSubmit={handleSendMessage} className="p-3 border-t">
+        <div className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder={
+              conversationType === 'support'
+                ? "Type your message..."
+                : "Send a message..."
+            }
+            disabled={sending}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            disabled={!newMessage.trim() || sending}
+            className="bg-black hover:bg-gray-800"
+            size="sm"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </form>
+    </div>
   );
 };
 

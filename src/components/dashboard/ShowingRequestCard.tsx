@@ -156,6 +156,14 @@ const ShowingRequestCard = ({
     }
   };
 
+  // Check if agreement is required (based on status and whether it's already signed)
+  const isAgreementRequired = () => {
+    // Agreement is required for statuses that indicate the tour is scheduled/confirmed
+    const requiresAgreement = ['agent_confirmed', 'confirmed', 'scheduled'].includes(showing.status);
+    const alreadySigned = agreements[showing.id];
+    return requiresAgreement && !alreadySigned;
+  };
+
   return (
     <Card className="border border-gray-200 bg-white shadow-none hover:shadow-sm transition-all duration-200">
       <CardContent className="p-6">
@@ -177,6 +185,13 @@ const ShowingRequestCard = ({
                   size="sm"
                   className="font-medium"
                 />
+                
+                {/* Agreement Required Badge */}
+                {isAgreementRequired() && (
+                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                    Agreement Required
+                  </Badge>
+                )}
                 
                 {showing.preferred_date && (
                   <div className="flex items-center gap-1">
@@ -218,6 +233,18 @@ const ShowingRequestCard = ({
             {/* Action Buttons */}
             {showActions && (
               <div className="flex items-center gap-2 ml-4">
+                {/* Sign Agreement Button - Prominent placement */}
+                {onSignAgreement && isAgreementRequired() && (
+                  <InteractiveButton
+                    variant="default"
+                    size="sm"
+                    onClick={() => onSignAgreement(showing)}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    Sign Agreement
+                  </InteractiveButton>
+                )}
+
                 {/* Message Button */}
                 {onSendMessage && showing.assigned_agent_id && (
                   <InteractiveButton
@@ -307,6 +334,18 @@ const ShowingRequestCard = ({
               {/* Action Buttons */}
               {showActions && (
                 <div className="flex flex-wrap gap-2 pt-2">
+                  {/* Sign Agreement Button - Also in expanded section for emphasis */}
+                  {onSignAgreement && isAgreementRequired() && (
+                    <InteractiveButton
+                      variant="default"
+                      size="sm"
+                      onClick={() => onSignAgreement(showing)}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      Sign Tour Agreement
+                    </InteractiveButton>
+                  )}
+
                   {/* Cancel Button */}
                   {onCancel && showing.status !== 'completed' && (
                     <InteractiveButton
@@ -338,17 +377,6 @@ const ShowingRequestCard = ({
                       onClick={() => onConfirm(showing.id)}
                     >
                       Confirm Tour
-                    </InteractiveButton>
-                  )}
-
-                  {/* Sign Agreement Button */}
-                  {onSignAgreement && showing.status === 'confirmed' && !agreements[showing.id] && (
-                    <InteractiveButton
-                      variant="default"
-                      size="sm"
-                      onClick={() => onSignAgreement(showing)}
-                    >
-                      Sign Agreement
                     </InteractiveButton>
                   )}
 

@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Settings, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -11,45 +11,44 @@ interface QuickActionsCardProps {
 
 const QuickActionsCard = ({ unreadCount = 0, onOpenMessages }: QuickActionsCardProps) => {
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-2">
-          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
-            <Link to="/offer-questionnaire">
-              <FileText className="w-4 h-4" />
-              <span className="text-xs">My Offers</span>
+    <Card className="bg-gray-50 border-gray-200">
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
+            <Link to="/offer-questionnaire" className="flex items-center gap-1">
+              <FileText className="w-3 h-3" />
+              <span className="hidden sm:inline">Offers</span>
             </Link>
           </Button>
           
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
-            className="h-12 flex flex-col gap-1 relative"
+            className="h-8 px-2 text-xs relative"
             onClick={onOpenMessages}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span className="text-xs">Messages</span>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
+            <div className="flex items-center gap-1">
+              <MessageCircle className="w-3 h-3" />
+              <span className="hidden sm:inline">Messages</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center text-[10px]">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
           </Button>
           
-          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
-            <Link to="/buyer-dashboard">
-              <Settings className="w-4 h-4" />
-              <span className="text-xs">Settings</span>
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
+            <Link to="/buyer-dashboard" className="flex items-center gap-1">
+              <Settings className="w-3 h-3" />
+              <span className="hidden sm:inline">Settings</span>
             </Link>
           </Button>
           
-          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
-            <Link to="/faq">
-              <HelpCircle className="w-4 h-4" />
-              <span className="text-xs">Help</span>
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
+            <Link to="/faq" className="flex items-center gap-1">
+              <HelpCircle className="w-3 h-3" />
+              <span className="hidden sm:inline">Help</span>
             </Link>
           </Button>
         </div>

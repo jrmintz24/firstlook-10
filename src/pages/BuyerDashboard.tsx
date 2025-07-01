@@ -104,9 +104,9 @@ const BuyerDashboard = () => {
     />
   );
 
-  // Create tour-focused stats component
+  // Create tour-focused stats component with integrated quick actions
   const stats = (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ModernStatsGrid
         stats={[
           {

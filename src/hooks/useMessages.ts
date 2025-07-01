@@ -16,17 +16,6 @@ export const useMessages = (userId: string | null) => {
   // Cache duration: 30 seconds
   const CACHE_DURATION = 30000;
 
-  // Optimized debounced fetch function
-  const debouncedFetchMessages = useCallback(() => {
-    if (fetchTimeoutRef.current) {
-      clearTimeout(fetchTimeoutRef.current);
-    }
-    
-    fetchTimeoutRef.current = setTimeout(() => {
-      fetchMessages();
-    }, 200); // Reduced debounce time
-  }, []);
-
   const fetchMessages = useCallback(async () => {
     if (!userId) {
       setLoading(false);
@@ -98,6 +87,17 @@ export const useMessages = (userId: string | null) => {
       setLoading(false);
     }
   }, [userId, toast]);
+
+  // Optimized debounced fetch function
+  const debouncedFetchMessages = useCallback(() => {
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+    
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchMessages();
+    }, 200); // Reduced debounce time
+  }, [fetchMessages]);
 
   // Enhanced sendMessage with better receiver detection
   const sendMessage = useCallback(async (showingRequestId: string, receiverId: string | null, content: string) => {
@@ -199,8 +199,8 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, messages, debouncedFetchMessages, toast]);
 
-  // Simple conversations getter
-  const getConversations = useCallback(() => {
+  // Simple conversations getter without complex dependencies
+  const getConversations = () => {
     const conversationMap = new Map();
     
     messages.forEach(message => {
@@ -225,16 +225,16 @@ export const useMessages = (userId: string | null) => {
     });
     
     return Array.from(conversationMap.values());
-  }, [messages, userId]);
+  };
 
   // Simple messages getter for showing
-  const getMessagesForShowing = useCallback((showingId: string) => {
+  const getMessagesForShowing = (showingId: string) => {
     return messages.filter(msg => msg.showing_request_id === showingId)
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  }, [messages]);
+  };
 
   // Simple mark as read function
-  const markMessagesAsRead = useCallback(async (showingRequestId: string) => {
+  const markMessagesAsRead = async (showingRequestId: string) => {
     if (!userId) return;
 
     try {
@@ -264,7 +264,7 @@ export const useMessages = (userId: string | null) => {
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
-  }, [userId, messages]);
+  };
 
   // Clear cache when user changes
   useEffect(() => {

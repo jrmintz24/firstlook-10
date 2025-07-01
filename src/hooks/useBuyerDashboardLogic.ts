@@ -6,10 +6,11 @@ import { useBuyerDashboardData } from "./useBuyerDashboardData";
 import { useMessages } from "./useMessages";
 
 interface BuyerDashboardLogicProps {
-  onOpenChat: (defaultTab: 'property' | 'support', showingId?: string) => void;
+  onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
 }
 
-export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps) => {
+export const useBuyerDashboardLogic = (props: BuyerDashboardLogicProps = {}) => {
+  const { onOpenChat } = props;
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
@@ -118,7 +119,11 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
   }, [pendingRequests, activeShowings, completedShowings]);
 
   const handleSendMessage = useCallback((showingId: string) => {
-    onOpenChat('property', showingId);
+    if (onOpenChat) {
+      onOpenChat('property', showingId);
+    } else {
+      console.log('No onOpenChat handler provided for showing:', showingId);
+    }
   }, [onOpenChat]);
 
   const handleStatClick = useCallback((targetTab: string) => {

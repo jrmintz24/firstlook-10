@@ -57,7 +57,7 @@ const BuyerDashboard = () => {
   } = useBuyerDashboardLogic();
 
   // Add the pending tour handler to process any pending tour requests
-  usePendingTourHandler(currentUser?.id || null);
+  usePendingTourHandler();
 
   console.log('BuyerDashboard: Pending tour handler initialized');
 

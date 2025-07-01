@@ -128,6 +128,7 @@ const ShowingListTab = ({
             onComplete={onComplete}
             onReportIssue={onReportIssue}
             agreements={agreements}
+            onRequestShowing={onRequestShowing}
           />
         );
       })}

@@ -19,6 +19,7 @@ interface PostShowingActionsProps {
   propertyAddress: string;
   buyerId: string;
   onActionTaken?: () => void;
+  onRequestShowing?: () => void;
 }
 
 const PostShowingActions = ({
@@ -31,7 +32,8 @@ const PostShowingActions = ({
   agentPhone,
   propertyAddress,
   buyerId,
-  onActionTaken
+  onActionTaken,
+  onRequestShowing
 }: PostShowingActionsProps) => {
   const { getCompletedActions, hasCompletedAction } = usePostShowingActionsTracking();
   const completedActions = getCompletedActions(showingId);
@@ -98,6 +100,7 @@ const PostShowingActions = ({
         agentPhone={agentPhone}
         propertyAddress={propertyAddress}
         onActionCompleted={onActionTaken}
+        onRequestShowing={onRequestShowing}
       />
     </div>
   );

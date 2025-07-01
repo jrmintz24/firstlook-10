@@ -55,6 +55,7 @@ interface ShowingRequestCardProps {
   showActions?: boolean;
   onReportIssue?: (showing: ShowingRequest) => void;
   onSignAgreement?: (showing: ShowingRequest) => void;
+  onRequestShowing?: () => void;
 }
 
 const ShowingRequestCard = ({
@@ -69,7 +70,8 @@ const ShowingRequestCard = ({
   userType = 'buyer',
   showActions = true,
   onReportIssue,
-  onSignAgreement
+  onSignAgreement,
+  onRequestShowing
 }: ShowingRequestCardProps) => {
   // Auto-expand completed tours to show post-tour actions
   const [isExpanded, setIsExpanded] = useState(showing.status === 'completed');
@@ -412,6 +414,7 @@ const ShowingRequestCard = ({
                   propertyAddress={showing.property_address}
                   buyerId={currentUserId || ''}
                   onActionTaken={onComplete}
+                  onRequestShowing={onRequestShowing}
                 />
               )}
 

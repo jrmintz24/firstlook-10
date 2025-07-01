@@ -18,6 +18,7 @@ interface PostShowingActionsPanelProps {
   agentPhone?: string;
   propertyAddress: string;
   onActionCompleted?: (actionType: string) => void;
+  onRequestShowing?: () => void;
 }
 
 const PostShowingActionsPanel = ({
@@ -28,7 +29,8 @@ const PostShowingActionsPanel = ({
   agentEmail,
   agentPhone,
   propertyAddress,
-  onActionCompleted
+  onActionCompleted,
+  onRequestShowing
 }: PostShowingActionsPanelProps) => {
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showAgentProfile, setShowAgentProfile] = useState(false);
@@ -62,8 +64,14 @@ const PostShowingActionsPanel = ({
   };
 
   const handleScheduleAnotherTour = async () => {
+    // Record the action for analytics
     await scheduleAnotherTour(buyerId, showingId);
     await handleActionComplete('schedule_another_tour');
+    
+    // Open the property request modal
+    if (onRequestShowing) {
+      onRequestShowing();
+    }
   };
 
   const handleHireAgentClick = () => {

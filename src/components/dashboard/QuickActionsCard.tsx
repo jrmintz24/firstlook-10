@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Settings, HelpCircle } from "lucide-react";
@@ -39,7 +38,7 @@ const QuickActionsCard = ({ unreadCount = 0, onOpenMessages }: QuickActionsCardP
           </Button>
           
           <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
-            <Link to="/buyer-dashboard" className="flex items-center gap-1">
+            <Link to="/profile" className="flex items-center gap-1">
               <Settings className="w-3 h-3" />
               <span className="hidden sm:inline">Settings</span>
             </Link>

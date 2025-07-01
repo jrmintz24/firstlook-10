@@ -1,4 +1,3 @@
-
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -32,6 +31,7 @@ import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
 import SignAgreement from './pages/SignAgreement'
 import OfferQuestionnaire from './pages/OfferQuestionnaire'
 import MyOffers from './pages/MyOffers'
+import Profile from './pages/Profile'
 
 const queryClient = new QueryClient()
 
@@ -105,6 +105,16 @@ function App() {
                   element={
                     <ProtectedRoute requiredUserType="buyer">
                       <MyOffers />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Profile - Protected Route */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute requiredUserType="buyer">
+                      <Profile />
                     </ProtectedRoute>
                   }
                 />

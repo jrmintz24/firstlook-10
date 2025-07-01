@@ -1,7 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const useMessageOperations = (userId: string | null, fetchMessages: () => void, toast: any) => {
+interface UseMessageOperationsReturn {
+  markMessagesAsRead: (showingRequestId: string) => Promise<void>;
+  sendMessage: (showingRequestId: string, receiverId: string, content: string) => Promise<boolean>;
+}
+
+export const useMessageOperations = (userId: string | null, fetchMessages: () => void, toast: any): UseMessageOperationsReturn => {
   const markMessagesAsRead = async (showingRequestId: string) => {
     if (!userId) return;
 

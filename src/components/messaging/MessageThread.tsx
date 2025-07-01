@@ -24,22 +24,32 @@ interface MessageThreadProps {
   messages: Message[];
   onSendMessage: (content: string, receiverId?: string) => Promise<boolean>;
   onMarkAsRead?: () => void;
-  conversationType: 'property' | 'support';
+  conversationType?: 'property' | 'support';
   isNewConversation?: boolean;
+  // Legacy props for backward compatibility
+  currentUserId?: string;
+  propertyAddress?: string;
+  showingStatus?: string;
 }
 
 const MessageThread = ({ 
   messages, 
   onSendMessage, 
   onMarkAsRead, 
-  conversationType,
-  isNewConversation = false 
+  conversationType = 'property',
+  isNewConversation = false,
+  currentUserId,
+  propertyAddress,
+  showingStatus
 }: MessageThreadProps) => {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Use currentUserId if provided (legacy), otherwise use auth user
+  const userId = currentUserId || user?.id;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -50,13 +60,13 @@ const MessageThread = ({
   useEffect(() => {
     if (onMarkAsRead && messages.length > 0) {
       const hasUnreadMessages = messages.some(msg => 
-        msg.receiver_id === user?.id && !msg.read_at
+        msg.receiver_id === userId && !msg.read_at
       );
       if (hasUnreadMessages) {
         onMarkAsRead();
       }
     }
-  }, [messages, onMarkAsRead, user?.id]);
+  }, [messages, onMarkAsRead, userId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +79,8 @@ const MessageThread = ({
       if (conversationType === 'property') {
         // For property messages, we need to determine the receiver
         const otherParticipants = messages
-          .map(msg => msg.sender_id === user?.id ? msg.receiver_id : msg.sender_id)
-          .filter((id, index, arr) => id && id !== user?.id && arr.indexOf(id) === index);
+          .map(msg => msg.sender_id === userId ? msg.receiver_id : msg.sender_id)
+          .filter((id, index, arr) => id && id !== userId && arr.indexOf(id) === index);
         
         const receiverId = otherParticipants[0] || '';
         success = await onSendMessage(newMessage.trim(), receiverId);
@@ -100,7 +110,7 @@ const MessageThread = ({
   };
 
   const getSenderName = (message: Message) => {
-    if (message.sender_id === user?.id) {
+    if (message.sender_id === userId) {
       return 'You';
     }
     
@@ -127,7 +137,7 @@ const MessageThread = ({
         ) : (
           <div className="space-y-4">
             {messages.map((message) => {
-              const isOwnMessage = message.sender_id === user?.id;
+              const isOwnMessage = message.sender_id === userId;
               return (
                 <div
                   key={message.id}

@@ -109,6 +109,13 @@ const OnboardingWizard = () => {
           updated_at: data.updated_at
         };
         setProfile(enhancedProfile);
+        
+        // If user has already completed onboarding, redirect them to dashboard
+        if (enhancedProfile.onboarding_completed) {
+          const dashboardUrl = enhancedProfile.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+          window.location.href = dashboardUrl;
+          return;
+        }
       } else {
         const defaultProfile: EnhancedProfile = {
           id: user.id,
@@ -228,7 +235,9 @@ const OnboardingWizard = () => {
 
   const handleComplete = async () => {
     await updateProfile({ onboarding_completed: true });
-    window.location.href = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+    // Use a more direct approach to navigate after completion
+    const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+    window.location.href = dashboardUrl;
   };
 
   const progress: OnboardingProgress = {

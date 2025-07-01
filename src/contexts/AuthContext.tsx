@@ -30,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -49,8 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Check if user needs onboarding after successful sign up or sign in
-      if (event === 'SIGNED_IN' && session?.user) {
+      // Only check onboarding once per session and only for sign-in events
+      // Also check if we're not already on the onboarding page to prevent loops
+      if (event === 'SIGNED_IN' && session?.user && !hasCheckedOnboarding && 
+          !window.location.pathname.includes('/onboarding')) {
+        setHasCheckedOnboarding(true);
+        
         try {
           const { data: profile } = await supabase
             .from('profiles')
@@ -60,23 +65,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // If profile doesn't exist or onboarding not completed, redirect to onboarding
           if (!profile || !profile.onboarding_completed) {
-            // Small delay to ensure UI is ready
+            // Use React Router navigation instead of window.location.href to avoid page reload
             setTimeout(() => {
               window.location.href = '/onboarding';
             }, 100);
           }
         } catch (error) {
           console.error('Error checking onboarding status:', error);
-          // On error, assume they need onboarding
+          // On error, assume they need onboarding only if profile doesn't exist
           setTimeout(() => {
             window.location.href = '/onboarding';
           }, 100);
         }
       }
+
+      // Reset onboarding check flag when user signs out
+      if (event === 'SIGNED_OUT') {
+        setHasCheckedOnboarding(false);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [hasCheckedOnboarding]);
 
   const signUp = async (
     email: string, 
@@ -97,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear local state immediately after successful sign out
     setUser(null)
     setSession(null)
+    setHasCheckedOnboarding(false)
   }
 
   const signInWithProvider = async (

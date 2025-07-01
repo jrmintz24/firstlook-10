@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Combobox, ComboboxInput, ComboboxList, ComboboxOption, ComboboxPopover } from "@reach/combobox";
 import "@reach/combobox/styles.css";
@@ -42,9 +41,9 @@ const AddressAutocomplete = ({
     console.log('🔍 Starting address search for:', searchTerm);
     
     try {
-      // Use the correct Supabase edge function URL
+      // Use the correct Supabase edge function URL with the right project ID
       console.log('📡 Making request to google-places edge function...');
-      const response = await fetch('https://uugchegukccccuqpcsqhl.supabase.co/functions/v1/google-places', {
+      const response = await fetch('https://58695556-20e3-43d8-8b39-34dee2d61caa.supabase.co/functions/v1/google-places', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

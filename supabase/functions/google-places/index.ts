@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get('VITE_GOOGLE_PLACES_API_KEY');
+    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     
     if (!apiKey) {
       console.error('Google Places API key not found');

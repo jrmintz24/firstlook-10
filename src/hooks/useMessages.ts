@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Message, MessageWithShowing } from "@/types/message";
@@ -16,7 +16,8 @@ export const useMessages = (userId: string | null) => {
   // Cache duration: 30 seconds
   const CACHE_DURATION = 30000;
 
-  const fetchMessages = useCallback(async () => {
+  // Simple fetch function without useCallback to avoid type inference issues
+  const fetchMessages = async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -86,9 +87,9 @@ export const useMessages = (userId: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  };
 
-  // Simple debounced fetch function without circular dependencies
+  // Simple debounced fetch function
   const triggerFetch = () => {
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current);
@@ -99,7 +100,7 @@ export const useMessages = (userId: string | null) => {
     }, 200);
   };
 
-  // Simplified sendMessage function without complex dependencies
+  // Simplified sendMessage function
   const sendMessage = async (showingRequestId: string, receiverId: string | null, content: string) => {
     if (!userId || !content.trim()) {
       console.log('SendMessage failed: Missing userId or content');
@@ -199,7 +200,7 @@ export const useMessages = (userId: string | null) => {
     }
   };
 
-  // Simple conversations getter without complex dependencies
+  // Simple conversations getter
   const getConversations = () => {
     const conversationMap = new Map();
     
@@ -271,7 +272,7 @@ export const useMessages = (userId: string | null) => {
     cacheRef.current = null;
   }, [userId]);
 
-  // Set up real-time subscription
+  // Set up real-time subscription with simple dependency
   useEffect(() => {
     if (!userId) return;
 
@@ -293,8 +294,9 @@ export const useMessages = (userId: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, fetchMessages]);
+  }, [userId]);
 
+  // Initial fetch
   useEffect(() => {
     fetchMessages();
     
@@ -304,7 +306,7 @@ export const useMessages = (userId: string | null) => {
         clearTimeout(fetchTimeoutRef.current);
       }
     };
-  }, [fetchMessages]);
+  }, [userId]);
 
   // Return simple object without complex dependencies
   return {

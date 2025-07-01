@@ -19,6 +19,13 @@ export const usePendingTourHandler = () => {
       return;
     }
 
+    // Check if we're currently in the onboarding flow
+    const isOnboardingPath = window.location.pathname.includes('/onboarding');
+    if (isOnboardingPath) {
+      console.log('usePendingTourHandler: User is in onboarding, deferring tour processing');
+      return;
+    }
+
     console.log('usePendingTourHandler: Checking for pending tour request...');
     
     // Check if this is a new user from property request
@@ -31,6 +38,23 @@ export const usePendingTourHandler = () => {
         localStorage.removeItem('newUserFromPropertyRequest');
       }
       return;
+    }
+
+    // Check if user has completed onboarding
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single();
+
+      if (profile && !profile.onboarding_completed) {
+        console.log('usePendingTourHandler: Onboarding not completed, deferring tour processing');
+        return;
+      }
+    } catch (error) {
+      console.error('usePendingTourHandler: Error checking onboarding status:', error);
+      // Continue with tour processing even if we can't check onboarding
     }
 
     // Mark as processed to prevent duplicate processing
@@ -151,8 +175,17 @@ export const usePendingTourHandler = () => {
     // Wait for auth to be ready, then process
     if (!loading && user) {
       // Add a small delay to ensure all auth state is settled
-      const timeoutId = setTimeout(processPendingTour, 1000);
+      const timeoutId = setTimeout(processPendingTour, 1500);
       return () => clearTimeout(timeoutId);
     }
   }, [loading, user, processPendingTour]);
+
+  // Provide a manual trigger for after onboarding completion
+  const triggerPendingTourProcessing = useCallback(() => {
+    console.log('usePendingTourHandler: Manual trigger called');
+    hasProcessedRef.current = false;
+    processPendingTour();
+  }, [processPendingTour]);
+
+  return { triggerPendingTourProcessing };
 };

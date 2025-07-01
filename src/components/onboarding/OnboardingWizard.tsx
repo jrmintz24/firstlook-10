@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,7 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, ArrowRight, X, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import WelcomeStep from './steps/WelcomeStep';
 import PersonalInfoStep from './steps/PersonalInfoStep';
 import UserTypeStep from './steps/UserTypeStep';
@@ -21,6 +23,9 @@ const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  console.log('OnboardingWizard: Initializing with user:', user?.id);
 
   const steps: OnboardingStep[] = [
     {
@@ -74,13 +79,20 @@ const OnboardingWizard = () => {
   ];
 
   useEffect(() => {
-    fetchProfile();
+    if (user?.id) {
+      fetchProfile();
+    } else {
+      console.log('OnboardingWizard: No user found');
+      setLoading(false);
+      setError('No user session found. Please try signing in again.');
+    }
   }, [user]);
 
   const fetchProfile = async () => {
     if (!user?.id) return;
 
     console.log('OnboardingWizard: Fetching profile for user:', user.id);
+    setError(null);
 
     try {
       const { data, error } = await supabase
@@ -90,6 +102,7 @@ const OnboardingWizard = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('OnboardingWizard: Error fetching profile:', error);
         throw error;
       }
 
@@ -112,6 +125,14 @@ const OnboardingWizard = () => {
         
         console.log('OnboardingWizard: Profile loaded:', enhancedProfile);
         setProfile(enhancedProfile);
+
+        // If onboarding is already completed, redirect to dashboard
+        if (enhancedProfile.onboarding_completed) {
+          console.log('OnboardingWizard: Onboarding already completed, redirecting');
+          const dashboardUrl = enhancedProfile.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+          window.location.href = dashboardUrl;
+          return;
+        }
       } else {
         console.log('OnboardingWizard: No profile found, creating default');
         const defaultProfile: EnhancedProfile = {
@@ -128,7 +149,8 @@ const OnboardingWizard = () => {
         setProfile(defaultProfile);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('OnboardingWizard: Error in fetchProfile:', error);
+      setError('Failed to load profile information. Please refresh the page.');
       toast({
         title: "Error",
         description: "Failed to load profile information",
@@ -142,7 +164,10 @@ const OnboardingWizard = () => {
   const updateProfile = async (updates: Partial<EnhancedProfile>) => {
     if (!user?.id || !profile) return;
 
+    console.log('OnboardingWizard: Updating profile with:', updates);
     setSaving(true);
+    setError(null);
+    
     try {
       const updatedProfile = { ...profile, ...updates };
       
@@ -169,11 +194,16 @@ const OnboardingWizard = () => {
         .from('profiles')
         .upsert(supabaseData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('OnboardingWizard: Error updating profile:', error);
+        throw error;
+      }
 
+      console.log('OnboardingWizard: Profile updated successfully');
       setProfile(updatedProfile);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('OnboardingWizard: Error in updateProfile:', error);
+      setError('Failed to update profile. Please try again.');
       toast({
         title: "Error",
         description: "Failed to update profile",
@@ -219,12 +249,14 @@ const OnboardingWizard = () => {
   };
 
   const handleNext = () => {
+    console.log('OnboardingWizard: Moving to next step');
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleSkip = () => {
+    console.log('OnboardingWizard: Skipping current step');
     if (steps[currentStep].canSkip && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -234,10 +266,21 @@ const OnboardingWizard = () => {
     console.log('OnboardingWizard: Completing onboarding');
     await updateProfile({ onboarding_completed: true });
     
-    // Direct navigation to dashboard - let AuthContext handle routing
-    const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-    console.log('OnboardingWizard: Redirecting to:', dashboardUrl);
-    window.location.href = dashboardUrl;
+    // Check for pending tour request
+    const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+    if (pendingTourRequest) {
+      console.log('OnboardingWizard: Found pending tour request, processing...');
+      // Let the pending tour handler take over
+      setTimeout(() => {
+        const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+        window.location.href = dashboardUrl;
+      }, 1000);
+    } else {
+      // Direct navigation to dashboard
+      const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+      console.log('OnboardingWizard: Redirecting to:', dashboardUrl);
+      window.location.href = dashboardUrl;
+    }
   };
 
   const progress: OnboardingProgress = {
@@ -246,10 +289,53 @@ const OnboardingWizard = () => {
     completedSteps: steps.slice(0, currentStep).map(s => s.id)
   };
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+            <h2 className="text-xl font-semibold text-gray-900">Something went wrong</h2>
+            <p className="text-gray-600">{error}</p>
+            <div className="space-y-2">
+              <Button onClick={fetchProfile} className="w-full">
+                Try Again
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/'}
+                className="w-full"
+              >
+                Go Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <p className="text-gray-600">Unable to load profile. Please try refreshing the page.</p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
       </div>
     );
   }
@@ -276,6 +362,13 @@ const OnboardingWizard = () => {
           </div>
           <Progress value={(progress.currentStep / progress.totalSteps) * 100} className="h-2" />
         </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Current Step */}
         <Card>
@@ -319,9 +412,9 @@ const OnboardingWizard = () => {
             )}
             <Button
               onClick={currentStep === steps.length - 1 ? handleComplete : handleNext}
-              disabled={!steps[currentStep].isComplete(profile) && !steps[currentStep].canSkip}
+              disabled={(!steps[currentStep].isComplete(profile) && !steps[currentStep].canSkip) || saving}
             >
-              {currentStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
+              {saving ? 'Saving...' : currentStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

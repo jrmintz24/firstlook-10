@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -30,13 +29,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   useEffect(() => {
     console.log('AuthProvider useEffect: Setting up auth state listener');
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session);
+      console.log('AuthProvider: Initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -46,53 +46,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
+      console.log('AuthProvider: Auth state changed:', event, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
       // Handle onboarding check for sign-in events only
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('Checking onboarding status for user:', session.user.id);
+      if (event === 'SIGNED_IN' && session?.user && !onboardingChecked) {
+        console.log('AuthProvider: Checking onboarding status for user:', session.user.id);
         
         // Prevent checking onboarding if already on onboarding page
-        if (window.location.pathname.includes('/onboarding')) {
-          console.log('Already on onboarding page, skipping redirect');
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/onboarding')) {
+          console.log('AuthProvider: Already on onboarding page, skipping redirect');
+          setOnboardingChecked(true);
+          return;
+        }
+
+        // Also skip if on auth callback pages
+        if (currentPath.includes('/auth') || currentPath.includes('/callback')) {
+          console.log('AuthProvider: On auth page, skipping onboarding check');
           return;
         }
         
         // Use setTimeout to prevent blocking the auth state change
         setTimeout(async () => {
           try {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('onboarding_completed')
               .eq('id', session.user.id)
               .single();
 
-            console.log('Profile onboarding status:', profile);
+            console.log('AuthProvider: Profile onboarding status:', profile, error);
 
             // Only redirect if onboarding is explicitly false or profile doesn't exist
-            if (!profile || profile.onboarding_completed === false) {
-              console.log('Redirecting to onboarding');
+            if (error?.code === 'PGRST116' || !profile || profile.onboarding_completed === false) {
+              console.log('AuthProvider: Redirecting to onboarding');
+              setOnboardingChecked(true);
               window.location.href = '/onboarding';
             } else {
-              console.log('Onboarding completed, staying on current page');
+              console.log('AuthProvider: Onboarding completed, staying on current page');
+              setOnboardingChecked(true);
             }
           } catch (error) {
-            console.error('Error checking onboarding status:', error);
+            console.error('AuthProvider: Error checking onboarding status:', error);
             // Only redirect on "not found" error
             if (error.code === 'PGRST116') {
-              console.log('Profile not found, redirecting to onboarding');
+              console.log('AuthProvider: Profile not found, redirecting to onboarding');
+              setOnboardingChecked(true);
               window.location.href = '/onboarding';
             }
           }
         }, 100);
       }
+
+      // Reset onboarding check flag when user signs out
+      if (event === 'SIGNED_OUT') {
+        setOnboardingChecked(false);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Remove all dependencies to prevent re-renders
+  }, []); // Remove onboardingChecked dependency to prevent re-runs
 
   const signUp = async (
     email: string, 
@@ -113,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear local state immediately after successful sign out
     setUser(null)
     setSession(null)
+    setOnboardingChecked(false)
   }
 
   const signInWithProvider = async (

@@ -30,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
 
   useEffect(() => {
     console.log('AuthProvider useEffect: Setting up auth state listener');
@@ -52,8 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Only check onboarding for sign-in events and prevent duplicate checks
-      if (event === 'SIGNED_IN' && session?.user && !hasCheckedOnboarding) {
+      // Handle onboarding check for sign-in events only
+      if (event === 'SIGNED_IN' && session?.user) {
         console.log('Checking onboarding status for user:', session.user.id);
         
         // Prevent checking onboarding if already on onboarding page
@@ -62,46 +61,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        setHasCheckedOnboarding(true);
-        
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', session.user.id)
-            .single();
+        // Use setTimeout to prevent blocking the auth state change
+        setTimeout(async () => {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('onboarding_completed')
+              .eq('id', session.user.id)
+              .single();
 
-          console.log('Profile onboarding status:', profile);
+            console.log('Profile onboarding status:', profile);
 
-          // Only redirect to onboarding if profile doesn't exist OR onboarding is explicitly false
-          if (!profile || profile.onboarding_completed === false) {
-            console.log('Redirecting to onboarding');
-            setTimeout(() => {
+            // Only redirect if onboarding is explicitly false or profile doesn't exist
+            if (!profile || profile.onboarding_completed === false) {
+              console.log('Redirecting to onboarding');
               window.location.href = '/onboarding';
-            }, 100);
-          } else {
-            console.log('Onboarding completed, user can access dashboard');
-          }
-        } catch (error) {
-          console.error('Error checking onboarding status:', error);
-          // Only redirect to onboarding on error if it's a "not found" error
-          if (error.code === 'PGRST116') {
-            console.log('Profile not found, redirecting to onboarding');
-            setTimeout(() => {
+            } else {
+              console.log('Onboarding completed, staying on current page');
+            }
+          } catch (error) {
+            console.error('Error checking onboarding status:', error);
+            // Only redirect on "not found" error
+            if (error.code === 'PGRST116') {
+              console.log('Profile not found, redirecting to onboarding');
               window.location.href = '/onboarding';
-            }, 100);
+            }
           }
-        }
-      }
-
-      // Reset onboarding check flag when user signs out
-      if (event === 'SIGNED_OUT') {
-        setHasCheckedOnboarding(false);
+        }, 100);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Remove hasCheckedOnboarding from dependencies to prevent re-renders
+  }, []); // Remove all dependencies to prevent re-renders
 
   const signUp = async (
     email: string, 
@@ -122,7 +113,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear local state immediately after successful sign out
     setUser(null)
     setSession(null)
-    setHasCheckedOnboarding(false)
   }
 
   const signInWithProvider = async (

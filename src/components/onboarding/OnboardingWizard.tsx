@@ -112,8 +112,6 @@ const OnboardingWizard = () => {
         
         console.log('OnboardingWizard: Profile loaded:', enhancedProfile);
         setProfile(enhancedProfile);
-        
-        // Remove the redirect logic from here - let AuthContext handle it
       } else {
         console.log('OnboardingWizard: No profile found, creating default');
         const defaultProfile: EnhancedProfile = {
@@ -236,7 +234,7 @@ const OnboardingWizard = () => {
     console.log('OnboardingWizard: Completing onboarding');
     await updateProfile({ onboarding_completed: true });
     
-    // Direct navigation to dashboard
+    // Direct navigation to dashboard - let AuthContext handle routing
     const dashboardUrl = profile?.user_type === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
     console.log('OnboardingWizard: Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;

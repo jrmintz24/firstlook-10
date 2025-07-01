@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
@@ -21,21 +21,6 @@ export default function Index() {
   const { toast } = useToast()
   const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
   const tourQuota = useTourQuota()
-
-  // Handle redirects for authenticated users
-  useEffect(() => {
-    if (!loading && user) {
-      const userType = user.user_metadata?.user_type;
-      const dashboardPath = userType === 'agent'
-        ? '/agent-dashboard'
-        : userType === 'admin'
-        ? '/admin-dashboard'
-        : '/buyer-dashboard';
-      
-      console.log('Redirecting authenticated user to:', dashboardPath);
-      window.location.href = dashboardPath;
-    }
-  }, [user, loading]);
 
   const handleStartTour = () => {
     // Check if user has exceeded their tour quota
@@ -60,13 +45,15 @@ export default function Index() {
     )
   }
 
-  // If user is authenticated, show loading while redirecting
+  // If user is authenticated, let AuthContext handle redirects
+  // Don't redirect here to prevent conflicts
   if (user) {
+    // Show a different view for authenticated users on the home page
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to your dashboard...</p>
+          <p className="text-gray-600">Setting up your dashboard...</p>
         </div>
       </div>
     )

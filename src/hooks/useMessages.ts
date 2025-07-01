@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Message, MessageWithShowing } from "@/types/message";
@@ -12,6 +12,18 @@ export const useMessages = (userId: string | null) => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const { toast } = useToast();
+  const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Debounced fetch function to prevent excessive API calls
+  const debouncedFetchMessages = useCallback(() => {
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+    
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchMessages();
+    }, 300); // 300ms debounce
+  }, []);
 
   const fetchMessages = useCallback(async () => {
     if (!userId) {
@@ -65,20 +77,27 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, toast]);
 
-  const { markMessagesAsRead, sendMessage } = useMessageOperations(userId, fetchMessages, toast);
+  const { markMessagesAsRead, sendMessage } = useMessageOperations(userId, debouncedFetchMessages, toast);
   const { getMessagesForShowing, getConversations } = useConversations(messages, userId);
   
-  useMessageSubscription(userId, fetchMessages);
+  useMessageSubscription(userId, debouncedFetchMessages);
 
   useEffect(() => {
     fetchMessages();
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
   }, [fetchMessages]);
 
   return {
     messages,
     loading,
     unreadCount,
-    fetchMessages,
+    fetchMessages: debouncedFetchMessages,
     sendMessage,
     getMessagesForShowing,
     getConversations,

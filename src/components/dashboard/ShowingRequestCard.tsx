@@ -52,6 +52,7 @@ interface ShowingRequestCardProps {
   userType?: 'buyer' | 'agent';
   showActions?: boolean;
   onReportIssue?: (showing: ShowingRequest) => void;
+  onSignAgreement?: (showing: ShowingRequest) => void;
 }
 
 const ShowingRequestCard = ({
@@ -65,7 +66,8 @@ const ShowingRequestCard = ({
   agreements = {},
   userType = 'buyer',
   showActions = true,
-  onReportIssue
+  onReportIssue,
+  onSignAgreement
 }: ShowingRequestCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { 
@@ -336,6 +338,17 @@ const ShowingRequestCard = ({
                       onClick={() => onConfirm(showing.id)}
                     >
                       Confirm Tour
+                    </InteractiveButton>
+                  )}
+
+                  {/* Sign Agreement Button */}
+                  {onSignAgreement && showing.status === 'confirmed' && !agreements[showing.id] && (
+                    <InteractiveButton
+                      variant="default"
+                      size="sm"
+                      onClick={() => onSignAgreement(showing)}
+                    >
+                      Sign Agreement
                     </InteractiveButton>
                   )}
 

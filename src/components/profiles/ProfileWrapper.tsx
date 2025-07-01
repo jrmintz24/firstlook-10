@@ -38,17 +38,39 @@ const ProfileWrapper = () => {
         throw error;
       }
 
-      setProfile(data || {
-        id: user.id,
-        user_type: 'buyer',
-        buyer_preferences: {},
-        agent_details: {},
-        communication_preferences: {},
-        onboarding_completed: false,
-        profile_completion_percentage: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+      if (data) {
+        // Transform Supabase data to EnhancedProfile format
+        const enhancedProfile: EnhancedProfile = {
+          id: data.id,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone: data.phone,
+          user_type: (data.user_type as 'buyer' | 'agent' | 'admin') || 'buyer',
+          photo_url: data.photo_url,
+          buyer_preferences: data.buyer_preferences as any || {},
+          agent_details: data.agent_details as any || {},
+          communication_preferences: data.communication_preferences as any || {},
+          onboarding_completed: data.onboarding_completed || false,
+          profile_completion_percentage: data.profile_completion_percentage || 0,
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+        setProfile(enhancedProfile);
+      } else {
+        // Create default profile if none exists
+        const defaultProfile: EnhancedProfile = {
+          id: user.id,
+          user_type: 'buyer',
+          buyer_preferences: {},
+          agent_details: {},
+          communication_preferences: {},
+          onboarding_completed: false,
+          profile_completion_percentage: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        setProfile(defaultProfile);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -72,13 +94,25 @@ const ProfileWrapper = () => {
       const completionPercentage = calculateCompletionPercentage(updatedProfile);
       updatedProfile.profile_completion_percentage = completionPercentage;
 
+      // Transform to Supabase format - serialize complex objects as JSON
+      const supabaseData = {
+        id: user.id,
+        first_name: updatedProfile.first_name,
+        last_name: updatedProfile.last_name,
+        phone: updatedProfile.phone,
+        user_type: updatedProfile.user_type,
+        photo_url: updatedProfile.photo_url,
+        buyer_preferences: updatedProfile.buyer_preferences,
+        agent_details: updatedProfile.agent_details,
+        communication_preferences: updatedProfile.communication_preferences,
+        onboarding_completed: updatedProfile.onboarding_completed,
+        profile_completion_percentage: updatedProfile.profile_completion_percentage,
+        updated_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          ...updatedProfile,
-          updated_at: new Date().toISOString()
-        });
+        .upsert(supabaseData);
 
       if (error) throw error;
 

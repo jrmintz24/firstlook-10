@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Message, MessageWithShowing } from "@/types/message";
@@ -202,7 +202,7 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, messages, debouncedFetchMessages, toast]);
 
-  // Memoize expensive operations
+  // Get operations and conversations
   const { markMessagesAsRead } = useMessageOperations(userId, debouncedFetchMessages, toast);
   const { getMessagesForShowing, getConversations } = useConversations(messages, userId);
   
@@ -224,8 +224,8 @@ export const useMessages = (userId: string | null) => {
     };
   }, [fetchMessages]);
 
-  // Memoize return object to prevent unnecessary re-renders
-  return useMemo(() => ({
+  // Return simple object without memoization to avoid type issues
+  return {
     messages,
     loading,
     unreadCount,
@@ -234,5 +234,5 @@ export const useMessages = (userId: string | null) => {
     getMessagesForShowing,
     getConversations,
     markMessagesAsRead
-  }), [messages, loading, unreadCount, debouncedFetchMessages, sendMessage, getMessagesForShowing, getConversations, markMessagesAsRead]);
+  };
 };

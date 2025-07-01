@@ -12,43 +12,44 @@ interface QuickActionsCardProps {
 const QuickActionsCard = ({ unreadCount = 0, onOpenMessages }: QuickActionsCardProps) => {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="text-lg">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col gap-2">
-            <Link to="/my-offers">
-              <FileText className="w-5 h-5" />
-              <span className="text-sm">My Offers</span>
+        <div className="grid grid-cols-2 gap-2">
+          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
+            <Link to="/offer-questionnaire">
+              <FileText className="w-4 h-4" />
+              <span className="text-xs">My Offers</span>
             </Link>
           </Button>
           
           <Button 
             variant="outline" 
-            className="h-auto p-4 flex flex-col gap-2 relative"
+            size="sm"
+            className="h-12 flex flex-col gap-1 relative"
             onClick={onOpenMessages}
           >
-            <MessageCircle className="w-5 h-5" />
-            <span className="text-sm">Messages</span>
+            <MessageCircle className="w-4 h-4" />
+            <span className="text-xs">Messages</span>
             {unreadCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </Button>
           
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col gap-2">
-            <Link to="/profile">
-              <Settings className="w-5 h-5" />
-              <span className="text-sm">Settings</span>
+          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
+            <Link to="/buyer-dashboard">
+              <Settings className="w-4 h-4" />
+              <span className="text-xs">Settings</span>
             </Link>
           </Button>
           
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col gap-2">
-            <Link to="/help">
-              <HelpCircle className="w-5 h-5" />
-              <span className="text-sm">Help</span>
+          <Button asChild variant="outline" size="sm" className="h-12 flex flex-col gap-1">
+            <Link to="/faq">
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-xs">Help</span>
             </Link>
           </Button>
         </div>

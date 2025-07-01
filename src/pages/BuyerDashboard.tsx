@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernHeader from "@/components/dashboard/ModernHeader";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
+import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 
 const BuyerDashboard = () => {
   const {
@@ -103,33 +104,35 @@ const BuyerDashboard = () => {
     />
   );
 
-  // Create stats component with correct Stat interface
+  // Create tour-focused stats component
   const stats = (
-    <ModernStatsGrid
-      stats={[
-        {
-          title: "Pending Requests",
-          value: pendingRequests.length,
-          targetTab: "requested"
-        },
-        {
-          title: "Confirmed Tours", 
-          value: activeShowings.length,
-          targetTab: "confirmed"
-        },
-        {
-          title: "Completed Tours",
-          value: completedShowings.length,
-          targetTab: "history"
-        },
-        {
-          title: "Messages",
-          value: unreadCount,
-          targetTab: "messages"
-        }
-      ]}
-      onStatClick={handleStatClick}
-    />
+    <div className="space-y-6">
+      <ModernStatsGrid
+        stats={[
+          {
+            title: "Pending Requests",
+            value: pendingRequests.length,
+            targetTab: "requested"
+          },
+          {
+            title: "Confirmed Tours", 
+            value: activeShowings.length,
+            targetTab: "confirmed"
+          },
+          {
+            title: "Completed Tours",
+            value: completedShowings.length,
+            targetTab: "history"
+          }
+        ]}
+        onStatClick={handleStatClick}
+      />
+      
+      <QuickActionsCard 
+        unreadCount={unreadCount}
+        onOpenMessages={() => console.log('Open messages')}
+      />
+    </div>
   );
 
   return (

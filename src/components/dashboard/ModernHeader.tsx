@@ -1,7 +1,8 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Bell, Settings, User } from "lucide-react";
+import { Bell } from "lucide-react";
+import UserDropdownMenu from "./UserDropdownMenu";
 
 interface ModernHeaderProps {
   title: string;
@@ -64,17 +65,6 @@ const ModernHeader = ({
               </Button>
             </div>
             
-            {/* User Info */}
-            <div className="flex items-center space-x-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{displayName}</p>
-                <p className="text-xs text-gray-500">Welcome back!</p>
-              </div>
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-600" />
-              </div>
-            </div>
-            
             {/* Primary Action */}
             {onPrimaryAction && primaryActionText && (
               <Button onClick={onPrimaryAction} className="bg-black hover:bg-gray-800 text-white">
@@ -82,10 +72,8 @@ const ModernHeader = ({
               </Button>
             )}
             
-            {/* Settings */}
-            <Button variant="ghost" size="sm">
-              <Settings className="w-4 h-4" />
-            </Button>
+            {/* User Dropdown Menu */}
+            <UserDropdownMenu displayName={displayName} />
           </div>
         </div>
       </div>

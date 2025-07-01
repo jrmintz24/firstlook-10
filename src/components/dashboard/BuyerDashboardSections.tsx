@@ -1,10 +1,9 @@
 
-import { Clock, CheckCircle, Calendar, MessageSquare, User, FileText, Home } from "lucide-react";
+import { Clock, CheckCircle, Calendar } from "lucide-react";
 import React from "react";
 
 import EmptyStateCard from "./EmptyStateCard";
 import ShowingListTab from "./ShowingListTab";
-import OfferManagementDashboard from '@/components/offer-management/OfferManagementDashboard';
 import PostShowingActionsPanel from '@/components/post-showing/PostShowingActionsPanel';
 
 interface ShowingRequest {
@@ -126,14 +125,6 @@ export const generateBuyerDashboardSections = ({
     )
   };
 
-  const messagesSection: DashboardSection = {
-    id: "messages",
-    title: "Messages",
-    icon: MessageSquare,
-    count: unreadCount,
-    content: <div className="p-4">Messages content coming soon...</div>
-  };
-
   const historySection: DashboardSection = {
     id: "history",
     title: "History",
@@ -183,38 +174,9 @@ export const generateBuyerDashboardSections = ({
     )
   };
 
-  const profileSection: DashboardSection = {
-    id: "profile",
-    title: "Profile",
-    icon: User,
-    content: (
-      <div className="p-4">
-        <h2 className="text-xl font-semibold">Profile</h2>
-        <p>Welcome, {displayName}!</p>
-      </div>
-    )
-  };
-
-  // Add the offers section
-  const offersSection: DashboardSection = {
-    id: "offers",
-    title: "My Offers",
-    icon: FileText,
-    count: 0, // Will be updated when data is loaded
-    content: (
-      <OfferManagementDashboard 
-        buyerId={currentUser?.id || ''} 
-        onCreateOffer={onRequestShowing}
-      />
-    )
-  };
-
   return [
     requestedSection,
     confirmedSection,
-    offersSection,
-    messagesSection,
-    historySection,
-    profileSection
+    historySection
   ];
 };

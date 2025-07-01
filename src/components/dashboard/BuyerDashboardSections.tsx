@@ -67,17 +67,6 @@ export const generateBuyerDashboardSections = ({
   fetchShowingRequests,
   onSendMessage
 }: BuyerDashboardSectionsProps): DashboardSection[] => {
-  const overviewSection: DashboardSection = {
-    id: "overview",
-    title: "Overview",
-    icon: Home,
-    content: (
-      <div>
-        <h2>Welcome to your dashboard!</h2>
-        {/* Add overview content here */}
-      </div>
-    )
-  };
 
   const requestedSection: DashboardSection = {
     id: "requested",
@@ -221,7 +210,6 @@ export const generateBuyerDashboardSections = ({
   };
 
   return [
-    overviewSection,
     requestedSection,
     confirmedSection,
     offersSection,

@@ -34,6 +34,7 @@ interface ShowingListTabProps {
   onConfirmShowing?: (showing: ShowingRequest) => void;
   onReportIssue?: (showing: ShowingRequest) => void;
   onSendMessage?: (showingId: string) => void;
+  onSignAgreement?: (showing: ShowingRequest) => void;
   showActions?: boolean;
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
@@ -54,6 +55,7 @@ const ShowingListTab = ({
   onConfirmShowing,
   onReportIssue,
   onSendMessage,
+  onSignAgreement,
   showActions = true,
   userType = 'buyer',
   onComplete,
@@ -116,6 +118,11 @@ const ShowingListTab = ({
               const showingToConfirm = showings.find(s => s.id === id);
               if (showingToConfirm && onConfirmShowing) {
                 onConfirmShowing(showingToConfirm);
+              }
+            }}
+            onSignAgreement={() => {
+              if (onSignAgreement) {
+                onSignAgreement(showing);
               }
             }}
             currentUserId={currentUserId}

@@ -37,9 +37,9 @@ interface BuyerDashboardSectionsProps {
   onCancelShowing: (id: string) => void;
   onRescheduleShowing: (id: string) => void;
   onConfirmShowing: (showing: ShowingRequest) => void;
+  onSignAgreement: (showing: ShowingRequest) => void;
   fetchShowingRequests: () => void;
   onSendMessage: (showing: ShowingRequest) => void;
-  onSignAgreement: (showing: ShowingRequest) => void;
 }
 
 interface DashboardSection {
@@ -63,9 +63,9 @@ export const generateBuyerDashboardSections = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
+  onSignAgreement,
   fetchShowingRequests,
-  onSendMessage,
-  onSignAgreement
+  onSendMessage
 }: BuyerDashboardSectionsProps): DashboardSection[] => {
   const overviewSection: DashboardSection = {
     id: "overview",
@@ -96,6 +96,7 @@ export const generateBuyerDashboardSections = ({
         onCancelShowing={onCancelShowing}
         onRescheduleShowing={onRescheduleShowing}
         onConfirmShowing={onConfirmShowing}
+        onSignAgreement={onSignAgreement}
         onSendMessage={(showingId) => {
           const showing = pendingRequests.find(s => s.id === showingId);
           if (showing) onSendMessage(showing);
@@ -124,6 +125,7 @@ export const generateBuyerDashboardSections = ({
         onCancelShowing={onCancelShowing}
         onRescheduleShowing={onRescheduleShowing}
         onConfirmShowing={onConfirmShowing}
+        onSignAgreement={onSignAgreement}
         onSendMessage={(showingId) => {
           const showing = activeShowings.find(s => s.id === showingId);
           if (showing) onSendMessage(showing);

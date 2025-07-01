@@ -61,6 +61,7 @@ const RedesignedBuyerDashboard = () => {
     handleSubscriptionComplete,
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
+    handleSignAgreementFromCard,
     handleSendMessage
   } = useBuyerDashboardLogic();
 
@@ -257,6 +258,8 @@ const RedesignedBuyerDashboard = () => {
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
               onRescheduleShowing={() => {}}
+              onConfirmShowing={handleConfirmShowingWithModal}
+              onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
               onSendMessage={handleOpenChat}
@@ -291,6 +294,7 @@ const RedesignedBuyerDashboard = () => {
               onCancelShowing={() => {}}
               onRescheduleShowing={() => {}}
               onConfirmShowing={handleConfirmShowingWithModal}
+              onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}
               currentUserId={currentUser?.id}
               onSendMessage={handleOpenChat}
@@ -377,6 +381,12 @@ const RedesignedBuyerDashboard = () => {
           isOpen={showAgreementModal}
           onClose={() => setShowAgreementModal(false)}
           onSign={handleAgreementSignWithModal}
+          showingDetails={{
+            propertyAddress: selectedShowing.property_address,
+            date: selectedShowing.preferred_date,
+            time: selectedShowing.preferred_time,
+            agentName: selectedShowing.assigned_agent_name
+          }}
         />
       )}
 

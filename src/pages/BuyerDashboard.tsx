@@ -71,9 +71,9 @@ const BuyerDashboard = () => {
     onCancelShowing: handleCancelShowing,
     onRescheduleShowing: handleRescheduleShowing,
     onConfirmShowing: handleConfirmShowingWithModal,
+    onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
     fetchShowingRequests,
-    onSendMessage: (showing) => handleSendMessage(showing.id),
-    onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName)
+    onSendMessage: (showing) => handleSendMessage(showing.id)
   });
 
   // Convert array to sections object expected by ModernDashboardLayout

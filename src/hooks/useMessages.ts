@@ -3,9 +3,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Message, MessageWithShowing } from "@/types/message";
-import { useMessageOperations } from "./useMessageOperations";
-import { useMessageSubscription } from "./useMessageSubscription";
-import { useConversations } from "./useConversations";
 
 export const useMessages = (userId: string | null) => {
   const [messages, setMessages] = useState<MessageWithShowing[]>([]);
@@ -202,16 +199,101 @@ export const useMessages = (userId: string | null) => {
     }
   }, [userId, messages, debouncedFetchMessages, toast]);
 
-  // Get operations and conversations
-  const { markMessagesAsRead } = useMessageOperations(userId, debouncedFetchMessages, toast);
-  const { getMessagesForShowing, getConversations } = useConversations(messages, userId);
-  
+  // Simple conversations getter
+  const getConversations = useCallback(() => {
+    const conversationMap = new Map();
+    
+    messages.forEach(message => {
+      const showingId = message.showing_request_id;
+      if (!showingId) return;
+      
+      if (!conversationMap.has(showingId)) {
+        conversationMap.set(showingId, {
+          showing_request_id: showingId,
+          property_address: message.showing_request?.property_address || 'Unknown Property',
+          messages: [],
+          unread_count: 0
+        });
+      }
+      
+      const conversation = conversationMap.get(showingId);
+      conversation.messages.push(message);
+      
+      if (message.receiver_id === userId && !message.read_at) {
+        conversation.unread_count++;
+      }
+    });
+    
+    return Array.from(conversationMap.values());
+  }, [messages, userId]);
+
+  // Simple messages getter for showing
+  const getMessagesForShowing = useCallback((showingId: string) => {
+    return messages.filter(msg => msg.showing_request_id === showingId)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [messages]);
+
+  // Simple mark as read function
+  const markMessagesAsRead = useCallback(async (showingRequestId: string) => {
+    if (!userId) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('showing_request_id', showingRequestId)
+        .eq('receiver_id', userId)
+        .is('read_at', null);
+
+      // Update local state
+      setMessages(prev => prev.map(msg => 
+        msg.showing_request_id === showingRequestId && msg.receiver_id === userId && !msg.read_at
+          ? { ...msg, read_at: new Date().toISOString() }
+          : msg
+      ));
+
+      // Update unread count
+      setUnreadCount(prev => {
+        const unreadForShowing = messages.filter(msg => 
+          msg.showing_request_id === showingRequestId && 
+          msg.receiver_id === userId && 
+          !msg.read_at
+        ).length;
+        return Math.max(0, prev - unreadForShowing);
+      });
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  }, [userId, messages]);
+
   // Clear cache when user changes
   useEffect(() => {
     cacheRef.current = null;
   }, [userId]);
 
-  useMessageSubscription(userId, debouncedFetchMessages);
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('property-messages')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'messages',
+          filter: `conversation_type=eq.property`
+        }, 
+        () => {
+          debouncedFetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, debouncedFetchMessages]);
 
   useEffect(() => {
     fetchMessages();
@@ -224,7 +306,7 @@ export const useMessages = (userId: string | null) => {
     };
   }, [fetchMessages]);
 
-  // Return simple object without memoization to avoid type issues
+  // Return simple object without complex dependencies
   return {
     messages,
     loading,

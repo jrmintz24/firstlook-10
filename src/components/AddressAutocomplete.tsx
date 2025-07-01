@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Combobox, ComboboxInput, ComboboxList, ComboboxOption, ComboboxPopover } from "@reach/combobox";
 import "@reach/combobox/styles.css";
@@ -8,9 +9,18 @@ interface AddressAutocompleteProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  label?: string;
+  id?: string;
 }
 
-const AddressAutocomplete = ({ value, onChange, placeholder = "Enter an address...", className }: AddressAutocompleteProps) => {
+const AddressAutocomplete = ({ 
+  value, 
+  onChange, 
+  placeholder = "Enter an address...", 
+  className,
+  label,
+  id 
+}: AddressAutocompleteProps) => {
   const [searchTerm, setSearchTerm] = useState(value);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [results, setResults] = useState<string[]>([]);
@@ -74,8 +84,14 @@ const AddressAutocomplete = ({ value, onChange, placeholder = "Enter an address.
 
   return (
     <div className={`relative ${className || ''}`}>
+      {label && (
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
       <Combobox onSelect={handleSelect}>
         <ComboboxInput
+          id={id}
           value={searchTerm}
           onChange={handleInputChange}
           placeholder={placeholder}
@@ -87,7 +103,7 @@ const AddressAutocomplete = ({ value, onChange, placeholder = "Enter an address.
               {results.map((result, index) => (
                 <ComboboxOption key={index} value={result} className="px-3 py-2 hover:bg-gray-100 cursor-pointer" />
               ))}
-            </ComboboxList>
+            </ComboboxList> 
           </ComboboxPopover>
         )}
       </Combobox>

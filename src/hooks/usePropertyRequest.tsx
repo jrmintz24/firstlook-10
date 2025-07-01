@@ -10,6 +10,11 @@ import { usePendingShowingManagement } from "@/hooks/usePendingShowingManagement
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
+  // New array format
+  properties: [{ address: "", notes: "" }],
+  preferredOptions: [{ date: "", time: "" }],
+  notes: "",
+  // Legacy fields for backward compatibility
   propertyAddress: '',
   preferredDate1: '',
   preferredTime1: '',
@@ -17,7 +22,6 @@ const initialFormData: PropertyRequestFormData = {
   preferredTime2: '',
   preferredDate3: '',
   preferredTime3: '',
-  notes: '',
   selectedProperties: []
 };
 

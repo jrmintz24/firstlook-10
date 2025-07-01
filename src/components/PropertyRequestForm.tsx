@@ -25,7 +25,16 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
   const [formData, setFormData] = useState<PropertyRequestFormData>({
     properties: [{ address: "", notes: "" }],
     preferredOptions: [{ date: "", time: "" }],
-    notes: ""
+    notes: "",
+    // Include all required legacy fields
+    propertyAddress: "",
+    preferredDate1: "",
+    preferredTime1: "",
+    preferredDate2: "",
+    preferredTime2: "",
+    preferredDate3: "",
+    preferredTime3: "",
+    selectedProperties: []
   });
 
   const { eligibility } = useShowingEligibility();
@@ -101,7 +110,15 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
     setFormData({
       properties: [{ address: "", notes: "" }],
       preferredOptions: [{ date: "", time: "" }],
-      notes: ""
+      notes: "",
+      propertyAddress: "",
+      preferredDate1: "",
+      preferredTime1: "",
+      preferredDate2: "",
+      preferredTime2: "",
+      preferredDate3: "",
+      preferredTime3: "",
+      selectedProperties: []
     });
     onClose();
   };
@@ -153,12 +170,12 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor={`address-${index}`}>Property Address *</Label>
                   <AddressAutocomplete
                     value={property.address}
                     onChange={(value) => handlePropertyChange(index, 'address', value)}
                     placeholder="Enter property address..."
-                    className="w-full"
+                    label="Property Address *"
+                    id={`address-${index}`}
                   />
                 </div>
                 

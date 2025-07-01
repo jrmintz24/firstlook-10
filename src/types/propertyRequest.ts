@@ -9,9 +9,11 @@ export interface PreferredOption {
 }
 
 export interface PropertyRequestFormData {
+  // New array-based format
   properties: PropertyEntry[];
   preferredOptions: PreferredOption[];
   notes: string;
+  
   // Keep the old fields for backward compatibility with other components
   propertyAddress: string;
   preferredDate1: string;

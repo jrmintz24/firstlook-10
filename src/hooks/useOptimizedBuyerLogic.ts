@@ -1,61 +1,69 @@
+
 import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useBuyerDashboardData } from "./useBuyerDashboardData";
-import { useMessages } from "./useMessages";
+import { useOptimizedBuyerData } from "./useOptimizedBuyerData";
 
-export const useOptimizedBuyerLogic = () => {
+interface UseOptimizedBuyerLogicProps {
+  onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
+}
+
+export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicProps = {}) => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  
-  // Enhanced navigation state for two-level structure
-  const [activePrimaryTab, setActivePrimaryTab] = useState("overview");
-  const [activeSubTab, setActiveSubTab] = useState("");
-  
-  // Keep backward compatibility for single-level navigation
   const [activeTab, setActiveTab] = useState("requested");
-  
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
 
   const { toast } = useToast();
-
-  // Use optimized data fetching hook
+  
   const {
     profile,
+    showingCounts,
     agreements,
     loading,
+    detailLoading,
     authLoading,
     currentUser,
+    isInitialLoad,
     pendingRequests,
     activeShowings,
     completedShowings,
-    fetchShowingRequests: refreshShowingRequests
-  } = useBuyerDashboardData();
+    refreshShowingRequests,
+    optimisticUpdateShowing
+  } = useOptimizedBuyerData();
 
-  // Add missing properties for backward compatibility
-  const detailLoading = false;
-  const isInitialLoad = loading;
-  const showingCounts = useMemo(() => ({
-    pending: pendingRequests.length,
-    active: activeShowings.length,
-    completed: completedShowings.length
-  }), [pendingRequests.length, activeShowings.length, completedShowings.length]);
+  // Separate messages hook with error isolation - don't let it break the main dashboard
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Safe message count fetch that won't break the dashboard
+  const fetchUnreadCount = useCallback(async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', currentUser.id)
+        .is('read_at', null);
+      
+      if (!error && data) {
+        setUnreadCount(data.length);
+      }
+    } catch (error) {
+      console.warn('Failed to fetch unread count, continuing without it:', error);
+      // Don't break the dashboard if messages fail
+      setUnreadCount(0);
+    }
+  }, [currentUser?.id]);
 
-  // Get messages data
-  const { unreadCount } = useMessages(currentUser?.id || null);
+  // Call this safely without breaking main functionality
+  useMemo(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
 
-  // Memoized computed values
-  const eligibility = useMemo(() => ({
-    eligible: true,
-    reason: 'subscribed'
-  }), []);
-
-  const isSubscribed = useMemo(() => true, []);
-  const subscriptionTier = useMemo(() => 'premium', []);
-
-  // Optimized event handlers with useCallback
+  // Memoized handlers to prevent re-renders
   const handleRequestShowing = useCallback(() => {
     setShowPropertyForm(true);
   }, []);
@@ -67,8 +75,8 @@ export const useOptimizedBuyerLogic = () => {
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
     toast({
-      title: "Success",
-      description: "Subscription activated successfully!",
+      title: "Subscription Updated",
+      description: "Welcome to premium! You can now request unlimited showings.",
     });
   }, [toast]);
 
@@ -81,19 +89,37 @@ export const useOptimizedBuyerLogic = () => {
     if (!selectedShowing || !currentUser) return;
 
     try {
-      const { error } = await supabase
-        .from('tour_agreements')
-        .upsert({
-          showing_request_id: selectedShowing.id,
-          buyer_id: currentUser.id,
-          agreement_type: 'single_tour',
-          signed: true,
-          signed_at: new Date().toISOString(),
-          email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        });
+      // Optimistically update the UI first
+      optimisticUpdateShowing(selectedShowing.id, { status: 'confirmed' });
 
-      if (error) throw error;
+      const { data: existingAgreement } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('showing_request_id', selectedShowing.id)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
+
+      if (existingAgreement) {
+        await supabase
+          .from('tour_agreements')
+          .update({
+            signed: true,
+            signed_at: new Date().toISOString()
+          })
+          .eq('id', existingAgreement.id);
+      } else {
+        await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: selectedShowing.id,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: true,
+            signed_at: new Date().toISOString(),
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+      }
 
       await supabase
         .from('showing_requests')
@@ -111,48 +137,43 @@ export const useOptimizedBuyerLogic = () => {
       setShowAgreementModal(false);
       setSelectedShowing(null);
       refreshShowingRequests();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error signing agreement:', error);
+      // Revert optimistic update on error
+      refreshShowingRequests();
       toast({
         title: "Error",
-        description: error.message || "Failed to sign agreement. Please try again.",
+        description: "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }
-  }, [selectedShowing, currentUser, toast, refreshShowingRequests]);
+  }, [selectedShowing, currentUser, toast, refreshShowingRequests, optimisticUpdateShowing]);
 
-  const handleSignAgreementFromCard = useCallback((showingId: string, buyerName: string) => {
-    const showing = [...pendingRequests, ...activeShowings, ...completedShowings].find(s => s.id === showingId);
+  const handleSignAgreementFromCard = useCallback((showingId: string, displayName: string) => {
+    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
     if (showing) {
       setSelectedShowing(showing);
       setShowAgreementModal(true);
     }
-  }, [pendingRequests, activeShowings, completedShowings]);
+  }, [pendingRequests, activeShowings]);
 
   const handleSendMessage = useCallback((showingId: string) => {
-    console.log('Send message for showing:', showingId);
-    // Navigate to messages for enhanced dashboard
-    setActivePrimaryTab("account");
-    setActiveSubTab("messages");
-    // Navigate to messages for original dashboard
-    setActiveTab("messages");
-  }, []);
-
-  const handleStatClick = useCallback((targetTab: string) => {
-    setActiveTab(targetTab);
-    // Also handle enhanced dashboard navigation
-    if (targetTab === "tours" || targetTab === "requested" || targetTab === "confirmed" || targetTab === "history") {
-      setActivePrimaryTab("tours");
-      if (targetTab === "requested") setActiveSubTab("requested");
-      else if (targetTab === "confirmed") setActiveSubTab("confirmed");
-      else if (targetTab === "history") setActiveSubTab("history");
-    } else if (targetTab === "services" || targetTab === "favorites") {
-      setActivePrimaryTab("services");
-      setActiveSubTab("favorites");
+    if (onOpenChat) {
+      onOpenChat('property', showingId);
+    } else {
+      console.log('Messaging not available, showing ID:', showingId);
     }
+  }, [onOpenChat]);
+
+  const handleStatClick = useCallback((tab: string) => {
+    setActiveTab(tab);
   }, []);
 
   const handleCancelShowing = useCallback(async (id: string) => {
     try {
+      // Optimistic update
+      optimisticUpdateShowing(id, { status: 'cancelled' });
+
       await supabase
         .from('showing_requests')
         .update({ 
@@ -168,18 +189,24 @@ export const useOptimizedBuyerLogic = () => {
       
       refreshShowingRequests();
     } catch (error) {
+      console.error('Error cancelling showing:', error);
+      // Revert optimistic update
+      refreshShowingRequests();
       toast({
         title: "Error",
-        description: "Failed to cancel showing. Please try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
     }
-  }, [toast, refreshShowingRequests]);
+  }, [toast, refreshShowingRequests, optimisticUpdateShowing]);
 
-  const handleRescheduleShowing = useCallback((showing: any) => {
-    setSelectedShowing(showing);
-    setShowRescheduleModal(true);
-  }, []);
+  const handleRescheduleShowing = useCallback((id: string) => {
+    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === id);
+    if (showing) {
+      setSelectedShowing(showing);
+      setShowRescheduleModal(true);
+    }
+  }, [pendingRequests, activeShowings]);
 
   const handleRescheduleSuccess = useCallback(() => {
     setShowRescheduleModal(false);
@@ -187,8 +214,17 @@ export const useOptimizedBuyerLogic = () => {
     refreshShowingRequests();
   }, [refreshShowingRequests]);
 
+  // Memoized computed values
+  const eligibility = useMemo(() => ({
+    canRequestShowing: true,
+    reason: 'eligible'
+  }), []);
+
+  const isSubscribed = useMemo(() => false, []);
+  const subscriptionTier = useMemo(() => 'free', []);
+
   return {
-    // Modal states
+    // State
     showPropertyForm,
     setShowPropertyForm,
     showAgreementModal,
@@ -197,14 +233,6 @@ export const useOptimizedBuyerLogic = () => {
     setShowSubscribeModal,
     showRescheduleModal,
     setShowRescheduleModal,
-    
-    // Enhanced navigation states
-    activePrimaryTab,
-    setActivePrimaryTab,
-    activeSubTab,
-    setActiveSubTab,
-    
-    // Backward compatibility - single-level navigation
     activeTab,
     setActiveTab,
     

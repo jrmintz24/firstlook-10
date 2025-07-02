@@ -24,9 +24,36 @@ interface AgentConfirmationModalProps {
   onConfirm: (confirmationData: any) => Promise<void>;
 }
 
+// Helper function to normalize time format for comparison
+const normalizeTimeForComparison = (timeString: string | null): string => {
+  if (!timeString) return '';
+  
+  // Handle different time formats
+  if (timeString.includes(':')) {
+    // Already in HH:MM:SS or HH:MM format
+    const parts = timeString.split(':');
+    const hours = parts[0].padStart(2, '0');
+    const minutes = parts[1] || '00';
+    return `${hours}:${minutes}:00`;
+  }
+  
+  return timeString;
+};
+
+// Helper function to convert display time to storage format
+const convertToStorageTime = (displayTime: string): string => {
+  if (!displayTime) return '';
+  
+  // The dropdown values are already in HH:MM:SS format
+  return displayTime;
+};
+
 const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentConfirmationModalProps) => {
+  // Normalize the original time for proper comparison
+  const originalTime = normalizeTimeForComparison(request.preferred_time);
+  
   const [confirmedDate, setConfirmedDate] = useState(request.preferred_date || '');
-  const [confirmedTime, setConfirmedTime] = useState(request.preferred_time || '');
+  const [confirmedTime, setConfirmedTime] = useState(originalTime);
   const [agentMessage, setAgentMessage] = useState('');
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [alternativeDate1, setAlternativeDate1] = useState('');
@@ -36,8 +63,14 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
   const [timeChangeReason, setTimeChangeReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if agent changed the original time/date
-  const isTimeChanged = confirmedDate !== request.preferred_date || confirmedTime !== request.preferred_time;
+  // Debug logging
+  console.log('AgentConfirmationModal - Original request time:', request.preferred_time);
+  console.log('AgentConfirmationModal - Normalized original time:', originalTime);
+  console.log('AgentConfirmationModal - Current confirmed time:', confirmedTime);
+
+  // Check if agent changed the original time/date - normalize both values for comparison
+  const isTimeChanged = confirmedDate !== request.preferred_date || 
+                       normalizeTimeForComparison(confirmedTime) !== normalizeTimeForComparison(request.preferred_time);
   
   // Check if offering alternatives (has at least one alternative with both date and time)
   const isOfferingAlternatives = showAlternatives && 
@@ -56,7 +89,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
       await onConfirm({
         requestId: request.id,
         confirmedDate,
-        confirmedTime,
+        confirmedTime: convertToStorageTime(confirmedTime),
         agentMessage,
         alternativeDate1: showAlternatives ? alternativeDate1 : undefined,
         alternativeTime1: showAlternatives ? alternativeTime1 : undefined,
@@ -178,7 +211,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
                 <option value="17:00:00">5:00 PM</option>
                 <option value="18:00:00">6:00 PM</option>
               </select>
-              {confirmedTime !== request.preferred_time && (
+              {normalizeTimeForComparison(confirmedTime) !== originalTime && (
                 <Badge variant="outline" className="mt-1 text-amber-600 border-amber-300">
                   Changed from {request.preferred_time}
                 </Badge>

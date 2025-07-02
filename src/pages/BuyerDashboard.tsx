@@ -14,7 +14,7 @@ import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
-import { useSimpleBuyerLogic } from "@/hooks/useSimpleBuyerLogic";
+import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -57,8 +57,8 @@ const BuyerDashboard = () => {
     handleCancelShowing,
     handleRescheduleShowing,
     handleRescheduleSuccess,
-    fetchShowingRequests
-  } = useSimpleBuyerLogic();
+    refreshShowingRequests
+  } = useOptimizedBuyerLogic();
 
   // Fetch real consultation bookings data
   const { 
@@ -72,7 +72,7 @@ const BuyerDashboard = () => {
   const handleTourProcessed = useCallback(async () => {
     console.log('BuyerDashboard: Tour processed, refreshing data');
     try {
-      await fetchShowingRequests();
+      await refreshShowingRequests();
       toast({
         title: "Tour Request Processed",
         description: "Your tour request has been submitted and agents will be notified.",
@@ -80,7 +80,7 @@ const BuyerDashboard = () => {
     } catch (error) {
       console.error('Error refreshing data after tour processed:', error);
     }
-  }, [fetchShowingRequests, toast]);
+  }, [refreshShowingRequests, toast]);
 
   usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
@@ -111,12 +111,12 @@ const BuyerDashboard = () => {
   const handleFormSuccess = useCallback(async () => {
     console.log('BuyerDashboard: Refreshing data after form submission');
     try {
-      await fetchShowingRequests();
+      await refreshShowingRequests();
       console.log('BuyerDashboard: Data refresh completed');
     } catch (error) {
       console.error('Error refreshing data after form submission:', error);
     }
-  }, [fetchShowingRequests]);
+  }, [refreshShowingRequests]);
 
   // Add consultation handlers
   const handleJoinConsultation = useCallback((consultationId: string) => {
@@ -134,6 +134,17 @@ const BuyerDashboard = () => {
       description: "Feature coming soon!",
     });
   }, [toast]);
+
+  // Fix the agreement signing handler to match the expected signature
+  const handleAgreementSign = useCallback(async (name: string) => {
+    if (!selectedShowing) return;
+    
+    try {
+      await handleAgreementSignWithModal(selectedShowing.id, name);
+    } catch (error) {
+      console.error('Error signing agreement:', error);
+    }
+  }, [selectedShowing, handleAgreementSignWithModal]);
 
   // Show loading skeleton while data is being fetched
   if (loading || authLoading) {
@@ -159,7 +170,7 @@ const BuyerDashboard = () => {
     onRescheduleShowing: handleRescheduleShowing,
     onConfirmShowing: handleConfirmShowingWithModal,
     onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
-    fetchShowingRequests,
+    fetchShowingRequests: refreshShowingRequests,
     onSendMessage: (showing) => handleSendMessage(showing.id),
     onJoinConsultation: handleJoinConsultation,
     onRescheduleConsultation: handleRescheduleConsultation
@@ -241,7 +252,7 @@ const BuyerDashboard = () => {
         <SignAgreementModal
           isOpen={showAgreementModal}
           onClose={() => setShowAgreementModal(false)}
-          onSign={handleAgreementSignWithModal}
+          onSign={handleAgreementSign}
           showingDetails={{
             propertyAddress: selectedShowing.property_address,
             date: selectedShowing.preferred_date,

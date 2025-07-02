@@ -31,7 +31,8 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     pendingRequests,
     activeShowings,
     completedShowings,
-    refreshShowingRequests
+    refreshShowingRequests,
+    optimisticUpdateShowing
   } = useOptimizedBuyerData();
 
   const { unreadCount } = useMessages(currentUser?.id || null);
@@ -62,6 +63,9 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     if (!selectedShowing || !currentUser) return;
 
     try {
+      // Optimistically update the UI first
+      optimisticUpdateShowing(selectedShowing.id, { status: 'confirmed' });
+
       const { data: existingAgreement } = await supabase
         .from('tour_agreements')
         .select('*')
@@ -109,13 +113,15 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
       refreshShowingRequests();
     } catch (error) {
       console.error('Error signing agreement:', error);
+      // Revert optimistic update on error
+      refreshShowingRequests();
       toast({
         title: "Error",
         description: "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }
-  }, [selectedShowing, currentUser, toast, refreshShowingRequests]);
+  }, [selectedShowing, currentUser, toast, refreshShowingRequests, optimisticUpdateShowing]);
 
   const handleSignAgreementFromCard = useCallback((showingId: string, displayName: string) => {
     const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
@@ -135,6 +141,9 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
 
   const handleCancelShowing = useCallback(async (id: string) => {
     try {
+      // Optimistic update
+      optimisticUpdateShowing(id, { status: 'cancelled' });
+
       await supabase
         .from('showing_requests')
         .update({ 
@@ -151,13 +160,15 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
       refreshShowingRequests();
     } catch (error) {
       console.error('Error cancelling showing:', error);
+      // Revert optimistic update
+      refreshShowingRequests();
       toast({
         title: "Error",
         description: "An unexpected error occurred.",
         variant: "destructive"
       });
     }
-  }, [toast, refreshShowingRequests]);
+  }, [toast, refreshShowingRequests, optimisticUpdateShowing]);
 
   const handleRescheduleShowing = useCallback((id: string) => {
     const showing = [...pendingRequests, ...activeShowings].find(s => s.id === id);

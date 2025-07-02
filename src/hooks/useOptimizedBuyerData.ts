@@ -36,6 +36,8 @@ export const useOptimizedBuyerData = () => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
@@ -72,6 +74,13 @@ export const useOptimizedBuyerData = () => {
 
     return { pendingRequests, activeShowings, completedShowings };
   }, [showingRequests]);
+
+  // Memoized showing counts
+  const showingCounts = useMemo(() => ({
+    pending: categorizedRequests.pendingRequests.length,
+    active: categorizedRequests.activeShowings.length,
+    completed: categorizedRequests.completedShowings.length
+  }), [categorizedRequests]);
 
   // Optimized data fetching with proper error handling
   const fetchShowingRequests = useCallback(async () => {
@@ -149,6 +158,8 @@ export const useOptimizedBuyerData = () => {
     fetchingRef.current = true;
     if (isManualRefresh) {
       setIsRefreshing(true);
+    } else {
+      setDetailLoading(true);
     }
 
     try {
@@ -162,6 +173,10 @@ export const useOptimizedBuyerData = () => {
       setAgreements(agreementsData);
       setProfile(profileData);
 
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
+
     } catch (error) {
       console.error('Error in refreshAllData:', error);
       toast({
@@ -171,12 +186,13 @@ export const useOptimizedBuyerData = () => {
       });
     } finally {
       setLoading(false);
+      setDetailLoading(false);
       setIsRefreshing(false);
       fetchingRef.current = false;
     }
-  }, [currentUser, fetchShowingRequests, fetchAgreements, fetchProfile, toast]);
+  }, [currentUser, fetchShowingRequests, fetchAgreements, fetchProfile, toast, isInitialLoad]);
 
-  // Improved real-time setup with fallback
+  // Simplified real-time setup with better error handling
   const setupRealtime = useCallback(() => {
     if (!currentUser) return;
 
@@ -185,7 +201,12 @@ export const useOptimizedBuyerData = () => {
       supabase.removeChannel(realtimeChannelRef.current);
     }
 
-    // Set up real-time subscription
+    // Clear any existing fallback polling
+    if (fallbackIntervalRef.current) {
+      clearInterval(fallbackIntervalRef.current);
+    }
+
+    // Set up real-time subscription with simpler logic
     const channel = supabase
       .channel(`showing_requests_${currentUser.id}`)
       .on(
@@ -199,17 +220,22 @@ export const useOptimizedBuyerData = () => {
         (payload) => {
           console.log('Real-time showing request change:', payload);
           
-          // Update showing requests immediately for better UX
+          // Update showing requests with proper type checking
           setShowingRequests(prev => {
             const updated = [...prev];
-            const index = updated.findIndex(req => req.id === payload.new?.id || req.id === payload.old?.id);
+            const payloadNew = payload.new as ShowingRequest;
+            const payloadOld = payload.old as ShowingRequest;
             
-            if (payload.eventType === 'DELETE' && index >= 0) {
-              updated.splice(index, 1);
-            } else if (payload.eventType === 'INSERT') {
-              updated.unshift(payload.new as ShowingRequest);
-            } else if (payload.eventType === 'UPDATE' && index >= 0) {
-              updated[index] = payload.new as ShowingRequest;
+            if (payload.eventType === 'DELETE' && payloadOld?.id) {
+              return updated.filter(req => req.id !== payloadOld.id);
+            } else if (payload.eventType === 'INSERT' && payloadNew?.id) {
+              return [payloadNew, ...updated];
+            } else if (payload.eventType === 'UPDATE' && payloadNew?.id) {
+              const index = updated.findIndex(req => req.id === payloadNew.id);
+              if (index >= 0) {
+                updated[index] = payloadNew;
+              }
+              return updated;
             }
             
             return updated;
@@ -226,6 +252,7 @@ export const useOptimizedBuyerData = () => {
           }
         } else if (status === 'CHANNEL_ERROR') {
           // Set up fallback polling if real-time fails
+          console.log('Setting up fallback polling due to real-time failure');
           fallbackIntervalRef.current = setInterval(() => {
             refreshAllData(false);
           }, 30000); // Poll every 30 seconds
@@ -269,15 +296,22 @@ export const useOptimizedBuyerData = () => {
     );
   }, []);
 
+  // Refresh function for external use
+  const refreshShowingRequests = useCallback(() => refreshAllData(true), [refreshAllData]);
+
   return {
     profile,
     agreements,
     loading,
+    detailLoading,
+    isInitialLoad,
     isRefreshing,
     authLoading,
     currentUser,
-    refreshData: () => refreshAllData(true),
+    refreshData: refreshShowingRequests,
+    refreshShowingRequests,
     optimisticUpdateShowing,
+    showingCounts,
     ...categorizedRequests
   };
 };

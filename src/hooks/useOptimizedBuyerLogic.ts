@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +14,9 @@ export const useOptimizedBuyerLogic = () => {
   const [activePrimaryTab, setActivePrimaryTab] = useState("overview");
   const [activeSubTab, setActiveSubTab] = useState("");
   
+  // Keep backward compatibility for single-level navigation
+  const [activeTab, setActiveTab] = useState("requested");
+  
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
 
   const { toast } = useToast();
@@ -24,16 +26,22 @@ export const useOptimizedBuyerLogic = () => {
     profile,
     agreements,
     loading,
-    detailLoading,
     authLoading,
     currentUser,
-    isInitialLoad,
     pendingRequests,
     activeShowings,
     completedShowings,
-    showingCounts,
     fetchShowingRequests: refreshShowingRequests
   } = useBuyerDashboardData();
+
+  // Add missing properties for backward compatibility
+  const detailLoading = false;
+  const isInitialLoad = loading;
+  const showingCounts = useMemo(() => ({
+    pending: pendingRequests.length,
+    active: activeShowings.length,
+    completed: completedShowings.length
+  }), [pendingRequests.length, activeShowings.length, completedShowings.length]);
 
   // Get messages data
   const { unreadCount } = useMessages(currentUser?.id || null);
@@ -122,16 +130,23 @@ export const useOptimizedBuyerLogic = () => {
 
   const handleSendMessage = useCallback((showingId: string) => {
     console.log('Send message for showing:', showingId);
-    // Navigate to messages
+    // Navigate to messages for enhanced dashboard
     setActivePrimaryTab("account");
     setActiveSubTab("messages");
+    // Navigate to messages for original dashboard
+    setActiveTab("messages");
   }, []);
 
   const handleStatClick = useCallback((targetTab: string) => {
-    setActivePrimaryTab(targetTab);
-    if (targetTab === "tours") {
-      setActiveSubTab("requested");
-    } else if (targetTab === "services") {
+    setActiveTab(targetTab);
+    // Also handle enhanced dashboard navigation
+    if (targetTab === "tours" || targetTab === "requested" || targetTab === "confirmed" || targetTab === "history") {
+      setActivePrimaryTab("tours");
+      if (targetTab === "requested") setActiveSubTab("requested");
+      else if (targetTab === "confirmed") setActiveSubTab("confirmed");
+      else if (targetTab === "history") setActiveSubTab("history");
+    } else if (targetTab === "services" || targetTab === "favorites") {
+      setActivePrimaryTab("services");
       setActiveSubTab("favorites");
     }
   }, []);
@@ -188,6 +203,10 @@ export const useOptimizedBuyerLogic = () => {
     setActivePrimaryTab,
     activeSubTab,
     setActiveSubTab,
+    
+    // Backward compatibility - single-level navigation
+    activeTab,
+    setActiveTab,
     
     // Data
     profile,

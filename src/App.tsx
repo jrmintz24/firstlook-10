@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -14,7 +15,7 @@ import AgentDashboard from "./pages/AgentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import HomeBuyingGuide from "./pages/HomeBuyingGuide";
 import ScrollToTop from "./components/ScrollToTop";
-import { QueryClient } from "react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/toaster"
 import Subscriptions from "./pages/Subscriptions";

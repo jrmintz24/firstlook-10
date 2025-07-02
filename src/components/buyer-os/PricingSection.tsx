@@ -1,156 +1,271 @@
 
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Users, FileText, Clock, ArrowRight, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const PricingSection = () => {
-  const plans = [
+  const [showOfferServices, setShowOfferServices] = useState(false);
+
+  const freeFeatures = [
+    "5 home tours per month",
+    "1 home per tour session",
+    "Licensed showing partners",
+    "Tour scheduling & coordination",
+    "Property research assistance"
+  ];
+
+  const proFeatures = [
+    "Unlimited home tours",
+    "Up to 3 homes per tour session", 
+    "Same-day showing availability",
+    "Priority scheduling",
+    "Multiple tours scheduled at once",
+    "DIY Offer Maker tool access",
+    "Advanced property analytics",
+    "Dedicated support"
+  ];
+
+  const offerServices = [
     {
-      name: "Basic",
-      price: "Free",
-      period: "",
-      tours: "1 home tour/month",
+      title: "Agent-Coached Offer Strategy",
+      price: "$699",
+      description: "Professional agent guides you through offer strategy, market analysis, and negotiation tactics",
       features: [
-        "1 home tour/month (single property)",
-        "Book with a FirstLook Pro",
-        "Tour tracking dashboard",
-        "Upgrade anytime for rebates or offer help"
-      ],
-      cta: "Get Started Free",
-      popular: false,
-      ctaLink: "/start",
-      color: "green"
+        "1-on-1 consultation with licensed agent",
+        "Comprehensive market analysis",
+        "Offer strategy development", 
+        "Contract review and guidance",
+        "Negotiation support"
+      ]
     },
     {
-      name: "Pro",
-      price: "$39",
-      period: "/month",
-      tours: "2 tour sessions/month",
+      title: "Complete Transaction Coordination",
+      price: "+$399",
+      description: "Add full transaction management from offer to closing",
       features: [
-        "2 tour sessions/month (up to 3 homes/session)",
-        "Access to offer creator tool",
-        "Priority scheduling",
-        "Rebate access (90% of buyer agent commission)",
-        "Email + chat support"
+        "Dedicated transaction coordinator",
+        "Contract to closing management",
+        "Vendor coordination (inspections, appraisals)",
+        "Timeline management & reminders",
+        "Closing preparation assistance"
       ],
-      cta: "Upgrade to Pro",
-      popular: true,
-      ctaLink: "/subscriptions",
-      color: "blue"
-    },
-    {
-      name: "Premium", 
-      price: "$149",
-      period: "/month",
-      tours: "5 tour sessions/month",
-      features: [
-        "5 tour sessions/month (up to 3 homes/session)",
-        "Everything in Pro",
-        "Dedicated agent-coached offer assistance",
-        "Max rebate percentage unlocked",
-        "Phone support + local market reports"
-      ],
-      cta: "Go Premium",
-      popular: false,
-      ctaLink: "/subscriptions",
-      color: "purple"
+      addon: true
     }
   ];
 
-  const addOns = [
-    { name: "Extra Tour Session", price: "$25", note: "(members)" },
-    { name: "One-off Tour", price: "$49", note: "(non-members)" },
-    { name: "Offer Write", price: "$399", note: "" },
-    { name: "Contract Management", price: "$799", note: "" }
-  ];
-
   return (
-    <div className="py-16 sm:py-20 bg-white">
-      <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight text-gray-900 mb-6">
-            Simple, Transparent Pricing
+    <div className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <Badge variant="secondary" className="mb-6 bg-blue-100 text-blue-800 border-blue-200 px-6 py-3 text-lg">
+            <Star className="w-4 h-4 mr-2" />
+            New Simplified Pricing
+          </Badge>
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-slate-600 bg-clip-text text-transparent mb-6">
+            Choose Your Plan
           </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Start free with 5 tours per month, or go unlimited with Pro. Add professional offer services when you're ready to buy.
+          </p>
+          
+          <div className="flex justify-center gap-4 mb-12">
+            <Button
+              variant={!showOfferServices ? "default" : "outline"}
+              onClick={() => setShowOfferServices(false)}
+              className="px-6 py-2"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Tour Plans
+            </Button>
+            <Button
+              variant={showOfferServices ? "default" : "outline"}
+              onClick={() => setShowOfferServices(true)}
+              className="px-6 py-2"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Offer Services
+            </Button>
+          </div>
         </div>
-        
-        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-3 mb-16">
-          {plans.map((plan, index) => (
-            <Card key={index} className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl ${plan.popular ? 'scale-105 shadow-xl border-2 border-blue-500/20' : ''}`}>
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-blue-600 text-white px-4 py-1.5 text-sm font-medium shadow-lg rounded-full">
-                    <Star className="mr-1.5 h-3.5 w-3.5" />
-                    Most Popular
-                  </Badge>
+
+        {!showOfferServices ? (
+          // Tour Plans Section
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Free Plan */}
+            <Card className="border-2 border-gray-200 shadow-lg relative">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl text-slate-800">Free Plan</CardTitle>
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  $0<span className="text-lg text-gray-600">/month</span>
                 </div>
-              )}
-              
-              <CardHeader className="text-center pb-6 pt-10">
-                <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full mb-4 ${
-                  plan.color === 'green' ? 'bg-green-100 text-green-600' :
-                  plan.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                  'bg-purple-100 text-purple-600'
-                }`}>
-                  {plan.color === 'green' ? '🟢' : plan.color === 'blue' ? '🔵' : '🟣'}
-                </div>
-                <CardTitle className="text-2xl font-semibold text-gray-900 mb-6">
-                  {plan.name}
-                </CardTitle>
-                <div className="mb-4">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {plan.price}
-                    </span>
-                    <span className="text-gray-600 font-medium">{plan.period}</span>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <span className="text-sm font-medium text-gray-600">
-                    {plan.tours}
-                  </span>
-                </div>
+                <p className="text-gray-600">Perfect for casual home shopping</p>
               </CardHeader>
-              
-              <CardContent className="px-8 pb-8">
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start">
-                      <Check className="h-4 w-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 font-light text-sm">{feature}</span>
-                    </li>
+              <CardContent>
+                <div className="space-y-3 mb-8">
+                  {freeFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
                   ))}
-                </ul>
-                
-                <Link to={plan.ctaLink} className="w-full">
-                  <Button 
-                    className={`w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl ${
-                      plan.popular 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' 
-                        : 'bg-gray-900 hover:bg-gray-800 text-white shadow-sm hover:shadow-md'
-                    }`}
-                  >
-                    {plan.cta}
+                </div>
+                <Link to="/signup">
+                  <Button className="w-full bg-gray-900 hover:bg-black text-white py-4 text-lg">
+                    Start Free
                   </Button>
                 </Link>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Add-Ons Section */}
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-2xl font-light text-gray-900 mb-8 text-center">Add-Ons & Extras</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {addOns.map((addon, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-4 text-center border border-gray-200">
-                <div className="text-2xl mb-2">🏠</div>
-                <h4 className="font-medium text-gray-900 mb-1 text-sm">{addon.name}</h4>
-                <p className="text-lg font-semibold text-gray-900">{addon.price}</p>
-                {addon.note && <p className="text-xs text-gray-500">{addon.note}</p>}
+            {/* Pro Plan */}
+            <Card className="border-2 border-blue-200 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+              
+              <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                Most Popular
+              </Badge>
+
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl text-slate-800">Pro Plan</CardTitle>
+                <div className="text-4xl font-bold text-blue-600 mb-2">
+                  $29<span className="text-lg text-gray-600">/month</span>
+                </div>
+                <p className="text-gray-600">For serious home buyers</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 mb-8">
+                  {proFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link to="/subscriptions">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Upgrade to Pro
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <p className="text-center text-xs text-gray-600 mt-3">Cancel anytime. No long-term contracts.</p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          // Offer Services Section
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-slate-800 mb-4">Professional Offer Services</h3>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                When you're ready to make an offer, get expert guidance from licensed agents and transaction coordinators.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {offerServices.map((service, index) => (
+                <Card key={index} className={`border-2 shadow-lg relative ${
+                  service.addon ? 'border-orange-200 bg-orange-50/30' : 'border-green-200 bg-green-50/30'
+                }`}>
+                  {service.addon && (
+                    <Badge className="absolute top-4 right-4 bg-orange-100 text-orange-800 border-orange-300">
+                      Add-on Service
+                    </Badge>
+                  )}
+                  
+                  <CardHeader className="text-center pb-4">
+                    <CardTitle className="text-xl text-slate-800">{service.title}</CardTitle>
+                    <div className={`text-3xl font-bold mb-2 ${
+                      service.addon ? 'text-orange-600' : 'text-green-600'
+                    }`}>
+                      {service.price}
+                    </div>
+                    <p className="text-gray-600 text-sm">{service.description}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 mb-6">
+                      {service.features.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-start gap-3">
+                          <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 text-sm">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      className={`w-full py-3 text-base ${
+                        service.addon 
+                          ? 'bg-orange-600 hover:bg-orange-700' 
+                          : 'bg-green-600 hover:bg-green-700'
+                      } text-white`}
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      {service.addon ? 'Add to Offer Service' : 'Get Offer Help'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-12 text-center">
+              <Card className="border-2 border-blue-200 bg-blue-50/50 p-6">
+                <h4 className="text-xl font-semibold text-slate-800 mb-2">
+                  Complete Package: $1,098
+                </h4>
+                <p className="text-gray-700 mb-4">
+                  Get both agent-coached offer strategy AND complete transaction coordination for maximum support through your home purchase.
+                </p>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Book Complete Service
+                </Button>
+              </Card>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                <strong>Pro Plan members</strong> get access to the DIY Offer Maker tool at no extra cost.
+              </p>
+              <Link to="/offer-questionnaire">
+                <Button variant="outline" className="border-2 border-blue-300 text-blue-600 hover:bg-blue-50">
+                  Try DIY Offer Maker (Pro Members)
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Value Proposition Footer */}
+        <div className="mt-20 text-center">
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-semibold text-slate-800 mb-4">
+              Why Choose FirstLook?
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div>
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Licensed Professionals</h4>
+                <p className="text-sm text-gray-600">All our showing partners are licensed real estate professionals in DC/MD/VA</p>
               </div>
-            ))}
+              <div>
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Shield className="h-6 w-6 text-green-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">No Pressure</h4>
+                <p className="text-sm text-gray-600">Tour homes without sales pressure. We're here to help, not to push</p>
+              </div>
+              <div>
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Clock className="h-6 w-6 text-purple-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Save Time</h4>
+                <p className="text-sm text-gray-600">See multiple homes efficiently with our coordinated tour sessions</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

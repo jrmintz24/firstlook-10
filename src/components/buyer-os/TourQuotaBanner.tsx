@@ -17,10 +17,9 @@ const TourQuotaBanner = ({ used, limit, planTier }: TourQuotaBannerProps) => {
 
   const getPlanName = (tier: string) => {
     switch (tier) {
-      case 'free': return 'Basic';
+      case 'free': return 'Free';
       case 'pro': return 'Pro';
-      case 'premium': return 'Premium';
-      default: return 'Basic';
+      default: return 'Free';
     }
   };
 
@@ -35,7 +34,7 @@ const TourQuotaBanner = ({ used, limit, planTier }: TourQuotaBannerProps) => {
                 You've used your {limit} tours this month
               </p>
               <p className="text-sm">
-                Upgrade your {getPlanName(planTier)} plan for more access
+                Upgrade to Pro for unlimited tours at $29/month
               </p>
             </div>
             <Link to="/subscriptions">

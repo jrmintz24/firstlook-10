@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Sparkles, Zap, ArrowRight } from "lucide-react";
+import { Check, Star, Sparkles, Zap, ArrowRight, FileText, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface MembershipPreviewSectionProps {
@@ -10,71 +10,65 @@ interface MembershipPreviewSectionProps {
 }
 
 const MembershipPreviewSection = ({ onRequestShowing }: MembershipPreviewSectionProps) => {
-  const membershipFeatures = [
-    "Unlimited access to the FirstLook platform",
-    "VIP scheduling for showings—get priority booking",
-    "Access to same day viewings when available",
-    "One tour session included with subscription"
+  const proFeatures = [
+    "Unlimited access to home tours",
+    "Up to 3 homes per tour session",
+    "Same-day booking availability", 
+    "Priority scheduling",
+    "DIY Offer Maker tool included"
   ];
 
   return (
-    <div className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-200 px-6 py-3 text-lg">
+          <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200 px-6 py-3 text-lg">
             <Star className="w-4 h-4 mr-2" />
-            VIP Membership Available
+            Pro Membership Available
           </Badge>
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-600 bg-clip-text text-transparent mb-6">
-            Unlock VIP Home Shopping
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-600 bg-clip-text text-transparent mb-6">
+            Unlock Unlimited Home Tours
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Get priority access, unlimited tours, and expert support—all for one simple monthly fee.
+            Start with 5 free tours per month, or upgrade to Pro for unlimited access and same-day booking.
           </p>
         </div>
         
         <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Main Membership Card */}
-          <Card className="border-2 border-purple-200 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-600 to-blue-600"></div>
+          {/* Pro Membership Card */}
+          <Card className="border-2 border-blue-200 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
             
-            {/* Special Offer Banner */}
-            <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold transform rotate-12 shadow-lg">
-              <Zap className="w-3 h-3 inline mr-1" />
-              LIMITED TIME!
-            </div>
+            <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+              Most Popular
+            </Badge>
 
             <CardHeader className="text-center pb-4">
-              <Badge className="w-fit mx-auto mb-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">Most Popular</Badge>
-              <CardTitle className="text-2xl text-slate-800">FirstLook Membership</CardTitle>
+              <CardTitle className="text-2xl text-slate-800">FirstLook Pro</CardTitle>
               
-              {/* Special Pricing Display */}
               <div className="mb-4">
-                <div className="text-5xl font-bold text-green-600">$29<span className="text-base text-gray-600">/first month</span></div>
-                <div className="text-lg text-gray-500 line-through">$69.95</div>
-                <div className="text-xl font-semibold text-purple-600">Then $69.95/month</div>
+                <div className="text-4xl font-bold text-blue-600">$29<span className="text-base text-gray-600">/month</span></div>
                 <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-300">
-                  Save $40.95 Your First Month!
+                  Unlimited Tours
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 mb-6">
-                {membershipFeatures.map((feature, index) => (
+                {proFeatures.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                     <span className="text-gray-700 text-sm">{feature}</span>
                   </div>
                 ))}
-                <div className="text-sm text-gray-500 italic">+ 2 more benefits...</div>
               </div>
               <div className="space-y-3">
                 <Link to="/subscriptions">
                   <Button 
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 text-lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg"
                   >
                     <Sparkles className="mr-2 h-4 w-4" />
-                    See Full Membership Details
+                    Upgrade to Pro
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -83,63 +77,79 @@ const MembershipPreviewSection = ({ onRequestShowing }: MembershipPreviewSection
                   className="w-full border-2 border-green-500 text-green-600 hover:bg-green-50 py-4 text-lg"
                   onClick={onRequestShowing}
                 >
-                  Start with FREE Tour Instead
+                  Start with 5 Free Tours
                 </Button>
               </div>
               <p className="text-center text-xs text-gray-600 mt-3">No long-term contracts. Cancel anytime.</p>
             </CardContent>
           </Card>
 
-          {/* Pay-Per-Tour Options */}
+          {/* Offer Services */}
           <div className="space-y-6">
             <Card className="border border-gray-200 shadow-lg">
               <CardHeader className="text-center">
-                <CardTitle className="text-xl text-slate-800">Pay-Per-Tour Options</CardTitle>
-                <p className="text-gray-600">Perfect for one-time tours</p>
+                <CardTitle className="text-xl text-slate-800">Professional Offer Services</CardTitle>
+                <p className="text-gray-600">When you're ready to buy</p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-slate-800">Single Home Tour</span>
-                    <span className="text-2xl font-bold text-purple-600">$59</span>
+                    <span className="font-semibold text-slate-800">Agent-Coached Offer</span>
+                    <span className="text-2xl font-bold text-green-600">$699</span>
                   </div>
-                  <p className="text-gray-600 text-sm mb-3">See one home without membership</p>
-                  <Link to="/single-home-tour">
-                    <Button 
-                      className="w-full bg-purple-600 text-white hover:bg-purple-700"
-                      size="sm"
-                    >
-                      Book Single Tour
-                    </Button>
-                  </Link>
+                  <p className="text-gray-600 text-sm mb-3">Professional guidance through offer strategy & negotiation</p>
+                  <Button 
+                    className="w-full bg-green-600 text-white hover:bg-green-700"
+                    size="sm"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    Get Offer Help
+                  </Button>
                 </div>
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-slate-800">Tour Session</span>
-                    <span className="text-2xl font-bold text-blue-600">$149</span>
+                    <span className="font-semibold text-slate-800">+ Transaction Coordination</span>
+                    <span className="text-2xl font-bold text-orange-600">+$399</span>
                   </div>
-                  <p className="text-gray-600 text-sm mb-3">See up to 3 homes in one session</p>
-                  <Link to="/tour-session">
-                    <Button 
-                      className="w-full bg-blue-600 text-white hover:bg-blue-700"
-                      size="sm"
-                    >
-                      Book Tour Session
-                    </Button>
-                  </Link>
+                  <p className="text-gray-600 text-sm mb-3">Complete management from offer to closing</p>
+                  <Button 
+                    className="w-full bg-orange-600 text-white hover:bg-orange-700"
+                    size="sm"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Add Transaction Help
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
             <div className="text-center">
-              <p className="text-gray-600 mb-4">Questions about pricing?</p>
+              <p className="text-gray-600 mb-4">Questions about our services?</p>
               <Link to="/faq">
-                <Button variant="ghost" className="text-purple-600 hover:text-purple-700 underline">
+                <Button variant="ghost" className="text-blue-600 hover:text-blue-700 underline">
                   Check our FAQ →
                 </Button>
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* DIY Offer Tool CTA */}
+        <div className="mt-12 text-center">
+          <Card className="border-2 border-purple-200 bg-purple-50/30 p-6 max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">
+              DIY Offer Maker Tool
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Pro members get free access to our DIY offer creation tool - create offers yourself with expert guidance.
+            </p>
+            <Link to="/offer-questionnaire">
+              <Button variant="outline" className="border-2 border-purple-300 text-purple-600 hover:bg-purple-50">
+                <FileText className="mr-2 h-4 w-4" />
+                Try DIY Offer Maker (Pro Members)
+              </Button>
+            </Link>
+          </Card>
         </div>
       </div>
     </div>

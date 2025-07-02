@@ -956,7 +956,6 @@ export type Database = {
           communication_preferences: Json | null
           created_at: string
           first_name: string | null
-          free_showing_used: boolean | null
           id: string
           last_name: string | null
           license_number: string | null
@@ -983,7 +982,6 @@ export type Database = {
           communication_preferences?: Json | null
           created_at?: string
           first_name?: string | null
-          free_showing_used?: boolean | null
           id: string
           last_name?: string | null
           license_number?: string | null
@@ -1010,7 +1008,6 @@ export type Database = {
           communication_preferences?: Json | null
           created_at?: string
           first_name?: string | null
-          free_showing_used?: boolean | null
           id?: string
           last_name?: string | null
           license_number?: string | null

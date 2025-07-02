@@ -125,6 +125,7 @@ const ShowingListTab = ({
             userType={userType}
             onComplete={onComplete}
             agreements={agreements}
+            onRequestShowing={onRequestShowing}
           />
         );
       })}

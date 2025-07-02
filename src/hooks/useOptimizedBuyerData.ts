@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,12 +48,18 @@ export const useOptimizedBuyerData = () => {
 
   const currentUser = user || session?.user;
 
-  // Corrected status categorization with proper workflow logic
+  // Corrected status categorization with proper workflow logic and debug logging
   const categorizedRequests = useMemo(() => {
-    // Pending: requests that haven't been fully confirmed yet
-    const pendingRequests = showingRequests.filter(req => 
-      ['pending', 'submitted', 'under_review', 'agent_assigned', 'agent_requested', 'agent_confirmed', 'awaiting_agreement'].includes(req.status)
-    );
+    console.log('Categorizing showing requests:', showingRequests.map(req => ({ id: req.id, status: req.status, address: req.property_address })));
+    
+    // Pending: requests that haven't been fully confirmed yet - including initial 'pending' status
+    const pendingRequests = showingRequests.filter(req => {
+      const isPending = ['pending', 'submitted', 'under_review', 'agent_assigned', 'agent_requested', 'agent_confirmed', 'awaiting_agreement'].includes(req.status);
+      if (req.status === 'pending') {
+        console.log('Found pending request:', req.property_address, req.status);
+      }
+      return isPending;
+    });
     
     // Active: tours that are confirmed and scheduled
     const activeShowings = showingRequests.filter(req => 
@@ -71,6 +76,12 @@ export const useOptimizedBuyerData = () => {
         }
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
+
+    console.log('Categorized results:', {
+      pending: pendingRequests.length,
+      active: activeShowings.length,
+      completed: completedShowings.length
+    });
 
     return { pendingRequests, activeShowings, completedShowings };
   }, [showingRequests]);

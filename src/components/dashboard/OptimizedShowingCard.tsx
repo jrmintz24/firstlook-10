@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "./shared/StatusBadge";
 import InteractiveButton from "./shared/InteractiveButton";
+import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
 import { 
   Calendar,
   Clock,
@@ -48,6 +49,7 @@ interface OptimizedShowingCardProps {
   userType?: 'buyer' | 'agent';
   showActions?: boolean;
   onSignAgreement?: (showing: ShowingRequest) => void;
+  onRequestShowing?: () => void;
 }
 
 const OptimizedShowingCard = ({
@@ -61,7 +63,8 @@ const OptimizedShowingCard = ({
   agreements = {},
   userType = 'buyer',
   showActions = true,
-  onSignAgreement
+  onSignAgreement,
+  onRequestShowing
 }: OptimizedShowingCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -99,6 +102,7 @@ const OptimizedShowingCard = ({
 
   const agreementRequired = isAgreementRequired();
   const isAgentRequestedStatus = showing.status === 'agent_requested';
+  const isCompletedTour = showing.status === 'completed';
 
   // Get appropriate styling based on status and requirements
   const getCardStyling = () => {
@@ -107,6 +111,9 @@ const OptimizedShowingCard = ({
     }
     if (isAgentRequestedStatus) {
       return 'border-orange-300 bg-orange-50';
+    }
+    if (isCompletedTour) {
+      return 'border-green-200 bg-green-50';
     }
     return 'border-gray-200 bg-white';
   };
@@ -218,6 +225,22 @@ const OptimizedShowingCard = ({
             )}
           </div>
 
+          {/* Post-Showing Actions for Completed Tours */}
+          {isCompletedTour && userType === 'buyer' && (
+            <div className="mt-4">
+              <PostShowingActionsPanel
+                showingId={showing.id}
+                buyerId={showing.user_id || currentUserId || ''}
+                agentId={showing.assigned_agent_id}
+                agentName={showing.assigned_agent_name}
+                agentEmail={showing.assigned_agent_email}
+                agentPhone={showing.assigned_agent_phone}
+                propertyAddress={showing.property_address}
+                onRequestShowing={onRequestShowing}
+              />
+            </div>
+          )}
+
           {/* Expanded Content */}
           {isExpanded && (
             <div className="space-y-4 pt-4 border-t border-gray-100">
@@ -248,8 +271,8 @@ const OptimizedShowingCard = ({
                 </div>
               )}
 
-              {/* Action Buttons in Expanded Section */}
-              {showActions && (
+              {/* Action Buttons in Expanded Section - Only for Non-Completed Tours */}
+              {showActions && !isCompletedTour && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {/* Sign Agreement Button - Also in expanded section for emphasis */}
                   {onSignAgreement && agreementRequired && (

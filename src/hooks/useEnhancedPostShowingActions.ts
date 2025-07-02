@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { usePostShowingWorkflow } from "./usePostShowingWorkflow";
 
 interface ScheduleAnotherTourParams {
   showingId: string;
@@ -16,15 +16,6 @@ interface HireAgentParams {
   agentName?: string;
 }
 
-interface MakeOfferParams {
-  showingId: string;
-  buyerId: string;
-  agentId?: string;
-  propertyAddress: string;
-  agentName?: string;
-  buyerQualification?: any;
-}
-
 interface FavoritePropertyParams {
   showingId: string;
   buyerId: string;
@@ -36,7 +27,7 @@ export const useEnhancedPostShowingActions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const scheduleAnotherTour = async () => {
+  const scheduleAnotherTour = async (buyerId?: string, showingId?: string) => {
     setIsSubmitting(true);
     try {
       // Simulate API call
@@ -112,9 +103,44 @@ export const useEnhancedPostShowingActions = () => {
     }
   };
 
+  const favoriteProperty = async (
+    params: FavoritePropertyParams,
+    notes?: string
+  ) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('property_favorites')
+        .insert({
+          buyer_id: params.buyerId,
+          showing_request_id: params.showingId,
+          property_address: params.propertyAddress,
+          notes: notes
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Property Saved",
+        description: `${params.propertyAddress} has been added to your favorites.`,
+      });
+    } catch (error) {
+      console.error('Error saving property:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save property. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     isSubmitting,
     scheduleAnotherTour,
-    hireAgent
+    hireAgent,
+    favoriteProperty
   };
 };

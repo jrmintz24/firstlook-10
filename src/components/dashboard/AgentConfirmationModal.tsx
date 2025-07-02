@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -20,19 +21,7 @@ interface AgentConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   request: ShowingRequest;
-  onConfirm: (confirmationData: AgentConfirmationData) => Promise<void>;
-}
-
-interface AgentConfirmationData {
-  requestId: string;
-  confirmedDate: string;
-  confirmedTime: string;
-  agentMessage: string;
-  alternativeDate1?: string;
-  alternativeTime1?: string;
-  alternativeDate2?: string;
-  alternativeTime2?: string;
-  timeChangeReason?: string;
+  onConfirm: (confirmationData: any) => Promise<void>;
 }
 
 const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentConfirmationModalProps) => {
@@ -64,15 +53,11 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
 
     setIsSubmitting(true);
     try {
-      const confirmationMessage = isTimeChanged 
-        ? `${agentMessage}\n\nTime Change: ${timeChangeReason}`.trim()
-        : agentMessage;
-
       await onConfirm({
         requestId: request.id,
         confirmedDate,
         confirmedTime,
-        agentMessage: confirmationMessage,
+        agentMessage,
         alternativeDate1: showAlternatives ? alternativeDate1 : undefined,
         alternativeTime1: showAlternatives ? alternativeTime1 : undefined,
         alternativeDate2: showAlternatives ? alternativeDate2 : undefined,
@@ -89,17 +74,17 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
 
   // Determine button text based on what the agent is doing
   const getButtonText = () => {
-    if (isSubmitting) return 'Sending Agreement Email...';
+    if (isSubmitting) return 'Accepting Request...';
     
     if (isOfferingAlternatives) {
-      return 'Offer Alternative Times';
+      return 'Accept with Alternatives';
     }
     
     if (isTimeChanged) {
-      return 'Confirm Time Change & Send Agreement';
+      return 'Accept with Time Change';
     }
     
-    return 'Confirm & Send Agreement Email';
+    return 'Accept & Confirm Tour';
   };
 
   return (
@@ -108,7 +93,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-purple-600" />
-            Confirm Showing & Send Agreement
+            Accept & Confirm Tour Request
           </DialogTitle>
         </DialogHeader>
 
@@ -126,7 +111,7 @@ const AgentConfirmationModal = ({ isOpen, onClose, request, onConfirm }: AgentCo
               <span className="font-medium">What happens next?</span>
             </div>
             <p className="text-blue-700 text-sm">
-              After you confirm, we'll automatically send a tour agreement email to the buyer. They'll need to sign it to finalize the appointment.
+              After you accept, the tour will be confirmed and the buyer will be notified. You can then coordinate directly with the buyer for the showing.
             </p>
           </div>
 

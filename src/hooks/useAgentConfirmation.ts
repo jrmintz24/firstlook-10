@@ -4,9 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface ConfirmationData {
-  showingId: string;
-  estimatedDate: string;
-  agentNotes?: string;
+  requestId: string;
+  confirmedDate: string;
+  confirmedTime: string;
+  agentMessage: string;
+  alternativeDate1?: string;
+  alternativeTime1?: string;
+  alternativeDate2?: string;
+  alternativeTime2?: string;
+  timeChangeReason?: string;
 }
 
 interface AgentProfile {
@@ -26,19 +32,38 @@ export const useAgentConfirmation = () => {
     try {
       console.log('Confirming showing:', data);
       
-      // Update the showing request with agent assignment and move to confirmed status
+      // Create agent notes combining message and time change reason
+      let agentNotes = data.agentMessage || '';
+      if (data.timeChangeReason) {
+        agentNotes = agentNotes ? `${agentNotes}\n\nTime Change Reason: ${data.timeChangeReason}` : `Time Change Reason: ${data.timeChangeReason}`;
+      }
+      
+      // Add alternative times if provided
+      if (data.alternativeDate1 && data.alternativeTime1) {
+        agentNotes += `\n\nAlternative Time 1: ${data.alternativeDate1} at ${data.alternativeTime1}`;
+      }
+      if (data.alternativeDate2 && data.alternativeTime2) {
+        agentNotes += `\n\nAlternative Time 2: ${data.alternativeDate2} at ${data.alternativeTime2}`;
+      }
+
+      // Update the showing request with agent assignment and confirmed details
+      const updateData = {
+        assigned_agent_id: agent.id,
+        assigned_agent_name: `${agent.first_name} ${agent.last_name}`,
+        assigned_agent_phone: agent.phone,
+        preferred_date: data.confirmedDate,
+        preferred_time: data.confirmedTime,
+        status: 'agent_confirmed',
+        status_updated_at: new Date().toISOString(),
+        internal_notes: agentNotes || null
+      };
+
+      console.log('Update data:', updateData);
+
       const { error: updateError } = await supabase
         .from('showing_requests')
-        .update({
-          assigned_agent_id: agent.id,
-          assigned_agent_name: `${agent.first_name} ${agent.last_name}`,
-          assigned_agent_phone: agent.phone,
-          status: 'agent_confirmed',
-          status_updated_at: new Date().toISOString(),
-          estimated_confirmation_date: data.estimatedDate,
-          internal_notes: data.agentNotes || null
-        })
-        .eq('id', data.showingId);
+        .update(updateData)
+        .eq('id', data.requestId);
 
       if (updateError) {
         console.error('Error updating showing request:', updateError);

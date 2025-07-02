@@ -78,8 +78,8 @@ const ModernTourSchedulingModal = ({
 
   // Determine user capabilities
   const isGuest = !user;
-  const isPremium = eligibility?.eligible && eligibility.reason === 'subscribed';
-  const maxProperties = isPremium ? 3 : 1;
+  const isPaidUser = eligibility?.eligible && eligibility.reason === 'subscribed';
+  const maxProperties = isPaidUser ? 3 : 1;
   const maxPreferredTimes = 3;
 
   const availableDays = useMemo(() => getNext7Days(), []);
@@ -132,15 +132,22 @@ const ModernTourSchedulingModal = ({
   };
 
   const isTimeSlotAvailable = (date: string, time: string) => {
-    // If user is logged in, all times are available
-    if (user) return true;
-    
-    // If no date or time provided, return false
     if (!date || !time) return false;
     
     try {
-      // Parse the selected date and time
       const selectedDate = new Date(date);
+      const today = new Date();
+      
+      // Reset time components for date-only comparison
+      const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+      
+      // For free users (including guests): No same-day bookings, allow any time from tomorrow onwards
+      if (!isPaidUser) {
+        return selectedDateOnly > todayDateOnly;
+      }
+      
+      // For paid users: No bookings within 2 hours of current time
       const [timeStr, period] = time.split(' ');
       const [hours, minutes] = timeStr.split(':').map(Number);
       
@@ -151,17 +158,16 @@ const ModernTourSchedulingModal = ({
         adjustedHours = 0;
       }
       
-      selectedDate.setHours(adjustedHours, minutes, 0, 0);
+      const selectedDateTime = new Date(selectedDate);
+      selectedDateTime.setHours(adjustedHours, minutes, 0, 0);
       
-      // For guest users, require 24 hours advance notice
       const now = new Date();
-      const minDateTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+      const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
       
-      return selectedDate >= minDateTime;
+      return selectedDateTime >= twoHoursFromNow;
     } catch (error) {
       console.error('Error parsing date/time:', error);
-      // If there's an error parsing, default to available for logged-in users, unavailable for guests
-      return !!user;
+      return false;
     }
   };
 
@@ -211,7 +217,7 @@ const ModernTourSchedulingModal = ({
                       Schedule Your Tour
                     </DialogTitle>
                     <p className="text-sm text-gray-500 mt-1">
-                      {isPremium ? `Book up to ${maxProperties} properties` : "Book your tour"}
+                      {isPaidUser ? `Book up to ${maxProperties} properties` : "Book your tour"}
                     </p>
                   </div>
                 </div>
@@ -227,7 +233,7 @@ const ModernTourSchedulingModal = ({
             </DialogHeader>
 
             <div className="px-8 pb-8 max-h-[75vh] overflow-y-auto">
-              {/* Guest Notice */}
+              {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
                   <div className="flex items-center gap-3">
@@ -235,7 +241,35 @@ const ModernTourSchedulingModal = ({
                     <div>
                       <p className="text-sm font-medium text-gray-800">Guest Booking</p>
                       <p className="text-xs text-gray-600 mt-1">
-                        Tours must be scheduled 24+ hours in advance. Sign up for same-day booking.
+                        No same-day tours. Sign up for more flexible scheduling.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!isGuest && !isPaidUser && (
+                <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">Free Plan</p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        No same-day tours. Upgrade for 2-hour advance booking.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isPaidUser && (
+                <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-green-800">Pro Plan</p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Book tours with just 2 hours advance notice.
                       </p>
                     </div>
                   </div>
@@ -250,7 +284,7 @@ const ModernTourSchedulingModal = ({
                       <h3 className="text-lg font-medium text-gray-900">
                         {properties.length > 1 ? 'Properties' : 'Property'}
                       </h3>
-                      {isPremium && properties.length < maxProperties && (
+                      {isPaidUser && properties.length < maxProperties && (
                         <Button
                           type="button"
                           variant="ghost"
@@ -306,7 +340,7 @@ const ModernTourSchedulingModal = ({
                       ))}
                     </div>
 
-                    {!isPremium && (
+                    {!isPaidUser && (
                       <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
                         <div className="flex items-center justify-between">
                           <div>
@@ -408,9 +442,9 @@ const ModernTourSchedulingModal = ({
                             <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                               <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
                               <p className="text-sm">
-                                {isGuest 
-                                  ? "No times available for this date. Please select a date at least 24 hours in advance."
-                                  : "No times available for this date."
+                                {!isPaidUser 
+                                  ? "No same-day bookings available. Please select a future date."
+                                  : "No times available within 2-hour advance window."
                                 }
                               </p>
                             </div>

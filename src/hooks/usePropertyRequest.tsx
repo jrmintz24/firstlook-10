@@ -151,9 +151,9 @@ export const usePropertyRequest = (
         onClose();
       }
       
-      // Navigate to dashboard only if not skipping navigation
-      if (!skipNavigation) {
-        navigate('/buyer-dashboard');
+      // Always navigate to dashboard for authenticated users
+      if (user && !skipNavigation) {
+        navigate('/buyer-dashboard', { replace: true });
       }
       
     } catch (error) {

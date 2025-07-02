@@ -48,7 +48,11 @@ const BuyerAuth = () => {
       title: "Welcome to FirstLook!",
       description: "Redirecting to your dashboard...",
     });
-    navigate('/buyer-dashboard', { replace: true });
+    
+    // Navigate with a slight delay to ensure auth state is properly settled
+    setTimeout(() => {
+      navigate('/buyer-dashboard', { replace: true });
+    }, 1000);
   });
 
   if (loading) {
@@ -56,11 +60,10 @@ const BuyerAuth = () => {
   }
 
   if (user) {
-    navigate(
-      user.user_metadata?.user_type === 'agent'
-        ? '/agent-dashboard'
-        : '/buyer-dashboard'
-    );
+    // Redirect authenticated users immediately
+    const userType = user.user_metadata?.user_type;
+    const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+    navigate(dashboardPath, { replace: true });
     return null;
   }
 

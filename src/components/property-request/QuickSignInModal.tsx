@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         
         toast({
           title: "Account Created!",
-          description: "Welcome to FirstLook! Your tour request will be processed automatically...",
+          description: "Welcome to FirstLook! Processing your tour request...",
         });
         
       } else {
@@ -49,13 +51,16 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         });
       }
       
-      // Close modal and trigger success callback
+      // Close modal immediately
       onClose();
       
-      // Small delay to let the auth state settle, then call success
+      // Call success callback to handle tour processing
+      onSuccess();
+      
+      // Navigate to dashboard after brief delay to allow auth state to settle
       setTimeout(() => {
-        onSuccess();
-      }, 500);
+        navigate('/buyer-dashboard', { replace: true });
+      }, 1000);
       
     } catch (error: any) {
       console.error('Auth error:', error);

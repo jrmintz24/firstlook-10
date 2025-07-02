@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UsePendingTourHandlerProps {
@@ -11,6 +12,7 @@ interface UsePendingTourHandlerProps {
 export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandlerProps = {}) => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const hasProcessedRef = useRef(false);
   const processingRef = useRef(false);
   const userIdRef = useRef<string | null>(null);
@@ -33,6 +35,10 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest');
       if (isNewUserFromRequest) {
         localStorage.removeItem('newUserFromPropertyRequest');
+        // Navigate to dashboard for new users even without pending tour
+        setTimeout(() => {
+          navigate('/buyer-dashboard', { replace: true });
+        }, 1000);
       }
       return;
     }
@@ -117,6 +123,11 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         await onTourProcessed();
       }
 
+      // Navigate to dashboard after successful processing
+      setTimeout(() => {
+        navigate('/buyer-dashboard', { replace: true });
+      }, 1500);
+
     } catch (error) {
       console.error('usePendingTourHandler: Error processing pending tour request:', error);
       
@@ -130,13 +141,18 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         variant: "destructive"
       });
       
+      // Still navigate to dashboard even on error
+      setTimeout(() => {
+        navigate('/buyer-dashboard', { replace: true });
+      }, 2000);
+      
       // Reset flags so user can try again
       hasProcessedRef.current = false;
       processingRef.current = false;
     } finally {
       processingRef.current = false;
     }
-  }, [user, loading, toast, onTourProcessed]);
+  }, [user, loading, toast, onTourProcessed, navigate]);
 
   // Reset flags when user changes
   useEffect(() => {

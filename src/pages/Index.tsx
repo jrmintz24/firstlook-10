@@ -15,10 +15,12 @@ import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import ModernTourSchedulingModal from '../components/ModernTourSchedulingModal'
 import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
+import { useNavigate } from 'react-router-dom'
 
 export default function Index() {
   const { user, loading } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [showTourModal, setShowTourModal] = useState(false)
   const tourQuota = useTourQuota()
 
@@ -37,8 +39,17 @@ export default function Index() {
   }
 
   const handleTourModalSuccess = async () => {
-    // Refresh data after successful tour request
-    window.location.reload();
+    // If user is authenticated, navigate to dashboard
+    if (user) {
+      toast({
+        title: "Tour Request Submitted!",
+        description: "Redirecting to your dashboard...",
+      });
+      navigate('/buyer-dashboard', { replace: true });
+    } else {
+      // For unauthenticated users, the auth flow will handle navigation
+      console.log('Tour submitted for unauthenticated user - auth flow will handle navigation');
+    }
   }
 
   // Show loading while checking auth state

@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Calendar, Home, MapPin, Clock, ArrowLeft, Plus, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -91,63 +90,63 @@ const TourSession = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <div className="min-h-screen bg-white py-6">
+      <div className="container mx-auto px-4 max-w-2xl">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-8">
           <Link to="/subscriptions">
-            <Button variant="ghost" className="mb-6 text-gray-600 hover:text-black">
+            <Button variant="ghost" className="mb-4 text-gray-600 hover:text-black">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pricing
             </Button>
           </Link>
           
-          <div className="text-center">
-            <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Home className="w-10 h-10 text-white" />
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Home className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-light text-gray-900 mb-4">Book Your Tour Session</h1>
-            <p className="text-xl text-gray-600 mb-8">See up to 3 homes in one session</p>
+            <h1 className="text-3xl font-light text-gray-900 mb-3">Book Your Tour Session</h1>
+            <p className="text-lg text-gray-600 mb-6">See up to 3 homes in one session</p>
             
-            <div className="inline-flex items-center justify-center bg-black text-white px-8 py-4 rounded-2xl">
+            <div className="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-xl">
               <div className="text-center">
-                <div className="text-3xl font-light mb-1">$149</div>
-                <p className="text-sm opacity-90">One-time payment • No ongoing commitment</p>
+                <div className="text-2xl font-light mb-1">$149</div>
+                <p className="text-xs opacity-90">One-time payment • No ongoing commitment</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Booking Form */}
-        <Card className="border-2 border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-100">
-            <CardTitle className="flex items-center gap-3 text-xl font-semibold">
-              <Calendar className="w-6 h-6" />
+        <Card className="border border-gray-200 shadow-sm">
+          <CardHeader className="border-b border-gray-100 pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+              <Calendar className="w-5 h-5" />
               Tour Session Details
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-sm text-gray-600">
               Add up to 3 properties and your preferred tour time
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Properties */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
+                  <h3 className="text-base font-semibold flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
                     Properties to Tour ({properties.length}/3)
                   </h3>
                   {properties.length < 3 && (
-                    <Button type="button" variant="outline" size="sm" onClick={addProperty} className="border-2 border-gray-300 hover:border-black">
-                      <Plus className="w-4 h-4 mr-1" />
+                    <Button type="button" variant="outline" size="sm" onClick={addProperty} className="border border-gray-300 hover:border-black text-sm">
+                      <Plus className="w-3 h-3 mr-1" />
                       Add Property
                     </Button>
                   )}
                 </div>
                 
                 {properties.map((property, index) => (
-                  <div key={property.id} className="flex gap-3 items-end">
+                  <div key={property.id} className="flex gap-2 items-end">
                     <div className="flex-1">
                       <AddressAutocomplete
                         value={property.address}
@@ -163,9 +162,9 @@ const TourSession = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => removeProperty(property.id)}
-                        className="h-12 w-12 border-2 border-gray-300 hover:border-red-400 hover:text-red-600"
+                        className="h-12 w-12 border border-gray-300 hover:border-red-400 hover:text-red-600"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3" />
                       </Button>
                     )}
                   </div>
@@ -173,13 +172,13 @@ const TourSession = () => {
               </div>
 
               {/* Scheduling */}
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
+              <div className="space-y-4">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
                   Preferred Schedule
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="preferredDate" className="text-sm font-medium text-gray-900 mb-2 block">
                       Preferred Date *
@@ -190,7 +189,7 @@ const TourSession = () => {
                       value={formData.preferredDate}
                       onChange={(e) => handleInputChange("preferredDate", e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="h-12 border-2 border-gray-300 focus:border-black"
+                      className="h-10 border border-gray-300 focus:border-black"
                       required
                     />
                   </div>
@@ -201,7 +200,7 @@ const TourSession = () => {
                     </Label>
                     <select
                       id="preferredTime"
-                      className="w-full h-12 px-4 rounded-lg border-2 border-gray-300 focus:border-black focus:ring-1 focus:ring-black bg-white"
+                      className="w-full h-10 px-3 rounded-md border border-gray-300 focus:border-black focus:ring-1 focus:ring-black bg-white text-sm"
                       value={formData.preferredTime}
                       onChange={(e) => handleInputChange("preferredTime", e.target.value)}
                       required
@@ -214,18 +213,18 @@ const TourSession = () => {
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                  <p className="text-sm text-gray-700">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-700">
                     <strong>Note:</strong> Tours typically take 2-3 hours depending on the number of properties and travel time between them.
                   </p>
                 </div>
               </div>
 
-              {/* Contact Information - Compact Grid */}
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Contact Information</h3>
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h3 className="text-base font-semibold">Contact Information</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="contactName" className="text-sm font-medium text-gray-900 mb-2 block">
                       Full Name *
@@ -235,7 +234,7 @@ const TourSession = () => {
                       placeholder="Your full name"
                       value={formData.contactName}
                       onChange={(e) => handleInputChange("contactName", e.target.value)}
-                      className="h-12 border-2 border-gray-300 focus:border-black"
+                      className="h-10 border border-gray-300 focus:border-black"
                       required
                     />
                   </div>
@@ -250,7 +249,7 @@ const TourSession = () => {
                       placeholder="your@email.com"
                       value={formData.contactEmail}
                       onChange={(e) => handleInputChange("contactEmail", e.target.value)}
-                      className="h-12 border-2 border-gray-300 focus:border-black"
+                      className="h-10 border border-gray-300 focus:border-black"
                       required
                     />
                   </div>
@@ -265,7 +264,7 @@ const TourSession = () => {
                       placeholder="(555) 123-4567"
                       value={formData.contactPhone}
                       onChange={(e) => handleInputChange("contactPhone", e.target.value)}
-                      className="h-12 border-2 border-gray-300 focus:border-black"
+                      className="h-10 border border-gray-300 focus:border-black"
                       required
                     />
                   </div>
@@ -283,20 +282,20 @@ const TourSession = () => {
                   value={formData.message}
                   onChange={(e) => handleInputChange("message", e.target.value)}
                   rows={3}
-                  className="border-2 border-gray-300 focus:border-black resize-none"
+                  className="border border-gray-300 focus:border-black resize-none"
                 />
               </div>
 
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full bg-black hover:bg-gray-800 text-white py-6 text-lg font-medium rounded-xl"
+                className="w-full bg-black hover:bg-gray-800 text-white py-3 text-base font-medium rounded-lg"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Processing..." : "Book Tour Session - $149"}
               </Button>
               
-              <p className="text-sm text-gray-600 text-center">
+              <p className="text-xs text-gray-600 text-center">
                 You'll be contacted within 24 hours to confirm your tour session and arrange payment
               </p>
             </form>

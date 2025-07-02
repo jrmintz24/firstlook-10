@@ -110,17 +110,17 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] bg-white border-2 border-gray-200">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] bg-white border border-gray-200 shadow-xl">
           <DialogHeader className="border-b border-gray-100 pb-4">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl font-semibold text-gray-900">
+              <DialogTitle className="text-lg font-semibold text-gray-900">
                 {getStepTitle()}
               </DialogTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {[1, 2, 3].map((step) => (
                   <div
                     key={step}
-                    className={`w-8 h-2 rounded-full transition-colors ${
+                    className={`w-6 h-1.5 rounded-full transition-colors ${
                       step <= currentStep ? 'bg-black' : 'bg-gray-200'
                     }`}
                   />
@@ -129,7 +129,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
             </div>
           </DialogHeader>
           
-          <div className="py-4">
+          <div className="py-6">
             {renderCurrentStep()}
           </div>
         </DialogContent>

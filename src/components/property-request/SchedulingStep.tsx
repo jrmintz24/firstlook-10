@@ -1,11 +1,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
 
 interface SchedulingStepProps {
   formData: PropertyRequestFormData;
@@ -29,7 +28,6 @@ const timeSlots = [
 
 const SchedulingStep = ({ formData, onInputChange, onNext, onBack }: SchedulingStepProps) => {
   const { user } = useAuth();
-  const [selectedOption, setSelectedOption] = useState(1);
   
   // Calculate minimum date (23 hours from now for non-logged users, today for logged users)
   const getMinDate = () => {
@@ -101,127 +99,121 @@ const SchedulingStep = ({ formData, onInputChange, onNext, onBack }: SchedulingS
   };
 
   return (
-    <div className="max-h-[70vh] overflow-y-auto">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Calendar className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Schedule Your Tours</h2>
-          <p className="text-gray-600">Choose up to 3 preferred times to maximize scheduling success</p>
+    <div className="space-y-6 max-h-[65vh] overflow-y-auto">
+      {/* Header */}
+      <div className="text-center">
+        <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+          <Calendar className="h-6 w-6 text-white" />
         </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Schedule Your Tours</h2>
+        <p className="text-sm text-gray-600">Choose up to 3 preferred times to maximize scheduling success</p>
+      </div>
 
-        {!user && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-amber-800">
-                  Tours must be scheduled 24+ hours in advance for guests. 
-                  <span className="font-medium"> Sign up for same-day booking!</span>
-                </p>
-              </div>
-            </div>
+      {!user && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <p className="text-xs text-amber-800">
+              Tours must be scheduled 24+ hours in advance for guests. 
+              <span className="font-medium"> Sign up for same-day booking!</span>
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Time Options - Compact Layout */}
-        <div className="space-y-6">
-          {[1, 2, 3].map((num) => {
-            const selectedDate = formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string;
-            const selectedTime = formData[`preferredTime${num}` as keyof PropertyRequestFormData] as string;
-            const isRequired = num === 1;
-            
-            return (
-              <Card key={num} className={`border-2 ${selectedDate || selectedTime ? 'border-black' : 'border-gray-200'} transition-colors`}>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      num === 1 ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {num}
-                    </div>
-                    <CardTitle className="text-lg">
-                      Option {num} {isRequired && <span className="text-red-500">*</span>}
-                    </CardTitle>
+      {/* Time Options - More Compact */}
+      <div className="space-y-4">
+        {[1, 2, 3].map((num) => {
+          const selectedDate = formData[`preferredDate${num}` as keyof PropertyRequestFormData] as string;
+          const selectedTime = formData[`preferredTime${num}` as keyof PropertyRequestFormData] as string;
+          const isRequired = num === 1;
+          
+          return (
+            <Card key={num} className={`border ${selectedDate || selectedTime ? 'border-black' : 'border-gray-200'} transition-colors`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    num === 1 ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {num}
                   </div>
-                </CardHeader>
+                  <span className="text-sm font-medium">
+                    Option {num} {isRequired && <span className="text-red-500">*</span>}
+                  </span>
+                </div>
                 
-                <CardContent className="space-y-4">
-                  {/* Date and Time in Single Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-2 block">Date</Label>
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => {
-                          onInputChange(`preferredDate${num}`, e.target.value);
-                          if (selectedTime && !isTimeSlotAvailable(e.target.value, selectedTime)) {
-                            onInputChange(`preferredTime${num}`, '');
-                          }
-                        }}
-                        min={getMinDate()}
-                        className="w-full h-11 px-4 rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                      />
-                      {selectedDate && (
-                        <p className="text-xs text-gray-600 mt-1">{getDateDisplay(selectedDate)}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-2 block">Time</Label>
-                      <select
-                        value={selectedTime}
-                        onChange={(e) => handleTimeSelect(num, e.target.value)}
-                        className="w-full h-11 px-4 rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors bg-white"
-                      >
-                        <option value="">Select time</option>
-                        {timeSlots
-                          .filter(slot => !selectedDate || isTimeSlotAvailable(selectedDate, slot.value))
-                          .map((slot) => (
-                            <option key={slot.value} value={slot.value}>
-                              {slot.label} {slot.popular ? '(Popular)' : ''}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
+                {/* Date and Time in Single Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-medium text-gray-700 mb-1 block">Date</Label>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => {
+                        onInputChange(`preferredDate${num}`, e.target.value);
+                        if (selectedTime && !isTimeSlotAvailable(e.target.value, selectedTime)) {
+                          onInputChange(`preferredTime${num}`, '');
+                        }
+                      }}
+                      min={getMinDate()}
+                      className="w-full h-9 px-3 text-sm rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                    {selectedDate && (
+                      <p className="text-xs text-gray-500 mt-1">{getDateDisplay(selectedDate)}</p>
+                    )}
                   </div>
-                  
-                  {selectedDate && timeSlots.filter(slot => isTimeSlotAvailable(selectedDate, slot.value)).length === 0 && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm text-amber-700 flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        No available times for this date. Please select a later date.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <Button 
-            variant="outline" 
-            onClick={onBack} 
-            className="flex-1 h-12 border-2 border-gray-300 hover:border-gray-400 font-medium"
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <Button 
-            onClick={onNext} 
-            disabled={!formData.preferredDate1 || !formData.preferredTime1}
-            className="flex-1 h-12 bg-black hover:bg-gray-800 text-white font-medium disabled:bg-gray-300"
-          >
-            Continue
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
+                  <div>
+                    <Label className="text-xs font-medium text-gray-700 mb-1 block">Time</Label>
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => handleTimeSelect(num, e.target.value)}
+                      className="w-full h-9 px-3 text-sm rounded-lg border border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors bg-white"
+                    >
+                      <option value="">Select time</option>
+                      {timeSlots
+                        .filter(slot => !selectedDate || isTimeSlotAvailable(selectedDate, slot.value))
+                        .map((slot) => (
+                          <option key={slot.value} value={slot.value}>
+                            {slot.label} {slot.popular ? '(Popular)' : ''}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+                
+                {selectedDate && timeSlots.filter(slot => isTimeSlotAvailable(selectedDate, slot.value)).length === 0 && (
+                  <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs text-amber-700 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      No available times for this date. Please select a later date.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3 pt-2">
+        <Button 
+          variant="outline" 
+          onClick={onBack} 
+          className="flex-1 h-12 border-2 border-gray-300 hover:border-gray-400 font-medium"
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <Button 
+          onClick={onNext} 
+          disabled={!formData.preferredDate1 || !formData.preferredTime1}
+          className="flex-1 h-12 bg-black hover:bg-gray-800 text-white font-medium disabled:bg-gray-300"
+        >
+          Continue
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
       </div>
     </div>
   );

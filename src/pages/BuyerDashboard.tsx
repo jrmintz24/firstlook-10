@@ -1,5 +1,4 @@
-
-import { useState, Suspense, useCallback } from "react";
+import { useState, Suspense, useCallback, useMemo } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -15,6 +14,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
+import { useSafeMessages } from "@/hooks/useSafeMessages";
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -44,7 +44,6 @@ const BuyerDashboard = () => {
     eligibility,
     isSubscribed,
     subscriptionTier,
-    unreadCount,
     
     handleRequestShowing,
     handleUpgradeClick,
@@ -59,6 +58,9 @@ const BuyerDashboard = () => {
     handleRescheduleSuccess,
     refreshShowingRequests
   } = useOptimizedBuyerLogic();
+
+  // Use safe messages hook that won't break the dashboard
+  const { unreadCount } = useSafeMessages(currentUser?.id || null);
 
   // Fetch real consultation bookings data
   const { 
@@ -84,8 +86,9 @@ const BuyerDashboard = () => {
 
   usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
-  const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
-                     currentUser?.email?.split('@')[0] || 'User';
+  const displayName = useMemo(() => 
+    profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
+    currentUser?.email?.split('@')[0] || 'User', [profile, currentUser]);
 
   const handleOpenMessages = () => {
     setActiveTab("messages");

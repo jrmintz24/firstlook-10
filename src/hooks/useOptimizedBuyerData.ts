@@ -203,13 +203,17 @@ export const useOptimizedBuyerData = () => {
     }
   }, [currentUser, fetchShowingRequests, fetchAgreements, fetchProfile, toast, isInitialLoad]);
 
-  // Simplified real-time setup with better error handling
+  // Improved real-time setup with better error handling and isolation
   const setupRealtime = useCallback(() => {
     if (!currentUser) return;
 
     // Clean up existing channel
     if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
+      try {
+        supabase.removeChannel(realtimeChannelRef.current);
+      } catch (err) {
+        console.warn('Error cleaning up existing channel:', err);
+      }
     }
 
     // Clear any existing fallback polling
@@ -217,60 +221,70 @@ export const useOptimizedBuyerData = () => {
       clearInterval(fallbackIntervalRef.current);
     }
 
-    // Set up real-time subscription with simpler logic
-    const channel = supabase
-      .channel(`showing_requests_${currentUser.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'showing_requests',
-          filter: `user_id=eq.${currentUser.id}`
-        },
-        (payload) => {
-          console.log('Real-time showing request change:', payload);
-          
-          // Update showing requests with proper type checking
-          setShowingRequests(prev => {
-            const updated = [...prev];
-            const payloadNew = payload.new as ShowingRequest;
-            const payloadOld = payload.old as ShowingRequest;
+    // Set up real-time subscription with better isolation
+    try {
+      const channel = supabase
+        .channel(`buyer_showing_requests_${currentUser.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'showing_requests',
+            filter: `user_id=eq.${currentUser.id}`
+          },
+          (payload) => {
+            console.log('Real-time showing request change:', payload);
             
-            if (payload.eventType === 'DELETE' && payloadOld?.id) {
-              return updated.filter(req => req.id !== payloadOld.id);
-            } else if (payload.eventType === 'INSERT' && payloadNew?.id) {
-              return [payloadNew, ...updated];
-            } else if (payload.eventType === 'UPDATE' && payloadNew?.id) {
-              const index = updated.findIndex(req => req.id === payloadNew.id);
-              if (index >= 0) {
-                updated[index] = payloadNew;
+            // Update showing requests with proper type checking
+            setShowingRequests(prev => {
+              const updated = [...prev];
+              const payloadNew = payload.new as ShowingRequest;
+              const payloadOld = payload.old as ShowingRequest;
+              
+              if (payload.eventType === 'DELETE' && payloadOld?.id) {
+                return updated.filter(req => req.id !== payloadOld.id);
+              } else if (payload.eventType === 'INSERT' && payloadNew?.id) {
+                return [payloadNew, ...updated];
+              } else if (payload.eventType === 'UPDATE' && payloadNew?.id) {
+                const index = updated.findIndex(req => req.id === payloadNew.id);
+                if (index >= 0) {
+                  updated[index] = payloadNew;
+                }
+                return updated;
               }
+              
               return updated;
-            }
-            
-            return updated;
-          });
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-        
-        if (status === 'SUBSCRIBED') {
-          // Clear fallback polling when real-time works
-          if (fallbackIntervalRef.current) {
-            clearInterval(fallbackIntervalRef.current);
+            });
           }
-        } else if (status === 'CHANNEL_ERROR') {
-          // Set up fallback polling if real-time fails
-          console.log('Setting up fallback polling due to real-time failure');
-          fallbackIntervalRef.current = setInterval(() => {
-            refreshAllData(false);
-          }, 30000); // Poll every 30 seconds
-        }
-      });
+        )
+        .subscribe((status) => {
+          console.log('Showing requests subscription status:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            // Clear fallback polling when real-time works
+            if (fallbackIntervalRef.current) {
+              clearInterval(fallbackIntervalRef.current);
+            }
+            console.log('Real-time showing requests subscription active');
+          } else if (status === 'CHANNEL_ERROR') {
+            // Set up fallback polling if real-time fails - but don't break everything
+            console.log('Setting up fallback polling for showing requests due to real-time failure');
+            fallbackIntervalRef.current = setInterval(() => {
+              console.log('Fallback polling: refreshing showing requests');
+              refreshAllData(false);
+            }, 30000); // Poll every 30 seconds
+          }
+        });
 
-    realtimeChannelRef.current = channel;
+      realtimeChannelRef.current = channel;
+    } catch (error) {
+      console.warn('Failed to set up real-time subscription, continuing with polling fallback:', error);
+      // Set up fallback polling immediately if real-time setup fails
+      fallbackIntervalRef.current = setInterval(() => {
+        refreshAllData(false);
+      }, 30000);
+    }
   }, [currentUser, refreshAllData]);
 
   // Initial data load
@@ -288,7 +302,11 @@ export const useOptimizedBuyerData = () => {
 
     return () => {
       if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
+        try {
+          supabase.removeChannel(realtimeChannelRef.current);
+        } catch (err) {
+          console.warn('Error cleaning up channel on unmount:', err);
+        }
       }
       if (fallbackIntervalRef.current) {
         clearInterval(fallbackIntervalRef.current);

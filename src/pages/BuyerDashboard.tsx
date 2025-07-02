@@ -140,7 +140,7 @@ const BuyerDashboard = () => {
     if (!selectedShowing) return;
     
     try {
-      await handleAgreementSignWithModal(selectedShowing.id, name);
+      await handleAgreementSignWithModal(name);
     } catch (error) {
       console.error('Error signing agreement:', error);
     }

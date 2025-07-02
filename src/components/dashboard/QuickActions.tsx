@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Home, DollarSign, MessageCircle, Calendar, Search, TrendingUp } from "lucide-react";
+import { Home, DollarSign, Search, TrendingUp } from "lucide-react";
 
 interface QuickActionsProps {
   onRequestShowing: () => void;
@@ -33,14 +33,6 @@ const QuickActions = ({ onRequestShowing, onMakeOffer }: QuickActionsProps) => {
       color: "bg-purple-600 hover:bg-purple-700",
       iconColor: "text-purple-600",
       onClick: () => console.log("Browse properties")
-    },
-    {
-      icon: MessageCircle,
-      title: "Contact Support",
-      description: "Get help from our expert team",
-      color: "bg-orange-600 hover:bg-orange-700",
-      iconColor: "text-orange-600",
-      onClick: () => console.log("Contact support")
     }
   ];
 
@@ -53,7 +45,7 @@ const QuickActions = ({ onRequestShowing, onMakeOffer }: QuickActionsProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {actions.map((action, index) => (
             <div key={index} className="group">
               <Button

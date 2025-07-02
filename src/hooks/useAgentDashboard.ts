@@ -47,15 +47,15 @@ export const useAgentDashboard = () => {
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Categorize requests properly for agent view
+  // Updated categorization for manual assignment workflow
   const pendingRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_id
   );
   
-  // Include agent_requested tours in assigned requests as they are now claimed by this agent
+  // Requests assigned to this agent (either manually accepted or requested specifically)
   const assignedRequests = showingRequests.filter(req => 
     req.assigned_agent_id === profile?.id && 
-    ['agent_assigned', 'agent_requested', 'confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
+    ['agent_confirmed', 'confirmed', 'scheduled', 'awaiting_agreement'].includes(req.status)
   );
   
   const completedRequests = showingRequests
@@ -106,15 +106,21 @@ export const useAgentDashboard = () => {
 
       setProfile(profileData);
 
-      // Fetch showing requests that are relevant to this agent
-      // This includes: pending requests (for assignment) and requests assigned to this agent
+      // Fetch ALL showing requests for agents to see available and assigned ones
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
         .or(`status.eq.pending,assigned_agent_id.eq.${currentUser.id}`)
         .order('created_at', { ascending: false });
 
-      console.log('Requests fetch result:', { requestsData, requestsError, agentId: currentUser.id });
+      console.log('Requests fetch result:', { 
+        requestsData, 
+        requestsError, 
+        agentId: currentUser.id,
+        totalRequests: requestsData?.length || 0,
+        pendingCount: requestsData?.filter(r => r.status === 'pending' && !r.assigned_agent_id).length || 0,
+        assignedCount: requestsData?.filter(r => r.assigned_agent_id === currentUser.id).length || 0
+      });
 
       if (requestsError) {
         console.error('Requests error:', requestsError);
@@ -125,7 +131,11 @@ export const useAgentDashboard = () => {
         });
         setShowingRequests([]);
       } else {
-        console.log('Filtered requests for agent:', requestsData?.length || 0);
+        console.log('Loaded requests for agent:', {
+          total: requestsData?.length || 0,
+          pending: requestsData?.filter(r => r.status === 'pending' && !r.assigned_agent_id).length || 0,
+          assigned: requestsData?.filter(r => r.assigned_agent_id === currentUser.id).length || 0
+        });
         setShowingRequests(requestsData || []);
       }
     } catch (error) {
@@ -276,6 +286,36 @@ export const useAgentDashboard = () => {
       return false;
     }
   };
+
+  // Set up real-time subscription for showing requests
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    console.log('Setting up real-time subscription for agent:', profile.id);
+    
+    const channel = supabase
+      .channel(`agent_showing_requests_${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'showing_requests'
+        },
+        (payload) => {
+          console.log('Real-time showing request change:', payload);
+          fetchAgentData();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Agent showing requests subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up agent showing requests subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
 
   useEffect(() => {
     if (authLoading) {

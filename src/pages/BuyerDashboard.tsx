@@ -35,7 +35,6 @@ const BuyerDashboard = () => {
     
     profile,
     selectedShowing,
-    agreements,
     loading,
     detailLoading,
     authLoading,
@@ -93,9 +92,8 @@ const BuyerDashboard = () => {
     console.log("Support requested");
   };
 
-  const agreementsRecord = Object.fromEntries(
-    Object.entries(agreements).map(([key, value]) => [key, value])
-  );
+  // Fix the TypeScript error by properly typing the agreements record
+  const agreementsRecord: Record<string, boolean> = {};
 
   // Transform consultation bookings to match the expected format
   const consultations = consultationBookings.map(booking => ({

@@ -143,17 +143,17 @@ const AgentDashboard = () => {
   const dashboardTabs = [
     {
       id: "pending",
-      title: "Pending",
+      title: "Available",
       icon: Clock,
       count: pendingRequests.length,
       color: "bg-orange-100 text-orange-700",
       content: (
         <ShowingListTab
-          title="Pending Requests"
+          title="Available Requests"
           showings={pendingRequests}
           emptyIcon={Clock}
-          emptyTitle="No Pending Requests"
-          emptyDescription="All caught up! New showing requests will appear here."
+          emptyTitle="No Available Requests"
+          emptyDescription="All caught up! New showing requests will appear here for you to accept."
           emptyButtonText=""
           onRequestShowing={() => {}}
           onCancelShowing={handleCancelShowing}
@@ -168,17 +168,17 @@ const AgentDashboard = () => {
     },
     {
       id: "assigned",
-      title: "Assigned",
+      title: "My Tours",
       icon: CalendarDays,
       count: assignedRequests.length,
       color: "bg-blue-100 text-blue-700",
       content: (
         <ShowingListTab
-          title="Assigned Showings"
+          title="My Assigned Tours"
           showings={assignedRequests}
           emptyIcon={CalendarDays}
-          emptyTitle="No Assigned Showings"
-          emptyDescription="Confirmed showings will appear here."
+          emptyTitle="No Assigned Tours"
+          emptyDescription="Tours you've accepted will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
           onCancelShowing={handleCancelShowing}
@@ -261,7 +261,7 @@ const AgentDashboard = () => {
     <>
       <UnifiedDashboardLayout
         title={`Welcome back, ${displayName}`}
-        subtitle="Manage your showing requests and connect with buyers"
+        subtitle="View available tours and manage your assignments"
         userType="agent"
         displayName={displayName}
         tabs={dashboardTabs}

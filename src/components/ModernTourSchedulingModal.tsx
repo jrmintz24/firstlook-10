@@ -227,17 +227,17 @@ const ModernTourSchedulingModal = ({
         <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}
-            <DialogHeader className="px-8 pt-8 pb-6 flex-shrink-0">
+            <DialogHeader className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center">
-                    <Home className="h-5 w-5 text-white" />
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-2xl flex items-center justify-center">
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <DialogTitle className="text-2xl font-light text-gray-900">
+                    <DialogTitle className="text-xl sm:text-2xl font-light text-gray-900">
                       Schedule Your Tour
                     </DialogTitle>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Choose your property and preferred time
                     </p>
                   </div>
@@ -253,8 +253,8 @@ const ModernTourSchedulingModal = ({
               </div>
               
               {/* Progress indicator */}
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="mt-3 sm:mt-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                   <span>Progress: {completedSteps}/{totalSteps} steps completed</span>
                   <div className="flex-1 bg-gray-200 rounded-full h-2 ml-2">
                     <div 
@@ -267,7 +267,7 @@ const ModernTourSchedulingModal = ({
             </DialogHeader>
 
             {/* Scrollable content */}
-            <div className="px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
+            <div className="px-6 sm:px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
               {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
@@ -311,10 +311,10 @@ const ModernTourSchedulingModal = ({
                 </div>
               )}
 
-              <div className="space-y-8 pb-8">
+              <div className="space-y-6 sm:space-y-8 pb-6 sm:pb-8">
                 {/* Step 1: Property Address */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                     Step 1: Property Address
                     {hasAddress && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
@@ -323,19 +323,19 @@ const ModernTourSchedulingModal = ({
                     value={propertyAddress}
                     onChange={setPropertyAddress}
                     placeholder="Enter property address..."
-                    className="h-12 border-gray-300 focus:border-black focus:ring-0"
+                    className="h-10 sm:h-12 border-gray-300 focus:border-black focus:ring-0"
                   />
                 </div>
 
                 {/* Step 2: Choose Date */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                     Step 2: Choose Your Date
                     {hasDate && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
                   
-                  {/* Horizontal Date Picker */}
-                  <div className="grid grid-cols-7 gap-2 mb-6">
+                  {/* Enhanced Horizontal Date Picker with better mobile layout */}
+                  <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4 sm:mb-6">
                     {availableDays.map((day) => {
                       const isSelected = selectedDate === day.date;
                       const hasAvailableTimes = timeSlotsToShow.some(slot => 
@@ -348,7 +348,7 @@ const ModernTourSchedulingModal = ({
                           type="button"
                           onClick={() => hasAvailableTimes && handleDateSelection(day.date)}
                           disabled={!hasAvailableTimes}
-                          className={`p-3 rounded-xl border-2 transition-all text-center ${
+                          className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all text-center ${
                             isSelected
                               ? 'bg-black text-white border-black'
                               : hasAvailableTimes
@@ -357,7 +357,7 @@ const ModernTourSchedulingModal = ({
                           }`}
                         >
                           <div className="text-xs font-medium">{day.dayName}</div>
-                          <div className="text-lg font-bold">{day.dayNumber}</div>
+                          <div className="text-base sm:text-lg font-bold">{day.dayNumber}</div>
                           <div className="text-xs">{day.monthName}</div>
                           {day.isToday && (
                             <div className="text-xs mt-1 text-blue-600 font-medium">Today</div>
@@ -374,7 +374,7 @@ const ModernTourSchedulingModal = ({
                 {/* Step 3: Choose Time (only show if date is selected) */}
                 {selectedDate && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                       Step 3: Choose Your Time
                       {hasTime && <span className="text-green-600 ml-2">✓</span>}
                     </h3>
@@ -387,7 +387,7 @@ const ModernTourSchedulingModal = ({
 
                     {availableTimesForSelectedDate.length > 0 ? (
                       <>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
                           {availableTimesForSelectedDate.map((timeSlot) => {
                             const isSelected = selectedTime === timeSlot.value;
                             
@@ -396,7 +396,7 @@ const ModernTourSchedulingModal = ({
                                 key={timeSlot.value}
                                 type="button"
                                 onClick={() => handleTimeSelection(timeSlot.value)}
-                                className={`p-4 rounded-xl border-2 transition-all text-center font-medium ${
+                                className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all text-center font-medium ${
                                   isSelected
                                     ? 'bg-black text-white border-black'
                                     : 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
@@ -409,7 +409,7 @@ const ModernTourSchedulingModal = ({
                         </div>
 
                         {/* Show more/less times button */}
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center mb-4 sm:mb-6">
                           <Button
                             variant="outline"
                             onClick={() => setShowAllTimes(!showAllTimes)}
@@ -430,9 +430,9 @@ const ModernTourSchedulingModal = ({
                         </div>
                       </>
                     ) : (
-                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mb-6">
-                        <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium mb-2">No Available Times</p>
+                      <div className="text-center py-6 sm:py-8 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mb-4 sm:mb-6">
+                        <Clock className="h-6 sm:h-8 w-6 sm:w-8 mx-auto mb-3 sm:mb-4 opacity-50" />
+                        <p className="text-base sm:text-lg font-medium mb-2">No Available Times</p>
                         <p className="text-sm">
                           {!isPaidUser 
                             ? "Please select a future date for available time slots."
@@ -446,23 +446,23 @@ const ModernTourSchedulingModal = ({
 
                 {/* Additional Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                     Additional Notes (Optional)
                   </label>
                   <Textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any special requests or questions..."
-                    className="min-h-[80px] border-gray-300 focus:border-black focus:ring-0 resize-none"
+                    className="min-h-[60px] sm:min-h-[80px] border-gray-300 focus:border-black focus:ring-0 resize-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-8 py-6 border-t border-gray-100 bg-white flex-shrink-0">
+            <div className="px-6 sm:px-8 py-4 sm:py-6 border-t border-gray-100 bg-white flex-shrink-0">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
+                <div className="text-xs sm:text-sm text-gray-500">
                   {canSubmit ? 
                     `Ready to schedule your tour` : 
                     `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
@@ -470,7 +470,7 @@ const ModernTourSchedulingModal = ({
                 <Button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isSubmitting}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium"
+                  className="bg-black hover:bg-gray-800 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-medium text-sm sm:text-base"
                 >
                   {isSubmitting ? "Scheduling..." : "Schedule Tour"}
                   <ChevronRight className="h-4 w-4 ml-2" />

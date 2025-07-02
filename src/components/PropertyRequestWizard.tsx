@@ -11,7 +11,7 @@ import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitM
 interface PropertyRequestWizardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: () => Promise<void>;
 }
 
 const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWizardProps) => {
@@ -32,12 +32,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
     handleCancelPendingShowing,
     pendingShowingAddress,
     resetForm
-  } = usePropertyRequest(() => {
-    onClose();
-    if (onSuccess) {
-      onSuccess();
-    }
-  });
+  } = usePropertyRequest(onClose, onSuccess);
 
   const handleClose = () => {
     resetForm();

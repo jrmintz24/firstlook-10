@@ -1,4 +1,3 @@
-
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
@@ -99,9 +98,11 @@ const RedesignedBuyerDashboard = () => {
     }
   });
 
-  // Handle successful form submission - refresh data
-  const handleFormSuccess = () => {
-    fetchShowingRequests();
+  // Handle successful form submission - refresh data and return promise
+  const handleFormSuccess = async () => {
+    console.log('RedesignedBuyerDashboard: Refreshing data after form submission');
+    await fetchShowingRequests();
+    console.log('RedesignedBuyerDashboard: Data refresh completed');
   };
 
   // Show loading while auth is being determined

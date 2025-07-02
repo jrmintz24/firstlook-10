@@ -25,7 +25,7 @@ const initialFormData: PropertyRequestFormData = {
   selectedProperties: []
 };
 
-export const usePropertyRequest = (onClose?: () => void) => {
+export const usePropertyRequest = (onClose?: () => void, onDataRefresh?: () => Promise<void>) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
@@ -37,7 +37,7 @@ export const usePropertyRequest = (onClose?: () => void) => {
 
   // Get management hooks
   const { handleAddProperty, handleRemoveProperty } = usePropertyManagement(formData, setFormData);
-  const { isSubmitting, submitShowingRequests } = useShowingSubmission(formData);
+  const { isSubmitting, submitShowingRequests } = useShowingSubmission(formData, onDataRefresh);
   const { eligibility, checkEligibility } = useShowingEligibility();
   const { 
     pendingShowingAddress, 
@@ -116,13 +116,17 @@ export const usePropertyRequest = (onClose?: () => void) => {
       }
     }
 
+    // Submit the requests and wait for completion
     await submitShowingRequests();
     
-    // Clear form and close modal
+    // Clear form and close modal only after successful submission and data refresh
     setFormData(initialFormData);
     setCurrentStep(1);
     
-    // Call onClose to trigger dashboard refresh
+    // Navigate to dashboard
+    navigate('/buyer-dashboard');
+    
+    // Call onClose to close the modal
     if (onClose) {
       onClose();
     }

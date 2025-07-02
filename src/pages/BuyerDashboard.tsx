@@ -1,4 +1,3 @@
-
 import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
@@ -99,9 +98,11 @@ const BuyerDashboard = () => {
     status: booking.status as 'scheduled' | 'completed' | 'cancelled'
   }));
 
-  // Handle successful form submission - refresh data
-  const handleFormSuccess = () => {
-    fetchShowingRequests();
+  // Handle successful form submission - refresh data and return promise
+  const handleFormSuccess = async () => {
+    console.log('BuyerDashboard: Refreshing data after form submission');
+    await fetchShowingRequests();
+    console.log('BuyerDashboard: Data refresh completed');
   };
 
   // Add consultation handlers

@@ -2,17 +2,15 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { getPropertiesToSubmit, getPreferredOptions, getEstimatedConfirmationDate } from "@/utils/propertyRequestUtils";
 
-export const useShowingSubmission = (formData: PropertyRequestFormData, onSuccess?: () => void) => {
+export const useShowingSubmission = (formData: PropertyRequestFormData, onSuccess?: () => Promise<void>) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { checkEligibility, markFreeShowingUsed } = useShowingEligibility();
 
   const submitShowingRequests = async () => {
@@ -42,7 +40,6 @@ export const useShowingSubmission = (formData: PropertyRequestFormData, onSucces
             description: "Multiple properties in one tour session require a subscription. Please subscribe to continue!",
             variant: "destructive"
           });
-          navigate('/subscriptions');
           return;
         }
       }
@@ -92,18 +89,16 @@ export const useShowingSubmission = (formData: PropertyRequestFormData, onSucces
       // Clear any pending tour data
       localStorage.removeItem('pendingTourRequest');
       
-      // Call the success callback to refresh dashboard data
-      if (onSuccess) {
-        onSuccess();
-      }
-      
+      // Show success message
       toast({
         title: "Request Submitted Successfully! 🎉",
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Redirect to the buyer dashboard
-      navigate('/buyer-dashboard');
+      // Call the success callback and wait for it to complete before proceeding
+      if (onSuccess) {
+        await onSuccess();
+      }
       
     } catch (error) {
       console.error('Error submitting showing requests:', error);

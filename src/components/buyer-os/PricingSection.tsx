@@ -186,7 +186,7 @@ const PricingSection = () => {
                     <p className="text-gray-600 text-sm">{service.description}</p>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-3">
                       {service.features.map((feature, featureIndex) => (
                         <div key={featureIndex} className="flex items-start gap-3">
                           <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -194,16 +194,6 @@ const PricingSection = () => {
                         </div>
                       ))}
                     </div>
-                    <Button 
-                      className={`w-full py-3 text-base ${
-                        service.addon 
-                          ? 'bg-orange-600 hover:bg-orange-700' 
-                          : 'bg-green-600 hover:bg-green-700'
-                      } text-white`}
-                    >
-                      <Shield className="mr-2 h-4 w-4" />
-                      {service.addon ? 'Add to Offer Service' : 'Get Offer Help'}
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -217,10 +207,9 @@ const PricingSection = () => {
                 <p className="text-gray-700 mb-4">
                   Get both agent-coached offer strategy AND complete transaction coordination for maximum support through your home purchase.
                 </p>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                  <Clock className="mr-2 h-4 w-4" />
-                  Book Complete Service
-                </Button>
+                <p className="text-sm text-gray-600">
+                  Available when creating your offer in the dashboard
+                </p>
               </Card>
             </div>
 

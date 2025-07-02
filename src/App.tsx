@@ -1,178 +1,99 @@
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Navigation from "./components/Navigation";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
+import Blog from "./pages/Blog";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import AgentDashboard from "./pages/AgentDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import HomeBuyingGuide from "./pages/HomeBuyingGuide";
+import ScrollToTop from "./components/ScrollToTop";
+import { QueryClient } from "react-query";
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/toaster"
+import Subscriptions from "./pages/Subscriptions";
+import BuyerDashboard from "./pages/BuyerDashboard";
+import OptimizedBuyerDashboard from "./pages/OptimizedBuyerDashboard";
+import EnhancedBuyerDashboard from "./pages/EnhancedBuyerDashboard";
 
-import { Toaster } from './components/ui/toaster'
-import { Toaster as Sonner } from './components/ui/sonner'
-import { TooltipProvider } from './components/ui/tooltip'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import Navigation from './components/Navigation'
-import { AuthCallback } from './pages/AuthCallback'
-import Index from './pages/Index'
-import Auth from './pages/Auth'
-import Dashboard from './pages/Dashboard'
-import BuyerAuth from './pages/BuyerAuth'
-import AgentAuth from './pages/AgentAuth'
-import AdminAuth from './pages/AdminAuth'
-import BuyerDashboard from './pages/BuyerDashboard'
-import AgentDashboard from './pages/AgentDashboard'
-import AdminDashboard from './pages/AdminDashboard'
-import Subscriptions from './pages/Subscriptions'
-import FAQ from './pages/FAQ'
-import Blog from './pages/Blog'
-import BlogPost from './pages/BlogPost'
-import HomebuyingGuide from './pages/HomebuyingGuide'
-import AgentLanding from './pages/AgentLanding'
-import SingleHomeTour from './pages/SingleHomeTour'
-import TourSession from './pages/TourSession'
-import NotFound from './pages/NotFound'
-import ScrollToTop from './components/ScrollToTop'
-import { useAnalytics } from './hooks/useAnalytics'
-import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
-import SignAgreement from './pages/SignAgreement'
-import OfferQuestionnaire from './pages/OfferQuestionnaire'
-import MyOffers from './pages/MyOffers'
-import Profile from './pages/Profile'
-import Onboarding from './pages/Onboarding'
-
-const queryClient = new QueryClient()
-
-// Analytics wrapper component
-const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
-  useAnalytics();
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  if (!user) {
+    return <Navigate to="/" />;
+  }
   return <>{children}</>;
 };
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AnalyticsWrapper>
-              <ScrollToTop />
-              <Navigation />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-
-                {/* Authentication Pages */}
-                <Route path="/buyer-auth" element={<BuyerAuth />} />
-                <Route path="/agent-auth" element={<AgentAuth />} />
-                <Route path="/admin-auth" element={<AdminAuth />} />
-
-                {/* Onboarding - Protected Route */}
-                <Route
-                  path="/onboarding"
-                  element={
-                    <ProtectedRoute>
-                      <Onboarding />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Dashboards with specific user type requirements */}
-                <Route
-                  path="/buyer-dashboard"
-                  element={
-                    <ProtectedRoute requiredUserType="buyer">
-                      <BuyerDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* New Redesigned Buyer Dashboard */}
-                <Route
-                  path="/buyer-dashboard-v2"
-                  element={
-                    <ProtectedRoute requiredUserType="buyer">
-                      <RedesignedBuyerDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                
-                <Route
-                  path="/agent-dashboard"
-                  element={
-                    <ProtectedRoute requiredUserType="agent">
-                      <AgentDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin-dashboard"
-                  element={
-                    <ProtectedRoute requiredUserType="admin">
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* My Offers - Protected Route */}
-                <Route
-                  path="/my-offers"
-                  element={
-                    <ProtectedRoute requiredUserType="buyer">
-                      <MyOffers />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Profile - Protected Route */}
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute requiredUserType="buyer">
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Offer Questionnaire - Protected Route */}
-                <Route
-                  path="/offer-questionnaire"
-                  element={
-                    <ProtectedRoute requiredUserType="buyer">
-                      <OfferQuestionnaire />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Informational Pages */}
-                <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/subscriptions" element={<Subscriptions />} />
-                <Route path="/agents" element={<AgentLanding />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/single-home-tour" element={<SingleHomeTour />} />
-                <Route path="/tour-session" element={<TourSession />} />
-
-                {/* Legacy Dashboard Route */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Agreement signing page */}
-                <Route path="/sign-agreement" element={<SignAgreement />} />
-
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AnalyticsWrapper>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  )
+    <QueryClient>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <AuthProvider>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/homebuying-guide" element={<HomeBuyingGuide />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route
+                path="/agent-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AgentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/buyer-dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <BuyerDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/optimized-buyer-dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <OptimizedBuyerDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/enhanced-buyer-dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <EnhancedBuyerDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClient>
+  );
 }
 
-export default App
+export default App;

@@ -2,25 +2,26 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useOptimizedBuyerData } from "./useOptimizedBuyerData";
+import { useBuyerDashboardData } from "./useBuyerDashboardData";
+import { useMessages } from "./useMessages";
 
-interface UseOptimizedBuyerLogicProps {
-  onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
-}
-
-export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicProps = {}) => {
+export const useOptimizedBuyerLogic = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("requested");
+  
+  // Enhanced navigation state for two-level structure
+  const [activePrimaryTab, setActivePrimaryTab] = useState("overview");
+  const [activeSubTab, setActiveSubTab] = useState("");
+  
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
 
   const { toast } = useToast();
-  
+
+  // Use optimized data fetching hook
   const {
     profile,
-    showingCounts,
     agreements,
     loading,
     detailLoading,
@@ -30,40 +31,23 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     pendingRequests,
     activeShowings,
     completedShowings,
-    refreshShowingRequests,
-    optimisticUpdateShowing
-  } = useOptimizedBuyerData();
+    showingCounts,
+    fetchShowingRequests: refreshShowingRequests
+  } = useBuyerDashboardData();
 
-  // Separate messages hook with error isolation - don't let it break the main dashboard
-  const [unreadCount, setUnreadCount] = useState(0);
-  
-  // Safe message count fetch that won't break the dashboard
-  const fetchUnreadCount = useCallback(async () => {
-    if (!currentUser?.id) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('id')
-        .eq('receiver_id', currentUser.id)
-        .is('read_at', null);
-      
-      if (!error && data) {
-        setUnreadCount(data.length);
-      }
-    } catch (error) {
-      console.warn('Failed to fetch unread count, continuing without it:', error);
-      // Don't break the dashboard if messages fail
-      setUnreadCount(0);
-    }
-  }, [currentUser?.id]);
+  // Get messages data
+  const { unreadCount } = useMessages(currentUser?.id || null);
 
-  // Call this safely without breaking main functionality
-  useMemo(() => {
-    fetchUnreadCount();
-  }, [fetchUnreadCount]);
+  // Memoized computed values
+  const eligibility = useMemo(() => ({
+    eligible: true,
+    reason: 'subscribed'
+  }), []);
 
-  // Memoized handlers to prevent re-renders
+  const isSubscribed = useMemo(() => true, []);
+  const subscriptionTier = useMemo(() => 'premium', []);
+
+  // Optimized event handlers with useCallback
   const handleRequestShowing = useCallback(() => {
     setShowPropertyForm(true);
   }, []);
@@ -75,8 +59,8 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
     toast({
-      title: "Subscription Updated",
-      description: "Welcome to premium! You can now request unlimited showings.",
+      title: "Success",
+      description: "Subscription activated successfully!",
     });
   }, [toast]);
 
@@ -89,37 +73,19 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     if (!selectedShowing || !currentUser) return;
 
     try {
-      // Optimistically update the UI first
-      optimisticUpdateShowing(selectedShowing.id, { status: 'confirmed' });
-
-      const { data: existingAgreement } = await supabase
+      const { error } = await supabase
         .from('tour_agreements')
-        .select('*')
-        .eq('showing_request_id', selectedShowing.id)
-        .eq('buyer_id', currentUser.id)
-        .maybeSingle();
+        .upsert({
+          showing_request_id: selectedShowing.id,
+          buyer_id: currentUser.id,
+          agreement_type: 'single_tour',
+          signed: true,
+          signed_at: new Date().toISOString(),
+          email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        });
 
-      if (existingAgreement) {
-        await supabase
-          .from('tour_agreements')
-          .update({
-            signed: true,
-            signed_at: new Date().toISOString()
-          })
-          .eq('id', existingAgreement.id);
-      } else {
-        await supabase
-          .from('tour_agreements')
-          .insert({
-            showing_request_id: selectedShowing.id,
-            buyer_id: currentUser.id,
-            agreement_type: 'single_tour',
-            signed: true,
-            signed_at: new Date().toISOString(),
-            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          });
-      }
+      if (error) throw error;
 
       await supabase
         .from('showing_requests')
@@ -137,43 +103,41 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
       setShowAgreementModal(false);
       setSelectedShowing(null);
       refreshShowingRequests();
-    } catch (error) {
-      console.error('Error signing agreement:', error);
-      // Revert optimistic update on error
-      refreshShowingRequests();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to sign agreement. Please try again.",
+        description: error.message || "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }
-  }, [selectedShowing, currentUser, toast, refreshShowingRequests, optimisticUpdateShowing]);
+  }, [selectedShowing, currentUser, toast, refreshShowingRequests]);
 
-  const handleSignAgreementFromCard = useCallback((showingId: string, displayName: string) => {
-    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
+  const handleSignAgreementFromCard = useCallback((showingId: string, buyerName: string) => {
+    const showing = [...pendingRequests, ...activeShowings, ...completedShowings].find(s => s.id === showingId);
     if (showing) {
       setSelectedShowing(showing);
       setShowAgreementModal(true);
     }
-  }, [pendingRequests, activeShowings]);
+  }, [pendingRequests, activeShowings, completedShowings]);
 
   const handleSendMessage = useCallback((showingId: string) => {
-    if (onOpenChat) {
-      onOpenChat('property', showingId);
-    } else {
-      console.log('Messaging not available, showing ID:', showingId);
-    }
-  }, [onOpenChat]);
+    console.log('Send message for showing:', showingId);
+    // Navigate to messages
+    setActivePrimaryTab("account");
+    setActiveSubTab("messages");
+  }, []);
 
-  const handleStatClick = useCallback((tab: string) => {
-    setActiveTab(tab);
+  const handleStatClick = useCallback((targetTab: string) => {
+    setActivePrimaryTab(targetTab);
+    if (targetTab === "tours") {
+      setActiveSubTab("requested");
+    } else if (targetTab === "services") {
+      setActiveSubTab("favorites");
+    }
   }, []);
 
   const handleCancelShowing = useCallback(async (id: string) => {
     try {
-      // Optimistic update
-      optimisticUpdateShowing(id, { status: 'cancelled' });
-
       await supabase
         .from('showing_requests')
         .update({ 
@@ -189,24 +153,18 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
       
       refreshShowingRequests();
     } catch (error) {
-      console.error('Error cancelling showing:', error);
-      // Revert optimistic update
-      refreshShowingRequests();
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "Failed to cancel showing. Please try again.",
         variant: "destructive"
       });
     }
-  }, [toast, refreshShowingRequests, optimisticUpdateShowing]);
+  }, [toast, refreshShowingRequests]);
 
-  const handleRescheduleShowing = useCallback((id: string) => {
-    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === id);
-    if (showing) {
-      setSelectedShowing(showing);
-      setShowRescheduleModal(true);
-    }
-  }, [pendingRequests, activeShowings]);
+  const handleRescheduleShowing = useCallback((showing: any) => {
+    setSelectedShowing(showing);
+    setShowRescheduleModal(true);
+  }, []);
 
   const handleRescheduleSuccess = useCallback(() => {
     setShowRescheduleModal(false);
@@ -214,17 +172,8 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     refreshShowingRequests();
   }, [refreshShowingRequests]);
 
-  // Memoized computed values
-  const eligibility = useMemo(() => ({
-    canRequestShowing: true,
-    reason: 'eligible'
-  }), []);
-
-  const isSubscribed = useMemo(() => false, []);
-  const subscriptionTier = useMemo(() => 'free', []);
-
   return {
-    // State
+    // Modal states
     showPropertyForm,
     setShowPropertyForm,
     showAgreementModal,
@@ -233,8 +182,12 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     setShowSubscribeModal,
     showRescheduleModal,
     setShowRescheduleModal,
-    activeTab,
-    setActiveTab,
+    
+    // Enhanced navigation states
+    activePrimaryTab,
+    setActivePrimaryTab,
+    activeSubTab,
+    setActiveSubTab,
     
     // Data
     profile,

@@ -23,12 +23,14 @@ const PropertySelectionStep = ({
   onNext
 }: PropertySelectionStepProps) => {
   const { user } = useAuth();
-  const hasProperties = formData.selectedProperties.length > 0;
+  
+  // Use the new properties array structure
+  const hasProperties = formData.properties.length > 0 && formData.properties[0].address.trim() !== '';
   const hasSingleProperty = formData.propertyAddress;
   const canProceed = hasProperties || hasSingleProperty;
 
   // For non-authenticated users, limit to single property selection
-  const canAddMoreProperties = user && formData.selectedProperties.length < 3;
+  const canAddMoreProperties = user && formData.properties.length < 3 && formData.properties.filter(p => p.address.trim()).length < 3;
 
   return (
     <Card className="border-0 shadow-lg">
@@ -47,23 +49,26 @@ const PropertySelectionStep = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
-        {formData.selectedProperties.length > 0 && (
+        {/* Show added properties from the properties array */}
+        {hasProperties && (
           <div className="space-y-3">
             <Label className="font-semibold text-gray-800 text-sm uppercase tracking-wide">Selected Properties:</Label>
             <div className="space-y-2">
-              {formData.selectedProperties.map((property, index) => (
+              {formData.properties
+                .filter(property => property.address.trim())
+                .map((property, index) => (
                 <div key={index} className="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 group hover:shadow-md transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                       <span className="text-green-700 font-semibold text-sm">{index + 1}</span>
                     </div>
-                    <span className="text-sm font-medium text-green-800">{property}</span>
+                    <span className="text-sm font-medium text-green-800">{property.address}</span>
                   </div>
                   {user && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onRemoveProperty(property)}
+                      onClick={() => onRemoveProperty(property.address)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     >
                       Remove
@@ -91,7 +96,7 @@ const PropertySelectionStep = ({
               onClick={onAddProperty} 
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              Add Property ({formData.selectedProperties.length}/3)
+              Add Property ({formData.properties.filter(p => p.address.trim()).length}/3)
             </Button>
           )}
           {canProceed && (
@@ -104,14 +109,14 @@ const PropertySelectionStep = ({
           )}
         </div>
 
-        {user && formData.selectedProperties.length > 0 && (
+        {user && hasProperties && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
             <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
               💡 Tour Session Ready
             </h4>
             <p className="text-sm text-blue-700">
               You can add more properties or continue with your current selection. 
-              {formData.selectedProperties.length < 3 && " Adding more homes to one session saves money!"}
+              {formData.properties.filter(p => p.address.trim()).length < 3 && " Adding more homes to one session saves money!"}
             </p>
           </div>
         )}

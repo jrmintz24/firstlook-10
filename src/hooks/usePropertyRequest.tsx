@@ -10,7 +10,7 @@ import { usePendingShowingManagement } from "@/hooks/usePendingShowingManagement
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
-  // New array format
+  // New array format - ensure we start with one empty property
   properties: [{ address: "", notes: "" }],
   preferredOptions: [{ date: "", time: "" }],
   notes: "",
@@ -69,6 +69,8 @@ export const usePropertyRequest = (
         if (tourData.propertyAddress) {
           setFormData(prev => ({
             ...prev,
+            // Update both new and legacy formats
+            properties: [{ address: tourData.propertyAddress || '', notes: '' }],
             propertyAddress: tourData.propertyAddress || '',
             preferredDate1: tourData.preferredDate1 || '',
             preferredTime1: tourData.preferredTime1 || '',
@@ -76,7 +78,8 @@ export const usePropertyRequest = (
             preferredTime2: tourData.preferredTime2 || '',
             preferredDate3: tourData.preferredDate3 || '',
             preferredTime3: tourData.preferredTime3 || '',
-            notes: tourData.notes || ''
+            notes: tourData.notes || '',
+            selectedProperties: tourData.propertyAddress ? [tourData.propertyAddress] : []
           }));
         }
       } catch (error) {
@@ -87,10 +90,25 @@ export const usePropertyRequest = (
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+
+      // Sync propertyAddress changes with the properties array
+      if (field === 'propertyAddress') {
+        // If we're updating propertyAddress and the first property is empty, update it
+        if (updated.properties[0] && !updated.properties[0].address.trim()) {
+          updated.properties = [
+            { address: value, notes: updated.properties[0].notes },
+            ...updated.properties.slice(1)
+          ];
+        }
+      }
+
+      return updated;
+    });
   };
 
   const handleNext = () => {

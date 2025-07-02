@@ -36,7 +36,9 @@ export const usePropertyManagement = (
       return;
     }
 
-    if (formData.selectedProperties.includes(propertyAddress)) {
+    // Check if property already exists in the properties array
+    const existingProperty = formData.properties.find(prop => prop.address === propertyAddress);
+    if (existingProperty) {
       toast({
         title: "Property Already Added",
         description: "This property is already in your tour session",
@@ -46,7 +48,8 @@ export const usePropertyManagement = (
     }
 
     // Check eligibility before allowing multiple properties for non-subscribers
-    if (user && formData.selectedProperties.length >= 1) {
+    const currentPropertyCount = formData.properties.filter(p => p.address.trim()).length;
+    if (user && currentPropertyCount >= 1) {
       const currentEligibility = await checkEligibility();
       
       if (!currentEligibility?.eligible || currentEligibility.reason !== 'subscribed') {
@@ -60,11 +63,26 @@ export const usePropertyManagement = (
       }
     }
 
-    setFormData((prev: PropertyRequestFormData) => ({
-      ...prev,
-      selectedProperties: [...prev.selectedProperties, propertyAddress],
-      propertyAddress: ''
-    }));
+    // Add property to the properties array
+    setFormData((prev: PropertyRequestFormData) => {
+      const newProperties = [...prev.properties];
+      
+      // Find an empty slot or add a new one
+      const emptyIndex = newProperties.findIndex(prop => !prop.address.trim());
+      if (emptyIndex >= 0) {
+        newProperties[emptyIndex] = { address: propertyAddress, notes: "" };
+      } else {
+        newProperties.push({ address: propertyAddress, notes: "" });
+      }
+
+      return {
+        ...prev,
+        properties: newProperties,
+        propertyAddress: '', // Clear the input field
+        // Also update legacy selectedProperties for backward compatibility
+        selectedProperties: newProperties.map(p => p.address).filter(Boolean)
+      };
+    });
     
     toast({
       title: "Property Added!",
@@ -73,10 +91,21 @@ export const usePropertyManagement = (
   };
 
   const handleRemoveProperty = (propertyToRemove: string) => {
-    setFormData((prev: PropertyRequestFormData) => ({
-      ...prev,
-      selectedProperties: prev.selectedProperties.filter(prop => prop !== propertyToRemove)
-    }));
+    setFormData((prev: PropertyRequestFormData) => {
+      const newProperties = prev.properties.filter(prop => prop.address !== propertyToRemove);
+      
+      // Ensure we always have at least one empty property entry
+      if (newProperties.length === 0 || newProperties.every(p => p.address.trim())) {
+        newProperties.push({ address: "", notes: "" });
+      }
+
+      return {
+        ...prev,
+        properties: newProperties,
+        // Also update legacy selectedProperties for backward compatibility
+        selectedProperties: newProperties.map(p => p.address).filter(Boolean)
+      };
+    });
   };
 
   return {

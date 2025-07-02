@@ -13,17 +13,25 @@ export const convertTo24Hour = (time: string): string => {
 };
 
 export const getPropertiesToSubmit = (formData: any): string[] => {
-  // Handle both new and old format
+  // Handle new format first - properties array
   if (formData.properties && formData.properties.length > 0) {
-    return formData.properties.map((prop: any) => prop.address).filter(Boolean);
+    const addressesFromArray = formData.properties
+      .map((prop: any) => prop.address)
+      .filter((address: string) => address && address.trim());
+    
+    if (addressesFromArray.length > 0) {
+      return addressesFromArray;
+    }
   }
   
+  // Handle legacy selectedProperties array
   if (formData.selectedProperties && formData.selectedProperties.length > 0) {
-    return formData.selectedProperties;
+    return formData.selectedProperties.filter(Boolean);
   }
   
-  if (formData.propertyAddress) {
-    return [formData.propertyAddress];
+  // Handle single property address field
+  if (formData.propertyAddress && formData.propertyAddress.trim()) {
+    return [formData.propertyAddress.trim()];
   }
   
   return [];

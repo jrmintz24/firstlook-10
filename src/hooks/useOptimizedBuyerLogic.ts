@@ -3,6 +3,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useOptimizedBuyerData } from "./useOptimizedBuyerData";
+import { useSafeMessages } from "./useSafeMessages";
 
 interface UseOptimizedBuyerLogicProps {
   onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
@@ -34,34 +35,8 @@ export const useOptimizedBuyerLogic = ({ onOpenChat }: UseOptimizedBuyerLogicPro
     optimisticUpdateShowing
   } = useOptimizedBuyerData();
 
-  // Separate messages hook with error isolation - don't let it break the main dashboard
-  const [unreadCount, setUnreadCount] = useState(0);
-  
-  // Safe message count fetch that won't break the dashboard
-  const fetchUnreadCount = useCallback(async () => {
-    if (!currentUser?.id) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('id')
-        .eq('receiver_id', currentUser.id)
-        .is('read_at', null);
-      
-      if (!error && data) {
-        setUnreadCount(data.length);
-      }
-    } catch (error) {
-      console.warn('Failed to fetch unread count, continuing without it:', error);
-      // Don't break the dashboard if messages fail
-      setUnreadCount(0);
-    }
-  }, [currentUser?.id]);
-
-  // Call this safely without breaking main functionality
-  useMemo(() => {
-    fetchUnreadCount();
-  }, [fetchUnreadCount]);
+  // Use safe messages hook that won't break the dashboard
+  const { unreadCount } = useSafeMessages(currentUser?.id || null);
 
   // Memoized handlers to prevent re-renders
   const handleRequestShowing = useCallback(() => {

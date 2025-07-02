@@ -1,439 +1,161 @@
-import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
-import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
-import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
-import { useState, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import PropertyRequestForm from "@/components/PropertyRequestForm";
-import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
-import RescheduleModal from "@/components/dashboard/RescheduleModal";
-import { SubscribeModal } from "@/components/subscription/SubscribeModal";
-import AgentProfileModal from "@/components/post-showing/AgentProfileModal";
-import UnifiedChatWidget from "@/components/messaging/UnifiedChatWidget";
-
-// Redesigned Components
-import JourneyProgressBar from "@/components/dashboard/redesigned/JourneyProgressBar";
-import NextTourCard from "@/components/dashboard/redesigned/NextTourCard";
-import QuickActionsRow from "@/components/dashboard/redesigned/QuickActionsRow";
-import StatsAndMessages from "@/components/dashboard/redesigned/StatsAndMessages";
-import WhatsNextCard from "@/components/dashboard/redesigned/WhatsNextCard";
-import BadgesSection from "@/components/dashboard/redesigned/BadgesSection";
-import HelpWidget from "@/components/dashboard/redesigned/HelpWidget";
-import EnhancedWhatsNextCard from "@/components/dashboard/redesigned/EnhancedWhatsNextCard";
-
-// Tour sections
-import ShowingListTab from "@/components/dashboard/ShowingListTab";
-import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
+import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
+import RedesignedDashboardHeader from "@/components/dashboard/RedesignedDashboardHeader";
+import StatsAndMessages from "@/components/dashboard/StatsAndMessages";
+import RecentTours from "@/components/dashboard/RecentTours";
+import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
+import NextTourCard from "@/components/dashboard/NextTourCard";
+import EnhancedWhatsNextCard from "@/components/dashboard/EnhancedWhatsNextCard";
+import OptimizedShowingCard from "@/components/dashboard/OptimizedShowingCard";
 
 const RedesignedBuyerDashboard = () => {
-  // Additional state for agent workflow and chat
-  const [showAgentModal, setShowAgentModal] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<any>(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
+  const {
+    profile,
+    showingCounts,
+    loading,
+    currentUser,
+    pendingRequests,
+    activeShowings,
+    completedShowings,
+    eligibility,
+    isSubscribed,
+    unreadCount,
+    handleRequestShowing,
+    handleUpgradeClick,
+    handleConfirmShowingWithModal,
+    handleSendMessage,
+    handleStatClick,
+    handleCancelShowing,
+    handleRescheduleShowing,
+    handleSignAgreementFromCard
+  } = useOptimizedBuyerLogic();
 
-  const handleOpenChat = useCallback((defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
-    setChatDefaultTab(defaultTab);
-    setChatOpen(true);
+  const [activeTab, setActiveTab] = useState("requested");
+
+  const handleOpenChat = useCallback((defaultTab: 'property' | 'support', showingId?: string) => {
+    // Placeholder for chat opening logic
+    console.log(`Opening chat with tab: ${defaultTab}, showing ID: ${showingId}`);
+    alert('Chat feature not fully implemented yet.');
   }, []);
 
-  const {
-    // State
-    showPropertyForm,
-    setShowPropertyForm,
-    showAgreementModal,
-    setShowAgreementModal,
-    showSubscribeModal,
-    setShowSubscribeModal,
-    showRescheduleModal,
-    setShowRescheduleModal,
-    activeTab,
-    setActiveTab,
-    
-    profile,
-    selectedShowing,
-    agreements,
-    loading,
-    authLoading,
-    currentUser,
-    pendingRequests = [],
-    activeShowings = [],
-    completedShowings = [],
-    unreadCount = 0,
-    
-    handleRequestShowing,
-    handleSubscriptionComplete,
-    handleConfirmShowingWithModal,
-    handleAgreementSignWithModal,
-    handleSignAgreementFromCard,
-    handleSendMessage,
-    handleRescheduleShowing,
-    handleRescheduleSuccess,
-    fetchShowingRequests
-  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
-
-  // Enhanced post-showing actions
-  const {
-    isSubmitting,
-    scheduleAnotherTour,
-    hireAgent
-  } = useEnhancedPostShowingActions();
-
-  // Handle any pending tour requests from signup with proper refresh callback
-  const handleTourProcessed = useCallback(async () => {
-    console.log('RedesignedBuyerDashboard: Tour processed, refreshing data');
-    await fetchShowingRequests();
-  }, [fetchShowingRequests]);
-
-  usePendingTourHandler({ onTourProcessed: handleTourProcessed });
-
-  console.log('RedesignedBuyerDashboard - Render state:', {
-    authLoading,
-    loading,
-    hasCurrentUser: !!currentUser,
-    userEmail: currentUser?.email,
-    userId: currentUser?.id,
-    profileExists: !!profile,
-    profileData: profile,
-    showingCounts: {
-      pending: pendingRequests.length,
-      active: activeShowings.length,
-      completed: completedShowings.length
-    }
-  });
-
-  // Handle successful form submission - refresh data and return promise
-  const handleFormSuccess = useCallback(async () => {
-    console.log('RedesignedBuyerDashboard: Refreshing data after form submission');
-    await fetchShowingRequests();
-    console.log('RedesignedBuyerDashboard: Data refresh completed');
-  }, [fetchShowingRequests]);
-
-  // Show loading while auth is being determined
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <div className="text-lg mb-4 text-gray-900">Checking authentication...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="text-lg mb-4 text-gray-900">Please sign in to view your dashboard</div>
-          <Link to="/">
-            <Button className="bg-black hover:bg-gray-800 text-white">Go to Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <div className="text-lg mb-4 text-gray-900">Loading your dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Safe fallbacks for first-time users
-  const displayName = profile?.first_name || 
-                     currentUser?.user_metadata?.first_name || 
-                     currentUser?.email?.split('@')[0] || 
-                     'User';
-  
-  const nextTour = (activeShowings && activeShowings.length > 0) ? activeShowings[0] : 
-                   (pendingRequests && pendingRequests.length > 0) ? pendingRequests[0] : null;
-  
-  const getCurrentStep = () => {
-    const activeCount = activeShowings?.length || 0;
-    const completedCount = completedShowings?.length || 0;
-    const pendingCount = pendingRequests?.length || 0;
-    
-    if (activeCount > 0) return "scheduled";
-    if (completedCount > 0) return "completed";
-    if (pendingCount > 0) return "scheduled";
-    return "account";
-  };
-
-  const stats = {
-    toursCompleted: (completedShowings || []).filter(s => s?.status === 'completed').length,
-    propertiesViewed: (completedShowings || []).length + (activeShowings || []).length,
-    offersMade: 0
-  };
-
-  const handleViewHistory = () => {
-    setActiveTab("history");
-  };
-
-  const handleAskQuestion = () => {
-    console.log("Ask question clicked");
-  };
-
-  const handleMakeOffer = () => {
-    console.log("Make offer clicked");
-  };
-
-  // Enhanced handlers for WhatsNext actions
-  const handleWorkWithAgent = (agentData: any) => {
-    setSelectedAgent(agentData);
-    setShowAgentModal(true);
-  };
-
-  const handleScheduleAnotherTour = async () => {
-    // Open the property request form instead of calling the API
-    handleRequestShowing();
-  };
-
-  const handleSeeOtherProperties = () => {
-    handleRequestShowing();
-  };
-
-  const handleConfirmHireAgent = async () => {
-    if (!selectedAgent || !currentUser?.id) return;
-    
-    try {
-      await hireAgent({
-        showingId: selectedAgent.showingId,
-        buyerId: currentUser.id,
-        agentId: selectedAgent.id,
-        propertyAddress: selectedAgent.propertyAddress,
-        agentName: selectedAgent.name
-      });
-      setShowAgentModal(false);
-      setSelectedAgent(null);
-    } catch (error) {
-      console.error('Error hiring agent:', error);
-    }
-  };
+  const handleMakeOffer = useCallback((propertyAddress: string) => {
+    // Placeholder for make offer logic
+    console.log(`Making offer for property: ${propertyAddress}`);
+    alert('Make offer feature not fully implemented yet.');
+  }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Main Dashboard Content - Single Column Layout */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-        {/* Journey Progress Bar with Better Spacing */}
-        <div className="mb-8 sm:mb-10">
-          <JourneyProgressBar 
-            currentStep={getCurrentStep()}
-            completedTours={stats.toursCompleted}
-            activeShowings={activeShowings?.length || 0}
-          />
-        </div>
-
-        {/* Your Journey Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-gray-700" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Your Journey</h2>
-          </div>
-          
-          <NextTourCard 
-            showing={nextTour}
-            onMessageAgent={handleSendMessage}
-          />
-        </div>
-
-        {/* Active Tours Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Requested Tours */}
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                Requested Tours ({pendingRequests.length})
-              </h3>
-            </div>
-            
-            <ShowingListTab
-              title=""
-              showings={pendingRequests.slice(0, 3)}
-              emptyIcon={Clock}
-              emptyTitle="No pending requests"
-              emptyDescription="Ready to find your dream home?"
-              emptyButtonText="Request Your Free Showing"
-              onRequestShowing={handleRequestShowing}
-              onCancelShowing={() => {}}
-              onRescheduleShowing={handleRescheduleShowing}  
-              onConfirmShowing={handleConfirmShowingWithModal}
-              onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
-              onComplete={() => {}}
-              currentUserId={currentUser?.id}
-              onSendMessage={handleSendMessage}
-              agreements={agreements}
-            />
-            
-            {pendingRequests.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("requested")}>
-                View All ({pendingRequests.length})
-              </Button>
-            )}
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                Confirmed Tours ({activeShowings.length})
-              </h3>
-            </div>
-            
-            <ShowingListTab
-              title=""
-              showings={activeShowings.slice(0, 3)}
-              emptyIcon={CheckCircle}
-              emptyTitle="No confirmed tours"
-              emptyDescription="Confirmed tours will appear here"
-              emptyButtonText="Request Your Free Showing"
-              onRequestShowing={handleRequestShowing}
-              onCancelShowing={() => {}}
-              onRescheduleShowing={handleRescheduleShowing}
-              onConfirmShowing={handleConfirmShowingWithModal}
-              onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
-              onComplete={() => {}}
-              currentUserId={currentUser?.id}
-              onSendMessage={handleSendMessage}
-              agreements={agreements}
-            />
-            
-            {activeShowings.length > 3 && (
-              <Button variant="ghost" className="w-full mt-4 text-gray-700 hover:bg-gray-50" onClick={() => setActiveTab("confirmed")}>
-                View All ({activeShowings.length})
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Home className="w-5 h-5 text-gray-700" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
-          </div>
-          
-          <QuickActionsRow 
-            onBookTour={handleRequestShowing}
-            onViewHistory={handleViewHistory}
-            onAskQuestion={handleAskQuestion}
-          />
-        </div>
-
-        {/* Enhanced What's Next */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <EnhancedWhatsNextCard 
-            buyerId={currentUser?.id}
-            completedShowings={completedShowings || []}
+    <ModernDashboardLayout
+      header={
+        <RedesignedDashboardHeader 
+          userName={profile?.first_name || "Buyer"}
+          unreadCount={unreadCount}
+          onOpenChat={handleOpenChat}
+        />
+      }
+      stats={
+        <StatsAndMessages 
+          stats={[
+            { label: "Requested", value: showingCounts.pending, onClick: () => handleStatClick("requested") },
+            { label: "Active Tours", value: showingCounts.active, onClick: () => handleStatClick("active") },
+            { label: "Completed", value: showingCounts.completed, onClick: () => handleStatClick("completed") }
+          ]}
+          unreadCount={unreadCount}
+          onOpenChat={() => handleOpenChat('support')}
+        />
+      }
+      mainContent={
+        loading ? (
+          <OptimizedDashboardSkeleton />
+        ) : (
+          <RecentTours
+            pendingRequests={pendingRequests}
+            activeShowings={activeShowings}
+            completedShowings={completedShowings}
+            onChatWithAgent={handleSendMessage}
+            onReschedule={handleRescheduleShowing}
             onMakeOffer={handleMakeOffer}
-            onWorkWithAgent={handleWorkWithAgent}
-            onScheduleAnotherTour={handleScheduleAnotherTour}
-            onSeeOtherProperties={handleSeeOtherProperties}
-            isLoading={isSubmitting}
+            onConfirmShowing={handleConfirmShowingWithModal}
+          />
+        )
+      }
+      sidebar={
+        <div className="space-y-6">
+          <NextTourCard 
+            showings={[...pendingRequests, ...activeShowings]}
+            onViewDetails={(id) => console.log('View details:', id)}
+          />
+          <EnhancedWhatsNextCard 
+            onRequestTour={handleRequestShowing}
+            onUpgrade={handleUpgradeClick}
+            eligibility={eligibility}
+            isSubscribed={isSubscribed}
           />
         </div>
-
-        {/* Stats Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-gray-700" />
+      }
+      sections={{
+        requested: {
+          id: "requested",
+          title: "Requested",
+          count: showingCounts.pending,
+          content: (
+            <div className="space-y-4">
+              {pendingRequests.map((request) => (
+                <OptimizedShowingCard
+                  key={request.id}
+                  showing={request}
+                  onConfirm={() => handleConfirmShowingWithModal(request)}
+                  onCancel={() => handleCancelShowing(request.id)}
+                  onMessage={() => handleSendMessage(request.id)}
+                  onSignAgreement={handleSignAgreementFromCard}
+                />
+              ))}
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900">Your Progress</h2>
-          </div>
-          
-          <StatsAndMessages 
-            stats={stats}
-            unreadMessages={unreadCount || 0}
-            onOpenInbox={() => handleOpenChat('property')}
-          />
-        </div>
-
-        {/* Badges Section */}
-        {(stats.toursCompleted > 0 || stats.propertiesViewed > 0) && (
-          <div className="mb-8 sm:mb-10">
-            <BadgesSection 
-              completedTours={stats.toursCompleted}
-              propertiesViewed={stats.propertiesViewed}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Help Widget */}
-      <HelpWidget />
-
-      {/* Unified Chat Widget */}
-      <UnifiedChatWidget
-        isOpen={chatOpen}
-        onToggle={() => setChatOpen(!chatOpen)}
-        defaultTab={chatDefaultTab}
-      />
-
-      {/* Modals */}
-      <ErrorBoundary>
-        <PropertyRequestForm
-          isOpen={showPropertyForm}
-          onClose={() => setShowPropertyForm(false)}
-          onSuccess={handleFormSuccess}
-        />
-      </ErrorBoundary>
-
-      {selectedShowing && (
-        <SignAgreementModal
-          isOpen={showAgreementModal}
-          onClose={() => setShowAgreementModal(false)}
-          onSign={handleAgreementSignWithModal}
-          showingDetails={{
-            propertyAddress: selectedShowing.property_address,
-            date: selectedShowing.preferred_date,
-            time: selectedShowing.preferred_time,
-            agentName: selectedShowing.assigned_agent_name
-          }}
-        />
-      )}
-
-      {selectedShowing && (
-        <RescheduleModal
-          showingRequest={selectedShowing}
-          isOpen={showRescheduleModal}
-          onClose={() => setShowRescheduleModal(false)}
-          onSuccess={handleRescheduleSuccess}
-        />
-      )}
-
-      <SubscribeModal
-        isOpen={showSubscribeModal}
-        onClose={() => setShowSubscribeModal(false)}
-        onSubscriptionComplete={handleSubscriptionComplete}
-      />
-
-      {/* Agent Profile Modal */}
-      <AgentProfileModal
-        isOpen={showAgentModal}
-        onClose={() => setShowAgentModal(false)}
-        onConfirmHire={handleConfirmHireAgent}
-        agentName={selectedAgent?.name}
-        agentEmail={selectedAgent?.email}
-        agentPhone={selectedAgent?.phone}
-        isSubmitting={isSubmitting}
-      />
-    </div>
+          )
+        },
+        active: {
+          id: "active",
+          title: "Active Tours",
+          count: showingCounts.active,
+          content: (
+            <div className="space-y-4">
+              {activeShowings.map((showing) => (
+                <OptimizedShowingCard
+                  key={showing.id}
+                  showing={showing}
+                  onReschedule={() => handleRescheduleShowing(showing.id)}
+                  onCancel={() => handleCancelShowing(showing.id)}
+                  onMessage={() => handleSendMessage(showing.id)}
+                  onSignAgreement={handleSignAgreementFromCard}
+                />
+              ))}
+            </div>
+          )
+        },
+        completed: {
+          id: "completed",
+          title: "Completed",
+          count: showingCounts.completed,
+          content: (
+            <div className="space-y-4">
+              {completedShowings.map((showing) => (
+                <OptimizedShowingCard
+                  key={showing.id}
+                  showing={showing}
+                  onMessage={() => handleSendMessage(showing.id)}
+                  onSignAgreement={handleSignAgreementFromCard}
+                />
+              ))}
+            </div>
+          )
+        }
+      }}
+      defaultSection="requested"
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      userId={currentUser?.id}
+    />
   );
 };
 

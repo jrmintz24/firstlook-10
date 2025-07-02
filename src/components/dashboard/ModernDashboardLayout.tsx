@@ -2,6 +2,7 @@
 import { ReactNode, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import SimplifiedConnectionStatus from "./SimplifiedConnectionStatus";
 
 interface DashboardSection {
   id: string;
@@ -21,6 +22,7 @@ interface ModernDashboardLayoutProps {
   showSectionTabs?: boolean;
   onTabChange?: (tabId: string) => void;
   activeTab?: string;
+  userId?: string | null;
 }
 
 const ModernDashboardLayout = ({ 
@@ -32,7 +34,8 @@ const ModernDashboardLayout = ({
   defaultSection,
   showSectionTabs = true,
   onTabChange,
-  activeTab
+  activeTab,
+  userId
 }: ModernDashboardLayoutProps) => {
   const sectionsArray = Object.values(sections);
   const [currentTab, setCurrentTab] = useState(defaultSection || sectionsArray[0]?.id);
@@ -51,6 +54,11 @@ const ModernDashboardLayout = ({
       {header}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Connection Status - Only shows when offline */}
+        <div className="mb-4 flex justify-end">
+          <SimplifiedConnectionStatus userId={userId} />
+        </div>
+
         {/* Stats Section */}
         <div className="mb-6">
           {stats}

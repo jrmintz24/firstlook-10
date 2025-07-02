@@ -237,7 +237,7 @@ const ModernTourSchedulingModal = ({
   return (
     <>
       <Dialog open={showSchedulingModal} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}
             <DialogHeader className="px-8 pt-8 pb-6 flex-shrink-0">
@@ -280,7 +280,7 @@ const ModernTourSchedulingModal = ({
             </DialogHeader>
 
             {/* Scrollable content */}
-            <div className="px-8 flex-1 overflow-y-auto">
+            <div className="px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
               {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
@@ -324,7 +324,7 @@ const ModernTourSchedulingModal = ({
                 </div>
               )}
 
-              <div className="space-y-8">
+              <div className="space-y-8 pb-8">
                 {/* Step 1: Property Address */}
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -400,7 +400,7 @@ const ModernTourSchedulingModal = ({
 
                     {availableTimesForSelectedDate.length > 0 ? (
                       <>
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                           {availableTimesForSelectedDate.map((timeSlot) => {
                             const isSelected = selectedTime === timeSlot.value;
                             
@@ -409,7 +409,7 @@ const ModernTourSchedulingModal = ({
                                 key={timeSlot.value}
                                 type="button"
                                 onClick={() => handleTimeSelection(timeSlot.value)}
-                                className={`p-3 rounded-xl border-2 transition-all text-center font-medium ${
+                                className={`p-4 rounded-xl border-2 transition-all text-center font-medium ${
                                   isSelected
                                     ? 'bg-black text-white border-black'
                                     : 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
@@ -422,7 +422,7 @@ const ModernTourSchedulingModal = ({
                         </div>
 
                         {/* Show more/less times button */}
-                        <div className="flex justify-center">
+                        <div className="flex justify-center mb-6">
                           <Button
                             variant="outline"
                             onClick={() => setShowAllTimes(!showAllTimes)}
@@ -443,7 +443,7 @@ const ModernTourSchedulingModal = ({
                         </div>
                       </>
                     ) : (
-                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mb-6">
                         <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium mb-2">No Available Times</p>
                         <p className="text-sm">
@@ -458,7 +458,7 @@ const ModernTourSchedulingModal = ({
                 )}
 
                 {/* Additional Notes */}
-                <div className="pb-8">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Additional Notes (Optional)
                   </label>

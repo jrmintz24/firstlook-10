@@ -128,6 +128,36 @@ export const useSimplifiedBuyerData = () => {
     fetchData();
   }, [fetchData]);
 
+  // Set up real-time subscription for showing_requests
+  useEffect(() => {
+    if (!user) return;
+
+    console.log('SimplifiedBuyerData: Setting up real-time subscription for user:', user.id);
+    
+    const channel = supabase
+      .channel('showing_requests_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'showing_requests',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('SimplifiedBuyerData: Real-time showing_requests change:', payload);
+          // Refresh data when showing_requests change
+          refreshData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('SimplifiedBuyerData: Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user, refreshData]);
+
   // Categorize showing requests
   const pendingRequests = showingRequests.filter(req => 
     ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)

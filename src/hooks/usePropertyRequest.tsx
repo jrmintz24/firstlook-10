@@ -25,7 +25,15 @@ const initialFormData: PropertyRequestFormData = {
   selectedProperties: []
 };
 
-export const usePropertyRequest = (onClose?: () => void, onDataRefresh?: () => Promise<void>) => {
+interface UsePropertyRequestOptions {
+  skipNavigation?: boolean;
+}
+
+export const usePropertyRequest = (
+  onClose?: () => void, 
+  onDataRefresh?: () => Promise<void>,
+  options: UsePropertyRequestOptions = {}
+) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
@@ -123,8 +131,10 @@ export const usePropertyRequest = (onClose?: () => void, onDataRefresh?: () => P
     setFormData(initialFormData);
     setCurrentStep(1);
     
-    // Navigate to dashboard
-    navigate('/buyer-dashboard');
+    // Only navigate if not skipping navigation
+    if (!options.skipNavigation) {
+      navigate('/buyer-dashboard');
+    }
     
     // Call onClose to close the modal
     if (onClose) {

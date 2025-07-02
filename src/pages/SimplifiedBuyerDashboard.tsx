@@ -53,14 +53,14 @@ const SimplifiedBuyerDashboard = () => {
     handleCancelShowing,
     handleRescheduleShowing,
     handleRescheduleSuccess,
-    handleFormSuccess
+    refreshData
   } = useSimplifiedBuyerDashboardLogic();
 
   // Handle any pending tour requests from signup with proper refresh callback
   const handleTourProcessed = useCallback(async () => {
     console.log('SimplifiedBuyerDashboard: Tour processed, refreshing data');
-    // The refreshData is handled internally by the simplified hook
-  }, []);
+    await refreshData();
+  }, [refreshData]);
 
   usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
@@ -118,7 +118,7 @@ const SimplifiedBuyerDashboard = () => {
     onRescheduleShowing: handleRescheduleShowing,
     onConfirmShowing: handleConfirmShowingWithModal,
     onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
-    fetchShowingRequests: () => {}, // Handled by simplified hook
+    fetchShowingRequests: refreshData, // Use refreshData from simplified hook
     onSendMessage: (showing) => handleSendMessage(showing.id),
     onJoinConsultation: () => {},
     onRescheduleConsultation: () => {}
@@ -163,6 +163,22 @@ const SimplifiedBuyerDashboard = () => {
       />
     </div>
   );
+
+  // Form success handler with immediate refresh and no navigation
+  const handleFormSuccess = useCallback(async () => {
+    console.log('SimplifiedBuyerDashboard: Form submitted successfully, refreshing...');
+    setShowPropertyForm(false);
+    await refreshData();
+    
+    // Show success toast
+    import("@/hooks/use-toast").then(({ useToast }) => {
+      const { toast } = useToast();
+      toast({
+        title: "Success!",
+        description: "Your showing request has been submitted and will appear below.",
+      });
+    });
+  }, [refreshData]);
 
   return (
     <>

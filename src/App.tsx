@@ -1,7 +1,7 @@
 
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Index from './pages/Index'
 import BuyerDashboard from './pages/BuyerDashboard'
@@ -15,6 +15,9 @@ import OfferQuestionnaire from './pages/OfferQuestionnaire'
 import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
 import SimplifiedBuyerDashboard from './pages/SimplifiedBuyerDashboard'
 import PropertyRequestDebug from './components/debug/PropertyRequestDebug'
+
+// Create a query client instance
+const queryClient = new QueryClient()
 
 // A wrapper for routes that checks for authentication
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -31,7 +34,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Router>
-      <QueryClient>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ScrollToTop />
           <div className="min-h-screen bg-background">
@@ -96,7 +99,7 @@ function App() {
           </div>
           <Toaster />
         </AuthProvider>
-      </QueryClient>
+      </QueryClientProvider>
     </Router>
   )
 }

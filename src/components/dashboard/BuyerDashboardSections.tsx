@@ -81,7 +81,7 @@ export const generateBuyerDashboardSections = ({
     {
       id: "dashboard",
       title: "Dashboard",
-      content: (
+      component: (
         <div className="space-y-6">
           <WelcomeDashboard displayName={displayName} userType="buyer" />
           <QuickActions 
@@ -94,7 +94,7 @@ export const generateBuyerDashboardSections = ({
     {
       id: "requested",
       title: "Requested",
-      content: (
+      component: (
         <ShowingListTab
           title="Requested Tours"
           showings={pendingRequests}
@@ -117,7 +117,7 @@ export const generateBuyerDashboardSections = ({
     {
       id: "confirmed",
       title: "Confirmed",
-      content: (
+      component: (
         <ShowingListTab
           title="Confirmed Tours"
           showings={activeShowings}
@@ -140,7 +140,7 @@ export const generateBuyerDashboardSections = ({
     {
       id: "history",
       title: "History",
-      content: (
+      component: (
         <ShowingListTab
           title="Tour History"
           showings={completedShowings}
@@ -163,7 +163,7 @@ export const generateBuyerDashboardSections = ({
     {
       id: "consultations",
       title: "Consultations",
-      content: (
+      component: (
         <ConsultationsSection
           consultations={consultations}
           onJoinCall={onJoinConsultation}
@@ -174,12 +174,12 @@ export const generateBuyerDashboardSections = ({
     {
       id: "messages",
       title: "Messages",
-      content: <MessagesTab userId={currentUser?.id || ''} userType="buyer" />
+      component: <MessagesTab userId={currentUser?.id || ''} userType="buyer" />
     },
     {
       id: "profile",
       title: "Profile",
-      content: (
+      component: (
         <ProfileTab 
           profile={profile}
           userEmail={currentUser?.email || ''}

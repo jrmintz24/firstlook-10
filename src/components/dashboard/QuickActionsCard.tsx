@@ -1,16 +1,22 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, MessageCircle, Settings, HelpCircle } from "lucide-react";
+import { FileText, MessageCircle, Settings, HelpCircle, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface QuickActionsCardProps {
   unreadCount?: number;
   onOpenMessages?: () => void;
   onOpenSupport?: () => void;
+  onOpenFavorites?: () => void;
 }
 
-const QuickActionsCard = ({ unreadCount = 0, onOpenMessages, onOpenSupport }: QuickActionsCardProps) => {
+const QuickActionsCard = ({ 
+  unreadCount = 0, 
+  onOpenMessages, 
+  onOpenSupport,
+  onOpenFavorites 
+}: QuickActionsCardProps) => {
   return (
     <Card className="bg-gray-50 border-gray-200">
       <CardContent className="p-3">
@@ -20,6 +26,18 @@ const QuickActionsCard = ({ unreadCount = 0, onOpenMessages, onOpenSupport }: Qu
               <FileText className="w-3 h-3" />
               <span className="hidden sm:inline">Offers</span>
             </Link>
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 px-2 text-xs"
+            onClick={onOpenFavorites}
+          >
+            <div className="flex items-center gap-1">
+              <Heart className="w-3 h-3" />
+              <span className="hidden sm:inline">Favorites</span>
+            </div>
           </Button>
           
           <Button 

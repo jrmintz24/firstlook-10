@@ -1,4 +1,3 @@
-
 import { useState, Suspense, useCallback, useMemo } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
@@ -15,6 +14,9 @@ import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
+import FavoritesSection from "@/components/dashboard/FavoritesSection";
+import MessagesTab from "@/components/messaging/MessagesTab";
+import QuickActions from "@/components/dashboard/QuickActions";
 import { useToast } from "@/hooks/use-toast";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import { useSafeMessages } from "@/hooks/useSafeMessages";
@@ -104,6 +106,10 @@ const BuyerDashboard = () => {
 
   const handleOpenMessages = () => {
     setActiveTab("messages");
+  };
+
+  const handleOpenFavorites = () => {
+    setActiveTab("favorites");
   };
 
   const handleOpenSupport = () => {
@@ -233,7 +239,8 @@ const BuyerDashboard = () => {
     onSendMessage: (showingId: string) => handleSendMessage(showingId),
     onJoinConsultation: handleJoinConsultation,
     onRescheduleConsultation: handleRescheduleConsultation,
-    onComplete: handleTourComplete
+    onComplete: handleTourComplete,
+    onMakeOffer: handleMakeOffer
   });
 
   // Convert sections array to record format for DashboardLayout
@@ -241,6 +248,35 @@ const BuyerDashboard = () => {
     acc[section.id] = section;
     return acc;
   }, {} as Record<string, any>);
+
+  // Add the standalone sections that are not part of the main navigation
+  sections.favorites = {
+    id: "favorites",
+    title: "Favorites",
+    component: (
+      <div className="space-y-6">
+        <FavoritesSection buyerId={currentUser?.id} />
+        <QuickActions 
+          onRequestShowing={handleRequestShowing} 
+          onMakeOffer={handleMakeOffer}
+        />
+      </div>
+    )
+  };
+
+  sections.messages = {
+    id: "messages",
+    title: "Messages",
+    component: (
+      <div className="space-y-6">
+        <MessagesTab userId={currentUser?.id || ''} userType="buyer" />
+        <QuickActions 
+          onRequestShowing={handleRequestShowing} 
+          onMakeOffer={handleMakeOffer}
+        />
+      </div>
+    )
+  };
 
   const stats = (
     <div className="space-y-4">
@@ -277,6 +313,7 @@ const BuyerDashboard = () => {
         unreadCount={unreadCount}
         onOpenMessages={handleOpenMessages}
         onOpenSupport={handleOpenSupport}
+        onOpenFavorites={handleOpenFavorites}
       />
     </div>
   );
@@ -289,7 +326,7 @@ const BuyerDashboard = () => {
         mainContent={null}
         sidebar={null}
         sections={sections}
-        activeTab={activeTab}
+        activeTab={activeTab || "requested"}
         onTabChange={setActiveTab}
       />
 

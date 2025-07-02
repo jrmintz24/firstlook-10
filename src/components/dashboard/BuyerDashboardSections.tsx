@@ -1,12 +1,11 @@
+
 import React from "react";
-import { Clock, CheckCircle, History, Heart } from "lucide-react";
-import WelcomeDashboard from "./WelcomeDashboard";
-import QuickActions from "./QuickActions";
+import { Clock, CheckCircle, History, Calendar } from "lucide-react";
 import ShowingListTab from "./ShowingListTab";
 import ConsultationsSection from "./ConsultationsSection";
-import FavoritesSection from "./FavoritesSection";
 import { default as MessagesTab } from "../messaging/MessagesTab";
 import ProfileTab from "./ProfileTab";
+import QuickActions from "./QuickActions";
 
 interface ShowingRequest {
   id: string;
@@ -54,6 +53,7 @@ interface GenerateBuyerDashboardSectionsProps {
   onJoinConsultation: (consultationId: string) => void;
   onRescheduleConsultation: (consultationId: string) => void;
   onComplete?: () => void;
+  onMakeOffer: () => void;
 }
 
 export const generateBuyerDashboardSections = ({
@@ -75,127 +75,112 @@ export const generateBuyerDashboardSections = ({
   onSendMessage,
   onJoinConsultation,
   onRescheduleConsultation,
-  onComplete
+  onComplete,
+  onMakeOffer
 }: GenerateBuyerDashboardSectionsProps) => {
   return [
-    {
-      id: "dashboard",
-      title: "Dashboard",
-      component: (
-        <div className="space-y-6">
-          <WelcomeDashboard displayName={displayName} userType="buyer" />
-          <QuickActions 
-            onRequestShowing={onRequestShowing} 
-            onMakeOffer={() => {
-              // This will be handled by the parent component (BuyerDashboard)
-              // The parent component has access to the handleMakeOffer function
-              console.log("Make offer clicked from dashboard sections");
-            }}
-          />
-        </div>
-      )
-    },
     {
       id: "requested",
       title: "Requested",
       component: (
-        <ShowingListTab
-          title="Requested Tours"
-          showings={pendingRequests}
-          emptyIcon={Clock}
-          emptyTitle="No pending requests"
-          emptyDescription="Ready to find your dream home?"
-          emptyButtonText="Request Your Free Showing"
-          onRequestShowing={onRequestShowing}
-          onCancelShowing={onCancelShowing}
-          onRescheduleShowing={onRescheduleShowing}
-          onConfirmShowing={onConfirmShowing}
-          onSignAgreement={onSignAgreement}  
-          currentUserId={currentUser?.id}
-          onSendMessage={onSendMessage}
-          agreements={agreements}
-          onComplete={onComplete}
-        />
+        <div className="space-y-6">
+          <ShowingListTab
+            title="Requested Tours"
+            showings={pendingRequests}
+            emptyIcon={Clock}
+            emptyTitle="No pending requests"
+            emptyDescription="Ready to find your dream home?"
+            emptyButtonText="Request Your Free Showing"
+            onRequestShowing={onRequestShowing}
+            onCancelShowing={onCancelShowing}
+            onRescheduleShowing={onRescheduleShowing}
+            onConfirmShowing={onConfirmShowing}
+            onSignAgreement={onSignAgreement}  
+            currentUserId={currentUser?.id}
+            onSendMessage={onSendMessage}
+            agreements={agreements}
+            onComplete={onComplete}
+          />
+          <QuickActions 
+            onRequestShowing={onRequestShowing} 
+            onMakeOffer={onMakeOffer}
+          />
+        </div>
       )
     },
     {
       id: "confirmed",
       title: "Confirmed",
       component: (
-        <ShowingListTab
-          title="Confirmed Tours"
-          showings={activeShowings}
-          emptyIcon={CheckCircle}
-          emptyTitle="No confirmed tours"
-          emptyDescription="Your confirmed tours will appear here"
-          emptyButtonText="Request Your Free Showing"
-          onRequestShowing={onRequestShowing}
-          onCancelShowing={onCancelShowing}
-          onRescheduleShowing={onRescheduleShowing}
-          onConfirmShowing={onConfirmShowing}
-          onSignAgreement={onSignAgreement}
-          currentUserId={currentUser?.id}
-          onSendMessage={onSendMessage}
-          agreements={agreements}
-          onComplete={onComplete}
-        />
+        <div className="space-y-6">
+          <ShowingListTab
+            title="Confirmed Tours"
+            showings={activeShowings}
+            emptyIcon={CheckCircle}
+            emptyTitle="No confirmed tours"
+            emptyDescription="Your confirmed tours will appear here"
+            emptyButtonText="Request Your Free Showing"
+            onRequestShowing={onRequestShowing}
+            onCancelShowing={onCancelShowing}
+            onRescheduleShowing={onRescheduleShowing}
+            onConfirmShowing={onConfirmShowing}
+            onSignAgreement={onSignAgreement}
+            currentUserId={currentUser?.id}
+            onSendMessage={onSendMessage}
+            agreements={agreements}
+            onComplete={onComplete}
+          />
+          <QuickActions 
+            onRequestShowing={onRequestShowing} 
+            onMakeOffer={onMakeOffer}
+          />
+        </div>
       )
     },
     {
       id: "history",
       title: "History",
       component: (
-        <ShowingListTab
-          title="Tour History"
-          showings={completedShowings}
-          emptyIcon={History}
-          emptyTitle="No completed tours yet"
-          emptyDescription="Your tour history will appear here"
-          emptyButtonText="Request Your First Tour"
-          onRequestShowing={onRequestShowing}
-          onCancelShowing={onCancelShowing}
-          onRescheduleShowing={onRescheduleShowing}
-          onConfirmShowing={onConfirmShowing}
-          onSignAgreement={onSignAgreement}
-          currentUserId={currentUser?.id}
-          onSendMessage={onSendMessage}
-          agreements={agreements}
-          onComplete={onComplete}
-        />
-      )
-    },
-    {
-      id: "favorites",
-      title: "Favorites",
-      component: (
-        <FavoritesSection buyerId={currentUser?.id} />
+        <div className="space-y-6">
+          <ShowingListTab
+            title="Tour History"
+            showings={completedShowings}
+            emptyIcon={History}
+            emptyTitle="No completed tours yet"
+            emptyDescription="Your tour history will appear here"
+            emptyButtonText="Request Your First Tour"
+            onRequestShowing={onRequestShowing}
+            onCancelShowing={onCancelShowing}
+            onRescheduleShowing={onRescheduleShowing}
+            onConfirmShowing={onConfirmShowing}
+            onSignAgreement={onSignAgreement}
+            currentUserId={currentUser?.id}
+            onSendMessage={onSendMessage}
+            agreements={agreements}
+            onComplete={onComplete}
+          />
+          <QuickActions 
+            onRequestShowing={onRequestShowing} 
+            onMakeOffer={onMakeOffer}
+          />
+        </div>
       )
     },
     {
       id: "consultations",
       title: "Consultations",
       component: (
-        <ConsultationsSection
-          consultations={consultations}
-          onJoinCall={onJoinConsultation}
-          onReschedule={onRescheduleConsultation}
-        />
-      )
-    },
-    {
-      id: "messages",
-      title: "Messages",
-      component: <MessagesTab userId={currentUser?.id || ''} userType="buyer" />
-    },
-    {
-      id: "profile",
-      title: "Profile",
-      component: (
-        <ProfileTab 
-          profile={profile}
-          userEmail={currentUser?.email || ''}
-          displayName={displayName}
-        />
+        <div className="space-y-6">
+          <ConsultationsSection
+            consultations={consultations}
+            onJoinCall={onJoinConsultation}
+            onReschedule={onRescheduleConsultation}
+          />
+          <QuickActions 
+            onRequestShowing={onRequestShowing} 
+            onMakeOffer={onMakeOffer}
+          />
+        </div>
       )
     }
   ];

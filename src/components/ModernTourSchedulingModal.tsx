@@ -28,26 +28,41 @@ interface TimeSlot {
   isTomorrow?: boolean;
 }
 
-// Reduced time slots - only show core hours initially
+// 30-minute interval time slots
 const coreTimeSlots = [
   { value: "9:00 AM", label: "9:00 AM" },
+  { value: "9:30 AM", label: "9:30 AM" },
+  { value: "10:00 AM", label: "10:00 AM" },
+  { value: "10:30 AM", label: "10:30 AM" },
   { value: "11:00 AM", label: "11:00 AM" },
+  { value: "11:30 AM", label: "11:30 AM" },
+  { value: "12:00 PM", label: "12:00 PM" },
+  { value: "12:30 PM", label: "12:30 PM" },
   { value: "1:00 PM", label: "1:00 PM" },
-  { value: "3:00 PM", label: "3:00 PM" },
-  { value: "5:00 PM", label: "5:00 PM" }
+  { value: "1:30 PM", label: "1:30 PM" }
 ];
 
 const allTimeSlots = [
   { value: "9:00 AM", label: "9:00 AM" },
+  { value: "9:30 AM", label: "9:30 AM" },
   { value: "10:00 AM", label: "10:00 AM" },
+  { value: "10:30 AM", label: "10:30 AM" },
   { value: "11:00 AM", label: "11:00 AM" },
+  { value: "11:30 AM", label: "11:30 AM" },
   { value: "12:00 PM", label: "12:00 PM" },
+  { value: "12:30 PM", label: "12:30 PM" },
   { value: "1:00 PM", label: "1:00 PM" },
+  { value: "1:30 PM", label: "1:30 PM" },
   { value: "2:00 PM", label: "2:00 PM" },
+  { value: "2:30 PM", label: "2:30 PM" },
   { value: "3:00 PM", label: "3:00 PM" },
+  { value: "3:30 PM", label: "3:30 PM" },
   { value: "4:00 PM", label: "4:00 PM" },
+  { value: "4:30 PM", label: "4:30 PM" },
   { value: "5:00 PM", label: "5:00 PM" },
-  { value: "6:00 PM", label: "6:00 PM" }
+  { value: "5:30 PM", label: "5:30 PM" },
+  { value: "6:00 PM", label: "6:00 PM" },
+  { value: "6:30 PM", label: "6:30 PM" }
 ];
 
 const getNext7Days = () => {
@@ -85,7 +100,8 @@ const ModernTourSchedulingModal = ({
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
   const [propertyAddress, setPropertyAddress] = useState("");
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [showAllTimes, setShowAllTimes] = useState(false);
 
@@ -111,7 +127,8 @@ const ModernTourSchedulingModal = ({
   const handleClose = () => {
     resetForm();
     setPropertyAddress("");
-    setSelectedTimeSlot(null);
+    setSelectedDate("");
+    setSelectedTime("");
     setNotes("");
     setShowAllTimes(false);
     onClose();
@@ -122,14 +139,14 @@ const ModernTourSchedulingModal = ({
     
     try {
       const [year, month, day] = date.split('-').map(Number);
-      const selectedDate = new Date(year, month - 1, day);
+      const selectedDateObj = new Date(year, month - 1, day);
       
       const today = new Date();
       const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       
       // For free users (including guests): No same-day bookings
       if (!isPaidUser) {
-        return selectedDate.getTime() > todayDateOnly.getTime();
+        return selectedDateObj.getTime() > todayDateOnly.getTime();
       }
       
       // For paid users: No bookings within 2 hours of current time
@@ -154,56 +171,59 @@ const ModernTourSchedulingModal = ({
     }
   };
 
-  const handleTimeSlotSelection = (day: any, timeSlot: any) => {
-    const newTimeSlot: TimeSlot = {
-      date: day.date,
-      time: timeSlot.value,
-      dayName: day.dayName,
-      dayNumber: day.dayNumber,
-      monthName: day.monthName,
-      isToday: day.isToday,
-      isTomorrow: day.isTomorrow
-    };
-    
-    setSelectedTimeSlot(newTimeSlot);
+  const handleDateSelection = (dayDate: string) => {
+    setSelectedDate(dayDate);
+    setSelectedTime(""); // Reset time when date changes
+  };
+
+  const handleTimeSelection = (timeValue: string) => {
+    setSelectedTime(timeValue);
   };
 
   const handleSubmit = async () => {
-    if (!propertyAddress.trim() || !selectedTimeSlot) {
+    if (!propertyAddress.trim() || !selectedDate || !selectedTime) {
       return;
     }
 
     // Convert to expected format for the existing handler
     const formData = {
       propertyAddress,
-      preferredDate1: selectedTimeSlot.date,
-      preferredTime1: selectedTimeSlot.time,
+      preferredDate1: selectedDate,
+      preferredTime1: selectedTime,
       preferredDate2: "",
       preferredTime2: "",
       preferredDate3: "",
       preferredTime3: "",
       notes,
       properties: [{ address: propertyAddress, notes: "" }],
-      preferredOptions: [{ date: selectedTimeSlot.date, time: selectedTimeSlot.time }],
+      preferredOptions: [{ date: selectedDate, time: selectedTime }],
       selectedProperties: [propertyAddress]
     };
 
     await handleContinueToSubscriptions();
   };
 
-  const canSubmit = propertyAddress.trim() && selectedTimeSlot;
+  const canSubmit = propertyAddress.trim() && selectedDate && selectedTime;
 
   // Calculate completion progress
   const hasAddress = propertyAddress.trim();
-  const hasTimeSlot = selectedTimeSlot !== null;
-  const completionSteps = [hasAddress, hasTimeSlot];
+  const hasDate = selectedDate !== "";
+  const hasTime = selectedTime !== "";
+  const completionSteps = [hasAddress, hasDate, hasTime];
   const completedSteps = completionSteps.filter(Boolean).length;
   const totalSteps = completionSteps.length;
+
+  // Get available times for selected date
+  const availableTimesForSelectedDate = selectedDate 
+    ? timeSlotsToShow.filter(slot => isTimeSlotAvailable(selectedDate, slot.value))
+    : [];
+
+  const selectedDay = availableDays.find(day => day.date === selectedDate);
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white border-0 shadow-2xl p-0 overflow-hidden flex flex-col">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}
             <DialogHeader className="px-8 pt-8 pb-6 flex-shrink-0">
@@ -293,7 +313,7 @@ const ModernTourSchedulingModal = ({
               <div className="space-y-8">
                 {/* Step 1: Property Address */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
                     Step 1: Property Address
                     {hasAddress && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
@@ -306,113 +326,122 @@ const ModernTourSchedulingModal = ({
                   />
                 </div>
 
-                {/* Step 2: Choose Time */}
+                {/* Step 2: Choose Date */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">
-                    Step 2: Choose Your Time
-                    {hasTimeSlot && <span className="text-green-600 ml-2">✓</span>}
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Step 2: Choose Your Date
+                    {hasDate && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
                   
-                  {selectedTimeSlot && (
-                    <div className="mb-6 p-4 bg-black text-white rounded-2xl">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span className="font-medium">
-                          {selectedTimeSlot.dayName}, {selectedTimeSlot.monthName} {selectedTimeSlot.dayNumber} at {selectedTimeSlot.time}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Available Time Slots Grid */}
-                  <div className="space-y-6">
+                  {/* Horizontal Date Picker */}
+                  <div className="grid grid-cols-7 gap-2 mb-6">
                     {availableDays.map((day) => {
-                      const availableTimes = timeSlotsToShow.filter(slot => 
+                      const isSelected = selectedDate === day.date;
+                      const hasAvailableTimes = timeSlotsToShow.some(slot => 
                         isTimeSlotAvailable(day.date, slot.value)
                       );
                       
-                      if (availableTimes.length === 0) return null;
-
                       return (
-                        <div key={day.date} className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-gray-700">
-                              {day.dayName}, {day.monthName} {day.dayNumber}
-                            </h4>
-                            {day.isToday && (
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                Today
-                              </span>
-                            )}
-                            {day.isTomorrow && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                Tomorrow
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                            {availableTimes.map((timeSlot) => {
-                              const isSelected = selectedTimeSlot?.date === day.date && 
-                                               selectedTimeSlot?.time === timeSlot.value;
-                              
-                              return (
-                                <button
-                                  key={timeSlot.value}
-                                  type="button"
-                                  onClick={() => handleTimeSlotSelection(day, timeSlot)}
-                                  className={`p-3 rounded-xl border-2 transition-all text-center font-medium ${
-                                    isSelected
-                                      ? 'bg-black text-white border-black'
-                                      : 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
-                                  }`}
-                                >
-                                  <div className="text-sm">{timeSlot.label}</div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <button
+                          key={day.date}
+                          type="button"
+                          onClick={() => hasAvailableTimes && handleDateSelection(day.date)}
+                          disabled={!hasAvailableTimes}
+                          className={`p-3 rounded-xl border-2 transition-all text-center ${
+                            isSelected
+                              ? 'bg-black text-white border-black'
+                              : hasAvailableTimes
+                              ? 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                              : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                          }`}
+                        >
+                          <div className="text-xs font-medium">{day.dayName}</div>
+                          <div className="text-lg font-bold">{day.dayNumber}</div>
+                          <div className="text-xs">{day.monthName}</div>
+                          {day.isToday && (
+                            <div className="text-xs mt-1 text-blue-600 font-medium">Today</div>
+                          )}
+                          {day.isTomorrow && (
+                            <div className="text-xs mt-1 text-green-600 font-medium">Tomorrow</div>
+                          )}
+                        </button>
                       );
                     })}
+                  </div>
+                </div>
 
-                    {/* Show more/less times button */}
-                    <div className="flex justify-center pt-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAllTimes(!showAllTimes)}
-                        className="text-sm"
-                      >
-                        {showAllTimes ? (
-                          <>
-                            <ChevronUp className="h-4 w-4 mr-2" />
-                            Show Fewer Times
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4 mr-2" />
-                            Show More Times
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                {/* Step 3: Choose Time (only show if date is selected) */}
+                {selectedDate && (
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Step 3: Choose Your Time
+                      {hasTime && <span className="text-green-600 ml-2">✓</span>}
+                    </h3>
+                    
+                    {selectedDay && (
+                      <p className="text-sm text-gray-600 mb-4">
+                        Available times for {selectedDay.dayName}, {selectedDay.monthName} {selectedDay.dayNumber}:
+                      </p>
+                    )}
 
-                    {availableDays.every(day => 
-                      timeSlotsToShow.filter(slot => isTimeSlotAvailable(day.date, slot.value)).length === 0
-                    ) && (
-                      <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                    {availableTimesForSelectedDate.length > 0 ? (
+                      <>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
+                          {availableTimesForSelectedDate.map((timeSlot) => {
+                            const isSelected = selectedTime === timeSlot.value;
+                            
+                            return (
+                              <button
+                                key={timeSlot.value}
+                                type="button"
+                                onClick={() => handleTimeSelection(timeSlot.value)}
+                                className={`p-3 rounded-xl border-2 transition-all text-center font-medium ${
+                                  isSelected
+                                    ? 'bg-black text-white border-black'
+                                    : 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="text-sm">{timeSlot.label}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Show more/less times button */}
+                        <div className="flex justify-center">
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowAllTimes(!showAllTimes)}
+                            className="text-sm"
+                          >
+                            {showAllTimes ? (
+                              <>
+                                <ChevronUp className="h-4 w-4 mr-2" />
+                                Show Fewer Times
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4 mr-2" />
+                                Show More Times
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                         <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium mb-2">No Available Times</p>
                         <p className="text-sm">
                           {!isPaidUser 
-                            ? "Please check back tomorrow for available time slots."
+                            ? "Please select a future date for available time slots."
                             : "All slots are within the 2-hour advance notice window."
                           }
                         </p>
                       </div>
                     )}
                   </div>
-                </div>
+                )}
 
                 {/* Additional Notes */}
                 <div className="pb-8">
@@ -435,7 +464,7 @@ const ModernTourSchedulingModal = ({
                 <div className="text-sm text-gray-500">
                   {canSubmit ? 
                     `Ready to schedule your tour` : 
-                    `Complete both steps: ${!hasAddress ? 'Add property address' : ''}${!hasAddress && !hasTimeSlot ? ' and ' : ''}${!hasTimeSlot ? 'Select time slot' : ''}`}
+                    `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
                 </div>
                 <Button
                   onClick={handleSubmit}

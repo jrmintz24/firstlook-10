@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Key, Star, ArrowRight } from "lucide-react";
@@ -46,7 +47,7 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto px-4">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
@@ -66,6 +67,9 @@ const HowItWorks = () => {
                       {step.description}
                     </CardDescription>
                   </CardContent>
+                  <div className="absolute top-3 right-3 h-8 w-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-medium shadow-lg">
+                    {index + 1}
+                  </div>
                 </Card>
                 
                 {index < steps.length - 1 && (

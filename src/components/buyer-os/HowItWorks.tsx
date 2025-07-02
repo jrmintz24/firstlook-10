@@ -48,11 +48,11 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 px-4">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
-              <Card key={index} className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 rounded-xl">
+              <Card key={index} className="relative border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 rounded-xl">
                 <CardContent className="p-6 sm:p-8 text-center">
                   <div className={`inline-flex h-14 w-14 items-center justify-center rounded-xl ${step.color} mb-6 shadow-md`}>
                     <IconComponent className="h-7 w-7 text-white" />
@@ -63,7 +63,7 @@ const HowItWorks = () => {
                   <p className="text-gray-600 leading-relaxed font-light text-sm">
                     {step.description}
                   </p>
-                  <div className="absolute -top-2 -right-2 h-6 w-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-medium shadow-md">
+                  <div className="absolute top-3 right-3 h-8 w-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-medium shadow-lg">
                     {index + 1}
                   </div>
                 </CardContent>

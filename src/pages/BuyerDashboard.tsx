@@ -95,6 +95,20 @@ const BuyerDashboard = () => {
     console.log("Support requested");
   };
 
+  // Handle tour completion - refresh data to move completed tours to history
+  const handleTourComplete = useCallback(async () => {
+    console.log('BuyerDashboard: Tour completed, refreshing data');
+    try {
+      await refreshShowingRequests();
+      toast({
+        title: "Tour Completed",
+        description: "Your tour has been completed and moved to history.",
+      });
+    } catch (error) {
+      console.error('Error refreshing data after tour completion:', error);
+    }
+  }, [refreshShowingRequests, toast]);
+
   const agreementsRecord: Record<string, boolean> = {};
 
   // Transform consultation bookings to match the expected format
@@ -173,7 +187,8 @@ const BuyerDashboard = () => {
     fetchShowingRequests: refreshShowingRequests,
     onSendMessage: (showing) => handleSendMessage(showing.id),
     onJoinConsultation: handleJoinConsultation,
-    onRescheduleConsultation: handleRescheduleConsultation
+    onRescheduleConsultation: handleRescheduleConsultation,
+    onComplete: handleTourComplete
   });
 
   // Convert sections array to record format for DashboardLayout

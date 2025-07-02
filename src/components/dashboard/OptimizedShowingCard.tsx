@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import StatusBadge from "./shared/StatusBadge";
 import InteractiveButton from "./shared/InteractiveButton";
 import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
+import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import { 
   Calendar,
   Clock,
@@ -103,6 +104,7 @@ const OptimizedShowingCard = ({
   const agreementRequired = isAgreementRequired();
   const isAgentRequestedStatus = showing.status === 'agent_requested';
   const isCompletedTour = showing.status === 'completed';
+  const isConfirmedTour = ['confirmed', 'scheduled', 'in_progress'].includes(showing.status);
 
   // Get appropriate styling based on status and requirements
   const getCardStyling = () => {
@@ -114,6 +116,9 @@ const OptimizedShowingCard = ({
     }
     if (isCompletedTour) {
       return 'border-green-200 bg-green-50';
+    }
+    if (isConfirmedTour) {
+      return 'border-blue-200 bg-blue-50';
     }
     return 'border-gray-200 bg-white';
   };
@@ -180,6 +185,23 @@ const OptimizedShowingCard = ({
                   </div>
                 </div>
               )}
+
+              {/* Tour Ready Alert Box for Confirmed Tours */}
+              {isConfirmedTour && userType === 'buyer' && (
+                <div className="mt-3 p-3 bg-blue-100 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Tour Confirmed
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Your tour is confirmed with {showing.assigned_agent_name}. Complete the tour when you're ready to start the post-showing process.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -224,6 +246,27 @@ const OptimizedShowingCard = ({
               </div>
             )}
           </div>
+
+          {/* Complete Tour Button for Confirmed Tours - Prominent Placement */}
+          {isConfirmedTour && userType === 'buyer' && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">Ready to Complete Tour?</h4>
+                  <p className="text-sm text-blue-700">
+                    Complete your tour to share feedback and explore next steps.
+                  </p>
+                </div>
+                <ShowingCheckoutButton
+                  showing={showing}
+                  showingId={showing.id}
+                  buyerId={showing.user_id || currentUserId}
+                  userType={userType}
+                  onComplete={onComplete}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Post-Showing Actions for Completed Tours */}
           {isCompletedTour && userType === 'buyer' && (
@@ -272,7 +315,7 @@ const OptimizedShowingCard = ({
               )}
 
               {/* Action Buttons in Expanded Section - Only for Non-Completed Tours */}
-              {showActions && !isCompletedTour && (
+              {showActions && !isCompletedTour && !isConfirmedTour && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {/* Sign Agreement Button - Also in expanded section for emphasis */}
                   {onSignAgreement && agreementRequired && (

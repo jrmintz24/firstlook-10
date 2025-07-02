@@ -1,30 +1,65 @@
-
-import { Calendar, CheckCircle, Clock, MapPin, Heart } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import EmptyStateCard from "./EmptyStateCard";
-import ConsultationsSection from "./ConsultationsSection";
+import React from "react";
+import { Clock, CheckCircle, History } from "lucide-react";
+import WelcomeDashboard from "./WelcomeDashboard";
+import QuickActions from "./QuickActions";
 import ShowingListTab from "./ShowingListTab";
-import FavoritesSection from "./FavoritesSection";
+import ConsultationsSection from "./ConsultationsSection";
+import MessagesTab from "./MessagesTab";
+import ProfileTab from "./ProfileTab";
 
-// Add this interface for consultations
+interface ShowingRequest {
+  id: string;
+  property_address: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  message: string | null;
+  status: string;
+  created_at: string;
+  assigned_agent_name?: string | null;
+  assigned_agent_phone?: string | null;
+  assigned_agent_email?: string | null;
+  assigned_agent_id?: string | null;
+  estimated_confirmation_date?: string | null;
+  status_updated_at?: string | null;
+  user_id?: string | null;
+}
+
 interface Consultation {
   id: string;
   propertyAddress: string;
   scheduledAt: string;
   consultationType: 'phone' | 'video';
-  agentName?: string;
+  agentName: string;
   status: 'scheduled' | 'completed' | 'cancelled';
 }
 
-// Update the generateBuyerDashboardSections function parameters to include consultations
+interface GenerateBuyerDashboardSectionsProps {
+  pendingRequests: ShowingRequest[];
+  activeShowings: ShowingRequest[];
+  completedShowings: ShowingRequest[];
+  consultations: Consultation[];
+  agreements: Record<string, boolean>;
+  currentUser: any;
+  profile: any;
+  displayName: string;
+  unreadCount: number;
+  onRequestShowing: () => void;
+  onCancelShowing: (id: string) => void;
+  onRescheduleShowing: (id: string) => void;
+  onConfirmShowing: (showing: ShowingRequest) => void;
+  onSignAgreement: (showing: ShowingRequest) => void;
+  fetchShowingRequests: () => void;
+  onSendMessage: (showingId: string) => void;
+  onJoinConsultation: (consultationId: string) => void;
+  onRescheduleConsultation: (consultationId: string) => void;
+  onComplete?: () => void;
+}
+
 export const generateBuyerDashboardSections = ({
   pendingRequests,
   activeShowings,
   completedShowings,
-  consultations = [], // Add this parameter
+  consultations,
   agreements,
   currentUser,
   profile,
@@ -38,143 +73,109 @@ export const generateBuyerDashboardSections = ({
   fetchShowingRequests,
   onSendMessage,
   onJoinConsultation,
-  onRescheduleConsultation
-}: {
-  pendingRequests: any[];
-  activeShowings: any[];
-  completedShowings: any[];
-  consultations?: Consultation[];
-  agreements: Record<string, boolean>;
-  currentUser: any;
-  profile: any;
-  displayName: string;
-  unreadCount: number;
-  onRequestShowing: () => void;
-  onCancelShowing: (id: string) => void;
-  onRescheduleShowing: (showing: any) => void;
-  onConfirmShowing: (showing: any) => void;
-  onSignAgreement: (showing: any) => void;
-  fetchShowingRequests: () => void;
-  onSendMessage: (showing: any) => void;
-  onJoinConsultation?: (consultationId: string) => void;
-  onRescheduleConsultation?: (consultationId: string) => void;
-}) => {
-  const pendingCount = pendingRequests.length;
-  const confirmedCount = activeShowings.length;
-  const historyCount = completedShowings.length;
-
-  const sections = [
+  onRescheduleConsultation,
+  onComplete
+}: GenerateBuyerDashboardSectionsProps) => {
+  return [
+    {
+      id: "dashboard",
+      title: "Dashboard",
+      content: (
+        <div className="space-y-6">
+          <WelcomeDashboard displayName={displayName} />
+          <QuickActions onRequestShowing={onRequestShowing} />
+        </div>
+      )
+    },
     {
       id: "requested",
       title: "Requested",
-      icon: Clock,
-      count: pendingCount,
-      color: "bg-orange-100 text-orange-700",
-      component: (
+      content: (
         <ShowingListTab
-          title="Pending Requests"
+          title="Requested Tours"
           showings={pendingRequests}
           emptyIcon={Clock}
-          emptyTitle="No Pending Requests"
-          emptyDescription="Start by requesting a property tour."
-          emptyButtonText="Request a Tour"
+          emptyTitle="No pending requests"
+          emptyDescription="Ready to find your dream home?"
+          emptyButtonText="Request Your Free Showing"
           onRequestShowing={onRequestShowing}
           onCancelShowing={onCancelShowing}
           onRescheduleShowing={onRescheduleShowing}
           onConfirmShowing={onConfirmShowing}
-          onSendMessage={onSendMessage}
-          onSignAgreement={onSignAgreement}
-          showActions={true}
-          userType="buyer"
+          onSignAgreement={onSignAgreement}  
           currentUserId={currentUser?.id}
+          onSendMessage={onSendMessage}
           agreements={agreements}
+          onComplete={onComplete}
         />
       )
     },
     {
       id: "confirmed",
       title: "Confirmed",
-      icon: Calendar,
-      count: confirmedCount,
-      color: "bg-blue-100 text-blue-700",
-      component: (
+      content: (
         <ShowingListTab
           title="Confirmed Tours"
           showings={activeShowings}
-          emptyIcon={Calendar}
-          emptyTitle="No Confirmed Tours"
-          emptyDescription="Check back once your request is confirmed."
-          emptyButtonText=""
+          emptyIcon={CheckCircle}
+          emptyTitle="No confirmed tours"
+          emptyDescription="Your confirmed tours will appear here"
+          emptyButtonText="Request Your Free Showing"
           onRequestShowing={onRequestShowing}
           onCancelShowing={onCancelShowing}
           onRescheduleShowing={onRescheduleShowing}
           onConfirmShowing={onConfirmShowing}
-          onSendMessage={onSendMessage}
           onSignAgreement={onSignAgreement}
-          showActions={true}
-          userType="buyer"
           currentUserId={currentUser?.id}
+          onSendMessage={onSendMessage}
           agreements={agreements}
+          onComplete={onComplete}
         />
       )
     },
     {
       id: "history",
       title: "History",
-      icon: CheckCircle,
-      count: historyCount,
-      color: "bg-green-100 text-green-700",
-      component: (
+      content: (
         <ShowingListTab
           title="Tour History"
           showings={completedShowings}
-          emptyIcon={CheckCircle}
-          emptyTitle="No Past Tours"
-          emptyDescription="Your completed and cancelled tours will appear here."
-          emptyButtonText=""
+          emptyIcon={History}
+          emptyTitle="No completed tours yet"
+          emptyDescription="Your tour history will appear here"
+          emptyButtonText="Request Your First Tour"
           onRequestShowing={onRequestShowing}
           onCancelShowing={onCancelShowing}
           onRescheduleShowing={onRescheduleShowing}
           onConfirmShowing={onConfirmShowing}
-          onSendMessage={onSendMessage}
           onSignAgreement={onSignAgreement}
-          showActions={true}
-          userType="buyer"
-          onComplete={fetchShowingRequests}
           currentUserId={currentUser?.id}
+          onSendMessage={onSendMessage}
           agreements={agreements}
+          onComplete={onComplete}
         />
       )
     },
-    
-    // Add favorites section
-    {
-      id: "favorites",
-      title: "Favorites",
-      icon: Heart,
-      count: 0, // We'll update this when we have the favorites data
-      color: "bg-pink-100 text-pink-700",
-      component: (
-        <FavoritesSection buyerId={currentUser?.id} />
-      )
-    },
-    
-    // Add consultations section after the existing sections
     {
       id: "consultations",
       title: "Consultations",
-      icon: Calendar,
-      count: consultations.filter(c => c.status === 'scheduled' && new Date(c.scheduledAt) >= new Date()).length,
-      color: "bg-purple-100 text-purple-700",
-      component: (
+      content: (
         <ConsultationsSection
           consultations={consultations}
-          onJoinCall={onJoinConsultation}
-          onReschedule={onRescheduleConsultation}
+          onJoinConsultation={onJoinConsultation}
+          onRescheduleConsultation={onRescheduleConsultation}
         />
       )
+    },
+    {
+      id: "messages",
+      title: "Messages",
+      content: <MessagesTab unreadCount={unreadCount} />
+    },
+    {
+      id: "profile",
+      title: "Profile",
+      content: <ProfileTab profile={profile} />
     }
   ];
-
-  return sections;
 };

@@ -8,6 +8,7 @@ export const useMessageSubscriptionManager = () => {
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const retryCountRef = useRef(0);
   const circuitBreakerRef = useRef(false);
+  const isConnectingRef = useRef(false);
   const maxRetries = 3;
   const baseRetryDelay = 2000;
   const circuitBreakerTimeout = 30000; // 30 seconds
@@ -15,6 +16,7 @@ export const useMessageSubscriptionManager = () => {
   const resetConnection = useCallback(() => {
     retryCountRef.current = 0;
     circuitBreakerRef.current = false;
+    isConnectingRef.current = false;
   }, []);
 
   const cleanupConnection = useCallback(() => {
@@ -25,6 +27,16 @@ export const useMessageSubscriptionManager = () => {
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
     }
+    isConnectingRef.current = false;
+  }, []);
+
+  const getConnectionStatus = useCallback(() => {
+    return {
+      isConnecting: isConnectingRef.current,
+      circuitBreakerOpen: circuitBreakerRef.current,
+      retryCount: retryCountRef.current,
+      hasActiveChannel: channelRef.current !== null
+    };
   }, []);
 
   const createSubscription = useCallback((userId: string, onMessageReceived: () => void) => {
@@ -38,6 +50,7 @@ export const useMessageSubscriptionManager = () => {
     cleanupConnection();
 
     console.log('Setting up message subscription for user:', userId);
+    isConnectingRef.current = true;
 
     const channel = supabase
       .channel(`messages_${userId}`)
@@ -60,8 +73,10 @@ export const useMessageSubscriptionManager = () => {
         if (status === 'SUBSCRIBED') {
           retryCountRef.current = 0;
           circuitBreakerRef.current = false;
+          isConnectingRef.current = false;
         } else if (status === 'CHANNEL_ERROR') {
           console.error('Message subscription error');
+          isConnectingRef.current = false;
           
           if (retryCountRef.current < maxRetries) {
             const delay = baseRetryDelay * Math.pow(2, retryCountRef.current);
@@ -83,6 +98,7 @@ export const useMessageSubscriptionManager = () => {
           }
         } else if (status === 'CLOSED') {
           console.log('Message subscription closed');
+          isConnectingRef.current = false;
         }
       });
 
@@ -93,6 +109,7 @@ export const useMessageSubscriptionManager = () => {
   return {
     createSubscription,
     cleanupConnection,
-    resetConnection
+    resetConnection,
+    getConnectionStatus
   };
 };

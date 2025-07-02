@@ -1,5 +1,4 @@
-
-import { Calendar, CheckCircle, Clock, MessageSquare, MapPin } from "lucide-react";
+import { Calendar, CheckCircle, Clock, MessageSquare, MapPin, Heart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import EmptyStateCard from "./EmptyStateCard";
 import ConsultationsSection from "./ConsultationsSection";
 import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import ShowingListTab from "./ShowingListTab";
+import FavoritesSection from "./FavoritesSection";
 
 // Add this interface for consultations
 interface Consultation {
@@ -144,6 +144,18 @@ export const generateBuyerDashboardSections = ({
           currentUserId={currentUser?.id}
           agreements={agreements}
         />
+      )
+    },
+    
+    // Add favorites section
+    {
+      id: "favorites",
+      title: "Favorites",
+      icon: Heart,
+      count: 0, // We'll update this when we have the favorites data
+      color: "bg-pink-100 text-pink-700",
+      component: (
+        <FavoritesSection buyerId={currentUser?.id} />
       )
     },
     

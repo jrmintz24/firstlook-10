@@ -3,14 +3,9 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Navigation from "./components/Navigation";
-import Footer from "./components/Footer";
 import Home from "./pages/Index";
-import About from "./pages/About";
 import FAQ from "./pages/FAQ";
-import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
 import AgentDashboard from "./pages/AgentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import HomeBuyingGuide from "./pages/HomebuyingGuide";
@@ -43,12 +38,8 @@ function App() {
             <ScrollToTop />
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
               <Route path="/faq" element={<FAQ />} />
-              <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<Blog />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
               <Route path="/homebuying-guide" element={<HomeBuyingGuide />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route

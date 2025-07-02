@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Home, X, ChevronRight, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Home, X, ChevronRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
@@ -28,7 +28,16 @@ interface TimeSlot {
   isTomorrow?: boolean;
 }
 
-const timeSlots = [
+// Reduced time slots - only show core hours initially
+const coreTimeSlots = [
+  { value: "9:00 AM", label: "9:00 AM" },
+  { value: "11:00 AM", label: "11:00 AM" },
+  { value: "1:00 PM", label: "1:00 PM" },
+  { value: "3:00 PM", label: "3:00 PM" },
+  { value: "5:00 PM", label: "5:00 PM" }
+];
+
+const allTimeSlots = [
   { value: "9:00 AM", label: "9:00 AM" },
   { value: "10:00 AM", label: "10:00 AM" },
   { value: "11:00 AM", label: "11:00 AM" },
@@ -78,6 +87,7 @@ const ModernTourSchedulingModal = ({
   const [propertyAddress, setPropertyAddress] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
   const [notes, setNotes] = useState("");
+  const [showAllTimes, setShowAllTimes] = useState(false);
 
   const {
     showAuthModal,
@@ -96,12 +106,14 @@ const ModernTourSchedulingModal = ({
   const isPaidUser = eligibility?.eligible && eligibility.reason === 'subscribed';
 
   const availableDays = useMemo(() => getNext7Days(), []);
+  const timeSlotsToShow = showAllTimes ? allTimeSlots : coreTimeSlots;
 
   const handleClose = () => {
     resetForm();
     setPropertyAddress("");
     setSelectedTimeSlot(null);
     setNotes("");
+    setShowAllTimes(false);
     onClose();
   };
 
@@ -191,10 +203,10 @@ const ModernTourSchedulingModal = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-4xl max-h-[95vh] bg-white border-0 shadow-2xl p-0 overflow-hidden">
-          <div className="relative">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white border-0 shadow-2xl p-0 overflow-hidden flex flex-col">
+          <div className="flex flex-col h-full">
             {/* Header */}
-            <DialogHeader className="px-8 pt-8 pb-6">
+            <DialogHeader className="px-8 pt-8 pb-6 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center">
@@ -233,7 +245,8 @@ const ModernTourSchedulingModal = ({
               </div>
             </DialogHeader>
 
-            <div className="px-8 pb-8 max-h-[75vh] overflow-y-auto">
+            {/* Scrollable content */}
+            <div className="px-8 flex-1 overflow-y-auto">
               {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
@@ -314,7 +327,7 @@ const ModernTourSchedulingModal = ({
                   {/* Available Time Slots Grid */}
                   <div className="space-y-6">
                     {availableDays.map((day) => {
-                      const availableTimes = timeSlots.filter(slot => 
+                      const availableTimes = timeSlotsToShow.filter(slot => 
                         isTimeSlotAvailable(day.date, slot.value)
                       );
                       
@@ -338,7 +351,7 @@ const ModernTourSchedulingModal = ({
                             )}
                           </div>
                           
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                             {availableTimes.map((timeSlot) => {
                               const isSelected = selectedTimeSlot?.date === day.date && 
                                                selectedTimeSlot?.time === timeSlot.value;
@@ -362,26 +375,47 @@ const ModernTourSchedulingModal = ({
                         </div>
                       );
                     })}
-                  </div>
 
-                  {availableDays.every(day => 
-                    timeSlots.filter(slot => isTimeSlotAvailable(day.date, slot.value)).length === 0
-                  ) && (
-                    <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                      <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">No Available Times</p>
-                      <p className="text-sm">
-                        {!isPaidUser 
-                          ? "Please check back tomorrow for available time slots."
-                          : "All slots are within the 2-hour advance notice window."
-                        }
-                      </p>
+                    {/* Show more/less times button */}
+                    <div className="flex justify-center pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllTimes(!showAllTimes)}
+                        className="text-sm"
+                      >
+                        {showAllTimes ? (
+                          <>
+                            <ChevronUp className="h-4 w-4 mr-2" />
+                            Show Fewer Times
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-2" />
+                            Show More Times
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  )}
+
+                    {availableDays.every(day => 
+                      timeSlotsToShow.filter(slot => isTimeSlotAvailable(day.date, slot.value)).length === 0
+                    ) && (
+                      <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium mb-2">No Available Times</p>
+                        <p className="text-sm">
+                          {!isPaidUser 
+                            ? "Please check back tomorrow for available time slots."
+                            : "All slots are within the 2-hour advance notice window."
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Additional Notes */}
-                <div>
+                <div className="pb-8">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Additional Notes (Optional)
                   </label>
@@ -395,8 +429,8 @@ const ModernTourSchedulingModal = ({
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-8 py-6 border-t border-gray-100 bg-white">
+            {/* Fixed Footer */}
+            <div className="px-8 py-6 border-t border-gray-100 bg-white flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {canSubmit ? 

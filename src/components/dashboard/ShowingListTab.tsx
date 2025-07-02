@@ -1,4 +1,3 @@
-
 import EmptyStateCard from "./EmptyStateCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import AgentRequestCard from "./AgentRequestCard";
@@ -45,7 +44,7 @@ interface ShowingListTabProps {
 const ShowingListTab = ({
   title,
   showings,
-  emptyIcon,
+  emptyIcon: EmptyIcon,
   emptyTitle,
   emptyDescription,
   emptyButtonText,
@@ -53,82 +52,52 @@ const ShowingListTab = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
-  onReportIssue,
   onSendMessage,
-  onSignAgreement,
+  onReportIssue,
   showActions = true,
-  userType = 'buyer',
+  userType,
   onComplete,
   currentUserId,
-  agreements = {}
+  agreements = []
 }: ShowingListTabProps) => {
   if (showings.length === 0) {
     return (
       <EmptyStateCard
+        icon={EmptyIcon}
         title={emptyTitle}
         description={emptyDescription}
         buttonText={emptyButtonText}
         onButtonClick={emptyButtonText ? onRequestShowing : undefined}
-        icon={emptyIcon}
       />
     );
   }
 
   return (
-    <div className="space-y-4">
-      {showings.map((showing) => {
-        // For agent dashboard, use AgentRequestCard for pending requests and OptimizedShowingCard for assigned ones
-        if (userType === 'agent' && showing.status === 'pending' && !showing.assigned_agent_id) {
-          return (
-            <AgentRequestCard
-              key={showing.id}
-              request={showing}
-              onAssign={() => {
-                if (onConfirmShowing) {
-                  onConfirmShowing(showing);
-                }
-              }}
-              onUpdateStatus={(status, estimatedDate) => {
-                console.log('Status update:', status, estimatedDate);
-              }}
-              onSendMessage={() => {
-                if (onSendMessage) {
-                  onSendMessage(showing.id);
-                }
-              }}
-              onConfirm={onConfirmShowing}
-              onReportIssue={onReportIssue}
-              showAssignButton={true}
-              onComplete={onComplete}
-              currentAgentId={currentUserId}
-            />
-          );
-        }
-
-        // For all other cases, use the optimized showing card
-        return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
+        <span className="text-sm text-gray-500">{showings.length} total</span>
+      </div>
+      
+      <div className="space-y-3 sm:space-y-4">
+        {showings.map((showing) => (
           <OptimizedShowingCard
             key={showing.id}
             showing={showing}
             onCancel={onCancelShowing}
             onReschedule={onRescheduleShowing}
-            onConfirm={(id: string) => {
-              const showingToConfirm = showings.find(s => s.id === id);
-              if (showingToConfirm && onConfirmShowing) {
-                onConfirmShowing(showingToConfirm);
-              }
-            }}
-            onSignAgreement={onSignAgreement}
-            currentUserId={currentUserId}
+            onConfirm={onConfirmShowing}
             onSendMessage={onSendMessage}
+            onReportIssue={onReportIssue}
             showActions={showActions}
             userType={userType}
             onComplete={onComplete}
+            currentUserId={currentUserId}
             agreements={agreements}
-            onRequestShowing={onRequestShowing}
+            onSignAgreement={handleSignAgreement}
           />
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };

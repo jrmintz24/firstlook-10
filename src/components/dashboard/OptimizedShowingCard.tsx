@@ -57,10 +57,18 @@ const OptimizedShowingCard = ({
     (key) => key === showing.id && !agreements[key]
   );
 
+  const handleSignAgreementClick = () => {
+    if (onSignAgreement) {
+      onSignAgreement(showing);
+    } else {
+      handleSignAgreement(showing);
+    }
+  };
+
   return (
     <Card className="border border-gray-200 hover:shadow-md transition-all duration-200">
       <CardContent className="p-3 sm:p-4">
-        <div className="space-y-2.5 sm:space-y-3">
+        <div className="space-y-2 sm:space-y-2.5">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
             <div className="flex-1 min-w-0">
@@ -114,7 +122,7 @@ const OptimizedShowingCard = ({
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => onSignAgreement?.(showing) || handleSignAgreement(showing)}
+                  onClick={handleSignAgreementClick}
                   className="text-xs h-7 w-full sm:w-auto"
                 >
                   Sign Agreement

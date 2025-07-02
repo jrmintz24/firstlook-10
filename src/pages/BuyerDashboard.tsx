@@ -3,7 +3,7 @@ import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import PropertyRequestWizard from "@/components/PropertyRequestWizard";
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import PropertySelectionModal from "@/components/dashboard/PropertySelectionModal";
 import EnhancedOfferTypeDialog from "@/components/post-showing/EnhancedOfferTypeDialog";
@@ -330,10 +330,11 @@ const BuyerDashboard = () => {
         onTabChange={setActiveTab}
       />
 
-      <PropertyRequestWizard
+      <ModernTourSchedulingModal
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}
+        skipNavigation={true}
       />
 
       <PropertySelectionModal

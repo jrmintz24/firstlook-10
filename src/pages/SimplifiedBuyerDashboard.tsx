@@ -1,11 +1,10 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
-import PropertyRequestWizard from "@/components/PropertyRequestWizard";
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 import { getStatusInfo, type ShowingStatus } from "@/utils/showingStatus";
 
 const SimplifiedBuyerDashboard = () => {
@@ -237,7 +236,7 @@ const SimplifiedBuyerDashboard = () => {
         </div>
       </div>
 
-      <PropertyRequestWizard
+      <ModernTourSchedulingModal
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}

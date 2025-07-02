@@ -38,8 +38,15 @@ const getNext7Days = () => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
+    
+    // Use consistent date formatting - avoid timezone issues by using local date components
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    
     days.push({
-      date: date.toISOString().split('T')[0],
+      date: dateString,
       dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
       dayNumber: date.getDate(),
       monthName: date.toLocaleDateString('en-US', { month: 'short' }),
@@ -135,16 +142,25 @@ const ModernTourSchedulingModal = ({
     if (!date || !time) return false;
     
     try {
-      const selectedDate = new Date(date);
-      const today = new Date();
+      // Parse the date string (YYYY-MM-DD format) consistently
+      const [year, month, day] = date.split('-').map(Number);
+      const selectedDate = new Date(year, month - 1, day); // month is 0-indexed
       
-      // Reset time components for date-only comparison
+      const today = new Date();
       const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+      
+      console.log('Date comparison debug:', {
+        selectedDate: selectedDate.toDateString(),
+        todayDateOnly: todayDateOnly.toDateString(),
+        selectedTime: selectedDate.getTime(),
+        todayTime: todayDateOnly.getTime(),
+        isPaidUser,
+        isAfterToday: selectedDate.getTime() > todayDateOnly.getTime()
+      });
       
       // For free users (including guests): No same-day bookings, allow any time from tomorrow onwards
       if (!isPaidUser) {
-        return selectedDateOnly > todayDateOnly;
+        return selectedDate.getTime() > todayDateOnly.getTime();
       }
       
       // For paid users: No bookings within 2 hours of current time
@@ -158,9 +174,7 @@ const ModernTourSchedulingModal = ({
         adjustedHours = 0;
       }
       
-      const selectedDateTime = new Date(selectedDate);
-      selectedDateTime.setHours(adjustedHours, minutes, 0, 0);
-      
+      const selectedDateTime = new Date(year, month - 1, day, adjustedHours, minutes);
       const now = new Date();
       const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
       
@@ -200,6 +214,13 @@ const ModernTourSchedulingModal = ({
   const canSubmit = properties[0].address.trim() && selectedDates.length > 0 && 
                    selectedDates.every(date => selectedTimes[date]);
 
+  // Calculate completion progress
+  const hasAddress = properties[0].address.trim();
+  const hasDateTimes = selectedDates.length > 0 && selectedDates.every(date => selectedTimes[date]);
+  const completionSteps = [hasAddress, hasDateTimes];
+  const completedSteps = completionSteps.filter(Boolean).length;
+  const totalSteps = completionSteps.length;
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -230,6 +251,19 @@ const ModernTourSchedulingModal = ({
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+              
+              {/* Progress indicator */}
+              <div className="mt-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>Progress: {completedSteps}/{totalSteps} steps completed</span>
+                  <div className="flex-1 bg-gray-200 rounded-full h-2 ml-2">
+                    <div 
+                      className="bg-black h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
             </DialogHeader>
 
             <div className="px-8 pb-8 max-h-[75vh] overflow-y-auto">
@@ -241,7 +275,7 @@ const ModernTourSchedulingModal = ({
                     <div>
                       <p className="text-sm font-medium text-gray-800">Guest Booking</p>
                       <p className="text-xs text-gray-600 mt-1">
-                        No same-day tours. Sign up for more flexible scheduling.
+                        No same-day tours. Tomorrow and future dates are available.
                       </p>
                     </div>
                   </div>
@@ -255,7 +289,7 @@ const ModernTourSchedulingModal = ({
                     <div>
                       <p className="text-sm font-medium text-blue-800">Free Plan</p>
                       <p className="text-xs text-blue-600 mt-1">
-                        No same-day tours. Upgrade for 2-hour advance booking.
+                        No same-day tours. Tomorrow and future dates are available.
                       </p>
                     </div>
                   </div>
@@ -282,7 +316,8 @@ const ModernTourSchedulingModal = ({
                   <div>
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-lg font-medium text-gray-900">
-                        {properties.length > 1 ? 'Properties' : 'Property'}
+                        Step 1: {properties.length > 1 ? 'Properties' : 'Property'}
+                        {hasAddress && <span className="text-green-600 ml-2">✓</span>}
                       </h3>
                       {isPaidUser && properties.length < maxProperties && (
                         <Button
@@ -358,7 +393,7 @@ const ModernTourSchedulingModal = ({
                   {/* Additional Notes */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Additional Notes
+                      Additional Notes (Optional)
                     </label>
                     <Textarea
                       value={notes}
@@ -373,7 +408,8 @@ const ModernTourSchedulingModal = ({
                 <div className="space-y-8">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-6">
-                      Preferred Times
+                      Step 2: Preferred Times
+                      {hasDateTimes && <span className="text-green-600 ml-2">✓</span>}
                     </h3>
                     <p className="text-sm text-gray-500 mb-6">
                       Select up to {maxPreferredTimes} preferred date/time combinations
@@ -399,6 +435,8 @@ const ModernTourSchedulingModal = ({
                             <div className="text-xs font-medium">{day.dayName}</div>
                             <div className="text-sm font-semibold">{day.dayNumber}</div>
                             <div className="text-xs opacity-75">{day.monthName}</div>
+                            {day.isToday && <div className="text-xs text-blue-600 mt-1">Today</div>}
+                            {day.isTomorrow && <div className="text-xs text-green-600 mt-1">Tomorrow</div>}
                           </button>
                         ))}
                       </div>
@@ -469,8 +507,8 @@ const ModernTourSchedulingModal = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {canSubmit ? 
-                    `${selectedDates.length} time${selectedDates.length !== 1 ? 's' : ''} selected` : 
-                    "Complete the form to continue"}
+                    `Ready to submit: ${selectedDates.length} time${selectedDates.length !== 1 ? 's' : ''} selected` : 
+                    `Complete both steps: ${!hasAddress ? 'Add property address' : ''}${!hasAddress && !hasDateTimes ? ' and ' : ''}${!hasDateTimes ? 'Select date/time' : ''}`}
                 </div>
                 <Button
                   onClick={handleSubmit}

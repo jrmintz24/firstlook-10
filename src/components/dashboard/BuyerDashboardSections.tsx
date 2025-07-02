@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Clock, CheckCircle, History, Heart } from "lucide-react";
 import WelcomeDashboard from "./WelcomeDashboard";
@@ -87,7 +86,11 @@ export const generateBuyerDashboardSections = ({
           <WelcomeDashboard displayName={displayName} userType="buyer" />
           <QuickActions 
             onRequestShowing={onRequestShowing} 
-            onMakeOffer={() => console.log("Make offer clicked")}
+            onMakeOffer={() => {
+              // This will be handled by the parent component (BuyerDashboard)
+              // The parent component has access to the handleMakeOffer function
+              console.log("Make offer clicked from dashboard sections");
+            }}
           />
         </div>
       )

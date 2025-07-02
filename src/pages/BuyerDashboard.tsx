@@ -6,6 +6,8 @@ import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDash
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
+import PropertySelectionModal from "@/components/dashboard/PropertySelectionModal";
+import EnhancedOfferTypeDialog from "@/components/post-showing/EnhancedOfferTypeDialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
@@ -61,6 +63,11 @@ const BuyerDashboard = () => {
     refreshShowingRequests
   } = useOptimizedBuyerLogic();
 
+  // New state for property selection and offer modals
+  const [showPropertySelectionModal, setShowPropertySelectionModal] = useState(false);
+  const [showOfferDialog, setShowOfferDialog] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+
   // Use safe messages hook that won't break the dashboard
   const { unreadCount } = useSafeMessages(currentUser?.id || null);
 
@@ -102,6 +109,36 @@ const BuyerDashboard = () => {
   const handleOpenSupport = () => {
     console.log("Support requested");
   };
+
+  // Handle make offer button click
+  const handleMakeOffer = useCallback(() => {
+    if (completedShowings.length === 0) {
+      toast({
+        title: "No Completed Tours",
+        description: "You need to complete at least one tour before making an offer.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setShowPropertySelectionModal(true);
+  }, [completedShowings.length, toast]);
+
+  // Handle property selection from modal
+  const handlePropertySelect = useCallback((showing: any) => {
+    setSelectedProperty(showing);
+    setShowPropertySelectionModal(false);
+    setShowOfferDialog(true);
+  }, []);
+
+  // Handle offer dialog close
+  const handleOfferDialogClose = useCallback(() => {
+    setShowOfferDialog(false);
+    setSelectedProperty(null);
+    toast({
+      title: "Offer Process Started",
+      description: "Your offer consultation has been initiated.",
+    });
+  }, [toast]);
 
   // Handle tour completion - refresh data to move completed tours to history
   const handleTourComplete = useCallback(async () => {
@@ -261,6 +298,25 @@ const BuyerDashboard = () => {
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}
       />
+
+      <PropertySelectionModal
+        isOpen={showPropertySelectionModal}
+        onClose={() => setShowPropertySelectionModal(false)}
+        onPropertySelect={handlePropertySelect}
+        completedShowings={completedShowings}
+      />
+
+      {selectedProperty && (
+        <EnhancedOfferTypeDialog
+          isOpen={showOfferDialog}
+          onClose={handleOfferDialogClose}
+          propertyAddress={selectedProperty.property_address}
+          agentId={selectedProperty.assigned_agent_id}
+          agentName={selectedProperty.assigned_agent_name}
+          buyerId={currentUser?.id || ''}
+          showingRequestId={selectedProperty.id}
+        />
+      )}
 
       {showSubscribeModal && (
         <Dialog open={showSubscribeModal} onOpenChange={() => setShowSubscribeModal(false)}>

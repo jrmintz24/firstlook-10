@@ -21,7 +21,7 @@ const QuickActions = ({ onRequestShowing, onMakeOffer }: QuickActionsProps) => {
     {
       icon: DollarSign,
       title: "Make an Offer",
-      description: "Submit an offer on a property you love",
+      description: "Submit an offer on a toured property",
       color: "bg-green-600 hover:bg-green-700",
       iconColor: "text-green-600",
       onClick: onMakeOffer

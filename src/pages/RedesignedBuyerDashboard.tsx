@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
@@ -215,7 +214,7 @@ const RedesignedBuyerDashboard = () => {
                   showing={request}
                   onConfirm={() => handleConfirmShowingWithModal(request)}
                   onCancel={() => handleCancelShowing(request.id)}
-                  onMessage={() => handleSendMessage(request.id)}
+                  onSendMessage={() => handleSendMessage(request.id)}
                   onSignAgreement={handleSignAgreementFixed}
                 />
               ))}
@@ -234,7 +233,7 @@ const RedesignedBuyerDashboard = () => {
                   showing={showing}
                   onReschedule={() => handleRescheduleShowing(showing.id)}
                   onCancel={() => handleCancelShowing(showing.id)}
-                  onMessage={() => handleSendMessage(showing.id)}
+                  onSendMessage={() => handleSendMessage(showing.id)}
                   onSignAgreement={handleSignAgreementFixed}
                 />
               ))}
@@ -251,7 +250,7 @@ const RedesignedBuyerDashboard = () => {
                 <OptimizedShowingCard
                   key={showing.id}
                   showing={showing}
-                  onMessage={() => handleSendMessage(showing.id)}
+                  onSendMessage={() => handleSendMessage(showing.id)}
                   onSignAgreement={handleSignAgreementFixed}
                 />
               ))}

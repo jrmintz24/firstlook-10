@@ -132,26 +132,37 @@ const ModernTourSchedulingModal = ({
   };
 
   const isTimeSlotAvailable = (date: string, time: string) => {
-    if (user || !date || !time) return true;
+    // If user is logged in, all times are available
+    if (user) return true;
     
-    const selectedDateTime = new Date(date);
-    const [timeStr, period] = time.split(' ');
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    // If no date or time provided, return false
+    if (!date || !time) return false;
     
-    let adjustedHours = hours;
-    if (period === 'PM' && hours !== 12) {
-      adjustedHours += 12;
-    } else if (period === 'AM' && hours === 12) {
-      adjustedHours = 0;
+    try {
+      // Parse the selected date and time
+      const selectedDate = new Date(date);
+      const [timeStr, period] = time.split(' ');
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      
+      let adjustedHours = hours;
+      if (period === 'PM' && hours !== 12) {
+        adjustedHours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        adjustedHours = 0;
+      }
+      
+      selectedDate.setHours(adjustedHours, minutes, 0, 0);
+      
+      // For guest users, require 24 hours advance notice
+      const now = new Date();
+      const minDateTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+      
+      return selectedDate >= minDateTime;
+    } catch (error) {
+      console.error('Error parsing date/time:', error);
+      // If there's an error parsing, default to available for logged-in users, unavailable for guests
+      return !!user;
     }
-    
-    selectedDateTime.setHours(adjustedHours, minutes, 0, 0);
-    
-    const minDateTime = new Date();
-    if (isGuest) {
-      minDateTime.setHours(minDateTime.getHours() + 23);
-    }
-    return selectedDateTime >= minDateTime;
   };
 
   const handleSubmit = async () => {
@@ -372,25 +383,38 @@ const ModernTourSchedulingModal = ({
                               (Choice #{index + 1})
                             </span>
                           </h4>
-                          <div className="grid grid-cols-3 gap-3">
-                            {availableTimes.map((slot) => (
-                              <button
-                                key={slot.value}
-                                type="button"
-                                onClick={() => handleTimeSelection(dateString, slot.value)}
-                                className={`p-3 rounded-xl border transition-all text-center ${
-                                  selectedTimes[dateString] === slot.value
-                                    ? 'bg-black text-white border-black'
-                                    : 'bg-white border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                                }`}
-                              >
-                                <div className="text-sm font-medium">{slot.label}</div>
-                                {slot.recommended && (
-                                  <div className="text-xs text-gray-500 mt-1">Recommended</div>
-                                )}
-                              </button>
-                            ))}
-                          </div>
+                          
+                          {availableTimes.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-3">
+                              {availableTimes.map((slot) => (
+                                <button
+                                  key={slot.value}
+                                  type="button"
+                                  onClick={() => handleTimeSelection(dateString, slot.value)}
+                                  className={`p-3 rounded-xl border transition-all text-center ${
+                                    selectedTimes[dateString] === slot.value
+                                      ? 'bg-black text-white border-black'
+                                      : 'bg-white border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <div className="text-sm font-medium">{slot.label}</div>
+                                  {slot.recommended && (
+                                    <div className="text-xs text-gray-500 mt-1">Recommended</div>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                              <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">
+                                {isGuest 
+                                  ? "No times available for this date. Please select a date at least 24 hours in advance."
+                                  : "No times available for this date."
+                                }
+                              </p>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

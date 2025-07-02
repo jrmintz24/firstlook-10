@@ -12,14 +12,14 @@ import FAQSection from '../components/buyer-os/FAQSection'
 import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
-import PropertyRequestWizard from '../components/PropertyRequestWizard'
+import ModernTourSchedulingModal from '../components/ModernTourSchedulingModal'
 import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
 
 export default function Index() {
   const { user, loading } = useAuth()
   const { toast } = useToast()
-  const [showPropertyRequestForm, setShowPropertyRequestForm] = useState(false)
+  const [showTourModal, setShowTourModal] = useState(false)
   const tourQuota = useTourQuota()
 
   const handleStartTour = () => {
@@ -33,7 +33,12 @@ export default function Index() {
       return;
     }
     
-    setShowPropertyRequestForm(true)
+    setShowTourModal(true)
+  }
+
+  const handleTourModalSuccess = async () => {
+    // Refresh data after successful tour request
+    window.location.reload();
   }
 
   // Show loading while checking auth state
@@ -100,10 +105,12 @@ export default function Index() {
         />
       )}
 
-      {/* Property Request Form Modal */}
-      <PropertyRequestWizard 
-        isOpen={showPropertyRequestForm}
-        onClose={() => setShowPropertyRequestForm(false)}
+      {/* Modern Tour Scheduling Modal */}
+      <ModernTourSchedulingModal 
+        isOpen={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onSuccess={handleTourModalSuccess}
+        skipNavigation={true}
       />
     </div>
   )

@@ -1,9 +1,9 @@
-
 import React, { useState, useCallback } from "react";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
 import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
 import OptimizedShowingCard from "@/components/dashboard/OptimizedShowingCard";
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 
 // Create missing header component
 const RedesignedDashboardHeader = ({ userName, unreadCount, onOpenChat }: {
@@ -123,7 +123,6 @@ const RedesignedBuyerDashboard = () => {
     eligibility,
     isSubscribed,
     unreadCount,
-    handleRequestShowing,
     handleUpgradeClick,
     handleConfirmShowingWithModal,
     handleSendMessage,
@@ -134,139 +133,155 @@ const RedesignedBuyerDashboard = () => {
   } = useOptimizedBuyerLogic();
 
   const [activeTab, setActiveTab] = useState("requested");
+  const [showTourModal, setShowTourModal] = useState(false);
 
   const handleOpenChat = useCallback((defaultTab: 'property' | 'support', showingId?: string) => {
-    // Placeholder for chat opening logic
     console.log(`Opening chat with tab: ${defaultTab}, showing ID: ${showingId}`);
     alert('Chat feature not fully implemented yet.');
   }, []);
 
   const handleMakeOffer = useCallback((propertyAddress: string) => {
-    // Placeholder for make offer logic
     console.log(`Making offer for property: ${propertyAddress}`);
     alert('Make offer feature not fully implemented yet.');
   }, []);
 
-  // Fix the handleSignAgreementFromCard to match the expected signature
+  const handleRequestShowing = useCallback(() => {
+    setShowTourModal(true);
+  }, []);
+
+  const handleTourModalSuccess = useCallback(async () => {
+    // Refresh data after successful tour request
+    window.location.reload();
+  }, []);
+
   const handleSignAgreementFixed = useCallback((showing: any) => {
     const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || 'User';
     handleSignAgreementFromCard(showing.id, displayName);
   }, [handleSignAgreementFromCard, profile, currentUser]);
 
   return (
-    <ModernDashboardLayout
-      header={
-        <RedesignedDashboardHeader 
-          userName={profile?.first_name || "Buyer"}
-          unreadCount={unreadCount}
-          onOpenChat={handleOpenChat}
-        />
-      }
-      stats={
-        <StatsAndMessages 
-          stats={[
-            { label: "Requested", value: showingCounts.pending, onClick: () => handleStatClick("requested") },
-            { label: "Active Tours", value: showingCounts.active, onClick: () => handleStatClick("active") },
-            { label: "Completed", value: showingCounts.completed, onClick: () => handleStatClick("completed") }
-          ]}
-          unreadCount={unreadCount}
-          onOpenChat={() => handleOpenChat('support')}
-        />
-      }
-      mainContent={
-        loading ? (
-          <OptimizedDashboardSkeleton />
-        ) : (
-          <RecentTours
-            pendingRequests={pendingRequests}
-            activeShowings={activeShowings}
-            completedShowings={completedShowings}
-            onChatWithAgent={handleSendMessage}
-            onReschedule={handleRescheduleShowing}
-            onMakeOffer={handleMakeOffer}
-            onConfirmShowing={handleConfirmShowingWithModal}
+    <>
+      <ModernDashboardLayout
+        header={
+          <RedesignedDashboardHeader 
+            userName={profile?.first_name || "Buyer"}
+            unreadCount={unreadCount}
+            onOpenChat={handleOpenChat}
           />
-        )
-      }
-      sidebar={
-        <div className="space-y-6">
-          <NextTourCard 
-            showings={[...pendingRequests, ...activeShowings]}
-            onViewDetails={(id) => console.log('View details:', id)}
+        }
+        stats={
+          <StatsAndMessages 
+            stats={[
+              { label: "Requested", value: showingCounts.pending, onClick: () => handleStatClick("requested") },
+              { label: "Active Tours", value: showingCounts.active, onClick: () => handleStatClick("active") },
+              { label: "Completed", value: showingCounts.completed, onClick: () => handleStatClick("completed") }
+            ]}
+            unreadCount={unreadCount}
+            onOpenChat={() => handleOpenChat('support')}
           />
-          <EnhancedWhatsNextCard 
-            onRequestTour={handleRequestShowing}
-            onUpgrade={handleUpgradeClick}
-            eligibility={eligibility}
-            isSubscribed={isSubscribed}
-          />
-        </div>
-      }
-      sections={{
-        requested: {
-          id: "requested",
-          title: "Requested",
-          count: showingCounts.pending,
-          content: (
-            <div className="space-y-4">
-              {pendingRequests.map((request) => (
-                <OptimizedShowingCard
-                  key={request.id}
-                  showing={request}
-                  onConfirm={() => handleConfirmShowingWithModal(request)}
-                  onCancel={() => handleCancelShowing(request.id)}
-                  onReschedule={() => handleRescheduleShowing(request.id)}
-                  onSendMessage={() => handleSendMessage(request.id)}
-                  onSignAgreement={handleSignAgreementFixed}
-                />
-              ))}
-            </div>
-          )
-        },
-        active: {
-          id: "active",
-          title: "Active Tours",
-          count: showingCounts.active,
-          content: (
-            <div className="space-y-4">
-              {activeShowings.map((showing) => (
-                <OptimizedShowingCard
-                  key={showing.id}
-                  showing={showing}
-                  onReschedule={() => handleRescheduleShowing(showing.id)}
-                  onCancel={() => handleCancelShowing(showing.id)}
-                  onSendMessage={() => handleSendMessage(showing.id)}
-                  onSignAgreement={handleSignAgreementFixed}
-                />
-              ))}
-            </div>
-          )
-        },
-        completed: {
-          id: "completed",
-          title: "Completed",
-          count: showingCounts.completed,
-          content: (
-            <div className="space-y-4">
-              {completedShowings.map((showing) => (
-                <OptimizedShowingCard
-                  key={showing.id}
-                  showing={showing}
-                  onCancel={() => handleCancelShowing(showing.id)}
-                  onReschedule={() => handleRescheduleShowing(showing.id)}
-                  onSendMessage={() => handleSendMessage(showing.id)}
-                  onSignAgreement={handleSignAgreementFixed}
-                />
-              ))}
-            </div>
+        }
+        mainContent={
+          loading ? (
+            <OptimizedDashboardSkeleton />
+          ) : (
+            <RecentTours
+              pendingRequests={pendingRequests}
+              activeShowings={activeShowings}
+              completedShowings={completedShowings}
+              onChatWithAgent={handleSendMessage}
+              onReschedule={handleRescheduleShowing}
+              onMakeOffer={handleMakeOffer}
+              onConfirmShowing={handleConfirmShowingWithModal}
+            />
           )
         }
-      }}
-      defaultSection="requested"
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      userId={currentUser?.id}
-    />
+        sidebar={
+          <div className="space-y-6">
+            <NextTourCard 
+              showings={[...pendingRequests, ...activeShowings]}
+              onViewDetails={(id) => console.log('View details:', id)}
+            />
+            <EnhancedWhatsNextCard 
+              onRequestTour={handleRequestShowing}
+              onUpgrade={handleUpgradeClick}
+              eligibility={eligibility}
+              isSubscribed={isSubscribed}
+            />
+          </div>
+        }
+        sections={{
+          requested: {
+            id: "requested",
+            title: "Requested",
+            count: showingCounts.pending,
+            content: (
+              <div className="space-y-4">
+                {pendingRequests.map((request) => (
+                  <OptimizedShowingCard
+                    key={request.id}
+                    showing={request}
+                    onConfirm={() => handleConfirmShowingWithModal(request)}
+                    onCancel={() => handleCancelShowing(request.id)}
+                    onReschedule={() => handleRescheduleShowing(request.id)}
+                    onSendMessage={() => handleSendMessage(request.id)}
+                    onSignAgreement={handleSignAgreementFixed}
+                  />
+                ))}
+              </div>
+            )
+          },
+          active: {
+            id: "active",
+            title: "Active Tours",
+            count: showingCounts.active,
+            content: (
+              <div className="space-y-4">
+                {activeShowings.map((showing) => (
+                  <OptimizedShowingCard
+                    key={showing.id}
+                    showing={showing}
+                    onReschedule={() => handleRescheduleShowing(showing.id)}
+                    onCancel={() => handleCancelShowing(showing.id)}
+                    onSendMessage={() => handleSendMessage(showing.id)}
+                    onSignAgreement={handleSignAgreementFixed}
+                  />
+                ))}
+              </div>
+            )
+          },
+          completed: {
+            id: "completed",
+            title: "Completed",
+            count: showingCounts.completed,
+            content: (
+              <div className="space-y-4">
+                {completedShowings.map((showing) => (
+                  <OptimizedShowingCard
+                    key={showing.id}
+                    showing={showing}
+                    onCancel={() => handleCancelShowing(showing.id)}
+                    onReschedule={() => handleRescheduleShowing(showing.id)}
+                    onSendMessage={() => handleSendMessage(showing.id)}
+                    onSignAgreement={handleSignAgreementFixed}
+                  />
+                ))}
+              </div>
+            )
+          }
+        }}
+        defaultSection="requested"
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        userId={currentUser?.id}
+      />
+
+      <ModernTourSchedulingModal
+        isOpen={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onSuccess={handleTourModalSuccess}
+        skipNavigation={true}
+      />
+    </>
   );
 };
 

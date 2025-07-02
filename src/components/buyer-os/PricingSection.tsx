@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Users, FileText, Clock, ArrowRight, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const PricingSection = () => {
+interface PricingSectionProps {
+  onStartTour?: () => void;
+}
+
+const PricingSection = ({ onStartTour }: PricingSectionProps) => {
   const [showOfferServices, setShowOfferServices] = useState(false);
 
   const freeFeatures = [
@@ -55,6 +58,12 @@ const PricingSection = () => {
       addon: true
     }
   ];
+
+  const handleStartFree = () => {
+    if (onStartTour) {
+      onStartTour();
+    }
+  };
 
   return (
     <div className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -112,11 +121,12 @@ const PricingSection = () => {
                     </div>
                   ))}
                 </div>
-                <Link to="/signup">
-                  <Button className="w-full bg-gray-900 hover:bg-black text-white py-4 text-lg">
-                    Start Free
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={handleStartFree}
+                  className="w-full bg-gray-900 hover:bg-black text-white py-4 text-lg"
+                >
+                  Start Free
+                </Button>
               </CardContent>
             </Card>
 

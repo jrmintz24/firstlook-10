@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
@@ -79,7 +80,7 @@ export default function Index() {
       <CommissionExplainer />
 
       {/* Pricing Section */}
-      <PricingSection />
+      <PricingSection onStartTour={handleStartTour} />
 
       {/* FAQ Section */}
       <FAQSection />

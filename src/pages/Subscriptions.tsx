@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, Users, Clock, Shield, ArrowLeft, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 
 const Subscriptions = () => {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showPropertyWizard, setShowPropertyWizard] = useState(false);
 
   const freeFeatures = [
     "5 home tours per month",
@@ -35,6 +36,10 @@ const Subscriptions = () => {
   const handleSubscriptionComplete = () => {
     setShowSubscribeModal(false);
     // Could add success redirect or toast here
+  };
+
+  const handleStartFree = () => {
+    setShowPropertyWizard(true);
   };
 
   return (
@@ -85,12 +90,13 @@ const Subscriptions = () => {
                   </div>
                 ))}
               </div>
-              <Link to="/signup">
-                <Button className="w-full bg-gray-900 hover:bg-black text-white py-4 text-lg font-medium">
-                  <Users className="mr-2 h-5 w-5" />
-                  Start Free
-                </Button>
-              </Link>
+              <Button 
+                onClick={handleStartFree}
+                className="w-full bg-gray-900 hover:bg-black text-white py-4 text-lg font-medium"
+              >
+                <Users className="mr-2 h-5 w-5" />
+                Start Free
+              </Button>
               <p className="text-center text-sm text-gray-600 mt-4">
                 No credit card required • Cancel anytime
               </p>
@@ -282,6 +288,11 @@ const Subscriptions = () => {
         isOpen={showSubscribeModal}
         onClose={() => setShowSubscribeModal(false)}
         onSubscriptionComplete={handleSubscriptionComplete}
+      />
+
+      <PropertyRequestWizard
+        isOpen={showPropertyWizard}
+        onClose={() => setShowPropertyWizard(false)}
       />
     </div>
   );

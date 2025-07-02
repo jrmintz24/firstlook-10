@@ -211,12 +211,14 @@ const ModernTourSchedulingModal = ({
     await handleContinueToSubscriptions();
   };
 
+  // Fixed submit logic - only need at least ONE date/time combination, not ALL
   const canSubmit = properties[0].address.trim() && selectedDates.length > 0 && 
-                   selectedDates.every(date => selectedTimes[date]);
+                   selectedDates.some(date => selectedTimes[date]);
 
   // Calculate completion progress
   const hasAddress = properties[0].address.trim();
-  const hasDateTimes = selectedDates.length > 0 && selectedDates.every(date => selectedTimes[date]);
+  // Fixed date/time completion check - only need at least ONE combination
+  const hasDateTimes = selectedDates.length > 0 && selectedDates.some(date => selectedTimes[date]);
   const completionSteps = [hasAddress, hasDateTimes];
   const completedSteps = completionSteps.filter(Boolean).length;
   const totalSteps = completionSteps.length;
@@ -507,7 +509,7 @@ const ModernTourSchedulingModal = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {canSubmit ? 
-                    `Ready to submit: ${selectedDates.length} time${selectedDates.length !== 1 ? 's' : ''} selected` : 
+                    `Ready to submit: ${selectedDates.filter(date => selectedTimes[date]).length} time${selectedDates.filter(date => selectedTimes[date]).length !== 1 ? 's' : ''} selected` : 
                     `Complete both steps: ${!hasAddress ? 'Add property address' : ''}${!hasAddress && !hasDateTimes ? ' and ' : ''}${!hasDateTimes ? 'Select date/time' : ''}`}
                 </div>
                 <Button

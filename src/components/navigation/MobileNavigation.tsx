@@ -54,14 +54,6 @@ const MobileNavigation = ({
             Blog
           </Button>
         </Link>
-        <Link to="/agents" onClick={onMenuItemClick}>
-          <Button 
-            variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
-          >
-            For Agents
-          </Button>
-        </Link>
         
         {/* Mobile Auth Section - Enhanced touch targets */}
         <div className="border-t border-purple-100 pt-4 mt-4">

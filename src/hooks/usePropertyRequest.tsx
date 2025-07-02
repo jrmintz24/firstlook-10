@@ -31,7 +31,7 @@ export const usePropertyRequest = (
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
-  const [modalFlow, setModalFlow] = useState<'scheduling' | 'auth' | 'limit' | 'closed'>('closed');
+  const [modalFlow, setModalFlow] = useState<'scheduling' | 'auth' | 'limit' | 'closed'>('scheduling');
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -169,16 +169,16 @@ export const usePropertyRequest = (
   const resetForm = () => {
     setFormData(initialFormData);
     setCurrentStep(1);
-    setModalFlow('closed');
+    setModalFlow('scheduling');
   };
 
   return {
     // Legacy properties for backward compatibility
     step: currentStep,
     showAuthModal: modalFlow === 'auth',
-    setShowAuthModal: (show: boolean) => setModalFlow(show ? 'auth' : 'closed'),
+    setShowAuthModal: (show: boolean) => setModalFlow(show ? 'auth' : 'scheduling'),
     showFreeShowingLimitModal: modalFlow === 'limit',
-    setShowFreeShowingLimitModal: (show: boolean) => setModalFlow(show ? 'limit' : 'closed'),
+    setShowFreeShowingLimitModal: (show: boolean) => setModalFlow(show ? 'limit' : 'scheduling'),
     eligibility,
     
     // Current properties

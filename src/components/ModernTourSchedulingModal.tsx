@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -97,27 +96,21 @@ const ModernTourSchedulingModal = ({
   isOpen, 
   onClose, 
   onSuccess, 
-  skipNavigation = true 
+  skipNavigation = false 
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
-  const [modalFlow, setModalFlow] = useState<ModalFlow>('scheduling');
   const [propertyAddress, setPropertyAddress] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [showAllTimes, setShowAllTimes] = useState(false);
 
-  // Store form data for persistence between modal flows
-  const [formData, setFormData] = useState({
-    propertyAddress: "",
-    selectedDate: "",
-    selectedTime: "",
-    notes: ""
-  });
-
   const {
     isSubmitting,
+    modalFlow,
+    setModalFlow,
+    handleInputChange,
     handleContinueToSubscriptions,
     handleCancelPendingShowing,
     pendingShowingAddress,
@@ -193,24 +186,18 @@ const ModernTourSchedulingModal = ({
       return;
     }
 
-    // Store form data before closing modal
-    setFormData({
-      propertyAddress,
-      selectedDate,
-      selectedTime,
-      notes
-    });
+    // Update the hook's form data with our local state
+    handleInputChange('propertyAddress', propertyAddress);
+    handleInputChange('preferredDate1', selectedDate);
+    handleInputChange('preferredTime1', selectedTime);
+    handleInputChange('notes', notes);
 
-    // Close scheduling modal first
-    setModalFlow('closed');
-
-    // Handle the submission flow - this will determine next modal to show
+    // Start the submission flow - this will handle auth/limit modals as needed
     await handleContinueToSubscriptions();
   };
 
   const handleAuthSuccess = async () => {
-    setModalFlow('closed');
-    // Restore form data and continue with submission
+    // After successful auth, continue with the submission
     await handleContinueToSubscriptions();
   };
 

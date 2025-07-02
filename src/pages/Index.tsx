@@ -50,19 +50,8 @@ export default function Index() {
     )
   }
 
-  // If user is authenticated, let AuthContext handle redirects
-  // Don't redirect here to prevent conflicts
-  if (user) {
-    // Show a different view for authenticated users on the home page
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+  // For authenticated users, show the homepage normally - let them interact with it
+  // The tour modal will handle proper navigation after tour submission
 
   return (
     <div className="min-h-screen">
@@ -110,7 +99,7 @@ export default function Index() {
         isOpen={showTourModal}
         onClose={() => setShowTourModal(false)}
         onSuccess={handleTourModalSuccess}
-        skipNavigation={true}
+        skipNavigation={false}
       />
     </div>
   )

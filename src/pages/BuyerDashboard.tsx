@@ -1,5 +1,5 @@
+
 import { useState, Suspense, useCallback } from "react";
-import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
@@ -11,11 +11,12 @@ import { Button } from "@/components/ui/button";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
-import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
+import { useSimpleBuyerLogic } from "@/hooks/useSimpleBuyerLogic";
 import "../utils/createTestAgent"; // Import to ensure test agent is created
+import "../utils/debugWorkflow"; // Import to enable workflow debugging
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -36,11 +37,13 @@ const BuyerDashboard = () => {
     selectedShowing,
     agreements,
     loading,
+    detailLoading,
     authLoading,
     currentUser,
     pendingRequests,
     activeShowings,
     completedShowings,
+    showingCounts,
     eligibility,
     isSubscribed,
     subscriptionTier,
@@ -58,7 +61,7 @@ const BuyerDashboard = () => {
     handleRescheduleShowing,
     handleRescheduleSuccess,
     fetchShowingRequests
-  } = useBuyerDashboardLogic();
+  } = useSimpleBuyerLogic();
 
   // Fetch real consultation bookings data
   const { 
@@ -173,17 +176,17 @@ const BuyerDashboard = () => {
           stats={[
             {
               title: "Pending Requests",
-              value: pendingRequests.length,
+              value: showingCounts.pending,
               targetTab: "requested"
             },
             {
               title: "Confirmed Tours", 
-              value: activeShowings.length,
+              value: showingCounts.active,
               targetTab: "confirmed"
             },
             {
               title: "Completed Tours",
-              value: completedShowings.length,
+              value: showingCounts.completed,
               targetTab: "history"
             }
           ]}

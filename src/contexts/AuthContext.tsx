@@ -30,10 +30,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   useEffect(() => {
-    console.log('AuthProvider useEffect: Setting up auth state listener');
+    console.log('AuthProvider: Setting up auth state listener');
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,147 +51,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Handle profile creation and onboarding for sign-in events
-      if (event === 'SIGNED_IN' && session?.user && !onboardingChecked) {
-        console.log('AuthProvider: Checking onboarding status for user:', session.user.id);
-        
-        // Prevent checking onboarding if already on onboarding page
-        const currentPath = window.location.pathname;
-        if (currentPath.includes('/onboarding')) {
-          console.log('AuthProvider: Already on onboarding page, skipping redirect');
-          setOnboardingChecked(true);
-          return;
-        }
-
-        // Also skip if on auth callback pages
-        if (currentPath.includes('/auth') || currentPath.includes('/callback')) {
-          console.log('AuthProvider: On auth page, skipping onboarding check');
-          return;
-        }
-        
-        // Use setTimeout to prevent blocking the auth state change
+      // Handle profile creation for new signups only
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Use setTimeout to avoid blocking auth state change
         setTimeout(async () => {
-          try {
-            // First, check if profile exists and create/update if needed
-            const { data: existingProfile, error: profileFetchError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-
-            // Check for signup form data
-            const signupFormData = localStorage.getItem('signupFormData');
-            let formData = null;
-            if (signupFormData) {
-              try {
-                formData = JSON.parse(signupFormData);
-                localStorage.removeItem('signupFormData');
-              } catch (e) {
-                console.error('Error parsing signup form data:', e);
-              }
-            }
-
-            if (profileFetchError?.code === 'PGRST116' || !existingProfile) {
-              // Profile doesn't exist, create it
-              console.log('AuthProvider: Creating new profile with signup data');
-              
-              // Safely access buyer_preferences with proper typing
-              const existingBuyerPrefs = existingProfile?.buyer_preferences as Record<string, any> || {};
-              
-              const profileData = {
-                id: session.user.id,
-                first_name: formData?.firstName || session.user.user_metadata?.first_name || null,
-                last_name: formData?.lastName || session.user.user_metadata?.last_name || null,
-                phone: formData?.phone || session.user.user_metadata?.phone || null,
-                user_type: 'buyer',
-                buyer_preferences: {
-                  budget: formData?.budget || null,
-                  desiredAreas: formData?.desiredAreas ? formData.desiredAreas.split(',').map(s => s.trim()) : null
-                },
-                agent_details: {},
-                communication_preferences: {},
-                onboarding_completed: true, // Skip full onboarding for streamlined signup
-                profile_completion_percentage: 85, // High completion since we collected key info
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
-
-              const { error: createError } = await supabase
-                .from('profiles')
-                .insert([profileData]);
-
-              if (createError) {
-                console.error('AuthProvider: Error creating profile:', createError);
-              } else {
-                console.log('AuthProvider: Profile created successfully');
-              }
-            } else if (formData) {
-              // Profile exists but we have new signup data to update
-              console.log('AuthProvider: Updating existing profile with signup data');
-              
-              // Safely access buyer_preferences with proper typing
-              const existingBuyerPrefs = existingProfile.buyer_preferences as Record<string, any> || {};
-              
-              const updates = {
-                first_name: formData.firstName || existingProfile.first_name,
-                last_name: formData.lastName || existingProfile.last_name,
-                phone: formData.phone || existingProfile.phone,
-                buyer_preferences: {
-                  ...existingBuyerPrefs,
-                  budget: formData.budget || existingBuyerPrefs.budget,
-                  desiredAreas: formData.desiredAreas ? 
-                    formData.desiredAreas.split(',').map(s => s.trim()) : 
-                    existingBuyerPrefs.desiredAreas
-                },
-                onboarding_completed: true,
-                profile_completion_percentage: 85,
-                updated_at: new Date().toISOString()
-              };
-
-              const { error: updateError } = await supabase
-                .from('profiles')
-                .update(updates)
-                .eq('id', session.user.id);
-
-              if (updateError) {
-                console.error('AuthProvider: Error updating profile:', updateError);
-              }
-            }
-
-            // Check onboarding status
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('onboarding_completed')
-              .eq('id', session.user.id)
-              .single();
-
-            console.log('AuthProvider: Profile onboarding status:', profile);
-
-            // Only redirect to full onboarding if explicitly false and no tour pending
-            const pendingTourRequest = localStorage.getItem('pendingTourRequest');
-            if (profile && profile.onboarding_completed === false && !pendingTourRequest) {
-              console.log('AuthProvider: Redirecting to onboarding');
-              setOnboardingChecked(true);
-              window.location.href = '/onboarding';
-            } else {
-              console.log('AuthProvider: Onboarding completed or tour pending, staying on current page');
-              setOnboardingChecked(true);
-            }
-          } catch (error) {
-            console.error('AuthProvider: Error in post-signin processing:', error);
-            setOnboardingChecked(true);
-          }
+          await handleProfileCreation(session.user);
         }, 100);
-      }
-
-      // Reset onboarding check flag when user signs out
-      if (event === 'SIGNED_OUT') {
-        setOnboardingChecked(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Remove onboardingChecked dependency to prevent re-runs
+  }, []); // Simplified dependency array
+
+  const handleProfileCreation = async (user: User) => {
+    try {
+      // Check if profile exists
+      const { data: existingProfile, error: profileFetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      // Only create profile if it doesn't exist
+      if (profileFetchError?.code === 'PGRST116' || !existingProfile) {
+        console.log('AuthProvider: Creating new profile');
+        
+        // Check for signup form data
+        const signupFormData = localStorage.getItem('signupFormData');
+        let formData = null;
+        if (signupFormData) {
+          try {
+            formData = JSON.parse(signupFormData);
+            localStorage.removeItem('signupFormData');
+          } catch (e) {
+            console.error('Error parsing signup form data:', e);
+          }
+        }
+        
+        const profileData = {
+          id: user.id,
+          first_name: formData?.firstName || user.user_metadata?.first_name || null,
+          last_name: formData?.lastName || user.user_metadata?.last_name || null,
+          phone: formData?.phone || user.user_metadata?.phone || null,
+          user_type: user.user_metadata?.user_type || 'buyer',
+          buyer_preferences: formData ? {
+            budget: formData.budget || null,
+            desiredAreas: formData.desiredAreas ? formData.desiredAreas.split(',').map(s => s.trim()) : null
+          } : {},
+          agent_details: {},
+          communication_preferences: {},
+          onboarding_completed: true, // Simplified - always mark as completed
+          profile_completion_percentage: 85,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert([profileData]);
+
+        if (createError) {
+          console.error('AuthProvider: Error creating profile:', createError);
+        } else {
+          console.log('AuthProvider: Profile created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('AuthProvider: Error in profile creation:', error);
+    }
+  };
 
   const signUp = async (
     email: string, 
@@ -213,7 +140,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear local state immediately after successful sign out
     setUser(null)
     setSession(null)
-    setOnboardingChecked(false)
   }
 
   const signInWithProvider = async (

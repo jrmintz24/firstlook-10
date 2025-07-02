@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,12 +46,12 @@ export const useAgentDashboard = () => {
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Updated categorization for manual assignment workflow
+  // Categorize requests for manual assignment workflow
   const pendingRequests = showingRequests.filter(req => 
     req.status === 'pending' && !req.assigned_agent_id
   );
   
-  // Requests assigned to this agent (either manually accepted or requested specifically)
+  // Requests assigned to this agent
   const assignedRequests = showingRequests.filter(req => 
     req.assigned_agent_id === profile?.id && 
     ['agent_confirmed', 'confirmed', 'scheduled', 'awaiting_agreement'].includes(req.status)

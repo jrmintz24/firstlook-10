@@ -1,38 +1,59 @@
 
 import { useEffect, useRef } from 'react';
-import { useMessageSubscriptionManager } from './useMessageSubscriptionManager';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useMessageSubscription = (userId: string | null, fetchMessages: () => void) => {
-  const { createSubscription, cleanupConnection, resetConnection } = useMessageSubscriptionManager();
-  const hasSetupSubscription = useRef(false);
+  const subscriptionRef = useRef<any>(null);
 
   useEffect(() => {
     if (!userId) {
-      cleanupConnection();
-      hasSetupSubscription.current = false;
+      // Clean up existing subscription
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
       return;
     }
 
-    // Prevent multiple subscriptions for the same user
-    if (hasSetupSubscription.current) {
-      console.log('Message subscription already set up for user:', userId);
-      return;
-    }
+    console.log('useMessageSubscription: Setting up subscription for user:', userId);
 
-    console.log('Setting up message subscription for user:', userId);
-    hasSetupSubscription.current = true;
+    // Create new subscription
+    const channel = supabase
+      .channel(`messages_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_id=eq.${userId},receiver_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('useMessageSubscription: Message change:', payload);
+          fetchMessages();
+        }
+      )
+      .subscribe((status) => {
+        console.log('useMessageSubscription: Subscription status:', status);
+      });
 
-    const channel = createSubscription(userId, fetchMessages);
+    subscriptionRef.current = channel;
 
     return () => {
-      console.log('Cleaning up message subscription for user:', userId);
-      cleanupConnection();
-      hasSetupSubscription.current = false;
+      if (subscriptionRef.current) {
+        console.log('useMessageSubscription: Cleaning up subscription');
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
     };
-  }, [userId, createSubscription, cleanupConnection, fetchMessages]);
+  }, [userId, fetchMessages]);
 
-  // Reset connection on user change
-  useEffect(() => {
-    resetConnection();
-  }, [userId, resetConnection]);
+  return {
+    cleanup: () => {
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
+    }
+  };
 };

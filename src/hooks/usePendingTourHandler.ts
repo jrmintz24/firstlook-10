@@ -16,7 +16,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
 
   const processPendingTour = useCallback(async () => {
     if (loading || !user || hasProcessedRef.current || processingRef.current) {
-      console.log('usePendingTourHandler: Not ready to process or already processed', { 
+      console.log('usePendingTourHandler: Not ready to process', { 
         loading, 
         hasUser: !!user, 
         hasProcessed: hasProcessedRef.current,
@@ -25,42 +25,15 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       return;
     }
 
-    // Check if we're currently in the onboarding flow
-    const isOnboardingPath = window.location.pathname.includes('/onboarding');
-    if (isOnboardingPath) {
-      console.log('usePendingTourHandler: User is in onboarding, deferring tour processing');
-      return;
-    }
-
-    console.log('usePendingTourHandler: Checking for pending tour request...');
-    
-    // Check if this is a new user from property request
-    const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest');
     const pendingTourRequest = localStorage.getItem('pendingTourRequest');
     
     if (!pendingTourRequest) {
       console.log('usePendingTourHandler: No pending tour request found');
+      const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest');
       if (isNewUserFromRequest) {
         localStorage.removeItem('newUserFromPropertyRequest');
       }
       return;
-    }
-
-    // Check if user has completed onboarding
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
-        .single();
-
-      if (profile && !profile.onboarding_completed) {
-        console.log('usePendingTourHandler: Onboarding not completed, deferring tour processing');
-        return;
-      }
-    } catch (error) {
-      console.error('usePendingTourHandler: Error checking onboarding status:', error);
-      // Continue with tour processing even if we can't check onboarding
     }
 
     // Mark as processing to prevent duplicate processing
@@ -97,11 +70,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       const preferredDate = preferredOptions[0]?.date || '';
       const preferredTime = preferredOptions[0]?.time || '';
 
-      // Calculate estimated confirmation date (2-4 hours from now)
-      const estimatedConfirmationDate = new Date();
-      estimatedConfirmationDate.setHours(estimatedConfirmationDate.getHours() + 3);
-
-      // Create the showing request
+      // Create the showing request with "pending" status (no auto-assignment)
       const showingRequest = {
         user_id: user.id,
         property_address: tourData.propertyAddress,
@@ -109,8 +78,11 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         preferred_time: preferredTime || null,
         message: tourData.notes || null,
         internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
-        status: 'pending',
-        estimated_confirmation_date: estimatedConfirmationDate.toISOString().split('T')[0]
+        status: 'pending', // Ensure it starts as pending for manual agent assignment
+        assigned_agent_id: null, // No auto-assignment
+        assigned_agent_name: null,
+        assigned_agent_phone: null,
+        estimated_confirmation_date: null // Will be set when agent accepts
       };
 
       console.log('usePendingTourHandler: Creating showing request:', showingRequest);
@@ -140,10 +112,11 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       localStorage.removeItem('newUserFromPropertyRequest');
 
       // Show success message
+      const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest') === 'true';
       if (isNewUserFromRequest) {
         toast({
           title: "Welcome to FirstLook! 🎉",
-          description: `Your tour request for ${showingRequest.property_address} has been submitted successfully! We'll review and assign a showing partner within 2-4 hours.`,
+          description: `Your tour request for ${showingRequest.property_address} has been submitted! We'll assign an agent within 2-4 hours.`,
         });
       } else {
         toast({
@@ -152,7 +125,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         });
       }
 
-      // Call the callback to refresh data instead of reloading the page
+      // Call the callback to refresh data
       if (onTourProcessed) {
         await onTourProcessed();
       }
@@ -187,7 +160,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
     // Wait for auth to be ready, then process
     if (!loading && user) {
       // Add a small delay to ensure all auth state is settled
-      const timeoutId = setTimeout(processPendingTour, 1500);
+      const timeoutId = setTimeout(processPendingTour, 1000);
       return () => clearTimeout(timeoutId);
     }
   }, [loading, user, processPendingTour]);

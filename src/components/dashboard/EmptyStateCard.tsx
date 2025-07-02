@@ -8,7 +8,7 @@ interface EmptyStateCardProps {
   title: string;
   description: string;
   buttonText: string;
-  onButtonClick: () => void;
+  onButtonClick?: () => void;
 }
 
 const EmptyStateCard = ({ 
@@ -24,12 +24,14 @@ const EmptyStateCard = ({
         <Icon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-600 mb-2">{title}</h3>
         <p className="text-gray-500 mb-6">{description}</p>
-        <Button 
-          onClick={onButtonClick}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-        >
-          {buttonText}
-        </Button>
+        {buttonText && onButtonClick && (
+          <Button 
+            onClick={onButtonClick}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          >
+            {buttonText}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

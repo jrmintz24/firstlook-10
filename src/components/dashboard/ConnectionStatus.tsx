@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Wifi, WifiOff, AlertCircle } from "lucide-react";
-import { useMessageSubscriptionManager } from "@/hooks/useMessageSubscriptionManager";
+import { Wifi, WifiOff, AlertCircle, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ConnectionStatusProps {
   userId: string | null;
@@ -10,8 +10,7 @@ interface ConnectionStatusProps {
 
 const ConnectionStatus = ({ userId }: ConnectionStatusProps) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const { getConnectionStatus } = useMessageSubscriptionManager();
-  const connectionStatus = getConnectionStatus();
+  const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -26,6 +25,40 @@ const ConnectionStatus = ({ userId }: ConnectionStatusProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!userId || !isOnline) {
+      setRealtimeStatus('disconnected');
+      return;
+    }
+
+    setRealtimeStatus('connecting');
+
+    // Test realtime connection
+    const testChannel = supabase
+      .channel('connection_test')
+      .subscribe((status) => {
+        console.log('Connection test status:', status);
+        
+        switch (status) {
+          case 'SUBSCRIBED':
+            setRealtimeStatus('connected');
+            break;
+          case 'CHANNEL_ERROR':
+            setRealtimeStatus('error');
+            break;
+          case 'CLOSED':
+            setRealtimeStatus('disconnected');
+            break;
+          default:
+            setRealtimeStatus('connecting');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(testChannel);
+    };
+  }, [userId, isOnline]);
+
   if (!userId) return null;
 
   const getStatusInfo = () => {
@@ -37,27 +70,32 @@ const ConnectionStatus = ({ userId }: ConnectionStatusProps) => {
       };
     }
 
-    if (connectionStatus.circuitBreakerOpen) {
-      return {
-        icon: AlertCircle,
-        color: "bg-yellow-100 text-yellow-800",
-        text: "Connection Issues"
-      };
+    switch (realtimeStatus) {
+      case 'connected':
+        return {
+          icon: CheckCircle,
+          color: "bg-green-100 text-green-800",
+          text: "Connected"
+        };
+      case 'connecting':
+        return {
+          icon: Wifi,
+          color: "bg-blue-100 text-blue-800",
+          text: "Connecting..."
+        };
+      case 'error':
+        return {
+          icon: AlertCircle,
+          color: "bg-yellow-100 text-yellow-800",
+          text: "Connection Issues"
+        };
+      default:
+        return {
+          icon: WifiOff,
+          color: "bg-gray-100 text-gray-800",
+          text: "Disconnected"
+        };
     }
-
-    if (connectionStatus.isConnecting) {
-      return {
-        icon: Wifi,
-        color: "bg-blue-100 text-blue-800",
-        text: "Connecting..."
-      };
-    }
-
-    return {
-      icon: Wifi,
-      color: "bg-green-100 text-green-800",
-      text: "Connected"
-    };
   };
 
   const { icon: Icon, color, text } = getStatusInfo();

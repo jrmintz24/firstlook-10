@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useReliableSubscription } from "./useReliableSubscription";
 
 interface Profile {
   id: string;
@@ -286,35 +287,13 @@ export const useAgentDashboard = () => {
     }
   };
 
-  // Set up real-time subscription for showing requests
-  useEffect(() => {
-    if (!profile?.id) return;
-
-    console.log('Setting up real-time subscription for agent:', profile.id);
-    
-    const channel = supabase
-      .channel(`agent_showing_requests_${profile.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'showing_requests'
-        },
-        (payload) => {
-          console.log('Real-time showing request change:', payload);
-          fetchAgentData();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Agent showing requests subscription status:', status);
-      });
-
-    return () => {
-      console.log('Cleaning up agent showing requests subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id]);
+  // Set up reliable real-time subscription for showing requests
+  const { cleanup: cleanupSubscription } = useReliableSubscription({
+    channelName: `agent_showing_requests_${profile?.id}`,
+    table: 'showing_requests',
+    onDataChange: fetchAgentData,
+    enabled: !!profile?.id
+  });
 
   useEffect(() => {
     if (authLoading) {
@@ -332,6 +311,12 @@ export const useAgentDashboard = () => {
     console.log('User available, fetching agent data');
     fetchAgentData();
   }, [user, session, authLoading, navigate]);
+
+  useEffect(() => {
+    return () => {
+      cleanupSubscription();
+    };
+  }, [cleanupSubscription]);
 
   return {
     profile,

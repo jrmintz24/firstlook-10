@@ -13,6 +13,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
   const { toast } = useToast();
   const hasProcessedRef = useRef(false);
   const processingRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
 
   const processPendingTour = useCallback(async () => {
     if (loading || !user || hasProcessedRef.current || processingRef.current) {
@@ -47,14 +48,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       // Validate required data
       if (!tourData.propertyAddress) {
         console.error('usePendingTourHandler: Missing property information');
-        localStorage.removeItem('pendingTourRequest');
-        localStorage.removeItem('newUserFromPropertyRequest');
-        toast({
-          title: "Error",
-          description: "Missing property information. Please try requesting a new tour.",
-          variant: "destructive"
-        });
-        return;
+        throw new Error('Missing property information');
       }
 
       // Get preferred date/time options
@@ -70,7 +64,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       const preferredDate = preferredOptions[0]?.date || '';
       const preferredTime = preferredOptions[0]?.time || '';
 
-      // Create the showing request with "pending" status (no auto-assignment)
+      // Create the showing request with "pending" status for manual agent assignment
       const showingRequest = {
         user_id: user.id,
         property_address: tourData.propertyAddress,
@@ -78,11 +72,12 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         preferred_time: preferredTime || null,
         message: tourData.notes || null,
         internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
-        status: 'pending', // Ensure it starts as pending for manual agent assignment
-        assigned_agent_id: null, // No auto-assignment
+        status: 'pending', // Always start as pending for manual assignment
+        assigned_agent_id: null,
         assigned_agent_name: null,
         assigned_agent_phone: null,
-        estimated_confirmation_date: null // Will be set when agent accepts
+        assigned_agent_email: null,
+        estimated_confirmation_date: null
       };
 
       console.log('usePendingTourHandler: Creating showing request:', showingRequest);
@@ -94,15 +89,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
 
       if (error) {
         console.error('usePendingTourHandler: Error creating showing request:', error);
-        toast({
-          title: "Error",
-          description: `Failed to process your tour request: ${error.message}`,
-          variant: "destructive"
-        });
-        // Reset the flags so user can try again
-        hasProcessedRef.current = false;
-        processingRef.current = false;
-        return;
+        throw error;
       }
 
       console.log('usePendingTourHandler: Successfully created showing request:', data);
@@ -132,15 +119,18 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
 
     } catch (error) {
       console.error('usePendingTourHandler: Error processing pending tour request:', error);
+      
+      // Clear corrupted/problematic data
+      localStorage.removeItem('pendingTourRequest');
+      localStorage.removeItem('newUserFromPropertyRequest');
+      
       toast({
         title: "Error",
         description: "Failed to process your tour request. Please try requesting a new tour.",
         variant: "destructive"
       });
       
-      // Clear corrupted data and reset flags
-      localStorage.removeItem('pendingTourRequest');
-      localStorage.removeItem('newUserFromPropertyRequest');
+      // Reset flags so user can try again
       hasProcessedRef.current = false;
       processingRef.current = false;
     } finally {
@@ -148,29 +138,31 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
     }
   }, [user, loading, toast, onTourProcessed]);
 
+  // Reset flags when user changes
   useEffect(() => {
-    // Reset the flags when user changes
-    if (!user) {
+    if (userIdRef.current !== user?.id) {
+      console.log('usePendingTourHandler: User changed, resetting flags');
       hasProcessedRef.current = false;
       processingRef.current = false;
+      userIdRef.current = user?.id || null;
     }
   }, [user]);
 
   useEffect(() => {
     // Wait for auth to be ready, then process
-    if (!loading && user) {
-      // Add a small delay to ensure all auth state is settled
-      const timeoutId = setTimeout(processPendingTour, 1000);
+    if (!loading && user && !hasProcessedRef.current) {
+      // Add a small delay to ensure auth state is fully settled
+      const timeoutId = setTimeout(processPendingTour, 500);
       return () => clearTimeout(timeoutId);
     }
   }, [loading, user, processPendingTour]);
 
-  // Provide a manual trigger for after onboarding completion
+  // Manual trigger for after onboarding completion
   const triggerPendingTourProcessing = useCallback(() => {
     console.log('usePendingTourHandler: Manual trigger called');
     hasProcessedRef.current = false;
     processingRef.current = false;
-    processPendingTour();
+    setTimeout(processPendingTour, 100);
   }, [processPendingTour]);
 
   return { triggerPendingTourProcessing };

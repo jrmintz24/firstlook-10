@@ -1,4 +1,3 @@
-
 import { useState, Suspense, useCallback } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
@@ -15,8 +14,8 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleBuyerLogic } from "@/hooks/useSimpleBuyerLogic";
-import "../utils/createTestAgent"; // Import to ensure test agent is created
-import "../utils/debugWorkflow"; // Import to enable workflow debugging
+import "../utils/createTestAgent";
+import "../utils/debugWorkflow";
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -73,8 +72,16 @@ const BuyerDashboard = () => {
   // Handle any pending tour requests from signup with proper refresh callback
   const handleTourProcessed = useCallback(async () => {
     console.log('BuyerDashboard: Tour processed, refreshing data');
-    await fetchShowingRequests();
-  }, [fetchShowingRequests]);
+    try {
+      await fetchShowingRequests();
+      toast({
+        title: "Tour Request Processed",
+        description: "Your tour request has been submitted and agents will be notified.",
+      });
+    } catch (error) {
+      console.error('Error refreshing data after tour processed:', error);
+    }
+  }, [fetchShowingRequests, toast]);
 
   usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
@@ -108,8 +115,12 @@ const BuyerDashboard = () => {
   // Handle successful form submission - refresh data and return promise
   const handleFormSuccess = useCallback(async () => {
     console.log('BuyerDashboard: Refreshing data after form submission');
-    await fetchShowingRequests();
-    console.log('BuyerDashboard: Data refresh completed');
+    try {
+      await fetchShowingRequests();
+      console.log('BuyerDashboard: Data refresh completed');
+    } catch (error) {
+      console.error('Error refreshing data after form submission:', error);
+    }
   }, [fetchShowingRequests]);
 
   // Add consultation handlers

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ import AddressAutocomplete from "./AddressAutocomplete";
 interface PropertyRequestFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: () => Promise<void>;
 }
 
 const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestFormProps) => {

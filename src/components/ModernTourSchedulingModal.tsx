@@ -1,9 +1,9 @@
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Home, Plus, X, ChevronRight, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Home, X, ChevronRight, AlertCircle } from "lucide-react";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
@@ -18,17 +18,27 @@ interface ModernTourSchedulingModalProps {
   skipNavigation?: boolean;
 }
 
+interface TimeSlot {
+  date: string;
+  time: string;
+  dayName: string;
+  dayNumber: number;
+  monthName: string;
+  isToday?: boolean;
+  isTomorrow?: boolean;
+}
+
 const timeSlots = [
-  { value: "9:00 AM", label: "9:00 AM", recommended: false },
-  { value: "10:00 AM", label: "10:00 AM", recommended: true },
-  { value: "11:00 AM", label: "11:00 AM", recommended: true },
-  { value: "12:00 PM", label: "12:00 PM", recommended: false },
-  { value: "1:00 PM", label: "1:00 PM", recommended: true },
-  { value: "2:00 PM", label: "2:00 PM", recommended: true },
-  { value: "3:00 PM", label: "3:00 PM", recommended: true },
-  { value: "4:00 PM", label: "4:00 PM", recommended: false },
-  { value: "5:00 PM", label: "5:00 PM", recommended: false },
-  { value: "6:00 PM", label: "6:00 PM", recommended: false }
+  { value: "9:00 AM", label: "9:00 AM" },
+  { value: "10:00 AM", label: "10:00 AM" },
+  { value: "11:00 AM", label: "11:00 AM" },
+  { value: "12:00 PM", label: "12:00 PM" },
+  { value: "1:00 PM", label: "1:00 PM" },
+  { value: "2:00 PM", label: "2:00 PM" },
+  { value: "3:00 PM", label: "3:00 PM" },
+  { value: "4:00 PM", label: "4:00 PM" },
+  { value: "5:00 PM", label: "5:00 PM" },
+  { value: "6:00 PM", label: "6:00 PM" }
 ];
 
 const getNext7Days = () => {
@@ -39,7 +49,6 @@ const getNext7Days = () => {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     
-    // Use consistent date formatting - avoid timezone issues by using local date components
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -66,10 +75,9 @@ const ModernTourSchedulingModal = ({
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [selectedTimes, setSelectedTimes] = useState<Record<string, string>>({});
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
   const [notes, setNotes] = useState("");
-  const [properties, setProperties] = useState([{ address: "", notes: "" }]);
 
   const {
     showAuthModal,
@@ -86,79 +94,28 @@ const ModernTourSchedulingModal = ({
   // Determine user capabilities
   const isGuest = !user;
   const isPaidUser = eligibility?.eligible && eligibility.reason === 'subscribed';
-  const maxProperties = isPaidUser ? 3 : 1;
-  const maxPreferredTimes = 3;
 
   const availableDays = useMemo(() => getNext7Days(), []);
 
   const handleClose = () => {
     resetForm();
-    setProperties([{ address: "", notes: "" }]);
-    setSelectedDates([]);
-    setSelectedTimes({});
+    setPropertyAddress("");
+    setSelectedTimeSlot(null);
     setNotes("");
     onClose();
-  };
-
-  const handleAddProperty = () => {
-    if (properties.length < maxProperties) {
-      setProperties(prev => [...prev, { address: "", notes: "" }]);
-    }
-  };
-
-  const handleRemoveProperty = (index: number) => {
-    if (properties.length > 1) {
-      setProperties(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const handlePropertyChange = (index: number, field: 'address' | 'notes', value: string) => {
-    setProperties(prev => prev.map((prop, i) => 
-      i === index ? { ...prop, [field]: value } : prop
-    ));
-  };
-
-  const handleDateSelection = (dateString: string) => {
-    if (selectedDates.length < maxPreferredTimes && !selectedDates.includes(dateString)) {
-      setSelectedDates(prev => [...prev, dateString]);
-    } else if (selectedDates.includes(dateString)) {
-      setSelectedDates(prev => prev.filter(d => d !== dateString));
-      setSelectedTimes(prev => {
-        const newTimes = { ...prev };
-        delete newTimes[dateString];
-        return newTimes;
-      });
-    }
-  };
-
-  const handleTimeSelection = (dateString: string, time: string) => {
-    setSelectedTimes(prev => ({
-      ...prev,
-      [dateString]: time
-    }));
   };
 
   const isTimeSlotAvailable = (date: string, time: string) => {
     if (!date || !time) return false;
     
     try {
-      // Parse the date string (YYYY-MM-DD format) consistently
       const [year, month, day] = date.split('-').map(Number);
-      const selectedDate = new Date(year, month - 1, day); // month is 0-indexed
+      const selectedDate = new Date(year, month - 1, day);
       
       const today = new Date();
       const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       
-      console.log('Date comparison debug:', {
-        selectedDate: selectedDate.toDateString(),
-        todayDateOnly: todayDateOnly.toDateString(),
-        selectedTime: selectedDate.getTime(),
-        todayTime: todayDateOnly.getTime(),
-        isPaidUser,
-        isAfterToday: selectedDate.getTime() > todayDateOnly.getTime()
-      });
-      
-      // For free users (including guests): No same-day bookings, allow any time from tomorrow onwards
+      // For free users (including guests): No same-day bookings
       if (!isPaidUser) {
         return selectedDate.getTime() > todayDateOnly.getTime();
       }
@@ -185,41 +142,49 @@ const ModernTourSchedulingModal = ({
     }
   };
 
+  const handleTimeSlotSelection = (day: any, timeSlot: any) => {
+    const newTimeSlot: TimeSlot = {
+      date: day.date,
+      time: timeSlot.value,
+      dayName: day.dayName,
+      dayNumber: day.dayNumber,
+      monthName: day.monthName,
+      isToday: day.isToday,
+      isTomorrow: day.isTomorrow
+    };
+    
+    setSelectedTimeSlot(newTimeSlot);
+  };
+
   const handleSubmit = async () => {
-    if (!properties[0].address.trim() || selectedDates.length === 0) {
+    if (!propertyAddress.trim() || !selectedTimeSlot) {
       return;
     }
 
-    // Convert to expected format
+    // Convert to expected format for the existing handler
     const formData = {
-      propertyAddress: properties[0].address,
-      preferredDate1: selectedDates[0] || "",
-      preferredTime1: selectedTimes[selectedDates[0]] || "",
-      preferredDate2: selectedDates[1] || "",
-      preferredTime2: selectedTimes[selectedDates[1]] || "",
-      preferredDate3: selectedDates[2] || "",
-      preferredTime3: selectedTimes[selectedDates[2]] || "",
+      propertyAddress,
+      preferredDate1: selectedTimeSlot.date,
+      preferredTime1: selectedTimeSlot.time,
+      preferredDate2: "",
+      preferredTime2: "",
+      preferredDate3: "",
+      preferredTime3: "",
       notes,
-      properties,
-      preferredOptions: selectedDates.map(date => ({ 
-        date, 
-        time: selectedTimes[date] || "" 
-      })).filter(option => option.time),
-      selectedProperties: properties.map(p => p.address).filter(Boolean)
+      properties: [{ address: propertyAddress, notes: "" }],
+      preferredOptions: [{ date: selectedTimeSlot.date, time: selectedTimeSlot.time }],
+      selectedProperties: [propertyAddress]
     };
 
     await handleContinueToSubscriptions();
   };
 
-  // Fixed submit logic - only need at least ONE date/time combination, not ALL
-  const canSubmit = properties[0].address.trim() && selectedDates.length > 0 && 
-                   selectedDates.some(date => selectedTimes[date]);
+  const canSubmit = propertyAddress.trim() && selectedTimeSlot;
 
   // Calculate completion progress
-  const hasAddress = properties[0].address.trim();
-  // Fixed date/time completion check - only need at least ONE combination
-  const hasDateTimes = selectedDates.length > 0 && selectedDates.some(date => selectedTimes[date]);
-  const completionSteps = [hasAddress, hasDateTimes];
+  const hasAddress = propertyAddress.trim();
+  const hasTimeSlot = selectedTimeSlot !== null;
+  const completionSteps = [hasAddress, hasTimeSlot];
   const completedSteps = completionSteps.filter(Boolean).length;
   const totalSteps = completionSteps.length;
 
@@ -228,7 +193,7 @@ const ModernTourSchedulingModal = ({
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-4xl max-h-[95vh] bg-white border-0 shadow-2xl p-0 overflow-hidden">
           <div className="relative">
-            {/* Minimal Header */}
+            {/* Header */}
             <DialogHeader className="px-8 pt-8 pb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -240,7 +205,7 @@ const ModernTourSchedulingModal = ({
                       Schedule Your Tour
                     </DialogTitle>
                     <p className="text-sm text-gray-500 mt-1">
-                      {isPaidUser ? `Book up to ${maxProperties} properties` : "Book your tour"}
+                      Choose your property and preferred time
                     </p>
                   </div>
                 </div>
@@ -312,194 +277,120 @@ const ModernTourSchedulingModal = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                {/* Left Column - Properties */}
-                <div className="space-y-8">
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        Step 1: {properties.length > 1 ? 'Properties' : 'Property'}
-                        {hasAddress && <span className="text-green-600 ml-2">✓</span>}
-                      </h3>
-                      {isPaidUser && properties.length < maxProperties && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleAddProperty}
-                          className="text-gray-600 hover:text-black hover:bg-gray-50"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Property
-                        </Button>
-                      )}
-                    </div>
+              <div className="space-y-8">
+                {/* Step 1: Property Address */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-6">
+                    Step 1: Property Address
+                    {hasAddress && <span className="text-green-600 ml-2">✓</span>}
+                  </h3>
+                  
+                  <AddressAutocomplete
+                    value={propertyAddress}
+                    onChange={setPropertyAddress}
+                    placeholder="Enter property address..."
+                    className="h-12 border-gray-300 focus:border-black focus:ring-0"
+                  />
+                </div>
 
-                    <div className="space-y-4">
-                      {properties.map((property, index) => (
-                        <div key={index} className="relative">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-xs font-medium">
-                                {index + 1}
-                              </div>
-                              <span className="text-sm font-medium text-gray-700">
-                                Property {index + 1}
+                {/* Step 2: Choose Time */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-6">
+                    Step 2: Choose Your Time
+                    {hasTimeSlot && <span className="text-green-600 ml-2">✓</span>}
+                  </h3>
+                  
+                  {selectedTimeSlot && (
+                    <div className="mb-6 p-4 bg-black text-white rounded-2xl">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span className="font-medium">
+                          {selectedTimeSlot.dayName}, {selectedTimeSlot.monthName} {selectedTimeSlot.dayNumber} at {selectedTimeSlot.time}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Available Time Slots Grid */}
+                  <div className="space-y-6">
+                    {availableDays.map((day) => {
+                      const availableTimes = timeSlots.filter(slot => 
+                        isTimeSlotAvailable(day.date, slot.value)
+                      );
+                      
+                      if (availableTimes.length === 0) return null;
+
+                      return (
+                        <div key={day.date} className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-700">
+                              {day.dayName}, {day.monthName} {day.dayNumber}
+                            </h4>
+                            {day.isToday && (
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                Today
                               </span>
-                            </div>
-                            {properties.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveProperty(index)}
-                                className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
+                            )}
+                            {day.isTomorrow && (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                Tomorrow
+                              </span>
                             )}
                           </div>
                           
-                          <AddressAutocomplete
-                            value={property.address}
-                            onChange={(value) => handlePropertyChange(index, 'address', value)}
-                            placeholder="Enter property address..."
-                            className="mb-3 h-12 border-gray-300 focus:border-black focus:ring-0"
-                          />
-                          
-                          <Textarea
-                            value={property.notes}
-                            onChange={(e) => handlePropertyChange(index, 'notes', e.target.value)}
-                            placeholder="Any specific notes about this property..."
-                            className="min-h-[60px] border-gray-300 focus:border-black focus:ring-0 resize-none"
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {!isPaidUser && (
-                      <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">Tour Multiple Properties</p>
-                            <p className="text-xs text-gray-600 mt-1">Upgrade to book up to 3 properties at once</p>
-                          </div>
-                          <Button size="sm" variant="outline" className="border-gray-400 hover:border-black">
-                            Upgrade
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Additional Notes */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Additional Notes (Optional)
-                    </label>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Any special requests or questions..."
-                      className="min-h-[80px] border-gray-300 focus:border-black focus:ring-0 resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column - Scheduling */}
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-6">
-                      Step 2: Preferred Times
-                      {hasDateTimes && <span className="text-green-600 ml-2">✓</span>}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-6">
-                      Select up to {maxPreferredTimes} preferred date/time combinations
-                    </p>
-
-                    {/* Date Selection */}
-                    <div className="mb-8">
-                      <h4 className="text-sm font-medium text-gray-700 mb-4">Available Dates</h4>
-                      <div className="grid grid-cols-4 gap-3">
-                        {availableDays.map((day) => (
-                          <button
-                            key={day.date}
-                            type="button"
-                            onClick={() => handleDateSelection(day.date)}
-                            disabled={selectedDates.length >= maxPreferredTimes && !selectedDates.includes(day.date)}
-                            className={`p-3 rounded-xl border transition-all text-center ${
-                              selectedDates.includes(day.date)
-                                ? 'bg-black text-white border-black'
-                                : 'bg-white border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                            } ${selectedDates.length >= maxPreferredTimes && !selectedDates.includes(day.date) 
-                                ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                          >
-                            <div className="text-xs font-medium">{day.dayName}</div>
-                            <div className="text-sm font-semibold">{day.dayNumber}</div>
-                            <div className="text-xs opacity-75">{day.monthName}</div>
-                            {day.isToday && <div className="text-xs text-blue-600 mt-1">Today</div>}
-                            {day.isTomorrow && <div className="text-xs text-green-600 mt-1">Tomorrow</div>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Time Selection for Selected Dates */}
-                    {selectedDates.map((dateString, index) => {
-                      const day = availableDays.find(d => d.date === dateString);
-                      const availableTimes = timeSlots.filter(slot => isTimeSlotAvailable(dateString, slot.value));
-                      
-                      return (
-                        <div key={dateString} className="mb-8">
-                          <h4 className="text-sm font-medium text-gray-700 mb-4">
-                            Times for {day?.dayName} {day?.monthName} {day?.dayNumber}
-                            <span className="ml-2 text-xs text-gray-500">
-                              (Choice #{index + 1})
-                            </span>
-                          </h4>
-                          
-                          {availableTimes.length > 0 ? (
-                            <div className="grid grid-cols-3 gap-3">
-                              {availableTimes.map((slot) => (
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                            {availableTimes.map((timeSlot) => {
+                              const isSelected = selectedTimeSlot?.date === day.date && 
+                                               selectedTimeSlot?.time === timeSlot.value;
+                              
+                              return (
                                 <button
-                                  key={slot.value}
+                                  key={timeSlot.value}
                                   type="button"
-                                  onClick={() => handleTimeSelection(dateString, slot.value)}
-                                  className={`p-3 rounded-xl border transition-all text-center ${
-                                    selectedTimes[dateString] === slot.value
+                                  onClick={() => handleTimeSlotSelection(day, timeSlot)}
+                                  className={`p-3 rounded-xl border-2 transition-all text-center font-medium ${
+                                    isSelected
                                       ? 'bg-black text-white border-black'
-                                      : 'bg-white border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                                      : 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
                                   }`}
                                 >
-                                  <div className="text-sm font-medium">{slot.label}</div>
-                                  {slot.recommended && (
-                                    <div className="text-xs text-gray-500 mt-1">Recommended</div>
-                                  )}
+                                  <div className="text-sm">{timeSlot.label}</div>
                                 </button>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                              <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                              <p className="text-sm">
-                                {!isPaidUser 
-                                  ? "No same-day bookings available. Please select a future date."
-                                  : "No times available within 2-hour advance window."
-                                }
-                              </p>
-                            </div>
-                          )}
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })}
-
-                    {selectedDates.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Select dates above to choose times</p>
-                      </div>
-                    )}
                   </div>
+
+                  {availableDays.every(day => 
+                    timeSlots.filter(slot => isTimeSlotAvailable(day.date, slot.value)).length === 0
+                  ) && (
+                    <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                      <Clock className="h-8 w-8 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">No Available Times</p>
+                      <p className="text-sm">
+                        {!isPaidUser 
+                          ? "Please check back tomorrow for available time slots."
+                          : "All slots are within the 2-hour advance notice window."
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Additional Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Additional Notes (Optional)
+                  </label>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Any special requests or questions..."
+                    className="min-h-[80px] border-gray-300 focus:border-black focus:ring-0 resize-none"
+                  />
                 </div>
               </div>
             </div>
@@ -509,8 +400,8 @@ const ModernTourSchedulingModal = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {canSubmit ? 
-                    `Ready to submit: ${selectedDates.filter(date => selectedTimes[date]).length} time${selectedDates.filter(date => selectedTimes[date]).length !== 1 ? 's' : ''} selected` : 
-                    `Complete both steps: ${!hasAddress ? 'Add property address' : ''}${!hasAddress && !hasDateTimes ? ' and ' : ''}${!hasDateTimes ? 'Select date/time' : ''}`}
+                    `Ready to schedule your tour` : 
+                    `Complete both steps: ${!hasAddress ? 'Add property address' : ''}${!hasAddress && !hasTimeSlot ? ' and ' : ''}${!hasTimeSlot ? 'Select time slot' : ''}`}
                 </div>
                 <Button
                   onClick={handleSubmit}

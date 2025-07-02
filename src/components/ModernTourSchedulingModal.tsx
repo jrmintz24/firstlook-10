@@ -335,7 +335,7 @@ const ModernTourSchedulingModal = ({
                   </h3>
                   
                   {/* Enhanced Horizontal Date Picker with better mobile layout */}
-                  <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4 sm:mb-6">
+                  <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-6">
                     {availableDays.map((day) => {
                       const isSelected = selectedDate === day.date;
                       const hasAvailableTimes = timeSlotsToShow.some(slot => 
@@ -361,9 +361,6 @@ const ModernTourSchedulingModal = ({
                           <div className="text-xs">{day.monthName}</div>
                           {day.isToday && (
                             <div className="text-xs mt-1 text-blue-600 font-medium">Today</div>
-                          )}
-                          {day.isTomorrow && (
-                            <div className="text-xs mt-1 text-green-600 font-medium">Tomorrow</div>
                           )}
                         </button>
                       );

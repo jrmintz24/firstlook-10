@@ -1,10 +1,11 @@
+
 import React from "react";
 import { Clock, CheckCircle, History } from "lucide-react";
 import WelcomeDashboard from "./WelcomeDashboard";
 import QuickActions from "./QuickActions";
 import ShowingListTab from "./ShowingListTab";
 import ConsultationsSection from "./ConsultationsSection";
-import MessagesTab from "./MessagesTab";
+import { default as MessagesTab } from "../messaging/MessagesTab";
 import ProfileTab from "./ProfileTab";
 
 interface ShowingRequest {
@@ -82,8 +83,11 @@ export const generateBuyerDashboardSections = ({
       title: "Dashboard",
       content: (
         <div className="space-y-6">
-          <WelcomeDashboard displayName={displayName} />
-          <QuickActions onRequestShowing={onRequestShowing} />
+          <WelcomeDashboard displayName={displayName} userType="buyer" />
+          <QuickActions 
+            onRequestShowing={onRequestShowing} 
+            onMakeOffer={() => console.log("Make offer clicked")}
+          />
         </div>
       )
     },
@@ -162,20 +166,26 @@ export const generateBuyerDashboardSections = ({
       content: (
         <ConsultationsSection
           consultations={consultations}
-          onJoinConsultation={onJoinConsultation}
-          onRescheduleConsultation={onRescheduleConsultation}
+          onJoinCall={onJoinConsultation}
+          onReschedule={onRescheduleConsultation}
         />
       )
     },
     {
       id: "messages",
       title: "Messages",
-      content: <MessagesTab unreadCount={unreadCount} />
+      content: <MessagesTab userId={currentUser?.id || ''} userType="buyer" />
     },
     {
       id: "profile",
       title: "Profile",
-      content: <ProfileTab profile={profile} />
+      content: (
+        <ProfileTab 
+          profile={profile}
+          userEmail={currentUser?.email || ''}
+          displayName={displayName}
+        />
+      )
     }
   ];
 };

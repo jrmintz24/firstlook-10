@@ -185,7 +185,7 @@ const BuyerDashboard = () => {
     onConfirmShowing: handleConfirmShowingWithModal,
     onSignAgreement: (showing) => handleSignAgreementFromCard(showing.id, displayName),
     fetchShowingRequests: refreshShowingRequests,
-    onSendMessage: (showing) => handleSendMessage(showing.id),
+    onSendMessage: (showingId: string) => handleSendMessage(showingId),
     onJoinConsultation: handleJoinConsultation,
     onRescheduleConsultation: handleRescheduleConsultation,
     onComplete: handleTourComplete

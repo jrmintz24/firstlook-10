@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
-import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { MapPin, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddressAutocompleteProps {
@@ -26,9 +25,13 @@ const AddressAutocomplete = ({
   id 
 }: AddressAutocompleteProps) => {
   const [searchTerm, setSearchTerm] = useState(value);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [results, setResults] = useState<string[]>([]);
-  const [open, setOpen] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSearchTerm(value);
@@ -39,11 +42,31 @@ const AddressAutocomplete = ({
       fetchAddresses(debouncedSearchTerm);
     } else {
       setResults([]);
+      setShowResults(false);
     }
   }, [debouncedSearchTerm]);
 
+  // Close results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        inputRef.current && 
+        resultsRef.current &&
+        !inputRef.current.contains(event.target as Node) &&
+        !resultsRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchAddresses = async (searchTerm: string) => {
     console.log('🔍 Starting address search for:', searchTerm);
+    setIsLoading(true);
+    setError(null);
     
     try {
       console.log('📡 Making request to google-places edge function...');
@@ -56,6 +79,7 @@ const AddressAutocomplete = ({
 
       if (error) {
         console.error('❌ Error from edge function:', error);
+        setError('Unable to search addresses');
         setResults([]);
         return;
       }
@@ -64,76 +88,105 @@ const AddressAutocomplete = ({
         const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
         console.log('✅ Formatted addresses:', formattedAddresses);
         setResults(formattedAddresses);
+        setShowResults(true);
       } else if (data && data.error) {
         console.error('❌ Error from edge function:', data.error);
+        setError('Address search unavailable');
         setResults([]);
       } else {
         console.error('❌ Error fetching addresses:', data?.error_message || data?.status);
+        setError('No addresses found');
         setResults([]);
       }
     } catch (error) {
       console.error('❌ Error fetching addresses:', error);
+      setError('Search temporarily unavailable');
       setResults([]);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    onChange(newValue);
+    setError(null);
   };
 
   const handleSelect = (address: string) => {
     setSearchTerm(address);
     onChange(address);
-    setOpen(false);
+    setShowResults(false);
+    setResults([]);
+  };
+
+  const handleInputFocus = () => {
+    if (results.length > 0) {
+      setShowResults(true);
+    }
   };
 
   return (
     <div className={`relative ${className || ''}`}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
           {label}
         </label>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            id={id}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-          >
-            {value || placeholder}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder={placeholder}
-              value={searchTerm}
-              onValueChange={(search) => {
-                setSearchTerm(search);
-                onChange(search);
-              }}
-            />
-            <CommandList>
-              <CommandEmpty>No addresses found.</CommandEmpty>
-              {results.map((result, index) => (
-                <CommandItem
-                  key={index}
-                  value={result}
-                  onSelect={() => handleSelect(result)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === result ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+      
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+          ) : (
+            <Search className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+        
+        <Input
+          ref={inputRef}
+          id={id}
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          placeholder={placeholder}
+          className={cn(
+            "pl-10 pr-4 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 focus:ring-opacity-20 transition-all duration-200",
+            error && "border-red-300 focus:border-red-500 focus:ring-red-500"
+          )}
+        />
+      </div>
+
+      {error && (
+        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+          <MapPin className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+
+      {showResults && results.length > 0 && (
+        <Card 
+          ref={resultsRef}
+          className="absolute z-50 w-full mt-1 border border-gray-200 rounded-xl shadow-lg bg-white max-h-60 overflow-y-auto"
+        >
+          <div className="py-1">
+            {results.map((result, index) => (
+              <button
+                key={index}
+                onClick={() => handleSelect(result)}
+                className="w-full px-4 py-3 text-left hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 focus:bg-gradient-to-r focus:from-blue-50 focus:to-purple-50 focus:outline-none transition-all duration-150 flex items-center gap-3 group"
+              >
+                <MapPin className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors duration-150 flex-shrink-0" />
+                <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-150">
                   {result}
-                </CommandItem>
-              ))}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                </span>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +63,6 @@ const TourSession = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
@@ -70,7 +70,6 @@ const TourSession = () => {
         description: "We'll contact you within 24 hours to confirm your tour session.",
       });
 
-      // Reset form
       setFormData({
         preferredDate: "",
         preferredTime: "",
@@ -92,58 +91,55 @@ const TourSession = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-white py-8">
+      <div className="container mx-auto px-4 max-w-3xl">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-12">
           <Link to="/subscriptions">
-            <Button variant="ghost" className="mb-4">
+            <Button variant="ghost" className="mb-6 text-gray-600 hover:text-black">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pricing
             </Button>
           </Link>
           
           <div className="text-center">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-200">
-              <Home className="w-4 h-4 mr-2" />
-              Tour Session
-            </Badge>
-            <h1 className="text-4xl font-bold text-slate-800 mb-4">Book Your Tour Session</h1>
-            <p className="text-xl text-gray-600 mb-6">See up to 3 homes in one session for $149</p>
+            <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Home className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-light text-gray-900 mb-4">Book Your Tour Session</h1>
+            <p className="text-xl text-gray-600 mb-8">See up to 3 homes in one session</p>
             
-            <Card className="bg-blue-50 border-blue-200 mb-8">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">$149</div>
-                  <p className="text-blue-800">One-time payment • Up to 3 homes • No ongoing commitment</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="inline-flex items-center justify-center bg-black text-white px-8 py-4 rounded-2xl">
+              <div className="text-center">
+                <div className="text-3xl font-light mb-1">$149</div>
+                <p className="text-sm opacity-90">One-time payment • No ongoing commitment</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Booking Form */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+        <Card className="border-2 border-gray-200 shadow-sm">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle className="flex items-center gap-3 text-xl font-semibold">
+              <Calendar className="w-6 h-6" />
               Tour Session Details
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-600">
               Add up to 3 properties and your preferred tour time
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Properties */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-5 h-5" />
                     Properties to Tour ({properties.length}/3)
                   </h3>
                   {properties.length < 3 && (
-                    <Button type="button" variant="outline" size="sm" onClick={addProperty}>
+                    <Button type="button" variant="outline" size="sm" onClick={addProperty} className="border-2 border-gray-300 hover:border-black">
                       <Plus className="w-4 h-4 mr-1" />
                       Add Property
                     </Button>
@@ -151,7 +147,7 @@ const TourSession = () => {
                 </div>
                 
                 {properties.map((property, index) => (
-                  <div key={property.id} className="flex gap-2 items-end">
+                  <div key={property.id} className="flex gap-3 items-end">
                     <div className="flex-1">
                       <AddressAutocomplete
                         value={property.address}
@@ -167,7 +163,7 @@ const TourSession = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => removeProperty(property.id)}
-                        className="mb-0"
+                        className="h-12 w-12 border-2 border-gray-300 hover:border-red-400 hover:text-red-600"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -177,30 +173,35 @@ const TourSession = () => {
               </div>
 
               {/* Scheduling */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-5 h-5" />
                   Preferred Schedule
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="preferredDate">Preferred Date *</Label>
+                    <Label htmlFor="preferredDate" className="text-sm font-medium text-gray-900 mb-2 block">
+                      Preferred Date *
+                    </Label>
                     <Input
                       id="preferredDate"
                       type="date"
                       value={formData.preferredDate}
                       onChange={(e) => handleInputChange("preferredDate", e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
+                      className="h-12 border-2 border-gray-300 focus:border-black"
                       required
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="preferredTime">Preferred Start Time *</Label>
+                    <Label htmlFor="preferredTime" className="text-sm font-medium text-gray-900 mb-2 block">
+                      Preferred Start Time *
+                    </Label>
                     <select
                       id="preferredTime"
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                      className="w-full h-12 px-4 rounded-lg border-2 border-gray-300 focus:border-black focus:ring-1 focus:ring-black bg-white"
                       value={formData.preferredTime}
                       onChange={(e) => handleInputChange("preferredTime", e.target.value)}
                       required
@@ -213,49 +214,58 @@ const TourSession = () => {
                   </div>
                 </div>
                 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-sm text-yellow-800">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p className="text-sm text-gray-700">
                     <strong>Note:</strong> Tours typically take 2-3 hours depending on the number of properties and travel time between them.
                   </p>
                 </div>
               </div>
 
-              {/* Contact Information */}
-              <div className="space-y-4">
+              {/* Contact Information - Compact Grid */}
+              <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Contact Information</h3>
                 
-                <div>
-                  <Label htmlFor="contactName">Full Name *</Label>
-                  <Input
-                    id="contactName"
-                    placeholder="Your full name"
-                    value={formData.contactName}
-                    onChange={(e) => handleInputChange("contactName", e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <Label htmlFor="contactEmail">Email *</Label>
+                    <Label htmlFor="contactName" className="text-sm font-medium text-gray-900 mb-2 block">
+                      Full Name *
+                    </Label>
+                    <Input
+                      id="contactName"
+                      placeholder="Your full name"
+                      value={formData.contactName}
+                      onChange={(e) => handleInputChange("contactName", e.target.value)}
+                      className="h-12 border-2 border-gray-300 focus:border-black"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="contactEmail" className="text-sm font-medium text-gray-900 mb-2 block">
+                      Email *
+                    </Label>
                     <Input
                       id="contactEmail"
                       type="email"
                       placeholder="your@email.com"
                       value={formData.contactEmail}
                       onChange={(e) => handleInputChange("contactEmail", e.target.value)}
+                      className="h-12 border-2 border-gray-300 focus:border-black"
                       required
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="contactPhone">Phone *</Label>
+                    <Label htmlFor="contactPhone" className="text-sm font-medium text-gray-900 mb-2 block">
+                      Phone *
+                    </Label>
                     <Input
                       id="contactPhone"
                       type="tel"
                       placeholder="(555) 123-4567"
                       value={formData.contactPhone}
                       onChange={(e) => handleInputChange("contactPhone", e.target.value)}
+                      className="h-12 border-2 border-gray-300 focus:border-black"
                       required
                     />
                   </div>
@@ -264,20 +274,23 @@ const TourSession = () => {
 
               {/* Additional Message */}
               <div>
-                <Label htmlFor="message">Additional Notes (Optional)</Label>
+                <Label htmlFor="message" className="text-sm font-medium text-gray-900 mb-2 block">
+                  Additional Notes (Optional)
+                </Label>
                 <Textarea
                   id="message"
                   placeholder="Any specific questions or requirements for this tour session?"
                   value={formData.message}
                   onChange={(e) => handleInputChange("message", e.target.value)}
                   rows={3}
+                  className="border-2 border-gray-300 focus:border-black resize-none"
                 />
               </div>
 
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-6 text-lg"
+                className="w-full bg-black hover:bg-gray-800 text-white py-6 text-lg font-medium rounded-xl"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Processing..." : "Book Tour Session - $149"}

@@ -46,7 +46,6 @@ const AddressAutocomplete = ({
     }
   }, [debouncedSearchTerm]);
 
-  // Close results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -130,17 +129,17 @@ const AddressAutocomplete = ({
   return (
     <div className={`relative ${className || ''}`}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-900 mb-2">
           {label}
         </label>
       )}
       
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           {isLoading ? (
-            <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+            <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
           ) : (
-            <Search className="h-4 w-4 text-gray-400" />
+            <Search className="h-5 w-5 text-gray-400" />
           )}
         </div>
         
@@ -153,15 +152,15 @@ const AddressAutocomplete = ({
           onFocus={handleInputFocus}
           placeholder={placeholder}
           className={cn(
-            "pl-10 pr-4 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 focus:ring-opacity-20 transition-all duration-200",
-            error && "border-red-300 focus:border-red-500 focus:ring-red-500"
+            "pl-12 pr-4 h-12 rounded-lg border-2 border-gray-300 focus:border-black focus:ring-1 focus:ring-black transition-colors bg-white text-gray-900 placeholder:text-gray-500",
+            error && "border-red-400 focus:border-red-500 focus:ring-red-500"
           )}
         />
       </div>
 
       {error && (
-        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-          <MapPin className="h-3 w-3" />
+        <p className="mt-2 text-sm text-red-600 flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
           {error}
         </p>
       )}
@@ -169,17 +168,17 @@ const AddressAutocomplete = ({
       {showResults && results.length > 0 && (
         <Card 
           ref={resultsRef}
-          className="absolute z-50 w-full mt-1 border border-gray-200 rounded-xl shadow-lg bg-white max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 border-2 border-gray-200 rounded-lg shadow-xl bg-white max-h-60 overflow-y-auto"
         >
-          <div className="py-1">
+          <div className="py-2">
             {results.map((result, index) => (
               <button
                 key={index}
                 onClick={() => handleSelect(result)}
-                className="w-full px-4 py-3 text-left hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 focus:bg-gradient-to-r focus:from-blue-50 focus:to-purple-50 focus:outline-none transition-all duration-150 flex items-center gap-3 group"
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors flex items-center gap-3 group"
               >
-                <MapPin className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors duration-150 flex-shrink-0" />
-                <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-150">
+                <MapPin className="h-4 w-4 text-gray-400 group-hover:text-black transition-colors flex-shrink-0" />
+                <span className="text-sm text-gray-900 group-hover:text-black transition-colors">
                   {result}
                 </span>
               </button>

@@ -104,22 +104,32 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
   };
 
   const handleAuthSuccess = () => {
-    // After successful authentication, continue with the tour submission
     handleContinueToSubscriptions();
   };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {getStepTitle()}
-              <span className="text-sm text-gray-500">({currentStep}/3)</span>
-            </DialogTitle>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] bg-white border-2 border-gray-200">
+          <DialogHeader className="border-b border-gray-100 pb-4">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
+                {getStepTitle()}
+              </DialogTitle>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3].map((step) => (
+                  <div
+                    key={step}
+                    className={`w-8 h-2 rounded-full transition-colors ${
+                      step <= currentStep ? 'bg-black' : 'bg-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </DialogHeader>
           
-          <div className="mt-4">
+          <div className="py-4">
             {renderCurrentStep()}
           </div>
         </DialogContent>

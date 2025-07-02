@@ -1,3 +1,4 @@
+
 import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
@@ -67,8 +68,13 @@ const BuyerDashboard = () => {
     rescheduleBooking 
   } = useConsultationBookings(currentUser?.id, 'buyer');
 
-  // Add the pending tour handler to process any pending tour requests
-  usePendingTourHandler();
+  // Handle any pending tour requests from signup with proper refresh callback
+  const handleTourProcessed = useCallback(async () => {
+    console.log('BuyerDashboard: Tour processed, refreshing data');
+    await fetchShowingRequests();
+  }, [fetchShowingRequests]);
+
+  usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
   console.log('BuyerDashboard: Pending tour handler initialized');
 
@@ -99,11 +105,11 @@ const BuyerDashboard = () => {
   }));
 
   // Handle successful form submission - refresh data and return promise
-  const handleFormSuccess = async () => {
+  const handleFormSuccess = useCallback(async () => {
     console.log('BuyerDashboard: Refreshing data after form submission');
     await fetchShowingRequests();
     console.log('BuyerDashboard: Data refresh completed');
-  };
+  }, [fetchShowingRequests]);
 
   // Add consultation handlers
   const handleJoinConsultation = useCallback((consultationId: string) => {

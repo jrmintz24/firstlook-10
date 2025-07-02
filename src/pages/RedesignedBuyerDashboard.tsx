@@ -1,7 +1,7 @@
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -27,19 +27,16 @@ import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import { Clock, CheckCircle, Home, Calendar, TrendingUp } from "lucide-react";
 
 const RedesignedBuyerDashboard = () => {
-  // Handle any pending tour requests from signup
-  usePendingTourHandler();
-
   // Additional state for agent workflow and chat
   const [showAgentModal, setShowAgentModal] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatDefaultTab, setChatDefaultTab] = useState<'property' | 'support'>('property');
 
-  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
+  const handleOpenChat = useCallback((defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
     setChatDefaultTab(defaultTab);
     setChatOpen(true);
-  };
+  }, []);
 
   const {
     // State
@@ -83,6 +80,14 @@ const RedesignedBuyerDashboard = () => {
     hireAgent
   } = useEnhancedPostShowingActions();
 
+  // Handle any pending tour requests from signup with proper refresh callback
+  const handleTourProcessed = useCallback(async () => {
+    console.log('RedesignedBuyerDashboard: Tour processed, refreshing data');
+    await fetchShowingRequests();
+  }, [fetchShowingRequests]);
+
+  usePendingTourHandler({ onTourProcessed: handleTourProcessed });
+
   console.log('RedesignedBuyerDashboard - Render state:', {
     authLoading,
     loading,
@@ -99,11 +104,11 @@ const RedesignedBuyerDashboard = () => {
   });
 
   // Handle successful form submission - refresh data and return promise
-  const handleFormSuccess = async () => {
+  const handleFormSuccess = useCallback(async () => {
     console.log('RedesignedBuyerDashboard: Refreshing data after form submission');
     await fetchShowingRequests();
     console.log('RedesignedBuyerDashboard: Data refresh completed');
-  };
+  }, [fetchShowingRequests]);
 
   // Show loading while auth is being determined
   if (authLoading) {
@@ -262,7 +267,7 @@ const RedesignedBuyerDashboard = () => {
               emptyButtonText="Request Your Free Showing"
               onRequestShowing={handleRequestShowing}
               onCancelShowing={() => {}}
-              onRescheduleShowing={handleRescheduleShowing}
+              onRescheduleShowing={handleRescheduleShowing}  
               onConfirmShowing={handleConfirmShowingWithModal}
               onSignAgreement={(showing) => handleSignAgreementFromCard(showing.id, displayName)}
               onComplete={() => {}}

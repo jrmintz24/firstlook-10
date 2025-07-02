@@ -4,17 +4,23 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const usePendingTourHandler = () => {
+interface UsePendingTourHandlerProps {
+  onTourProcessed?: () => Promise<void>;
+}
+
+export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandlerProps = {}) => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const hasProcessedRef = useRef(false);
+  const processingRef = useRef(false);
 
   const processPendingTour = useCallback(async () => {
-    if (loading || !user || hasProcessedRef.current) {
+    if (loading || !user || hasProcessedRef.current || processingRef.current) {
       console.log('usePendingTourHandler: Not ready to process or already processed', { 
         loading, 
         hasUser: !!user, 
-        hasProcessed: hasProcessedRef.current 
+        hasProcessed: hasProcessedRef.current,
+        processing: processingRef.current
       });
       return;
     }
@@ -57,7 +63,8 @@ export const usePendingTourHandler = () => {
       // Continue with tour processing even if we can't check onboarding
     }
 
-    // Mark as processed to prevent duplicate processing
+    // Mark as processing to prevent duplicate processing
+    processingRef.current = true;
     hasProcessedRef.current = true;
 
     try {
@@ -120,8 +127,9 @@ export const usePendingTourHandler = () => {
           description: `Failed to process your tour request: ${error.message}`,
           variant: "destructive"
         });
-        // Reset the flag so user can try again
+        // Reset the flags so user can try again
         hasProcessedRef.current = false;
+        processingRef.current = false;
         return;
       }
 
@@ -144,10 +152,10 @@ export const usePendingTourHandler = () => {
         });
       }
 
-      // Force a page reload to refresh the dashboard data
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Call the callback to refresh data instead of reloading the page
+      if (onTourProcessed) {
+        await onTourProcessed();
+      }
 
     } catch (error) {
       console.error('usePendingTourHandler: Error processing pending tour request:', error);
@@ -157,17 +165,21 @@ export const usePendingTourHandler = () => {
         variant: "destructive"
       });
       
-      // Clear corrupted data and reset flag
+      // Clear corrupted data and reset flags
       localStorage.removeItem('pendingTourRequest');
       localStorage.removeItem('newUserFromPropertyRequest');
       hasProcessedRef.current = false;
+      processingRef.current = false;
+    } finally {
+      processingRef.current = false;
     }
-  }, [user, loading, toast]);
+  }, [user, loading, toast, onTourProcessed]);
 
   useEffect(() => {
-    // Reset the flag when user changes
+    // Reset the flags when user changes
     if (!user) {
       hasProcessedRef.current = false;
+      processingRef.current = false;
     }
   }, [user]);
 
@@ -184,6 +196,7 @@ export const usePendingTourHandler = () => {
   const triggerPendingTourProcessing = useCallback(() => {
     console.log('usePendingTourHandler: Manual trigger called');
     hasProcessedRef.current = false;
+    processingRef.current = false;
     processPendingTour();
   }, [processPendingTour]);
 

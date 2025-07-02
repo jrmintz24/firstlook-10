@@ -22,7 +22,7 @@ export const useSimpleBuyerLogic = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
-    refreshData,
+    refreshShowingRequests, // Use the correct property name
     optimisticUpdateShowing
   } = useOptimizedBuyerData();
 
@@ -90,18 +90,18 @@ export const useSimpleBuyerLogic = () => {
         description: "Your tour is now confirmed!",
       });
 
-      refreshData();
+      refreshShowingRequests();
     } catch (error) {
       console.error('Error signing agreement:', error);
       // Revert optimistic update
-      refreshData();
+      refreshShowingRequests();
       toast({
         title: "Error",
         description: "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }
-  }, [currentUser, optimisticUpdateShowing, refreshData, toast]);
+  }, [currentUser, optimisticUpdateShowing, refreshShowingRequests, toast]);
 
   const handleSignAgreementFromCard = useCallback((showingId: string, displayName: string) => {
     setSelectedShowing({ id: showingId });
@@ -134,18 +134,18 @@ export const useSimpleBuyerLogic = () => {
         description: "Your tour request has been cancelled.",
       });
 
-      refreshData();
+      refreshShowingRequests();
     } catch (error) {
       console.error('Error cancelling showing:', error);
       // Revert optimistic update
-      refreshData();
+      refreshShowingRequests();
       toast({
         title: "Error",
         description: "Failed to cancel tour. Please try again.",
         variant: "destructive"
       });
     }
-  }, [optimisticUpdateShowing, refreshData, toast]);
+  }, [optimisticUpdateShowing, refreshShowingRequests, toast]);
 
   const handleRescheduleShowing = useCallback((showingId: string) => {
     const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
@@ -158,16 +158,16 @@ export const useSimpleBuyerLogic = () => {
   const handleRescheduleSuccess = useCallback(() => {
     setShowRescheduleModal(false);
     setSelectedShowing(null);
-    refreshData();
+    refreshShowingRequests();
     toast({
       title: "Tour Rescheduled",
       description: "Your tour has been rescheduled successfully.",
     });
-  }, [refreshData, toast]);
+  }, [refreshShowingRequests, toast]);
 
   const fetchShowingRequests = useCallback(async () => {
-    await refreshData();
-  }, [refreshData]);
+    await refreshShowingRequests();
+  }, [refreshShowingRequests]);
 
   return {
     // State

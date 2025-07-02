@@ -1,3 +1,4 @@
+
 import { useState, Suspense, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -137,6 +138,19 @@ const OptimizedBuyerDashboard = () => {
     offersMade: 0
   }), [completedShowings, activeShowings]);
 
+  // Convert agreements array to Record<string, boolean> for compatibility
+  const agreementsRecord = useMemo(() => {
+    const record: Record<string, boolean> = {};
+    if (agreements && Array.isArray(agreements)) {
+      agreements.forEach((agreement: any) => {
+        if (agreement.showing_request_id) {
+          record[agreement.showing_request_id] = agreement.signed || false;
+        }
+      });
+    }
+    return record;
+  }, [agreements]);
+
   const handleViewHistory = () => setActiveTab("history");
   const handleAskQuestion = () => console.log("Ask question clicked");
   const handleMakeOffer = () => console.log("Make offer clicked");
@@ -240,7 +254,7 @@ const OptimizedBuyerDashboard = () => {
                       onComplete={() => {}}
                       currentUserId={currentUser?.id}
                       onSendMessage={handleSendMessage}
-                      agreements={agreements}
+                      agreements={agreementsRecord}
                     />
                   )}
                 </Suspense>
@@ -284,7 +298,7 @@ const OptimizedBuyerDashboard = () => {
                       onComplete={() => {}}
                       currentUserId={currentUser?.id}
                       onSendMessage={handleSendMessage}
-                      agreements={agreements}
+                      agreements={agreementsRecord}
                     />
                   )}
                 </Suspense>

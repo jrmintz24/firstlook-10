@@ -225,6 +225,7 @@ const RedesignedBuyerDashboard = () => {
                     onReschedule={() => handleRescheduleShowing(request.id)}
                     onSendMessage={() => handleSendMessage(request.id)}
                     onSignAgreement={handleSignAgreementFixed}
+                    userType="buyer"
                   />
                 ))}
               </div>
@@ -244,6 +245,7 @@ const RedesignedBuyerDashboard = () => {
                     onCancel={() => handleCancelShowing(showing.id)}
                     onSendMessage={() => handleSendMessage(showing.id)}
                     onSignAgreement={handleSignAgreementFixed}
+                    userType="buyer"
                   />
                 ))}
               </div>
@@ -263,6 +265,7 @@ const RedesignedBuyerDashboard = () => {
                     onReschedule={() => handleRescheduleShowing(showing.id)}
                     onSendMessage={() => handleSendMessage(showing.id)}
                     onSignAgreement={handleSignAgreementFixed}
+                    userType="buyer"
                   />
                 ))}
               </div>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,10 +15,10 @@ interface OptimizedShowingCardProps {
   onSendMessage?: (showingId: string) => void;
   onReportIssue?: (showing: any) => void;
   showActions?: boolean;
-  userType: 'buyer' | 'agent';
+  userType?: 'buyer' | 'agent';
   onComplete?: () => void;
   currentUserId?: string;
-  agreements?: any[];
+  agreements?: Record<string, boolean>;
   onSignAgreement?: (agreement: any) => void;
 }
 
@@ -42,26 +43,26 @@ const OptimizedShowingCard = ({
   onConfirm,
   onSendMessage,
   onReportIssue,
+  onSignAgreement,
   showActions = true,
-  userType,
+  userType = 'buyer',
   onComplete,
   currentUserId,
-  agreements = [],
-  onSignAgreement
+  agreements = {}
 }: OptimizedShowingCardProps) => {
   const { toast } = useToast();
   const { handleSignAgreement } = useAgreements(currentUserId || '', toast, onComplete);
 
-  const agreementNotice = agreements.find(
-    (agreement) => agreement.property_address === showing.property_address
+  const agreementNotice = Object.keys(agreements).find(
+    (key) => key === showing.id && !agreements[key]
   );
 
   return (
     <Card className="border border-gray-200 hover:shadow-md transition-all duration-200">
-      <CardContent className="p-4 sm:p-5">
-        <div className="space-y-3 sm:space-y-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="space-y-2.5 sm:space-y-3">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight">
                 {showing.property_address}
@@ -78,7 +79,7 @@ const OptimizedShowingCard = ({
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
             {showing.preferred_date_1 && (
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -105,15 +106,15 @@ const OptimizedShowingCard = ({
 
           {/* Agreement Notice */}
           {agreementNotice && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 sm:p-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <div className="flex items-center gap-2 text-blue-700 text-sm">
                   <FileText className="h-4 w-4 flex-shrink-0" />
                   <span className="font-medium">Agreement Required</span>
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => onSignAgreement?.(agreementNotice)}
+                  onClick={() => onSignAgreement?.(showing) || handleSignAgreement(showing)}
                   className="text-xs h-7 w-full sm:w-auto"
                 >
                   Sign Agreement
@@ -123,9 +124,9 @@ const OptimizedShowingCard = ({
           )}
 
           {/* Actions */}
-          {showActions && (userType === 'buyer' || userType === 'agent') && (
+          {showActions && (
             <div className="pt-2 border-t border-gray-100">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {showing.status === 'pending' && userType === 'agent' && onConfirm && (
                   <Button 
                     size="sm" 
@@ -146,7 +147,7 @@ const OptimizedShowingCard = ({
                         className="h-8 text-xs font-medium"
                       >
                         <MessageSquare className="h-3 w-3 mr-1.5" />
-                        Message
+                        <span className="sm:inline">Message</span>
                       </Button>
                     )}
                     
@@ -158,7 +159,7 @@ const OptimizedShowingCard = ({
                         className="h-8 text-xs font-medium"
                       >
                         <Calendar className="h-3 w-3 mr-1.5" />
-                        Reschedule
+                        <span className="sm:inline">Reschedule</span>
                       </Button>
                     )}
                     

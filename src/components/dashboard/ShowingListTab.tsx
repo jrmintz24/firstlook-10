@@ -1,3 +1,4 @@
+
 import EmptyStateCard from "./EmptyStateCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import AgentRequestCard from "./AgentRequestCard";
@@ -38,7 +39,7 @@ interface ShowingListTabProps {
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
   currentUserId?: string;
-  agreements?: Record<string, boolean>;
+  agreements?: Record<string, boolean> | any[];
 }
 
 const ShowingListTab = ({
@@ -54,12 +55,23 @@ const ShowingListTab = ({
   onConfirmShowing,
   onSendMessage,
   onReportIssue,
+  onSignAgreement,
   showActions = true,
   userType,
   onComplete,
   currentUserId,
-  agreements = []
+  agreements = {}
 }: ShowingListTabProps) => {
+  // Convert agreements to Record format if it's an array
+  const agreementsRecord = Array.isArray(agreements) 
+    ? agreements.reduce((acc: Record<string, boolean>, agreement: any) => {
+        if (agreement.showing_request_id) {
+          acc[agreement.showing_request_id] = agreement.signed || false;
+        }
+        return acc;
+      }, {})
+    : agreements;
+
   if (showings.length === 0) {
     return (
       <EmptyStateCard
@@ -89,12 +101,12 @@ const ShowingListTab = ({
             onConfirm={onConfirmShowing}
             onSendMessage={onSendMessage}
             onReportIssue={onReportIssue}
+            onSignAgreement={onSignAgreement}
             showActions={showActions}
-            userType={userType}
+            userType={userType || 'buyer'}
             onComplete={onComplete}
             currentUserId={currentUserId}
-            agreements={agreements}
-            onSignAgreement={handleSignAgreement}
+            agreements={agreementsRecord}
           />
         ))}
       </div>

@@ -1,11 +1,11 @@
-import { Calendar, CheckCircle, Clock, MessageSquare, MapPin, Heart } from "lucide-react";
+
+import { Calendar, CheckCircle, Clock, MapPin, Heart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EmptyStateCard from "./EmptyStateCard";
 import ConsultationsSection from "./ConsultationsSection";
-import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import ShowingListTab from "./ShowingListTab";
 import FavoritesSection from "./FavoritesSection";
 
@@ -172,37 +172,6 @@ export const generateBuyerDashboardSections = ({
           onJoinCall={onJoinConsultation}
           onReschedule={onRescheduleConsultation}
         />
-      )
-    },
-    {
-      id: "messages",
-      title: "Messages",
-      icon: MessageSquare,
-      count: unreadCount,
-      color: "bg-red-100 text-red-700",
-      component: <InlineMessagesPanel />
-    },
-    {
-      id: "profile",
-      title: "Profile",
-      icon: MapPin,
-      count: 0,
-      color: "bg-indigo-100 text-indigo-700",
-      component: (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Your Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <p>Welcome, {displayName}!</p>
-            {profile && (
-              <>
-                <p>Email: {currentUser?.email}</p>
-                <p>Phone: {profile.phone}</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
       )
     }
   ];

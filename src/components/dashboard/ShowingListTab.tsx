@@ -1,6 +1,6 @@
 
 import EmptyStateCard from "./EmptyStateCard";
-import ShowingRequestCard from "./ShowingRequestCard";
+import OptimizedShowingCard from "./OptimizedShowingCard";
 import AgentRequestCard from "./AgentRequestCard";
 import { LucideIcon } from "lucide-react";
 
@@ -77,20 +77,18 @@ const ShowingListTab = ({
   return (
     <div className="space-y-4">
       {showings.map((showing) => {
-        // For agent dashboard, use AgentRequestCard for pending requests and ShowingRequestCard for assigned ones
+        // For agent dashboard, use AgentRequestCard for pending requests and OptimizedShowingCard for assigned ones
         if (userType === 'agent' && showing.status === 'pending' && !showing.assigned_agent_id) {
           return (
             <AgentRequestCard
               key={showing.id}
               request={showing}
               onAssign={() => {
-                // This will be handled by the confirmation modal
                 if (onConfirmShowing) {
                   onConfirmShowing(showing);
                 }
               }}
               onUpdateStatus={(status, estimatedDate) => {
-                // Handle status updates if needed
                 console.log('Status update:', status, estimatedDate);
               }}
               onSendMessage={() => {
@@ -107,9 +105,9 @@ const ShowingListTab = ({
           );
         }
 
-        // For all other cases, use the regular ShowingRequestCard
+        // For all other cases, use the optimized showing card
         return (
-          <ShowingRequestCard
+          <OptimizedShowingCard
             key={showing.id}
             showing={showing}
             onCancel={onCancelShowing}
@@ -126,9 +124,7 @@ const ShowingListTab = ({
             showActions={showActions}
             userType={userType}
             onComplete={onComplete}
-            onReportIssue={onReportIssue}
             agreements={agreements}
-            onRequestShowing={onRequestShowing}
           />
         );
       })}

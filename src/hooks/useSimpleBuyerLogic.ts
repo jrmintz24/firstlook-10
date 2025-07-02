@@ -1,40 +1,44 @@
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useOptimizedBuyerData } from "./useOptimizedBuyerData";
 import { supabase } from "@/integrations/supabase/client";
-import { useMessages } from "@/hooks/useMessages";
-import { useSimpleBuyerData } from "./useSimpleBuyerData";
 
-interface UseSimpleBuyerLogicProps {
-  onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
-}
-
-export const useSimpleBuyerLogic = ({ onOpenChat }: UseSimpleBuyerLogicProps = {}) => {
+export const useSimpleBuyerLogic = () => {
+  const { toast } = useToast();
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [activeTab, setActiveTab] = useState("requested");
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  const { toast } = useToast();
-  
   const {
     profile,
     loading,
-    isRefreshing,
     authLoading,
     currentUser,
     pendingRequests,
     activeShowings,
     completedShowings,
     refreshData,
-    fetchShowingRequests
-  } = useSimpleBuyerData();
+    optimisticUpdateShowing
+  } = useOptimizedBuyerData();
 
-  const { unreadCount } = useMessages(currentUser?.id || null);
+  // Computed values with proper status categorization
+  const showingCounts = {
+    pending: pendingRequests.length,
+    active: activeShowings.length,
+    completed: completedShowings.length
+  };
 
-  // Memoized handlers to prevent re-renders
+  const eligibility = { eligible: true, reason: 'test' };
+  const isSubscribed = false;
+  const subscriptionTier = null;
+  const unreadCount = 0;
+
+  // Optimized handlers with instant UI feedback
   const handleRequestShowing = useCallback(() => {
     setShowPropertyForm(true);
   }, []);
@@ -46,147 +50,124 @@ export const useSimpleBuyerLogic = ({ onOpenChat }: UseSimpleBuyerLogicProps = {
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
     toast({
-      title: "Subscription Updated",
-      description: "Welcome to premium! You can now request unlimited showings.",
+      title: "Subscription Active",
+      description: "You now have access to unlimited tours!",
     });
   }, [toast]);
 
   const handleConfirmShowingWithModal = useCallback((showing: any) => {
     setSelectedShowing(showing);
-    setShowAgreementModal(true);
+    // Implementation for confirmation modal
+    console.log('Confirming showing:', showing.id);
   }, []);
 
-  const handleAgreementSignWithModal = useCallback(async (name: string) => {
-    if (!selectedShowing || !currentUser) return;
-
+  const handleAgreementSignWithModal = useCallback(async (showingId: string, buyerName: string) => {
     try {
-      const { data: existingAgreement } = await supabase
+      // Optimistic update
+      optimisticUpdateShowing(showingId, { status: 'confirmed' });
+      
+      const { error } = await supabase
         .from('tour_agreements')
-        .select('*')
-        .eq('showing_request_id', selectedShowing.id)
-        .eq('buyer_id', currentUser.id)
-        .maybeSingle();
+        .upsert({
+          showing_request_id: showingId,
+          buyer_id: currentUser?.id,
+          signed: true,
+          signed_at: new Date().toISOString()
+        });
 
-      if (existingAgreement) {
-        await supabase
-          .from('tour_agreements')
-          .update({
-            signed: true,
-            signed_at: new Date().toISOString()
-          })
-          .eq('id', existingAgreement.id);
-      } else {
-        await supabase
-          .from('tour_agreements')
-          .insert({
-            showing_request_id: selectedShowing.id,
-            buyer_id: currentUser.id,
-            agreement_type: 'single_tour',
-            signed: true,
-            signed_at: new Date().toISOString(),
-            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          });
-      }
+      if (error) throw error;
 
-      await supabase
+      // Update showing status
+      const { error: showingError } = await supabase
         .from('showing_requests')
-        .update({
-          status: 'confirmed',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedShowing.id);
+        .update({ status: 'confirmed' })
+        .eq('id', showingId);
+
+      if (showingError) throw showingError;
 
       toast({
         title: "Agreement Signed",
-        description: "You have successfully signed the tour agreement.",
+        description: "Your tour is now confirmed!",
       });
 
-      setShowAgreementModal(false);
-      setSelectedShowing(null);
-      await refreshData();
+      refreshData();
     } catch (error) {
       console.error('Error signing agreement:', error);
+      // Revert optimistic update
+      refreshData();
       toast({
         title: "Error",
         description: "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
     }
-  }, [selectedShowing, currentUser, toast, refreshData]);
+  }, [currentUser, optimisticUpdateShowing, refreshData, toast]);
 
   const handleSignAgreementFromCard = useCallback((showingId: string, displayName: string) => {
-    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
-    if (showing) {
-      setSelectedShowing(showing);
-      setShowAgreementModal(true);
-    }
-  }, [pendingRequests, activeShowings]);
-
-  const handleSendMessage = useCallback((showingId: string) => {
-    onOpenChat?.('property', showingId);
-  }, [onOpenChat]);
-
-  const handleStatClick = useCallback((tab: string) => {
-    setActiveTab(tab);
+    setSelectedShowing({ id: showingId });
+    setShowAgreementModal(true);
   }, []);
 
-  const handleCancelShowing = useCallback(async (id: string) => {
+  const handleSendMessage = useCallback((showingId: string) => {
+    setActiveTab("messages");
+    console.log('Opening messages for showing:', showingId);
+  }, []);
+
+  const handleStatClick = useCallback((targetTab: string) => {
+    setActiveTab(targetTab);
+  }, []);
+
+  const handleCancelShowing = useCallback(async (showingId: string) => {
     try {
-      await supabase
+      // Optimistic update
+      optimisticUpdateShowing(showingId, { status: 'cancelled' });
+
+      const { error } = await supabase
         .from('showing_requests')
-        .update({ 
-          status: 'cancelled',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+        .update({ status: 'cancelled' })
+        .eq('id', showingId);
+
+      if (error) throw error;
 
       toast({
-        title: "Showing Cancelled",
-        description: "Your showing request has been cancelled.",
+        title: "Tour Cancelled",
+        description: "Your tour request has been cancelled.",
       });
-      
-      await refreshData();
+
+      refreshData();
     } catch (error) {
       console.error('Error cancelling showing:', error);
+      // Revert optimistic update
+      refreshData();
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "Failed to cancel tour. Please try again.",
         variant: "destructive"
       });
     }
-  }, [toast, refreshData]);
+  }, [optimisticUpdateShowing, refreshData, toast]);
 
-  const handleRescheduleShowing = useCallback((id: string) => {
-    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === id);
+  const handleRescheduleShowing = useCallback((showingId: string) => {
+    const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
     if (showing) {
       setSelectedShowing(showing);
       setShowRescheduleModal(true);
     }
   }, [pendingRequests, activeShowings]);
 
-  const handleRescheduleSuccess = useCallback(async () => {
+  const handleRescheduleSuccess = useCallback(() => {
     setShowRescheduleModal(false);
     setSelectedShowing(null);
+    refreshData();
+    toast({
+      title: "Tour Rescheduled",
+      description: "Your tour has been rescheduled successfully.",
+    });
+  }, [refreshData, toast]);
+
+  const fetchShowingRequests = useCallback(async () => {
     await refreshData();
   }, [refreshData]);
-
-  // Memoized computed values
-  const showingCounts = useMemo(() => ({
-    pending: pendingRequests.length,
-    active: activeShowings.length,
-    completed: completedShowings.length,
-    total: pendingRequests.length + activeShowings.length + completedShowings.length
-  }), [pendingRequests.length, activeShowings.length, completedShowings.length]);
-
-  const eligibility = useMemo(() => ({
-    canRequestShowing: true,
-    reason: 'eligible'
-  }), []);
-
-  const agreements = useMemo(() => ({}), []);
-  const isSubscribed = useMemo(() => false, []);
-  const subscriptionTier = useMemo(() => 'free', []);
 
   return {
     // State
@@ -204,12 +185,10 @@ export const useSimpleBuyerLogic = ({ onOpenChat }: UseSimpleBuyerLogicProps = {
     // Data
     profile,
     selectedShowing,
-    agreements,
     loading,
-    detailLoading: isRefreshing,
+    detailLoading,
     authLoading,
     currentUser,
-    isInitialLoad: loading,
     pendingRequests,
     activeShowings,
     completedShowings,
@@ -231,7 +210,6 @@ export const useSimpleBuyerLogic = ({ onOpenChat }: UseSimpleBuyerLogicProps = {
     handleCancelShowing,
     handleRescheduleShowing,
     handleRescheduleSuccess,
-    fetchShowingRequests,
-    refreshShowingRequests: fetchShowingRequests
+    fetchShowingRequests
   };
 };

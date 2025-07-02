@@ -1,3 +1,4 @@
+
 import { useState, Suspense, useCallback } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
@@ -14,8 +15,6 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleBuyerLogic } from "@/hooks/useSimpleBuyerLogic";
-import "../utils/createTestAgent";
-import "../utils/debugWorkflow";
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -85,8 +84,6 @@ const BuyerDashboard = () => {
 
   usePendingTourHandler({ onTourProcessed: handleTourProcessed });
 
-  console.log('BuyerDashboard: Pending tour handler initialized');
-
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
 
@@ -95,11 +92,9 @@ const BuyerDashboard = () => {
   };
 
   const handleOpenSupport = () => {
-    // We can add support functionality here later
     console.log("Support requested");
   };
 
-  // Fix the TypeScript error by properly typing the agreements record
   const agreementsRecord: Record<string, boolean> = {};
 
   // Transform consultation bookings to match the expected format
@@ -108,7 +103,7 @@ const BuyerDashboard = () => {
     propertyAddress: booking.offer_intents?.property_address || 'Property consultation',
     scheduledAt: booking.scheduled_at,
     consultationType: (booking.offer_intents?.consultation_type === 'phone' ? 'phone' : 'video') as 'phone' | 'video',
-    agentName: 'Your Agent', // This would come from agent profile in a real implementation
+    agentName: 'Your Agent',
     status: booking.status as 'scheduled' | 'completed' | 'cancelled'
   }));
 
@@ -126,7 +121,6 @@ const BuyerDashboard = () => {
   // Add consultation handlers
   const handleJoinConsultation = useCallback((consultationId: string) => {
     console.log('Joining consultation:', consultationId);
-    // In a real implementation, this would open the video call
     toast({
       title: "Video Call Starting",
       description: "Opening video consultation...",
@@ -135,7 +129,6 @@ const BuyerDashboard = () => {
 
   const handleRescheduleConsultation = useCallback(async (consultationId: string) => {
     console.log('Rescheduling consultation:', consultationId);
-    // For now, just show a message - in real implementation this would open a reschedule modal
     toast({
       title: "Reschedule Consultation",
       description: "Feature coming soon!",

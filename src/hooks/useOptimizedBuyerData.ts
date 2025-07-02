@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useShowingRequestsSubscription } from "./useShowingRequestsSubscription";
 
 interface Profile {
   id: string;
@@ -29,6 +28,7 @@ interface ShowingRequest {
   assigned_agent_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
+  user_id?: string | null;
 }
 
 export const useOptimizedBuyerData = () => {
@@ -36,26 +36,30 @@ export const useOptimizedBuyerData = () => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
   const fetchingRef = useRef(false);
+  const realtimeChannelRef = useRef<any>(null);
+  const fallbackIntervalRef = useRef<NodeJS.Timeout>();
+
   const currentUser = user || session?.user;
 
-  // Enhanced categorization with new workflow statuses
+  // Corrected status categorization with proper workflow logic
   const categorizedRequests = useMemo(() => {
+    // Pending: requests that haven't been fully confirmed yet
     const pendingRequests = showingRequests.filter(req => 
-      ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement', 'agent_requested'].includes(req.status)
+      ['pending', 'submitted', 'under_review', 'agent_assigned', 'agent_requested', 'agent_confirmed', 'awaiting_agreement'].includes(req.status)
     );
     
+    // Active: tours that are confirmed and scheduled
     const activeShowings = showingRequests.filter(req => 
-      ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
+      ['confirmed', 'scheduled', 'in_progress'].includes(req.status)
     );
     
+    // Completed: finished or cancelled tours
     const completedShowings = showingRequests
       .filter(req => ['completed', 'cancelled'].includes(req.status))
       .sort((a, b) => {
@@ -69,175 +73,169 @@ export const useOptimizedBuyerData = () => {
     return { pendingRequests, activeShowings, completedShowings };
   }, [showingRequests]);
 
-  // Showing counts for stats
-  const showingCounts = useMemo(() => ({
-    pending: categorizedRequests.pendingRequests.length,
-    active: categorizedRequests.activeShowings.length,
-    completed: categorizedRequests.completedShowings.length,
-    total: showingRequests.length
-  }), [categorizedRequests, showingRequests.length]);
-
-  // Fetch showing requests with enhanced error handling
+  // Optimized data fetching with proper error handling
   const fetchShowingRequests = useCallback(async () => {
-    if (!currentUser || fetchingRef.current) return;
-
-    fetchingRef.current = true;
-    if (!isInitialLoad) {
-      setDetailLoading(true);
-    }
+    if (!currentUser) return [];
 
     try {
-      console.log('Fetching showing requests for user:', currentUser.id);
-      const { data: requestsData, error: requestsError } = await supabase
+      const { data, error } = await supabase
         .from('showing_requests')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      if (requestsError) {
-        console.error('Requests error:', requestsError);
-        toast({
-          title: "Error",
-          description: "Failed to load showing requests.",
-          variant: "destructive"
-        });
-        setShowingRequests([]);
-      } else {
-        console.log('Loaded showing requests:', {
-          total: requestsData?.length || 0,
-          statuses: requestsData?.reduce((acc, req) => {
-            acc[req.status] = (acc[req.status] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>) || {}
-        });
-        setShowingRequests(requestsData || []);
+      if (error) {
+        console.error('Error fetching showing requests:', error);
+        return [];
       }
+
+      return data || [];
     } catch (error) {
-      console.error('Error fetching showing requests:', error);
-      setShowingRequests([]);
-      toast({
-        title: "Error",
-        description: "Failed to load showing requests.",
-        variant: "destructive"
-      });
-    } finally {
-      fetchingRef.current = false;
-      setDetailLoading(false);
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-      }
+      console.error('Exception fetching showing requests:', error);
+      return [];
     }
-  }, [currentUser, toast, isInitialLoad]);
+  }, [currentUser]);
 
-  // Fetch all data with optimized loading states
-  const fetchAllData = useCallback(async (isRefresh = false) => {
-    if (!currentUser || fetchingRef.current) {
-      if (!currentUser) {
-        setLoading(false);
-      }
-      return;
-    }
-
-    fetchingRef.current = true;
-    if (isRefresh && !isInitialLoad) {
-      setDetailLoading(true);
-    }
-
-    console.log('Fetching optimized buyer dashboard data for user:', currentUser.id);
+  const fetchAgreements = useCallback(async () => {
+    if (!currentUser) return {};
 
     try {
-      // Fetch all data in parallel with proper error handling
-      const [profileResult, requestsResult, agreementsResult] = await Promise.allSettled([
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle(),
-        
-        supabase
-          .from('showing_requests')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false }),
-        
-        supabase
-          .from('tour_agreements')
-          .select('showing_request_id, signed')
-          .eq('buyer_id', currentUser.id)
+      const { data, error } = await supabase
+        .from('tour_agreements')
+        .select('showing_request_id, signed')
+        .eq('buyer_id', currentUser.id);
+
+      if (error) {
+        console.error('Error fetching agreements:', error);
+        return {};
+      }
+
+      return (data || []).reduce((acc, agreement) => {
+        acc[agreement.showing_request_id] = agreement.signed;
+        return acc;
+      }, {} as Record<string, boolean>);
+    } catch (error) {
+      console.error('Exception fetching agreements:', error);
+      return {};
+    }
+  }, [currentUser]);
+
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Exception fetching profile:', error);
+      return null;
+    }
+  }, [currentUser]);
+
+  // Consolidated data refresh function
+  const refreshAllData = useCallback(async (isManualRefresh = false) => {
+    if (!currentUser || fetchingRef.current) return;
+
+    fetchingRef.current = true;
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    }
+
+    try {
+      const [requestsData, agreementsData, profileData] = await Promise.all([
+        fetchShowingRequests(),
+        fetchAgreements(),
+        fetchProfile()
       ]);
 
-      // Handle profile result
-      if (profileResult.status === 'fulfilled') {
-        const { data: profileData, error: profileError } = profileResult.value;
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile error:', profileError);
-        } else {
-          setProfile(profileData);
-        }
-      }
-
-      // Handle showing requests result with enhanced logging
-      if (requestsResult.status === 'fulfilled') {
-        const { data: requestsData, error: requestsError } = requestsResult.value;
-        if (requestsError) {
-          console.error('Requests error:', requestsError);
-          toast({
-            title: "Error",
-            description: "Failed to load showing requests.",
-            variant: "destructive"
-          });
-          setShowingRequests([]);
-        } else {
-          console.log('Loaded showing requests:', {
-            total: requestsData?.length || 0,
-            statuses: requestsData?.reduce((acc, req) => {
-              acc[req.status] = (acc[req.status] || 0) + 1;
-              return acc;
-            }, {} as Record<string, number>) || {}
-          });
-          setShowingRequests(requestsData || []);
-        }
-      }
-
-      // Handle agreements result
-      if (agreementsResult.status === 'fulfilled') {
-        const { data: agreementsData, error: agreementsError } = agreementsResult.value;
-        if (agreementsError) {
-          console.error('Agreements error:', agreementsError);
-        } else {
-          const agreementsMap = (agreementsData || []).reduce((acc, agreement) => {
-            acc[agreement.showing_request_id] = agreement.signed;
-            return acc;
-          }, {} as Record<string, boolean>);
-          console.log('Loaded agreements:', agreementsMap);
-          setAgreements(agreementsMap);
-        }
-      }
+      setShowingRequests(requestsData);
+      setAgreements(agreementsData);
+      setProfile(profileData);
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error in refreshAllData:', error);
       toast({
         title: "Error",
-        description: "Failed to load dashboard data.",
+        description: "Failed to refresh data. Please try again.",
         variant: "destructive"
       });
     } finally {
       setLoading(false);
-      setDetailLoading(false);
+      setIsRefreshing(false);
       fetchingRef.current = false;
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-      }
     }
-  }, [currentUser, toast, isInitialLoad]);
+  }, [currentUser, fetchShowingRequests, fetchAgreements, fetchProfile, toast]);
 
-  // Set up real-time subscription
-  useShowingRequestsSubscription({
-    userId: currentUser?.id || null,
-    onDataChange: fetchShowingRequests,
-    enabled: !!currentUser && !isInitialLoad
-  });
+  // Improved real-time setup with fallback
+  const setupRealtime = useCallback(() => {
+    if (!currentUser) return;
 
+    // Clean up existing channel
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel(`showing_requests_${currentUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'showing_requests',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        (payload) => {
+          console.log('Real-time showing request change:', payload);
+          
+          // Update showing requests immediately for better UX
+          setShowingRequests(prev => {
+            const updated = [...prev];
+            const index = updated.findIndex(req => req.id === payload.new?.id || req.id === payload.old?.id);
+            
+            if (payload.eventType === 'DELETE' && index >= 0) {
+              updated.splice(index, 1);
+            } else if (payload.eventType === 'INSERT') {
+              updated.unshift(payload.new as ShowingRequest);
+            } else if (payload.eventType === 'UPDATE' && index >= 0) {
+              updated[index] = payload.new as ShowingRequest;
+            }
+            
+            return updated;
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+        
+        if (status === 'SUBSCRIBED') {
+          // Clear fallback polling when real-time works
+          if (fallbackIntervalRef.current) {
+            clearInterval(fallbackIntervalRef.current);
+          }
+        } else if (status === 'CHANNEL_ERROR') {
+          // Set up fallback polling if real-time fails
+          fallbackIntervalRef.current = setInterval(() => {
+            refreshAllData(false);
+          }, 30000); // Poll every 30 seconds
+        }
+      });
+
+    realtimeChannelRef.current = channel;
+  }, [currentUser, refreshAllData]);
+
+  // Initial data load
   useEffect(() => {
     if (authLoading) return;
     
@@ -247,19 +245,39 @@ export const useOptimizedBuyerData = () => {
       return;
     }
 
-    fetchAllData();
-  }, [user, session, authLoading, navigate, fetchAllData]);
+    refreshAllData();
+    setupRealtime();
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+      if (fallbackIntervalRef.current) {
+        clearInterval(fallbackIntervalRef.current);
+      }
+    };
+  }, [user, session, authLoading, navigate, refreshAllData, setupRealtime]);
+
+  // Optimistic update function for better UX
+  const optimisticUpdateShowing = useCallback((showingId: string, updates: Partial<ShowingRequest>) => {
+    setShowingRequests(prev => 
+      prev.map(showing => 
+        showing.id === showingId 
+          ? { ...showing, ...updates }
+          : showing
+      )
+    );
+  }, []);
 
   return {
     profile,
-    showingCounts,
     agreements,
     loading,
-    detailLoading,
+    isRefreshing,
     authLoading,
     currentUser,
-    isInitialLoad,
-    refreshShowingRequests: fetchShowingRequests,
+    refreshData: () => refreshAllData(true),
+    optimisticUpdateShowing,
     ...categorizedRequests
   };
 };

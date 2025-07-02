@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -155,59 +156,6 @@ const EnhancedOfferTypeDialog = ({
             </div>
 
             <div className="space-y-3">
-              {/* Make an Offer - Free Option */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.01] border border-gray-200 bg-white"
-                onClick={() => handleOfferTypeSelection('make_offer')}
-              >
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                          <Zap className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            Make an Offer
-                          </h3>
-                          <Badge className="bg-green-50 text-green-700 border-green-200 hover:bg-green-50 text-xs">
-                            Included with Membership
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600">
-                      Create a professional, fully compliant contract using our guided questionnaire.
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                        <span>Guided questionnaire</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                        <span>Auto-filled documents</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                        <span>Local contract standards</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="h-3 w-3 text-gray-500" />
-                        <span>Takes ~15 minutes</span>
-                      </div>
-                    </div>
-                    
-                    <Button className="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg transition-all duration-200 hover:scale-[1.02]">
-                      Start Offer
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Work with Agent - Premium Option */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.01] border border-gray-200 bg-white"
@@ -291,6 +239,61 @@ const EnhancedOfferTypeDialog = ({
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Make an Offer - Coming Soon */}
+              <Card 
+                className="border border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+              >
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-400 rounded-lg flex items-center justify-center">
+                          <Zap className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-700">
+                            Make an Offer
+                          </h3>
+                          <Badge className="bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50 text-xs">
+                            Coming Soon
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-500">
+                      Create a professional, fully compliant contract using our guided questionnaire.
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <CheckCircle className="h-3 w-3 text-gray-400" />
+                        <span>Guided questionnaire</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <CheckCircle className="h-3 w-3 text-gray-400" />
+                        <span>Auto-filled documents</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <CheckCircle className="h-3 w-3 text-gray-400" />
+                        <span>Local contract standards</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span>Takes ~15 minutes</span>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      disabled 
+                      className="w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed"
+                    >
+                      Coming Soon
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Help Section */}
@@ -301,10 +304,10 @@ const EnhancedOfferTypeDialog = ({
               </h4>
               <div className="space-y-1 text-gray-700 text-xs">
                 <p>
-                  <span className="font-medium">Make an Offer:</span> You're comfortable moving fast and want control.
+                  <span className="font-medium">Work with an Agent:</span> You want personalized strategy and expert support.
                 </p>
                 <p>
-                  <span className="font-medium">Work with an Agent:</span> You want personalized strategy and expert support.
+                  <span className="font-medium">Make an Offer:</span> You're comfortable moving fast and want control (coming soon).
                 </p>
               </div>
             </div>

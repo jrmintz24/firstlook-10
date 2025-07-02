@@ -114,10 +114,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('AuthProvider: Error creating profile:', createError);
         } else {
           console.log('AuthProvider: Profile created successfully');
+          
+          // Send welcome email for new users (non-blocking)
+          setTimeout(async () => {
+            await sendWelcomeEmail(user, profileData);
+          }, 500);
         }
       }
     } catch (error) {
       console.error('AuthProvider: Error in profile creation:', error);
+    }
+  };
+
+  const sendWelcomeEmail = async (user: User, profileData: any) => {
+    try {
+      console.log('AuthProvider: Sending welcome email to:', user.email);
+      
+      const { error } = await supabase.functions.invoke('send-welcome-email', {
+        body: {
+          firstName: profileData.first_name || user.user_metadata?.first_name || '',
+          email: user.email,
+          userType: profileData.user_type || 'buyer'
+        }
+      });
+
+      if (error) {
+        console.error('AuthProvider: Error sending welcome email:', error);
+      } else {
+        console.log('AuthProvider: Welcome email sent successfully');
+      }
+    } catch (error) {
+      console.error('AuthProvider: Welcome email error:', error);
+      // Don't throw - email failures shouldn't block user registration
     }
   };
 

@@ -1,3 +1,4 @@
+
 import { useState, Suspense, useCallback, useMemo } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
@@ -15,6 +16,7 @@ import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import { useSafeMessages } from "@/hooks/useSafeMessages";
+import { useBuyerFavorites } from "@/hooks/useBuyerFavorites";
 
 const BuyerDashboard = () => {
   const { toast } = useToast();
@@ -61,6 +63,9 @@ const BuyerDashboard = () => {
 
   // Use safe messages hook that won't break the dashboard
   const { unreadCount } = useSafeMessages(currentUser?.id || null);
+
+  // Add favorites hook
+  const { favorites } = useBuyerFavorites(currentUser?.id);
 
   // Fetch real consultation bookings data
   const { 
@@ -219,6 +224,11 @@ const BuyerDashboard = () => {
               title: "Completed Tours",
               value: showingCounts.completed,
               targetTab: "history"
+            },
+            {
+              title: "Favorites",
+              value: favorites.length,
+              targetTab: "favorites"
             }
           ]}
           onStatClick={handleStatClick}

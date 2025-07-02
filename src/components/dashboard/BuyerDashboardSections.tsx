@@ -1,10 +1,11 @@
 
 import React from "react";
-import { Clock, CheckCircle, History } from "lucide-react";
+import { Clock, CheckCircle, History, Heart } from "lucide-react";
 import WelcomeDashboard from "./WelcomeDashboard";
 import QuickActions from "./QuickActions";
 import ShowingListTab from "./ShowingListTab";
 import ConsultationsSection from "./ConsultationsSection";
+import FavoritesSection from "./FavoritesSection";
 import { default as MessagesTab } from "../messaging/MessagesTab";
 import ProfileTab from "./ProfileTab";
 
@@ -158,6 +159,13 @@ export const generateBuyerDashboardSections = ({
           agreements={agreements}
           onComplete={onComplete}
         />
+      )
+    },
+    {
+      id: "favorites",
+      title: "Favorites",
+      component: (
+        <FavoritesSection buyerId={currentUser?.id} />
       )
     },
     {

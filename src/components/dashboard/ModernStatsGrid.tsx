@@ -1,86 +1,40 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 
-interface Stat {
+interface StatTile {
   title: string;
-  value: string | number;
-  change?: {
-    value: string;
-    trend: 'up' | 'down' | 'neutral';
-  };
-  icon?: LucideIcon;
-  color?: 'blue' | 'green' | 'purple' | 'orange' | 'red';
-  targetTab?: string; // Add this to allow targeting specific tabs
+  value: number | string;
+  targetTab?: string;
 }
 
 interface ModernStatsGridProps {
-  stats: Stat[];
-  onStatClick?: (indexOrTab: number | string) => void;
+  stats: StatTile[];
+  onStatClick?: (tab: string) => void;
 }
 
 const ModernStatsGrid = ({ stats, onStatClick }: ModernStatsGridProps) => {
-  const getColorClasses = (color: string = 'blue') => {
-    const colors = {
-      blue: 'text-blue-600 bg-blue-50',
-      green: 'text-green-600 bg-green-50',
-      purple: 'text-purple-600 bg-purple-50',
-      orange: 'text-orange-600 bg-orange-50',
-      red: 'text-red-600 bg-red-50'
-    };
-    return colors[color as keyof typeof colors] || colors.blue;
-  };
-
-  const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
-    if (trend === 'up') return <TrendingUp className="w-3 h-3 text-green-500" />;
-    if (trend === 'down') return <TrendingDown className="w-3 h-3 text-red-500" />;
-    return null;
-  };
-
-  const handleStatClick = (stat: Stat, index: number) => {
-    if (onStatClick) {
-      // If the stat has a targetTab, use that; otherwise use the index
-      onStatClick(stat.targetTab || index);
+  const handleStatClick = (targetTab: string) => {
+    if (onStatClick && targetTab) {
+      onStatClick(targetTab);
     }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {stats.map((stat, index) => (
         <Card 
-          key={index} 
-          className={`bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200 ${
-            onStatClick ? 'cursor-pointer' : ''
+          key={index}
+          className={`hover:shadow-md transition-all duration-200 ${
+            stat.targetTab && onStatClick ? 'cursor-pointer hover:scale-105' : ''
           }`}
-          onClick={() => handleStatClick(stat, index)}
+          onClick={() => stat.targetTab && handleStatClick(stat.targetTab)}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-2">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mb-1">
-                  {stat.value}
-                </p>
-                {stat.change && (
-                  <div className="flex items-center gap-1">
-                    {getTrendIcon(stat.change.trend)}
-                    <span className={`text-xs font-medium ${
-                      stat.change.trend === 'up' ? 'text-green-600' : 
-                      stat.change.trend === 'down' ? 'text-red-600' : 
-                      'text-gray-500'
-                    }`}>
-                      {stat.change.value}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {stat.icon && (
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getColorClasses(stat.color)}`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-              )}
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900 mb-1">
+              {stat.value}
+            </div>
+            <div className="text-sm text-gray-600">
+              {stat.title}
             </div>
           </CardContent>
         </Card>

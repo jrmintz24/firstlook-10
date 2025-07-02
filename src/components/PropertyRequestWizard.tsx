@@ -12,9 +12,15 @@ interface PropertyRequestWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => Promise<void>;
+  skipNavigation?: boolean;
 }
 
-const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWizardProps) => {
+const PropertyRequestWizard = ({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  skipNavigation = true 
+}: PropertyRequestWizardProps) => {
   const {
     currentStep,
     formData,
@@ -32,7 +38,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
     handleCancelPendingShowing,
     pendingShowingAddress,
     resetForm
-  } = usePropertyRequest(onClose, onSuccess);
+  } = usePropertyRequest(onClose, onSuccess, skipNavigation);
 
   const handleClose = () => {
     resetForm();

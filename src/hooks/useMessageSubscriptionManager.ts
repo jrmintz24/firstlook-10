@@ -1,154 +1,98 @@
 
-import { useRef, useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-
-interface ConnectionManager {
-  retryCount: number;
-  maxRetries: number;
-  isConnecting: boolean;
-  channel: any;
-  backoffDelays: number[];
-  circuitBreakerOpen: boolean;
-  lastFailureTime: number;
-  circuitBreakerTimeout: number;
-}
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 export const useMessageSubscriptionManager = () => {
-  const connectionManager = useRef<ConnectionManager>({
-    retryCount: 0,
-    maxRetries: 3, // Reduced from 5
-    isConnecting: false,
-    channel: null,
-    backoffDelays: [1000, 2000, 4000], // Reduced delays
-    circuitBreakerOpen: false,
-    lastFailureTime: 0,
-    circuitBreakerTimeout: 30000 // 30 seconds
-  });
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryCountRef = useRef(0);
+  const circuitBreakerRef = useRef(false);
+  const maxRetries = 3;
+  const baseRetryDelay = 2000;
+  const circuitBreakerTimeout = 30000; // 30 seconds
+
+  const resetConnection = useCallback(() => {
+    retryCountRef.current = 0;
+    circuitBreakerRef.current = false;
+  }, []);
 
   const cleanupConnection = useCallback(() => {
-    const manager = connectionManager.current;
-    if (manager.channel) {
-      console.log('Cleaning up message subscription channel');
-      supabase.removeChannel(manager.channel);
-      manager.channel = null;
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
-    manager.isConnecting = false;
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
   }, []);
 
-  const isCircuitBreakerOpen = useCallback(() => {
-    const manager = connectionManager.current;
-    if (!manager.circuitBreakerOpen) return false;
-    
-    const now = Date.now();
-    if (now - manager.lastFailureTime > manager.circuitBreakerTimeout) {
-      manager.circuitBreakerOpen = false;
-      manager.retryCount = 0;
-      return false;
-    }
-    return true;
-  }, []);
-
-  const createSubscription = useCallback((userId: string, fetchMessages: () => void) => {
-    const manager = connectionManager.current;
-    
-    // Circuit breaker check
-    if (isCircuitBreakerOpen()) {
+  const createSubscription = useCallback((userId: string, onMessageReceived: () => void) => {
+    // Check circuit breaker
+    if (circuitBreakerRef.current) {
       console.log('Circuit breaker is open, skipping subscription');
       return null;
     }
 
-    // Prevent multiple simultaneous connections
-    if (manager.isConnecting || manager.channel) {
-      console.log('Subscription already exists or is connecting, skipping');
-      return manager.channel;
-    }
+    // Clean up existing connection
+    cleanupConnection();
 
-    // Check retry limit
-    if (manager.retryCount >= manager.maxRetries) {
-      console.error('Max retries reached, opening circuit breaker');
-      manager.circuitBreakerOpen = true;
-      manager.lastFailureTime = Date.now();
-      return null;
-    }
+    console.log('Setting up message subscription for user:', userId);
 
-    manager.isConnecting = true;
-    console.log(`Setting up message subscription for user: ${userId} (attempt ${manager.retryCount + 1})`);
-
-    const channelName = `messages-user-${userId}`;
-    
     const channel = supabase
-      .channel(channelName)
+      .channel(`messages_${userId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`
+          filter: `receiver_id=eq.${userId}`
         },
-        (payload) => {
-          console.log('Message subscription event:', payload);
-          // Debounce the fetch to prevent excessive calls
-          setTimeout(fetchMessages, 100);
+        () => {
+          console.log('New message received, refreshing...');
+          onMessageReceived();
         }
       )
       .subscribe((status) => {
         console.log('Message subscription status:', status);
         
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to message updates');
-          manager.isConnecting = false;
-          manager.retryCount = 0; // Reset on successful connection
+          retryCountRef.current = 0;
+          circuitBreakerRef.current = false;
         } else if (status === 'CHANNEL_ERROR') {
           console.error('Message subscription error');
-          manager.isConnecting = false;
           
-          // Cleanup failed connection
-          if (manager.channel) {
-            supabase.removeChannel(manager.channel);
-            manager.channel = null;
-          }
-          
-          // Retry with exponential backoff
-          if (manager.retryCount < manager.maxRetries) {
-            const delay = manager.backoffDelays[manager.retryCount] || 4000;
+          if (retryCountRef.current < maxRetries) {
+            const delay = baseRetryDelay * Math.pow(2, retryCountRef.current);
             console.log(`Retrying message subscription in ${delay}ms`);
             
-            setTimeout(() => {
-              manager.retryCount++;
-              createSubscription(userId, fetchMessages);
+            retryTimeoutRef.current = setTimeout(() => {
+              retryCountRef.current++;
+              createSubscription(userId, onMessageReceived);
             }, delay);
           } else {
-            console.error('Max retries reached for message subscription');
-            manager.circuitBreakerOpen = true;
-            manager.lastFailureTime = Date.now();
+            console.log('Max retries reached, opening circuit breaker');
+            circuitBreakerRef.current = true;
+            
+            // Reset circuit breaker after timeout
+            setTimeout(() => {
+              console.log('Resetting circuit breaker');
+              resetConnection();
+            }, circuitBreakerTimeout);
           }
         } else if (status === 'CLOSED') {
           console.log('Message subscription closed');
-          manager.isConnecting = false;
-          manager.channel = null;
         }
       });
 
-    manager.channel = channel;
+    channelRef.current = channel;
     return channel;
-  }, [isCircuitBreakerOpen]);
-
-  const resetConnection = useCallback(() => {
-    const manager = connectionManager.current;
-    manager.retryCount = 0;
-    manager.circuitBreakerOpen = false;
-  }, []);
+  }, [cleanupConnection, resetConnection]);
 
   return {
     createSubscription,
     cleanupConnection,
-    resetConnection,
-    getConnectionStatus: () => ({
-      isConnecting: connectionManager.current.isConnecting,
-      retryCount: connectionManager.current.retryCount,
-      maxRetries: connectionManager.current.maxRetries,
-      circuitBreakerOpen: connectionManager.current.circuitBreakerOpen
-    })
+    resetConnection
   };
 };

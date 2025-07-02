@@ -25,7 +25,11 @@ const initialFormData: PropertyRequestFormData = {
   selectedProperties: []
 };
 
-export const usePropertyRequest = (onClose?: () => void, onDataRefresh?: () => Promise<void>) => {
+export const usePropertyRequest = (
+  onClose?: () => void, 
+  onDataRefresh?: () => Promise<void>,
+  skipNavigation?: boolean
+) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
@@ -116,19 +120,37 @@ export const usePropertyRequest = (onClose?: () => void, onDataRefresh?: () => P
       }
     }
 
-    // Submit the requests and wait for completion
-    await submitShowingRequests();
-    
-    // Clear form and close modal only after successful submission and data refresh
-    setFormData(initialFormData);
-    setCurrentStep(1);
-    
-    // Navigate to dashboard
-    navigate('/buyer-dashboard');
-    
-    // Call onClose to close the modal
-    if (onClose) {
-      onClose();
+    try {
+      // Submit the requests and wait for completion
+      await submitShowingRequests();
+      
+      // Clear form and close modal after successful submission
+      setFormData(initialFormData);
+      setCurrentStep(1);
+      
+      // Show success message
+      toast({
+        title: "Tour Request Submitted",
+        description: "Your tour request has been submitted successfully!",
+      });
+      
+      // Call onClose to close the modal
+      if (onClose) {
+        onClose();
+      }
+      
+      // Navigate to dashboard only if not skipping navigation
+      if (!skipNavigation) {
+        navigate('/buyer-dashboard');
+      }
+      
+    } catch (error) {
+      console.error('Error submitting showing requests:', error);
+      toast({
+        title: "Submission Error",
+        description: "Failed to submit your tour request. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 

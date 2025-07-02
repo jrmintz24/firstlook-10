@@ -1,6 +1,7 @@
+
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
-import { QueryClient } from 'react-query'
+import { QueryClient } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Index from './pages/Index'
 import BuyerDashboard from './pages/BuyerDashboard'

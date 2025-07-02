@@ -10,11 +10,9 @@ import { usePendingShowingManagement } from "@/hooks/usePendingShowingManagement
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
-  // New array format - ensure we start with one empty property
   properties: [{ address: "", notes: "" }],
   preferredOptions: [{ date: "", time: "" }],
   notes: "",
-  // Legacy fields for backward compatibility
   propertyAddress: '',
   preferredDate1: '',
   preferredTime1: '',
@@ -33,8 +31,7 @@ export const usePropertyRequest = (
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showFreeShowingLimitModal, setShowFreeShowingLimitModal] = useState(false);
+  const [modalFlow, setModalFlow] = useState<'scheduling' | 'auth' | 'limit' | 'closed'>('closed');
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -69,7 +66,6 @@ export const usePropertyRequest = (
         if (tourData.propertyAddress) {
           setFormData(prev => ({
             ...prev,
-            // Update both new and legacy formats
             properties: [{ address: tourData.propertyAddress || '', notes: '' }],
             propertyAddress: tourData.propertyAddress || '',
             preferredDate1: tourData.preferredDate1 || '',
@@ -96,9 +92,7 @@ export const usePropertyRequest = (
         [field]: value
       };
 
-      // Sync propertyAddress changes with the properties array
       if (field === 'propertyAddress') {
-        // If we're updating propertyAddress and the first property is empty, update it
         if (updated.properties[0] && !updated.properties[0].address.trim()) {
           updated.properties = [
             { address: value, notes: updated.properties[0].notes },
@@ -121,10 +115,9 @@ export const usePropertyRequest = (
 
   const handleContinueToSubscriptions = async () => {
     if (!user) {
-      // Store current form data in localStorage before redirecting to auth
       console.log('usePropertyRequest: Storing tour request for unauthenticated user:', formData);
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
-      setShowAuthModal(true);
+      setModalFlow('auth');
       return;
     }
 
@@ -133,7 +126,7 @@ export const usePropertyRequest = (
     
     if (!currentEligibility?.eligible) {
       if (currentEligibility?.reason === 'free_showing_used') {
-        setShowFreeShowingLimitModal(true);
+        setModalFlow('limit');
         return;
       }
     }
@@ -145,6 +138,7 @@ export const usePropertyRequest = (
       // Clear form and close modal after successful submission
       setFormData(initialFormData);
       setCurrentStep(1);
+      setModalFlow('closed');
       
       // Show success message
       toast({
@@ -175,15 +169,16 @@ export const usePropertyRequest = (
   const resetForm = () => {
     setFormData(initialFormData);
     setCurrentStep(1);
+    setModalFlow('closed');
   };
 
   return {
     // Legacy properties for backward compatibility
     step: currentStep,
-    showAuthModal,
-    setShowAuthModal,
-    showFreeShowingLimitModal,
-    setShowFreeShowingLimitModal,
+    showAuthModal: modalFlow === 'auth',
+    setShowAuthModal: (show: boolean) => setModalFlow(show ? 'auth' : 'closed'),
+    showFreeShowingLimitModal: modalFlow === 'limit',
+    setShowFreeShowingLimitModal: (show: boolean) => setModalFlow(show ? 'limit' : 'closed'),
     eligibility,
     
     // Current properties
@@ -194,6 +189,8 @@ export const usePropertyRequest = (
     setShowQuickSignIn,
     pendingShowingAddress,
     isSubmitting,
+    modalFlow,
+    setModalFlow,
     handleInputChange,
     handleNext,
     handleBack,

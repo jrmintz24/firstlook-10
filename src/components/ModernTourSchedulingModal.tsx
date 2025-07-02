@@ -91,6 +91,8 @@ const getNext7Days = () => {
   return days;
 };
 
+type ModalFlow = 'scheduling' | 'auth' | 'limit' | 'closed';
+
 const ModernTourSchedulingModal = ({ 
   isOpen, 
   onClose, 
@@ -99,17 +101,22 @@ const ModernTourSchedulingModal = ({
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
+  const [modalFlow, setModalFlow] = useState<ModalFlow>('scheduling');
   const [propertyAddress, setPropertyAddress] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [showAllTimes, setShowAllTimes] = useState(false);
 
+  // Store form data for persistence between modal flows
+  const [formData, setFormData] = useState({
+    propertyAddress: "",
+    selectedDate: "",
+    selectedTime: "",
+    notes: ""
+  });
+
   const {
-    showAuthModal,
-    setShowAuthModal,
-    showFreeShowingLimitModal,
-    setShowFreeShowingLimitModal,
     isSubmitting,
     handleContinueToSubscriptions,
     handleCancelPendingShowing,
@@ -131,6 +138,7 @@ const ModernTourSchedulingModal = ({
     setSelectedTime("");
     setNotes("");
     setShowAllTimes(false);
+    setModalFlow('closed');
     onClose();
   };
 
@@ -185,21 +193,24 @@ const ModernTourSchedulingModal = ({
       return;
     }
 
-    // Convert to expected format for the existing handler
-    const formData = {
+    // Store form data before closing modal
+    setFormData({
       propertyAddress,
-      preferredDate1: selectedDate,
-      preferredTime1: selectedTime,
-      preferredDate2: "",
-      preferredTime2: "",
-      preferredDate3: "",
-      preferredTime3: "",
-      notes,
-      properties: [{ address: propertyAddress, notes: "" }],
-      preferredOptions: [{ date: selectedDate, time: selectedTime }],
-      selectedProperties: [propertyAddress]
-    };
+      selectedDate,
+      selectedTime,
+      notes
+    });
 
+    // Close scheduling modal first
+    setModalFlow('closed');
+
+    // Handle the submission flow - this will determine next modal to show
+    await handleContinueToSubscriptions();
+  };
+
+  const handleAuthSuccess = async () => {
+    setModalFlow('closed');
+    // Restore form data and continue with submission
     await handleContinueToSubscriptions();
   };
 
@@ -220,9 +231,12 @@ const ModernTourSchedulingModal = ({
 
   const selectedDay = availableDays.find(day => day.date === selectedDate);
 
+  // Only show scheduling modal when flow is 'scheduling' and isOpen is true
+  const showSchedulingModal = isOpen && modalFlow === 'scheduling';
+
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={showSchedulingModal} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -481,14 +495,14 @@ const ModernTourSchedulingModal = ({
       </Dialog>
 
       <QuickSignInModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={() => handleContinueToSubscriptions()}
+        isOpen={modalFlow === 'auth'}
+        onClose={() => setModalFlow('closed')}
+        onSuccess={handleAuthSuccess}
       />
 
       <FreeShowingLimitModal
-        isOpen={showFreeShowingLimitModal}
-        onClose={() => setShowFreeShowingLimitModal(false)}
+        isOpen={modalFlow === 'limit'}
+        onClose={() => setModalFlow('closed')}
         onCancelPendingShowing={handleCancelPendingShowing}
         pendingShowingAddress={pendingShowingAddress}
       />

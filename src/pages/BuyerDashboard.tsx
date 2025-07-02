@@ -1,4 +1,3 @@
-
 import { useState, Suspense, useCallback } from "react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
@@ -16,6 +15,7 @@ import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import { useToast } from "@/hooks/use-toast";
+import "../utils/createTestAgent"; // Import to ensure test agent is created
 
 const BuyerDashboard = () => {
   const { toast } = useToast();

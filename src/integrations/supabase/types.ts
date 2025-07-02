@@ -1523,6 +1523,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      process_workflow_triggers: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       reset_free_showing_eligibility: {
         Args: { user_uuid: string }
         Returns: boolean

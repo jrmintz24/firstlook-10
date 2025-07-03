@@ -1,8 +1,8 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import * as authService from '../services/authService'
+import { getUserTypeFromProfile, getUserRedirectPath } from '../utils/userTypeUtils'
 
 interface AuthContextType {
   user: User | null
@@ -56,12 +56,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Use setTimeout to avoid blocking auth state change
         setTimeout(async () => {
           await handleProfileCreation(session.user);
+          
+          // Check if we need to redirect based on user type
+          await handleUserRedirect(session.user);
         }, 100);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []); // Simplified dependency array
+
+  const handleUserRedirect = async (user: User) => {
+    try {
+      // Get user type from profile or metadata
+      let userType = user.user_metadata?.user_type;
+      
+      if (!userType) {
+        // Fallback to profile table
+        userType = await getUserTypeFromProfile(user.id);
+      }
+      
+      if (userType) {
+        const expectedPath = getUserRedirectPath(userType);
+        const currentPath = window.location.pathname;
+        
+        // Only redirect if we're on the wrong dashboard
+        if (currentPath !== expectedPath && 
+            (currentPath === '/buyer-dashboard' || currentPath === '/agent-dashboard' || currentPath === '/admin-dashboard')) {
+          console.log('AuthProvider: Redirecting user to correct dashboard:', expectedPath);
+          window.location.href = expectedPath;
+        }
+      }
+    } catch (error) {
+      console.error('AuthProvider: Error handling user redirect:', error);
+    }
+  };
 
   const handleProfileCreation = async (user: User) => {
     try {
@@ -178,9 +207,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/buyer-dashboard`,
+          redirectTo: `${window.location.origin}/`, // Generic redirect, will be handled by auth state change
           queryParams: {
-            user_type: 'buyer'
+            user_type: 'buyer' // Default, but will be overridden by existing profile
           }
         }
       })

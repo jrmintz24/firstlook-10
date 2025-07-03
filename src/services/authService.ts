@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthError } from "@supabase/auth-js";
+import { getUserTypeFromProfile, getUserRedirectPath } from "@/utils/userTypeUtils";
 
 const getRedirectUrl = () => {
   // Use the current origin, which will be correct for both development and production
@@ -13,11 +14,7 @@ export const signUp = async (
   metadata: Record<string, unknown> & { user_type?: string }
 ): Promise<{ error: AuthError | null }> => {
   const userType = metadata.user_type || 'buyer';
-  const redirectPath = userType === 'agent'
-    ? 'agent-dashboard'
-    : userType === 'admin'
-    ? 'admin-dashboard'
-    : 'buyer-dashboard';
+  const redirectPath = getUserRedirectPath(userType);
 
   console.log('authService.signUp - User type:', userType, 'Metadata:', metadata);
 
@@ -45,11 +42,7 @@ export const signInWithProvider = async (
   provider: 'google' | 'facebook',
   userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
-  const redirectPath = userType === 'agent'
-    ? 'agent-dashboard'
-    : userType === 'admin'
-    ? 'admin-dashboard'
-    : 'buyer-dashboard';
+  const redirectPath = getUserRedirectPath(userType);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,

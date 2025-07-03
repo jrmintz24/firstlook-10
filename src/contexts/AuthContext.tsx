@@ -47,6 +47,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthProvider: Auth state changed:', event, session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
+      
+      // Preserve user type during auth state changes
+      if (session?.user && event === 'TOKEN_REFRESHED') {
+        console.log('AuthProvider: Token refreshed, preserving user type:', session.user.user_metadata?.user_type);
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -90,12 +96,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
         
+        // Ensure user_type is preserved from auth metadata
+        const userType = user.user_metadata?.user_type || 'buyer';
+        console.log('AuthProvider: Ensuring user type is preserved:', userType);
+        
         const profileData = {
           id: user.id,
           first_name: formData?.firstName || user.user_metadata?.first_name || null,
           last_name: formData?.lastName || user.user_metadata?.last_name || null,
           phone: formData?.phone || user.user_metadata?.phone || null,
-          user_type: user.user_metadata?.user_type || 'buyer',
+          user_type: userType, // Use preserved user type
           license_number: user.user_metadata?.license_number || null,
           buyer_preferences: formData ? {
             budget: formData.budget || null,
@@ -103,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } : {},
           agent_details: {},
           communication_preferences: {},
-          onboarding_completed: true, // Simplified - always mark as completed
+          onboarding_completed: true,
           profile_completion_percentage: 85,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -124,7 +134,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 500);
         }
       } else {
-        console.log('AuthProvider: Profile already exists for user:', user.id);
+        console.log('AuthProvider: Profile already exists for user:', user.id, 'Profile user type:', existingProfile?.user_type);
+        
+        // Ensure profile user_type matches auth metadata if there's a discrepancy
+        if (existingProfile.user_type !== user.user_metadata?.user_type) {
+          console.log('AuthProvider: User type mismatch detected, updating profile');
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              user_type: user.user_metadata?.user_type || existingProfile.user_type,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+            
+          if (updateError) {
+            console.error('AuthProvider: Error updating profile user type:', updateError);
+          }
+        }
       }
     } catch (error) {
       console.error('AuthProvider: Error in profile creation:', error);

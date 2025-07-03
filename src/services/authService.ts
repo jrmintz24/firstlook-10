@@ -14,10 +14,10 @@ export const signUp = async (
 ): Promise<{ error: AuthError | null; data?: any }> => {
   const userType = metadata.user_type || 'buyer';
   const redirectPath = userType === 'agent'
-    ? 'agent-dashboard'
+    ? '/agent-dashboard'
     : userType === 'admin'
-    ? 'admin-dashboard'
-    : 'buyer-dashboard';
+    ? '/admin-dashboard'
+    : '/buyer-dashboard';
 
   console.log('authService.signUp - User type:', userType, 'Metadata:', metadata);
 
@@ -25,7 +25,7 @@ export const signUp = async (
     email,
     password,
     options: {
-      emailRedirectTo: `${getRedirectUrl()}/${redirectPath}`,
+      emailRedirectTo: `${getRedirectUrl()}${redirectPath}`,
       data: metadata
     }
   });
@@ -46,15 +46,17 @@ export const signInWithProvider = async (
   userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
   const redirectPath = userType === 'agent'
-    ? 'agent-dashboard'
+    ? '/agent-dashboard'
     : userType === 'admin'
-    ? 'admin-dashboard'
-    : 'buyer-dashboard';
+    ? '/admin-dashboard'
+    : '/buyer-dashboard';
+
+  console.log('authService.signInWithProvider - User type:', userType, 'Redirect path:', redirectPath);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${getRedirectUrl()}/${redirectPath}`,
+      redirectTo: `${getRedirectUrl()}${redirectPath}`,
       queryParams: { user_type: userType }
     }
   });

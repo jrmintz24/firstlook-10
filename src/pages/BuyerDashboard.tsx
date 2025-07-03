@@ -1,10 +1,9 @@
-
 import { useState, Suspense, useCallback, useMemo } from "react";
 import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { useConsultationBookings } from "@/hooks/useConsultationBookings";
 import { generateBuyerDashboardSections } from "@/components/dashboard/BuyerDashboardSections";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import PropertySelectionModal from "@/components/dashboard/PropertySelectionModal";
 import EnhancedOfferTypeDialog from "@/components/post-showing/EnhancedOfferTypeDialog";
@@ -14,7 +13,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ModernStatsGrid from "@/components/dashboard/ModernStatsGrid";
 import QuickActionsCard from "@/components/dashboard/QuickActionsCard";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
-import { ConnectionStatus } from "@/components/dashboard/ConnectionStatus";
+import ConnectionStatus from "@/components/dashboard/ConnectionStatus";
 import FavoritesSection from "@/components/dashboard/FavoritesSection";
 import MessagesTab from "@/components/messaging/MessagesTab";
 import QuickActions from "@/components/dashboard/QuickActions";
@@ -331,11 +330,10 @@ const BuyerDashboard = () => {
         onTabChange={setActiveTab}
       />
 
-      <ModernTourSchedulingModal
+      <PropertyRequestWizard
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}
-        skipNavigation={true}
       />
 
       <PropertySelectionModal

@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { useShowingSubmission } from "@/hooks/useShowingSubmission";
 import { PropertyRequestFormData, PropertyEntry } from "@/types/propertyRequest";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
-import { useAuth } from "@/contexts/AuthContext";
 import AddressAutocomplete from "./AddressAutocomplete";
 
 interface PropertyRequestFormProps {
@@ -22,7 +21,6 @@ interface PropertyRequestFormProps {
 }
 
 const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestFormProps) => {
-  const { user } = useAuth();
   const [formData, setFormData] = useState<PropertyRequestFormData>({
     properties: [{ address: "", notes: "" }],
     preferredOptions: [{ date: "", time: "" }],
@@ -104,11 +102,6 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
     }
 
     await submitShowingRequests();
-    
-    // Clear localStorage after successful submission
-    localStorage.removeItem('pendingTourRequest');
-    console.log('PropertyRequestForm: Cleared localStorage after successful submission');
-    
     onClose();
   };
 

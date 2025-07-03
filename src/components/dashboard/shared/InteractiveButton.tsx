@@ -50,7 +50,7 @@ const InteractiveButton = ({
 
     // Haptic feedback (if supported)
     if (hapticFeedback && 'vibrate' in navigator) {
-      navigator.vibrate(5);
+      navigator.vibrate(10);
     }
 
     onClick?.(e as any);
@@ -60,7 +60,7 @@ const InteractiveButton = ({
   const handleMouseUp = () => setIsPressed(false);
   const handleMouseLeave = () => setIsPressed(false);
 
-  // Refined styling with subtle interactions
+  // Minimal black and white styling with strategic colors
   const getVariantStyles = () => {
     switch (variant) {
       case "outline":
@@ -88,7 +88,7 @@ const InteractiveButton = ({
       onMouseLeave={handleMouseLeave}
       className={`
         relative overflow-hidden transition-all duration-200 rounded-lg font-medium
-        ${isPressed ? 'scale-98' : 'scale-100'}
+        ${isPressed ? 'scale-95' : 'scale-100'}
         ${success ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
         ${loading ? 'cursor-wait' : ''}
         ${getVariantStyles()}
@@ -99,12 +99,12 @@ const InteractiveButton = ({
       {ripples.map(ripple => (
         <span
           key={ripple.id}
-          className="absolute bg-white/15 rounded-full pointer-events-none animate-ping"
+          className="absolute bg-white/20 rounded-full pointer-events-none animate-ping"
           style={{
-            left: ripple.x - 8,
-            top: ripple.y - 8,
-            width: 16,
-            height: 16,
+            left: ripple.x - 10,
+            top: ripple.y - 10,
+            width: 20,
+            height: 20,
           }}
         />
       ))}

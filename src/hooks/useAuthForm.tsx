@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import * as authService from "@/services/authService";
-import { getUserTypeFromProfile, getUserRedirectPath } from "@/utils/userTypeUtils";
 
 interface AuthFormData {
   email: string;
@@ -59,6 +58,17 @@ export const useAuthForm = (
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const getDashboardRedirect = (userType: string) => {
+    switch (userType) {
+      case 'agent':
+        return '/agent-dashboard';
+      case 'admin':
+        return '/admin-dashboard';
+      default:
+        return '/buyer-dashboard';
+    }
+  };
+
   const handleSubmit = async (
     e: React.FormEvent,
     loginMode?: boolean
@@ -77,17 +87,10 @@ export const useAuthForm = (
           
           const { data } = await supabase.auth.getUser();
           if (data.user) {
-            // Get user type from profile or metadata
-            let actualUserType = data.user.user_metadata?.user_type;
+            const type = (data.user.user_metadata?.user_type as string) ?? userType;
+            const redirectPath = getDashboardRedirect(type);
             
-            if (!actualUserType) {
-              actualUserType = await getUserTypeFromProfile(data.user.id);
-            }
-            
-            const finalUserType = actualUserType || userType;
-            const redirectPath = getUserRedirectPath(finalUserType);
-            
-            console.log('useAuthForm - Login successful, user type:', finalUserType, 'redirecting to:', redirectPath);
+            console.log('useAuthForm - Login successful, redirecting to:', redirectPath);
             
             toast({
               title: "Success!",

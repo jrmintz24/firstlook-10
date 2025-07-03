@@ -1,55 +1,111 @@
 
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Wifi, WifiOff, AlertCircle, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ConnectionStatusProps {
-  isConnected: boolean;
-  onRefresh: () => void;
-  showRefreshButton?: boolean;
+  userId: string | null;
 }
 
-export const ConnectionStatus = ({ 
-  isConnected, 
-  onRefresh, 
-  showRefreshButton = true 
-}: ConnectionStatusProps) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+const ConnectionStatus = ({ userId }: ConnectionStatusProps) => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await onRefresh();
-    } finally {
-      setTimeout(() => setIsRefreshing(false), 1000);
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userId || !isOnline) {
+      setRealtimeStatus('disconnected');
+      return;
+    }
+
+    setRealtimeStatus('connecting');
+
+    // Test realtime connection
+    const testChannel = supabase
+      .channel('connection_test')
+      .subscribe((status) => {
+        console.log('Connection test status:', status);
+        
+        switch (status) {
+          case 'SUBSCRIBED':
+            setRealtimeStatus('connected');
+            break;
+          case 'CHANNEL_ERROR':
+            setRealtimeStatus('error');
+            break;
+          case 'CLOSED':
+            setRealtimeStatus('disconnected');
+            break;
+          default:
+            setRealtimeStatus('connecting');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(testChannel);
+    };
+  }, [userId, isOnline]);
+
+  if (!userId) return null;
+
+  const getStatusInfo = () => {
+    if (!isOnline) {
+      return {
+        icon: WifiOff,
+        color: "bg-red-100 text-red-800",
+        text: "Offline"
+      };
+    }
+
+    switch (realtimeStatus) {
+      case 'connected':
+        return {
+          icon: CheckCircle,
+          color: "bg-green-100 text-green-800",
+          text: "Connected"
+        };
+      case 'connecting':
+        return {
+          icon: Wifi,
+          color: "bg-blue-100 text-blue-800",
+          text: "Connecting..."
+        };
+      case 'error':
+        return {
+          icon: AlertCircle,
+          color: "bg-yellow-100 text-yellow-800",
+          text: "Connection Issues"
+        };
+      default:
+        return {
+          icon: WifiOff,
+          color: "bg-gray-100 text-gray-800",
+          text: "Disconnected"
+        };
     }
   };
 
-  if (isConnected) {
-    return (
-      <div className="flex items-center gap-2 text-green-600 text-sm">
-        <Wifi className="h-4 w-4" />
-        <span>Connected</span>
-      </div>
-    );
-  }
+  const { icon: Icon, color, text } = getStatusInfo();
 
   return (
-    <div className="flex items-center gap-2 text-amber-600 text-sm">
-      <WifiOff className="h-4 w-4" />
-      <span>Updates via polling</span>
-      {showRefreshButton && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="h-6 px-2 text-xs"
-        >
-          <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      )}
-    </div>
+    <Badge className={`${color} flex items-center gap-1 text-xs`}>
+      <Icon className="w-3 h-3" />
+      {text}
+    </Badge>
   );
 };
+
+export default ConnectionStatus;

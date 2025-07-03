@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, BarChart3 } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,8 +15,12 @@ import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
-import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
+
+// New post-showing components
+import AgentPostShowingInsights from "@/components/dashboard/AgentPostShowingInsights";
+import PostShowingAnalytics from "@/components/dashboard/PostShowingAnalytics";
+import AgentNotificationsPanel from "@/components/dashboard/AgentNotificationsPanel";
 
 const AgentDashboard = () => {
   const {
@@ -28,8 +31,6 @@ const AgentDashboard = () => {
     loading,
     authLoading,
     handleStatusUpdate,
-    handleCancelShowing,
-    handleRescheduleShowing,
     fetchAgentData
   } = useAgentDashboard();
 
@@ -37,7 +38,6 @@ const AgentDashboard = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReportIssueModal, setShowReportIssueModal] = useState(false);
-  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("pending");
   const isMobile = useIsMobile();
@@ -61,14 +61,6 @@ const AgentDashboard = () => {
   const handleReportIssue = (request: any) => {
     setSelectedRequest(request);
     setShowReportIssueModal(true);
-  };
-
-  const handleReschedule = (requestId: string) => {
-    const request = [...assignedRequests, ...pendingRequests].find(r => r.id === requestId);
-    if (request) {
-      setSelectedRequest(request);
-      setShowRescheduleModal(true);
-    }
   };
 
   const handleConfirmSuccess = async (confirmationData: any) => {
@@ -95,17 +87,10 @@ const AgentDashboard = () => {
     fetchAgentData();
   };
 
-  const handleRescheduleSuccess = () => {
-    setShowRescheduleModal(false);
-    setSelectedRequest(null);
-    fetchAgentData();
-  };
-
   const handleStatClick = (tab: string) => {
     setActiveTab(tab);
   };
 
-  // Show loading while auth is being determined
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
@@ -143,21 +128,21 @@ const AgentDashboard = () => {
   const dashboardTabs = [
     {
       id: "pending",
-      title: "Available",
+      title: "Pending",
       icon: Clock,
       count: pendingRequests.length,
       color: "bg-orange-100 text-orange-700",
       content: (
         <ShowingListTab
-          title="Available Requests"
+          title="Pending Requests"
           showings={pendingRequests}
           emptyIcon={Clock}
-          emptyTitle="No Available Requests"
-          emptyDescription="All caught up! New showing requests will appear here for you to accept."
+          emptyTitle="No Pending Requests"
+          emptyDescription="All caught up! New showing requests will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={handleCancelShowing}
-          onRescheduleShowing={handleReschedule}
+          onCancelShowing={() => {}}
+          onRescheduleShowing={() => {}}
           onConfirmShowing={handleConfirmShowing}
           onReportIssue={handleReportIssue}
           userType="agent"
@@ -168,21 +153,21 @@ const AgentDashboard = () => {
     },
     {
       id: "assigned",
-      title: "My Tours",
+      title: "Assigned",
       icon: CalendarDays,
       count: assignedRequests.length,
       color: "bg-blue-100 text-blue-700",
       content: (
         <ShowingListTab
-          title="My Assigned Tours"
+          title="Assigned Showings"
           showings={assignedRequests}
           emptyIcon={CalendarDays}
-          emptyTitle="No Assigned Tours"
-          emptyDescription="Tours you've accepted will appear here."
+          emptyTitle="No Assigned Showings"
+          emptyDescription="Confirmed showings will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={handleCancelShowing}
-          onRescheduleShowing={handleReschedule}
+          onCancelShowing={() => {}}
+          onRescheduleShowing={() => {}}
           onReportIssue={handleReportIssue}
           userType="agent"
           onComplete={fetchAgentData}
@@ -212,6 +197,48 @@ const AgentDashboard = () => {
       )
     },
     {
+      id: "insights",
+      title: "Insights",
+      icon: TrendingUp,
+      count: 0,
+      color: "bg-purple-100 text-purple-700",
+      content: currentUser?.id ? (
+        <AgentPostShowingInsights 
+          agentId={currentUser.id}
+          timeframe="month"
+        />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Insights"
+          description="Please refresh the page to load your insights."
+          buttonText="Refresh"
+          onButtonClick={() => window.location.reload()}
+          icon={TrendingUp}
+        />
+      )
+    },
+    {
+      id: "analytics",
+      title: "Analytics",
+      icon: BarChart3,
+      count: 0,
+      color: "bg-green-100 text-green-700",
+      content: currentUser?.id ? (
+        <PostShowingAnalytics 
+          agentId={currentUser.id}
+          timeframe="month"
+        />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Analytics"
+          description="Please refresh the page to load your analytics."
+          buttonText="Refresh"
+          onButtonClick={() => window.location.reload()}
+          icon={BarChart3}
+        />
+      )
+    },
+    {
       id: "completed",
       title: "History",
       icon: CheckCircle,
@@ -226,8 +253,8 @@ const AgentDashboard = () => {
           emptyDescription="Completed and cancelled showings will appear here."
           emptyButtonText=""
           onRequestShowing={() => {}}
-          onCancelShowing={() => {}} // Disable for completed showings
-          onRescheduleShowing={() => {}} // Disable for completed showings
+          onCancelShowing={() => {}}
+          onRescheduleShowing={() => {}}
           showActions={false}
           userType="agent"
           onComplete={fetchAgentData}
@@ -239,6 +266,11 @@ const AgentDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
+      {/* Post-Showing Notifications */}
+      {currentUser?.id && (
+        <AgentNotificationsPanel agentId={currentUser.id} />
+      )}
+
       {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming"
@@ -259,16 +291,19 @@ const AgentDashboard = () => {
 
   return (
     <>
-      <UnifiedDashboardLayout
-        title={`Welcome back, ${displayName}`}
-        subtitle="View available tours and manage your assignments"
-        userType="agent"
-        displayName={displayName}
-        tabs={dashboardTabs}
-        sidebar={sidebar}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {/* Remove the redundant header, use only the main navigation */}
+      <div className="pt-6">
+        <UnifiedDashboardLayout
+          title={`Welcome back, ${displayName}`}
+          subtitle="Manage your showing requests and connect with buyers"
+          userType="agent"
+          displayName={displayName}
+          tabs={dashboardTabs}
+          sidebar={sidebar}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
       {/* Modals */}
       {selectedRequest && (
@@ -293,13 +328,6 @@ const AgentDashboard = () => {
             request={selectedRequest}
             agentId={currentUser?.id || ''}
             onComplete={handleReportIssueSuccess}
-          />
-
-          <RescheduleModal
-            isOpen={showRescheduleModal}
-            onClose={() => setShowRescheduleModal(false)}
-            showingRequest={selectedRequest}
-            onSuccess={handleRescheduleSuccess}
           />
         </>
       )}

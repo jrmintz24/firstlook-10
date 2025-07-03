@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 interface DashboardHeaderProps {
-  displayName?: string;
-  onRequestShowing?: () => void;
+  displayName: string;
+  onRequestShowing: () => void;
   userType?: 'buyer' | 'agent';
 }
 
-const DashboardHeader = ({ displayName = 'User', onRequestShowing, userType = 'buyer' }: DashboardHeaderProps) => {
+const DashboardHeader = ({ displayName, onRequestShowing, userType = 'buyer' }: DashboardHeaderProps) => {
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-3 sm:px-4 py-4">
@@ -32,7 +32,7 @@ const DashboardHeader = ({ displayName = 'User', onRequestShowing, userType = 'b
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="font-medium text-sm sm:text-base">Welcome, {displayName}!</span>
             </div>
-            {userType === 'buyer' && onRequestShowing && (
+            {userType === 'buyer' && (
               <Button 
                 onClick={onRequestShowing}
                 size="sm"

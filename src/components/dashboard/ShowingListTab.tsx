@@ -39,13 +39,13 @@ interface ShowingListTabProps {
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
   currentUserId?: string;
-  agreements?: Record<string, boolean> | any[];
+  agreements?: Record<string, boolean>;
 }
 
 const ShowingListTab = ({
   title,
   showings,
-  emptyIcon: EmptyIcon,
+  emptyIcon,
   emptyTitle,
   emptyDescription,
   emptyButtonText,
@@ -53,63 +53,82 @@ const ShowingListTab = ({
   onCancelShowing,
   onRescheduleShowing,
   onConfirmShowing,
-  onSendMessage,
   onReportIssue,
+  onSendMessage,
   onSignAgreement,
   showActions = true,
-  userType,
+  userType = 'buyer',
   onComplete,
   currentUserId,
   agreements = {}
 }: ShowingListTabProps) => {
-  // Convert agreements to Record format if it's an array
-  const agreementsRecord = Array.isArray(agreements) 
-    ? agreements.reduce((acc: Record<string, boolean>, agreement: any) => {
-        if (agreement.showing_request_id) {
-          acc[agreement.showing_request_id] = agreement.signed || false;
-        }
-        return acc;
-      }, {})
-    : agreements;
-
   if (showings.length === 0) {
     return (
       <EmptyStateCard
-        icon={EmptyIcon}
         title={emptyTitle}
         description={emptyDescription}
         buttonText={emptyButtonText}
         onButtonClick={emptyButtonText ? onRequestShowing : undefined}
+        icon={emptyIcon}
       />
     );
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
-        <span className="text-sm text-gray-500">{showings.length} total</span>
-      </div>
-      
-      <div className="space-y-3 sm:space-y-4">
-        {showings.map((showing) => (
+    <div className="space-y-4">
+      {showings.map((showing) => {
+        // For agent dashboard, use AgentRequestCard for pending requests and OptimizedShowingCard for assigned ones
+        if (userType === 'agent' && showing.status === 'pending' && !showing.assigned_agent_id) {
+          return (
+            <AgentRequestCard
+              key={showing.id}
+              request={showing}
+              onAssign={() => {
+                if (onConfirmShowing) {
+                  onConfirmShowing(showing);
+                }
+              }}
+              onUpdateStatus={(status, estimatedDate) => {
+                console.log('Status update:', status, estimatedDate);
+              }}
+              onSendMessage={() => {
+                if (onSendMessage) {
+                  onSendMessage(showing.id);
+                }
+              }}
+              onConfirm={onConfirmShowing}
+              onReportIssue={onReportIssue}
+              showAssignButton={true}
+              onComplete={onComplete}
+              currentAgentId={currentUserId}
+            />
+          );
+        }
+
+        // For all other cases, use the optimized showing card
+        return (
           <OptimizedShowingCard
             key={showing.id}
             showing={showing}
             onCancel={onCancelShowing}
             onReschedule={onRescheduleShowing}
-            onConfirm={onConfirmShowing}
-            onSendMessage={onSendMessage}
-            onReportIssue={onReportIssue}
+            onConfirm={(id: string) => {
+              const showingToConfirm = showings.find(s => s.id === id);
+              if (showingToConfirm && onConfirmShowing) {
+                onConfirmShowing(showingToConfirm);
+              }
+            }}
             onSignAgreement={onSignAgreement}
-            showActions={showActions}
-            userType={userType || 'buyer'}
-            onComplete={onComplete}
             currentUserId={currentUserId}
-            agreements={agreementsRecord}
+            onSendMessage={onSendMessage}
+            showActions={showActions}
+            userType={userType}
+            onComplete={onComplete}
+            agreements={agreements}
+            onRequestShowing={onRequestShowing}
           />
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 };

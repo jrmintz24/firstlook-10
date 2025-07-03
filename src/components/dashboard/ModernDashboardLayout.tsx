@@ -53,24 +53,24 @@ const ModernDashboardLayout = ({
     <div className="min-h-screen bg-gray-50">
       {header}
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Connection Status - Only shows when offline */}
-        <div className="mb-3 sm:mb-4 flex justify-end">
+        <div className="mb-4 flex justify-end">
           <SimplifiedConnectionStatus userId={userId} />
         </div>
 
         {/* Stats Section */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-6">
           {stats}
         </div>
 
-        {/* Simplified Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        {/* Simplified Main Dashboard Grid - reduced spacing */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           {/* Main Content Area - Only show if there's actual content */}
           {mainContent && (
             <div className="lg:col-span-3">
               <Card className="bg-white border-0 shadow-sm">
-                <CardContent className="p-4 sm:p-6">
+                <CardContent className="p-6">
                   {mainContent}
                 </CardContent>
               </Card>
@@ -83,33 +83,31 @@ const ModernDashboardLayout = ({
           </div>
         </div>
 
-        {/* Tabbed Sections */}
+        {/* Tabbed Sections - moved up with reduced margin */}
         {showSectionTabs && sectionsArray.length > 0 && (
           <Card className="bg-white border-0 shadow-sm">
             <Tabs value={tabValue} onValueChange={handleTabChange}>
               <div className="border-b border-gray-100">
-                <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none overflow-x-auto">
-                  <div className="flex gap-1 min-w-max">
-                    {sectionsArray.map((section) => (
-                      <TabsTrigger 
-                        key={section.id} 
-                        value={section.id}
-                        className="relative px-4 sm:px-6 py-3 sm:py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600 whitespace-nowrap text-sm sm:text-base"
-                      >
-                        {section.title}
-                        {section.count !== undefined && section.count > 0 && (
-                          <span className="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
-                            {section.count}
-                          </span>
-                        )}
-                      </TabsTrigger>
-                    ))}
-                  </div>
+                <TabsList className="w-full bg-transparent border-0 p-0 h-auto justify-start rounded-none">
+                  {sectionsArray.map((section) => (
+                    <TabsTrigger 
+                      key={section.id} 
+                      value={section.id}
+                      className="relative px-6 py-4 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
+                    >
+                      {section.title}
+                      {section.count !== undefined && section.count > 0 && (
+                        <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium">
+                          {section.count}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </div>
 
               {sectionsArray.map((section) => (
-                <TabsContent key={section.id} value={section.id} className="p-4 sm:p-6 mt-0">
+                <TabsContent key={section.id} value={section.id} className="p-6 mt-0">
                   {section.content}
                 </TabsContent>
               ))}

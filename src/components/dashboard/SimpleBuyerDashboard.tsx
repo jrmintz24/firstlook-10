@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,52 +84,52 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       icon: Calendar,
       count: 0,
       content: (
-        <div className="space-y-4 sm:space-y-5">
+        <div className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 sm:p-5">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 mb-1">Pending Tours</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-orange-600 leading-none">
+                    <p className="text-3xl font-bold text-orange-600 leading-none">
                       {pendingShowings.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-3 sm:ml-4">
-                    <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <Clock className="h-8 w-8 text-orange-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 sm:p-5">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 mb-1">Upcoming Tours</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-blue-600 leading-none">
+                    <p className="text-3xl font-bold text-blue-600 leading-none">
                       {upcomingShowings.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-3 sm:ml-4">
-                    <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <Calendar className="h-8 w-8 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="border-0 shadow-sm sm:col-span-2 lg:col-span-1">
-              <CardContent className="p-4 sm:p-5">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 mb-1">Completed Tours</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-green-600 leading-none">
+                    <p className="text-3xl font-bold text-green-600 leading-none">
                       {completedShowingsList.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-3 sm:ml-4">
-                    <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                  <div className="flex-shrink-0 ml-4">
+                    <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
                 </div>
               </CardContent>
@@ -138,9 +137,9 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
           </div>
 
           {/* Main Dashboard Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+            <div className="lg:col-span-2 space-y-6">
               <RecentTours 
                 pendingRequests={pendingShowings}
                 activeShowings={upcomingShowings}
@@ -152,17 +151,17 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
               />
               
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Tour Progress</CardTitle>
+                <CardHeader>
+                  <CardTitle>Tour Progress</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent>
                   <p className="text-gray-600">Track your tour progress here</p>
                 </CardContent>
               </Card>
             </div>
             
             {/* Right Column - Sidebar */}
-            <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-6">
               <SmartReminders 
                 showingRequests={allShowings}
                 userType="buyer"
@@ -264,9 +263,9 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       icon: CheckCircle,
       count: completedShowingsList.length,
       content: (
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold">Tour History</h2>
+            <h2 className="text-xl font-semibold">Tour History</h2>
           </div>
           {completedShowingsList.length === 0 ? (
             <EmptyStateCard
@@ -277,25 +276,26 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
               onButtonClick={onRequestTour}
             />
           ) : (
-            <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-6">
               {completedShowingsList.map((showing) => (
                 <Card key={showing.id} className="border rounded-lg">
-                  <div className="p-3 sm:p-4 border-b">
-                    <h3 className="font-medium text-sm sm:text-base">{showing.property_address}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  <div className="p-4 border-b">
+                    <h3 className="font-medium">{showing.property_address}</h3>
+                    <p className="text-sm text-gray-600">
                       Completed: {showing.status_updated_at ? new Date(showing.status_updated_at).toLocaleDateString() : 'Recently'}
                     </p>
                   </div>
-                  <div className="p-3 sm:p-4">
+                  <div className="p-4">
                     <PostShowingActionsPanel
                       showingId={showing.id}
                       buyerId={userId}
-                      agentId={showing.assigned_agent_email || ''}
+                      agentId={showing.assigned_agent_email || ''} // Use email as fallback since assigned_agent_id doesn't exist
                       agentName={showing.assigned_agent_name}
                       agentEmail={showing.assigned_agent_email}
                       agentPhone={showing.assigned_agent_phone}
                       propertyAddress={showing.property_address}
                       onActionCompleted={() => {
+                        // Refresh data when actions are completed
                         fetchShowingRequests();
                       }}
                     />
@@ -318,49 +318,47 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900">
               Welcome back, {displayName}
             </h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+            <p className="text-gray-600 mt-1">
               Find your perfect home with personalized tours
             </p>
           </div>
           
-          <Button onClick={onRequestTour} className="flex items-center gap-2 w-full sm:w-auto">
+          <Button onClick={onRequestTour} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            <span className="sm:inline">Request Tour</span>
+            Request Tour
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="border-b border-gray-200 mb-4 sm:mb-6">
-          <TabsList className="bg-transparent border-0 p-0 h-auto w-full overflow-x-auto">
-            <div className="flex gap-1 sm:gap-2 min-w-max">
-              {tabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="relative px-3 sm:px-4 py-2.5 sm:py-3 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600 whitespace-nowrap"
-                >
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <tab.icon className="w-4 h-4" />
-                    <span className="text-sm sm:text-base">{isMobile && tab.title.length > 8 ? tab.title.substring(0, 6) + '...' : tab.title}</span>
-                    {tab.count > 0 && (
-                      <Badge variant="secondary" className="ml-0.5 sm:ml-1 px-1.5 py-0.5 text-xs">
-                        {tab.count}
-                      </Badge>
-                    )}
-                  </div>
-                </TabsTrigger>
-              ))}
-            </div>
+        <div className="border-b border-gray-200 mb-6">
+          <TabsList className="bg-transparent border-0 p-0 h-auto">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="relative px-4 py-3 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
+              >
+                <div className="flex items-center gap-2">
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.title}</span>
+                  {tab.count > 0 && (
+                    <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+                      {tab.count}
+                    </Badge>
+                  )}
+                </div>
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,7 +155,7 @@ const Subscriptions = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card className="border-2 border-green-200 bg-green-50/30 shadow-lg">
               <CardHeader className="text-center">
-                <CardTitle className="text-xl text-slate-800">Professional Offer</CardTitle>
+                <CardTitle className="text-xl text-slate-800">Agent-Coached Offer</CardTitle>
                 <div className="text-3xl font-bold text-green-600 mb-2">$699</div>
                 <CardDescription>
                   Professional agent guides your offer strategy
@@ -186,8 +185,11 @@ const Subscriptions = () => {
 
             <Card className="border-2 border-orange-200 bg-orange-50/30 shadow-lg">
               <CardHeader className="text-center">
+                <Badge className="mb-2 bg-orange-100 text-orange-800 border-orange-300">
+                  Add-on Service
+                </Badge>
                 <CardTitle className="text-xl text-slate-800">Transaction Coordination</CardTitle>
-                <div className="text-3xl font-bold text-orange-600 mb-2">$399</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">+$399</div>
                 <CardDescription>
                   Complete transaction management from offer to closing
                 </CardDescription>
@@ -218,7 +220,7 @@ const Subscriptions = () => {
           <div className="mt-8 text-center">
             <Card className="border-2 border-blue-200 bg-blue-50/50 p-6">
               <h4 className="text-xl font-semibold text-slate-800 mb-2">
-                Professional Offer + Transaction Coordination: $999
+                Complete Package: $1,098
               </h4>
               <p className="text-gray-700 mb-4">
                 Get both agent-coached offer strategy AND complete transaction coordination.

@@ -1,8 +1,6 @@
 
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useState, useEffect } from 'react'
-import { getUserTypeFromProfile, getUserRedirectPath } from '../utils/userTypeUtils'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -17,43 +15,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, session, loading } = useAuth()
   const location = useLocation()
-  const [userType, setUserType] = useState<string | null>(null)
-  const [userTypeLoading, setUserTypeLoading] = useState(true)
 
-  // Get user type from profile when user is available
-  useEffect(() => {
-    const fetchUserType = async () => {
-      if (!user) {
-        setUserTypeLoading(false)
-        return
-      }
+  console.log('ProtectedRoute - Loading:', loading, 'User:', user?.email, 'Required type:', requiredUserType, 'User type:', user?.user_metadata?.user_type);
 
-      // First try to get from metadata
-      const metadataUserType = user.user_metadata?.user_type
-      if (metadataUserType) {
-        setUserType(metadataUserType)
-        setUserTypeLoading(false)
-        return
-      }
-
-      // Fallback to profile table
-      try {
-        const profileUserType = await getUserTypeFromProfile(user.id)
-        setUserType(profileUserType || 'buyer')
-      } catch (error) {
-        console.error('Error fetching user type:', error)
-        setUserType('buyer') // Safe default
-      } finally {
-        setUserTypeLoading(false)
-      }
-    }
-
-    fetchUserType()
-  }, [user])
-
-  console.log('ProtectedRoute - Loading:', loading, 'UserTypeLoading:', userTypeLoading, 'User:', user?.email, 'Required type:', requiredUserType, 'Actual type:', userType);
-
-  if (loading || userTypeLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -68,9 +33,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check for specific user type requirement
-  if (requiredUserType && userType) {
-    // For buyer routes, allow users with buyer type or no specific type preference
-    if (requiredUserType === 'buyer' && userType === 'buyer') {
+  if (requiredUserType) {
+    const userType = user.user_metadata?.user_type;
+    
+    // For buyer routes, allow users with no user_type (legacy users) or explicit buyer type
+    if (requiredUserType === 'buyer' && (!userType || userType === 'buyer')) {
       return <>{children}</>
     }
     
@@ -80,15 +47,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         required: requiredUserType,
         actual: userType
       });
-      
-      // Redirect to appropriate dashboard based on actual user type
-      const correctPath = getUserRedirectPath(userType)
-      return <Navigate to={correctPath} replace />
-    }
-    
-    // Exact match for non-buyer types
-    if (requiredUserType !== 'buyer' && userType === requiredUserType) {
-      return <>{children}</>
+      // Redirect to appropriate dashboard based on user type
+      if (userType === 'admin') {
+        return <Navigate to="/admin-dashboard" replace />
+      } else if (userType === 'agent') {
+        return <Navigate to="/agent-dashboard" replace />
+      } else {
+        return <Navigate to="/buyer-dashboard" replace />
+      }
     }
   }
 

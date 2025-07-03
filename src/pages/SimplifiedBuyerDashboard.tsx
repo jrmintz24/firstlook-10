@@ -1,14 +1,14 @@
 
 import { useState } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { ShowingRequestCard } from "@/components/dashboard/ShowingRequestCard";
-import { PropertyRequestWizard } from "@/components/PropertyRequestWizard";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import ShowingRequestCard from "@/components/dashboard/ShowingRequestCard";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useStableBuyerData } from "@/hooks/useStableBuyerData";
 import { ConnectionStatus } from "@/components/dashboard/ConnectionStatus";
-import { OptimizedDashboardSkeleton } from "@/components/dashboard/OptimizedDashboardSkeleton";
+import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
 
 const SimplifiedBuyerDashboard = () => {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -18,6 +18,7 @@ const SimplifiedBuyerDashboard = () => {
     completedShowings, 
     loading, 
     currentUser,
+    profile,
     forceRefresh
   } = useStableBuyerData();
 
@@ -30,11 +31,17 @@ const SimplifiedBuyerDashboard = () => {
     await forceRefresh();
   };
 
+  const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
+    currentUser?.email?.split('@')[0] || 'User';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <DashboardHeader />
+          <DashboardHeader 
+            displayName={displayName}
+            onRequestShowing={() => setIsRequestModalOpen(true)}
+          />
           <div className="flex items-center gap-4">
             <ConnectionStatus 
               isConnected={false} // WebSocket is failing, show polling status

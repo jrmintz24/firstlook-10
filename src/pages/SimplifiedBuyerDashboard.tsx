@@ -46,15 +46,16 @@ const SimplifiedBuyerDashboard = () => {
     console.log('SimplifiedBuyerDashboard: Data refresh completed');
   }, [fetchShowingRequests]);
 
-  // Handle agreement signing
-  const handleSignAgreement = useCallback(async (showingId: string, signerName: string) => {
-    const success = await signAgreement(showingId, signerName);
+  // Handle agreement signing with proper void return type
+  const handleSignAgreement = useCallback(async (signerName: string): Promise<void> => {
+    if (!selectedShowing) return;
+    
+    const success = await signAgreement(selectedShowing.id, signerName);
     if (success) {
       setShowAgreementModal(false);
       setSelectedShowing(null);
     }
-    return success;
-  }, [signAgreement]);
+  }, [selectedShowing, signAgreement]);
 
   // Open agreement modal
   const handleOpenAgreementModal = useCallback((showing: any) => {
@@ -128,7 +129,10 @@ const SimplifiedBuyerDashboard = () => {
         <AgreementSigningCard
           key={showing.id}
           showing={showingWithAgreement}
-          onSign={handleSignAgreement}
+          onSign={async (showingId: string, signerName: string) => {
+            const success = await signAgreement(showingId, signerName);
+            return success;
+          }}
         />
       );
     }
@@ -388,7 +392,7 @@ const SimplifiedBuyerDashboard = () => {
         <SignAgreementModal
           isOpen={showAgreementModal}
           onClose={() => setShowAgreementModal(false)}
-          onSign={(signerName: string) => handleSignAgreement(selectedShowing.id, signerName)}
+          onSign={handleSignAgreement}
           showingDetails={{
             propertyAddress: selectedShowing.property_address,
             date: selectedShowing.preferred_date,

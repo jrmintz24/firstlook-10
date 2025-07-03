@@ -155,7 +155,7 @@ const Subscriptions = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card className="border-2 border-green-200 bg-green-50/30 shadow-lg">
               <CardHeader className="text-center">
-                <CardTitle className="text-xl text-slate-800">Agent-Coached Offer</CardTitle>
+                <CardTitle className="text-xl text-slate-800">Professional Offer</CardTitle>
                 <div className="text-3xl font-bold text-green-600 mb-2">$699</div>
                 <CardDescription>
                   Professional agent guides your offer strategy
@@ -168,7 +168,8 @@ const Subscriptions = () => {
                     "Comprehensive market analysis", 
                     "Offer strategy development",
                     "Contract review and guidance",
-                    "Negotiation support"
+                    "Negotiation support",
+                    "Required for buyer rebate*"
                   ].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -185,11 +186,8 @@ const Subscriptions = () => {
 
             <Card className="border-2 border-orange-200 bg-orange-50/30 shadow-lg">
               <CardHeader className="text-center">
-                <Badge className="mb-2 bg-orange-100 text-orange-800 border-orange-300">
-                  Add-on Service
-                </Badge>
                 <CardTitle className="text-xl text-slate-800">Transaction Coordination</CardTitle>
-                <div className="text-3xl font-bold text-orange-600 mb-2">+$399</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">$399</div>
                 <CardDescription>
                   Complete transaction management from offer to closing
                 </CardDescription>
@@ -223,7 +221,7 @@ const Subscriptions = () => {
                 Complete Package: $1,098
               </h4>
               <p className="text-gray-700 mb-4">
-                Get both agent-coached offer strategy AND complete transaction coordination.
+                Get both professional offer strategy AND complete transaction coordination.
               </p>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
                 <Clock className="mr-2 h-4 w-4" />
@@ -277,7 +275,7 @@ const Subscriptions = () => {
                 When should I consider the offer services?
               </h3>
               <p className="text-gray-600">
-                Our professional offer services are perfect when you've found a home you want to buy. The $699 agent-coached service helps with strategy and negotiation, while the +$399 transaction coordination manages everything from offer to closing.
+                Our professional offer services are perfect when you've found a home you want to buy. The $699 professional offer service helps with strategy and negotiation, while the $399 transaction coordination manages everything from offer to closing.
               </p>
             </Card>
           </div>

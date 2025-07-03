@@ -202,17 +202,6 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
               </p>
             </Card>
           </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 mb-4">
-              <strong>Pro Plan members</strong> get access to the DIY Offer Maker tool at no extra cost.
-            </p>
-            <Link to="/offer-questionnaire">
-              <Button variant="outline" className="border-2 border-blue-300 text-blue-600 hover:bg-blue-50 backdrop-blur-sm">
-                Try DIY Offer Maker (Pro Members)
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Value Proposition Footer */}

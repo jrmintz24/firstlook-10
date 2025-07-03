@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,10 +178,6 @@ const Subscriptions = () => {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3">
-                  <Shield className="mr-2 h-4 w-4" />
-                  Get Offer Help
-                </Button>
               </CardContent>
             </Card>
 
@@ -207,18 +204,26 @@ const Subscriptions = () => {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Add Transaction Help
-                </Button>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Action buttons row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <Button className="bg-green-600 hover:bg-green-700 text-white py-3">
+              <Shield className="mr-2 h-4 w-4" />
+              Get Offer Help
+            </Button>
+            <Button className="bg-orange-600 hover:bg-orange-700 text-white py-3">
+              <FileText className="mr-2 h-4 w-4" />
+              Add Transaction Help
+            </Button>
           </div>
 
           <div className="mt-8 text-center">
             <Card className="border-2 border-blue-200 bg-blue-50/50 p-6">
               <h4 className="text-xl font-semibold text-slate-800 mb-2">
-                Complete Package: $1,098
+                Offer and Transaction Coordination: $999
               </h4>
               <p className="text-gray-700 mb-4">
                 Get both professional offer strategy AND complete transaction coordination.

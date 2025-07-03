@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Loader2 } from "lucide-react";
-import { PropertyRequestWizard } from "@/components/PropertyRequestWizard";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { useShowingSubmission } from "@/hooks/useShowingSubmission";
 import { useToast } from "@/hooks/use-toast";
@@ -25,10 +25,16 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<PropertyRequestFormData>({
     properties: [],
-    dates: [],
-    times: [],
+    preferredOptions: [],
     notes: "",
-    step: 1
+    propertyAddress: "",
+    preferredDate1: "",
+    preferredTime1: "",
+    preferredDate2: "",
+    preferredTime2: "",
+    preferredDate3: "",
+    preferredTime3: "",
+    selectedProperties: []
   });
   const [isComplete, setIsComplete] = useState(false);
   const { toast } = useToast();
@@ -44,10 +50,16 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
     if (isOpen) {
       setFormData({
         properties: [],
-        dates: [],
-        times: [],
+        preferredOptions: [],
         notes: "",
-        step: 1
+        propertyAddress: "",
+        preferredDate1: "",
+        preferredTime1: "",
+        preferredDate2: "",
+        preferredTime2: "",
+        preferredDate3: "",
+        preferredTime3: "",
+        selectedProperties: []
       });
       setIsComplete(false);
     }
@@ -112,6 +124,8 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
             </div>
           ) : (
             <PropertyRequestWizard
+              isOpen={isOpen}
+              onClose={onClose}
               onComplete={handleFormComplete}
               skipNavigation={skipNavigation}
             />

@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle, Calendar, MessageSquare, TrendingUp, Plus, FileText } from "lucide-react";
+import { Clock, CheckCircle, Calendar, TrendingUp, Plus, FileText } from "lucide-react";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 import { useIsMobile } from "@/hooks/use-mobile";
 import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
@@ -243,18 +243,6 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       count: 0,
       content: (
         <BuyerPostShowingHub buyerId={userId} />
-      )
-    },
-    {
-      id: "messages",
-      title: "Messages",
-      icon: MessageSquare,
-      count: unreadCount || 0,
-      content: (
-        <MessagingInterface
-          userId={userId}
-          userType="buyer"
-        />
       )
     },
     {

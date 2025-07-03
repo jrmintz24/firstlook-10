@@ -26,7 +26,7 @@ interface OfferIntent {
   has_consultation?: boolean;
 }
 
-interface Document {
+interface OfferDocument {
   id: string;
   file_name: string;
   file_path: string;
@@ -39,7 +39,7 @@ interface Document {
 
 interface EnhancedOfferDetailModalProps {
   offer: OfferIntent;
-  documents: Document[];
+  documents: OfferDocument[];
   isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;

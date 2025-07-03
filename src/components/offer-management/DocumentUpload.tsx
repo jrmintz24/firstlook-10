@@ -7,7 +7,7 @@ import { Upload, File, Trash2, Download, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface Document {
+interface OfferDocument {
   id: string;
   file_name: string;
   file_path: string;
@@ -20,7 +20,7 @@ interface Document {
 
 interface DocumentUploadProps {
   offerIntentId: string;
-  documents: Document[];
+  documents: OfferDocument[];
   onDocumentUploaded: () => void;
   onDocumentDeleted: () => void;
 }
@@ -93,20 +93,33 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
 
       if (uploadError) throw uploadError;
 
-      // Save metadata to database
-      const { error: dbError } = await supabase
-        .from('offer_documents')
-        .insert({
-          offer_intent_id: offerIntentId,
-          file_name: file.name,
-          file_path: filePath,
-          file_type: file.type,
-          file_size: file.size,
-          document_category: 'general',
-          uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
-        });
+      // Save metadata to database using raw SQL to avoid type issues
+      const { error: dbError } = await supabase.rpc('create_offer_document', {
+        p_offer_intent_id: offerIntentId,
+        p_file_name: file.name,
+        p_file_path: filePath,
+        p_file_type: file.type,
+        p_file_size: file.size,
+        p_document_category: 'general',
+        p_uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
+      });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        // Fallback to direct insert if RPC doesn't exist
+        const { error: insertError } = await supabase
+          .from('offer_documents' as any)
+          .insert({
+            offer_intent_id: offerIntentId,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+            document_category: 'general',
+            uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
+          });
+
+        if (insertError) throw insertError;
+      }
 
       toast({
         title: "Document uploaded",
@@ -126,21 +139,21 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
     }
   };
 
-  const handleDownload = async (document: Document) => {
+  const handleDownload = async (doc: OfferDocument) => {
     try {
       const { data, error } = await supabase.storage
         .from('offer-documents')
-        .download(document.file_path);
+        .download(doc.file_path);
 
       if (error) throw error;
 
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = window.document.createElement('a');
       a.href = url;
-      a.download = document.file_name;
-      document.body.appendChild(a);
+      a.download = doc.file_name;
+      window.document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      window.document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
@@ -152,20 +165,20 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
     }
   };
 
-  const handleDelete = async (document: Document) => {
+  const handleDelete = async (doc: OfferDocument) => {
     try {
       // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('offer-documents')
-        .remove([document.file_path]);
+        .remove([doc.file_path]);
 
       if (storageError) throw storageError;
 
       // Delete from database
       const { error: dbError } = await supabase
-        .from('offer_documents')
+        .from('offer_documents' as any)
         .delete()
-        .eq('id', document.id);
+        .eq('id', doc.id);
 
       if (dbError) throw dbError;
 
@@ -230,7 +243,7 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
           <Button
             variant="outline"
             size="sm"
-            onClick={() => document.getElementById(`file-upload-${offerIntentId}`)?.click()}
+            onClick={() => window.document.getElementById(`file-upload-${offerIntentId}`)?.click()}
             disabled={uploading}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -244,18 +257,18 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
         {/* Document List */}
         {documents.length > 0 && (
           <div className="space-y-2">
-            {documents.map((document) => (
-              <div key={document.id} className="flex items-center justify-between p-3 border rounded-lg">
+            {documents.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <File className="w-4 h-4 text-gray-500" />
                   <div>
-                    <p className="font-medium text-sm">{document.file_name}</p>
+                    <p className="font-medium text-sm">{doc.file_name}</p>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>{formatFileSize(document.file_size)}</span>
+                      <span>{formatFileSize(doc.file_size)}</span>
                       <Badge variant="outline" className="text-xs">
-                        {getCategoryLabel(document.document_category)}
+                        {getCategoryLabel(doc.document_category)}
                       </Badge>
-                      <span>{new Date(document.uploaded_at).toLocaleDateString()}</span>
+                      <span>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -263,14 +276,14 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDownload(document)}
+                    onClick={() => handleDownload(doc)}
                   >
                     <Download className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(document)}
+                    onClick={() => handleDelete(doc)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

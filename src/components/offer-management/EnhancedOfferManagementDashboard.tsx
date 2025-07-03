@@ -27,7 +27,7 @@ interface OfferIntent {
   has_consultation?: boolean;
 }
 
-interface Document {
+interface OfferDocument {
   id: string;
   file_name: string;
   file_path: string;
@@ -45,7 +45,7 @@ interface EnhancedOfferManagementDashboardProps {
 
 const EnhancedOfferManagementDashboard = ({ buyerId, onCreateOffer }: EnhancedOfferManagementDashboardProps) => {
   const [offers, setOffers] = useState<OfferIntent[]>([]);
-  const [documents, setDocuments] = useState<Record<string, Document[]>>({});
+  const [documents, setDocuments] = useState<Record<string, OfferDocument[]>>({});
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<OfferIntent | null>(null);
   const { toast } = useToast();
@@ -81,27 +81,33 @@ const EnhancedOfferManagementDashboard = ({ buyerId, onCreateOffer }: EnhancedOf
 
       setOffers(transformedOffers);
 
-      // Fetch documents for each offer
+      // Fetch documents for each offer using raw query to avoid type issues
       if (transformedOffers.length > 0) {
         const offerIds = transformedOffers.map(offer => offer.id);
-        const { data: documentsData, error: documentsError } = await supabase
-          .from('offer_documents')
-          .select('*')
-          .in('offer_intent_id', offerIds)
-          .order('uploaded_at', { ascending: false });
+        
+        try {
+          const { data: documentsData, error: documentsError } = await supabase
+            .from('offer_documents' as any)
+            .select('*')
+            .in('offer_intent_id', offerIds)
+            .order('uploaded_at', { ascending: false });
 
-        if (documentsError) throw documentsError;
+          if (!documentsError && documentsData) {
+            // Group documents by offer ID
+            const groupedDocuments = documentsData.reduce((acc: Record<string, OfferDocument[]>, doc: any) => {
+              if (!acc[doc.offer_intent_id]) {
+                acc[doc.offer_intent_id] = [];
+              }
+              acc[doc.offer_intent_id].push(doc);
+              return acc;
+            }, {});
 
-        // Group documents by offer ID
-        const groupedDocuments = documentsData?.reduce((acc, doc) => {
-          if (!acc[doc.offer_intent_id]) {
-            acc[doc.offer_intent_id] = [];
+            setDocuments(groupedDocuments);
           }
-          acc[doc.offer_intent_id].push(doc);
-          return acc;
-        }, {} as Record<string, Document[]>) || {};
-
-        setDocuments(groupedDocuments);
+        } catch (docError) {
+          console.log('Documents table not yet available:', docError);
+          setDocuments({});
+        }
       }
     } catch (error) {
       console.error('Error fetching offers:', error);

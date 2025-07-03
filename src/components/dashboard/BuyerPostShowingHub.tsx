@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, TrendingUp, FileText } from "lucide-react";
 import { usePostShowingDashboardData } from "@/hooks/usePostShowingDashboardData";
 import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
+import AgentConnectionCard from "@/components/dashboard/AgentConnectionCard";
 
 interface BuyerPostShowingHubProps {
   buyerId: string;
@@ -22,6 +23,22 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
   } = usePostShowingDashboardData(buyerId);
 
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
+
+  const handleContactAgent = (agentId: string, method: 'phone' | 'email' | 'message') => {
+    console.log(`Contacting agent ${agentId} via ${method}`);
+    // TODO: Implement contact functionality
+    switch (method) {
+      case 'phone':
+        // Open phone dialer or show phone number
+        break;
+      case 'email':
+        // Open email client or show email form
+        break;
+      case 'message':
+        // Open messaging interface
+        break;
+    }
+  };
 
   if (loading) {
     return (
@@ -218,37 +235,17 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
                 <div className="text-center py-8 text-gray-500">
                   <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>No agent connections yet</p>
+                  <p className="text-sm mt-2">Connect with agents after your tours to get expert guidance</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {agentConnections.map((connection) => {
-                    const showing = completedShowings.find(s => s.id === connection.showing_request_id);
-                    return (
-                      <Card key={connection.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-medium text-gray-900">
-                                Agent Connection
-                              </h4>
-                              {showing && (
-                                <p className="text-sm text-gray-600">
-                                  Property: {showing.property_address}
-                                </p>
-                              )}
-                              <p className="text-sm text-gray-600">
-                                Connected {new Date(connection.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <Badge className="bg-purple-100 text-purple-800">
-                              <MessageCircle className="w-3 h-3 mr-1" />
-                              Connected
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                  {agentConnections.map((connection) => (
+                    <AgentConnectionCard
+                      key={connection.id}
+                      connection={connection}
+                      onContactAgent={handleContactAgent}
+                    />
+                  ))}
                 </div>
               )}
             </TabsContent>

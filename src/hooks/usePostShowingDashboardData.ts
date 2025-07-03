@@ -43,10 +43,26 @@ export const usePostShowingDashboardData = (userId: string) => {
 
       if (favoritesError) throw favoritesError;
 
-      // Get agent connections
+      // Get agent connections with detailed agent information
       const { data: connectionsData, error: connectionsError } = await supabase
         .from('buyer_agent_matches')
-        .select('*')
+        .select(`
+          *,
+          agent:profiles!buyer_agent_matches_agent_id_fkey (
+            id,
+            first_name,
+            last_name,
+            phone,
+            photo_url,
+            agent_details
+          ),
+          showing_request:showing_requests (
+            property_address,
+            preferred_date,
+            preferred_time,
+            status
+          )
+        `)
         .eq('buyer_id', userId)
         .order('created_at', { ascending: false });
 

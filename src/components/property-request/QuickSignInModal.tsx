@@ -40,7 +40,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign up successful');
+        console.log('Sign up successful, user:', result.data?.user?.id);
         
         toast({
           title: "Account Created!",
@@ -55,7 +55,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign in successful');
+        console.log('Sign in successful, user:', result.data?.user?.id);
         
         toast({
           title: "Welcome Back!",

@@ -63,7 +63,7 @@ const StreamlinedSignupModal = ({ isOpen, onClose, onSuccess }: StreamlinedSignu
           description: "Processing your tour request...",
         });
       } else {
-        // Store signup form data for profile creation
+        // Store signup flag and form data for profile creation
         localStorage.setItem('signupFormData', JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -72,7 +72,12 @@ const StreamlinedSignupModal = ({ isOpen, onClose, onSuccess }: StreamlinedSignu
           desiredAreas: formData.desiredAreas
         }));
         
-        await signUp(formData.email, formData.password);
+        await signUp(formData.email, formData.password, {
+          user_type: 'buyer',
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone
+        });
         
         toast({
           title: "Account Created!",

@@ -231,20 +231,27 @@ const Subscriptions = () => {
           </div>
         </div>
 
-        {/* DIY Offer Tool CTA */}
+        {/* DIY Offer Tool CTA - Coming Soon */}
         <div className="max-w-2xl mx-auto text-center mb-16">
-          <Card className="border-2 border-purple-200 bg-purple-50/30 p-6">
-            <h3 className="text-xl font-semibold text-slate-800 mb-2">
-              DIY Offer Maker Tool
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Pro Plan members get free access to our DIY offer creation tool.
+          <Card className="border-2 border-gray-200 bg-gray-50/30 p-6 opacity-75">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <h3 className="text-xl font-semibold text-gray-500">
+                DIY Offer Maker Tool
+              </h3>
+              <Badge variant="secondary" className="bg-gray-200 text-gray-600">
+                Coming Soon
+              </Badge>
+            </div>
+            <p className="text-gray-500 mb-4">
+              We're developing an easy-to-use DIY offer creation tool for Pro Plan members. Coming soon!
             </p>
-            <Link to="/offer-questionnaire">
-              <Button variant="outline" className="border-2 border-purple-300 text-purple-600 hover:bg-purple-50">
-                Try DIY Offer Maker (Pro Members Only)
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              disabled 
+              className="border-2 border-gray-300 text-gray-400 cursor-not-allowed hover:bg-gray-50"
+            >
+              Coming Soon
+            </Button>
           </Card>
         </div>
 

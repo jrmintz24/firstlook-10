@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,9 +47,9 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
       ]
     },
     {
-      title: "Complete Transaction Coordination",
+      title: "Transaction Coordination",
       price: "$399",
-      description: "Add full transaction management from offer to closing",
+      description: "Complete transaction management from offer to closing",
       features: [
         "Dedicated transaction coordinator",
         "Contract to closing management",
@@ -218,14 +219,21 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
             </div>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                <strong>Pro Plan members</strong> get access to the DIY Offer Maker tool at no extra cost.
+              <p className="text-sm text-gray-500 mb-4">
+                <strong>Pro Plan members</strong> will get access to the DIY Offer Maker tool when it launches.
               </p>
-              <Link to="/offer-questionnaire">
-                <Button variant="outline" className="border-2 border-blue-300 text-blue-600 hover:bg-blue-50">
-                  Try DIY Offer Maker (Pro Members)
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                disabled 
+                className="border-2 border-gray-300 text-gray-400 cursor-not-allowed hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-2">
+                  DIY Offer Maker (Coming Soon)
+                  <Badge variant="secondary" className="bg-gray-200 text-gray-600 text-xs">
+                    In Development
+                  </Badge>
+                </div>
+              </Button>
             </div>
           </div>
         )}

@@ -19,19 +19,16 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-extralight text-gray-900 mb-8 tracking-tight leading-none">
-            FirstLook
+            Finally, a Homebuying Platform That Gets You
           </h1>
           
           <h2 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
-            Your Home Journey, <span className="font-medium text-gray-900">On Your Terms</span>
+            No pushy agents. <span className="font-medium text-gray-900">No awkward commitments.</span>
           </h2>
           
           <div className="space-y-4 mb-12">
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-              Tour homes without pressure, contracts, or gatekeeping.
-            </p>
-            <p className="text-lg md:text-xl text-gray-800 max-w-3xl mx-auto leading-relaxed font-semibold mt-6">
-              No commitment. Full control. Save thousands.
+              Just honest tools, clear pricing, and real savings.
             </p>
           </div>
           

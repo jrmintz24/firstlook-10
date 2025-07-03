@@ -7,12 +7,7 @@ import { PropertyRequestFormData } from "@/types/propertyRequest";
 
 export const useShowingSubmission = (
   formData: PropertyRequestFormData,
-  onDataRefresh?: () => Promise<void>,
-  subscriptionReadiness?: {
-    canSubmitForms: boolean;
-    isHealthy: boolean;
-    errors: Array<{ name: string; error: string | null; retryCount: number }>;
-  }
+  onDataRefresh?: () => Promise<void>
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -29,26 +24,11 @@ export const useShowingSubmission = (
       throw new Error('User must be authenticated to submit showing requests');
     }
 
-    // Check subscription readiness if provided
-    if (subscriptionReadiness && !subscriptionReadiness.canSubmitForms) {
-      console.warn('Subscription not ready, but proceeding with submission and manual refresh fallback');
-      
-      // Show warning if there are subscription issues
-      if (subscriptionReadiness.errors.length > 0) {
-        toast({
-          title: "Connection Issues Detected",
-          description: "Your tour request will be submitted, but real-time updates may be delayed.",
-          variant: "default"
-        });
-      }
-    }
-
     setIsSubmitting(true);
     
     try {
       console.log('Submitting showing requests for user:', user.id);
       console.log('Form data:', formData);
-      console.log('Subscription readiness:', subscriptionReadiness);
 
       const showingRequests = [];
 
@@ -57,7 +37,7 @@ export const useShowingSubmission = (
         for (const property of formData.properties) {
           if (property.address.trim()) {
             showingRequests.push({
-              user_id: user.id,
+              user_id: user.id, // Ensure user_id is always set
               property_address: property.address.trim(),
               message: property.notes || formData.notes || null,
               preferred_date: formData.preferredDate1 || null,
@@ -71,7 +51,7 @@ export const useShowingSubmission = (
       // Handle single property from direct form fields
       if (formData.propertyAddress && formData.propertyAddress.trim()) {
         const request = {
-          user_id: user.id,
+          user_id: user.id, // Ensure user_id is always set
           property_address: formData.propertyAddress.trim(),
           message: formData.notes || null,
           preferred_date: formData.preferredDate1 || null,
@@ -111,20 +91,14 @@ export const useShowingSubmission = (
       // Clear any pending tour request from localStorage
       localStorage.removeItem('pendingTourRequest');
 
-      // Always refresh data after submission - this provides fallback for subscription issues
+      // Refresh dashboard data if callback provided
       if (onDataRefresh) {
-        console.log('Refreshing dashboard data after submission...');
         await onDataRefresh();
       }
 
-      // Show success message with appropriate context
-      const successMessage = subscriptionReadiness?.isHealthy 
-        ? `Successfully submitted ${showingRequests.length} tour request${showingRequests.length > 1 ? 's' : ''}!`
-        : `Tour request submitted! Your dashboard will update shortly.`;
-
       toast({
         title: "Tour Request Submitted",
-        description: successMessage,
+        description: `Successfully submitted ${showingRequests.length} tour request${showingRequests.length > 1 ? 's' : ''}!`,
       });
 
       return data;

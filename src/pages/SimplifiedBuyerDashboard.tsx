@@ -21,8 +21,7 @@ const SimplifiedBuyerDashboard = () => {
     activeShowings,
     completedShowings,
     refreshData,
-    fetchShowingRequests,
-    subscriptionReadiness // Get subscription readiness
+    fetchShowingRequests
   } = useSimpleBuyerData();
 
   // Add pending tour handler to process any tours from homepage signup
@@ -149,13 +148,6 @@ const SimplifiedBuyerDashboard = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}!</h1>
-              {/* Show connection status if there are issues */}
-              {subscriptionReadiness && !subscriptionReadiness.isHealthy && (
-                <div className="flex items-center gap-2 text-sm text-amber-600">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>Connection issues detected</span>
-                </div>
-              )}
             </div>
             <p className="text-gray-600">Manage your property tours and requests</p>
           </div>
@@ -193,13 +185,9 @@ const SimplifiedBuyerDashboard = () => {
               onClick={() => setShowPropertyForm(true)}
               className="bg-black hover:bg-gray-800 text-white"
               size="lg"
-              disabled={subscriptionReadiness && !subscriptionReadiness.canSubmitForms && subscriptionReadiness.errors.length > 0}
             >
               <Plus className="h-5 w-5 mr-2" />
               Request New Tour
-              {subscriptionReadiness && !subscriptionReadiness.canSubmitForms && subscriptionReadiness.errors.length > 0 && (
-                <span className="ml-2 text-xs opacity-75">(Connection issues)</span>
-              )}
             </Button>
           </div>
 
@@ -264,7 +252,6 @@ const SimplifiedBuyerDashboard = () => {
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}
         skipNavigation={true}
-        subscriptionReadiness={subscriptionReadiness} // Pass subscription readiness
       />
     </>
   );

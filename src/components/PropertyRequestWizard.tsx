@@ -13,19 +13,13 @@ interface PropertyRequestWizardProps {
   onClose: () => void;
   onSuccess?: () => Promise<void>;
   skipNavigation?: boolean;
-  subscriptionReadiness?: {
-    canSubmitForms: boolean;
-    isHealthy: boolean;
-    errors: Array<{ name: string; error: string | null; retryCount: number }>;
-  };
 }
 
 const PropertyRequestWizard = ({ 
   isOpen, 
   onClose, 
   onSuccess, 
-  skipNavigation = true,
-  subscriptionReadiness
+  skipNavigation = true 
 }: PropertyRequestWizardProps) => {
   const {
     currentStep,
@@ -44,7 +38,7 @@ const PropertyRequestWizard = ({
     handleCancelPendingShowing,
     pendingShowingAddress,
     resetForm
-  } = usePropertyRequest(onClose, onSuccess, skipNavigation, subscriptionReadiness);
+  } = usePropertyRequest(onClose, onSuccess, skipNavigation);
 
   const handleClose = () => {
     resetForm();
@@ -103,7 +97,6 @@ const PropertyRequestWizard = ({
             onContinueToSubscriptions={handleContinueToSubscriptions}
             onBack={handleBack}
             isSubmitting={isSubmitting}
-            subscriptionReadiness={subscriptionReadiness} // Pass to summary step
           />
         );
       default:

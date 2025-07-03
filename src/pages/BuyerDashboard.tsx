@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, MessageSquare, TrendingUp, CheckCircle, Clock } from "lucide-react";
@@ -140,6 +139,7 @@ const BuyerDashboard = () => {
           onCancelShowing={() => {}}
           onRescheduleShowing={() => {}}
           onConfirmShowing={handleConfirmShowing}
+          onSignAgreement={handleConfirmShowing}
           onReportIssue={handleReportIssue}
           userType="buyer"
           agreements={agreements}
@@ -165,6 +165,7 @@ const BuyerDashboard = () => {
           onRequestShowing={handleRequestShowing}
           onCancelShowing={() => {}}
           onRescheduleShowing={() => {}}
+          onSignAgreement={handleConfirmShowing}
           onReportIssue={handleReportIssue}
           userType="buyer"
           agreements={agreements}
@@ -231,6 +232,7 @@ const BuyerDashboard = () => {
           onRequestShowing={() => {}}
           onCancelShowing={() => {}}
           onRescheduleShowing={() => {}}
+          onSignAgreement={handleConfirmShowing}
           showActions={false}
           userType="buyer"
           agreements={agreements}

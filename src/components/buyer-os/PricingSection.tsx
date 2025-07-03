@@ -34,9 +34,9 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
 
   const offerServices = [
     {
-      title: "Agent-Coached Offer Strategy",
+      title: "Professional Offer",
       price: "$699",
-      description: "Professional agent guides you through offer strategy, market analysis, and negotiation tactics",
+      description: "Professional agent guides your offer strategy, market analysis, and negotiation tactics",
       features: [
         "1-on-1 consultation with licensed agent",
         "Comprehensive market analysis",
@@ -46,17 +46,16 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
       ]
     },
     {
-      title: "Complete Transaction Coordination",
-      price: "+$399",
-      description: "Add full transaction management from offer to closing",
+      title: "Transaction Coordination",
+      price: "$399",
+      description: "Complete transaction management from offer to closing",
       features: [
         "Dedicated transaction coordinator",
         "Contract to closing management",
         "Vendor coordination (inspections, appraisals)",
         "Timeline management & reminders",
         "Closing preparation assistance"
-      ],
-      addon: true
+      ]
     }
   ];
 
@@ -179,18 +178,12 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {offerServices.map((service, index) => (
                 <Card key={index} className={`border-2 shadow-lg relative ${
-                  service.addon ? 'border-orange-200 bg-orange-50/30' : 'border-green-200 bg-green-50/30'
+                  index === 0 ? 'border-green-200 bg-green-50/30' : 'border-orange-200 bg-orange-50/30'
                 }`}>
-                  {service.addon && (
-                    <Badge className="absolute top-4 right-4 bg-orange-100 text-orange-800 border-orange-300">
-                      Add-on Service
-                    </Badge>
-                  )}
-                  
                   <CardHeader className="text-center pb-4">
                     <CardTitle className="text-xl text-slate-800">{service.title}</CardTitle>
                     <div className={`text-3xl font-bold mb-2 ${
-                      service.addon ? 'text-orange-600' : 'text-green-600'
+                      index === 0 ? 'text-green-600' : 'text-orange-600'
                     }`}>
                       {service.price}
                     </div>

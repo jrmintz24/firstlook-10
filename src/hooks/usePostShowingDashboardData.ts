@@ -43,19 +43,11 @@ export const usePostShowingDashboardData = (userId: string) => {
 
       if (favoritesError) throw favoritesError;
 
-      // Get agent connections with detailed agent information
-      const { data: connectionsData, error: connectionsError } = await supabase
+      // Get buyer-agent matches first
+      const { data: matchesData, error: matchesError } = await supabase
         .from('buyer_agent_matches')
         .select(`
           *,
-          agent:profiles!buyer_agent_matches_agent_id_fkey (
-            id,
-            first_name,
-            last_name,
-            phone,
-            photo_url,
-            agent_details
-          ),
           showing_request:showing_requests (
             property_address,
             preferred_date,
@@ -66,12 +58,55 @@ export const usePostShowingDashboardData = (userId: string) => {
         .eq('buyer_id', userId)
         .order('created_at', { ascending: false });
 
-      if (connectionsError) throw connectionsError;
+      if (matchesError) throw matchesError;
+
+      // Get agent details separately
+      let connectionsWithAgents = [];
+      if (matchesData && matchesData.length > 0) {
+        const agentIds = matchesData.map(match => match.agent_id);
+        
+        const { data: agentsData, error: agentsError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, phone, photo_url, agent_details')
+          .in('id', agentIds);
+
+        if (agentsError) {
+          console.error('Error fetching agent profiles:', agentsError);
+          // Continue without agent details rather than failing completely
+          connectionsWithAgents = matchesData.map(match => ({
+            ...match,
+            agent: {
+              id: match.agent_id,
+              first_name: 'Agent',
+              last_name: '',
+              phone: null,
+              photo_url: null,
+              agent_details: null
+            }
+          }));
+        } else {
+          // Combine matches with agent data
+          connectionsWithAgents = matchesData.map(match => {
+            const agent = agentsData?.find(a => a.id === match.agent_id);
+            return {
+              ...match,
+              agent: agent || {
+                id: match.agent_id,
+                first_name: 'Agent',
+                last_name: '',
+                phone: null,
+                photo_url: null,
+                agent_details: null
+              }
+            };
+          });
+        }
+      }
 
       setCompletedShowings(showingsData || []);
       setPostShowingActions(actionsData || []);
       setFavorites(favoritesData || []);
-      setAgentConnections(connectionsData || []);
+      setAgentConnections(connectionsWithAgents || []);
       setLoading(false);
 
     } catch (error) {

@@ -163,8 +163,13 @@ const OptimizedBuyerDashboard = () => {
       <AgreementModal
         isOpen={showAgreementModal}
         onClose={() => setShowAgreementModal(false)}
-        onConfirm={handleAgreementSignWithModal}
-        showing={selectedShowing}
+        onSign={handleAgreementSignWithModal}
+        showingDetails={selectedShowing ? {
+          propertyAddress: selectedShowing.property_address,
+          date: selectedShowing.preferred_date,
+          time: selectedShowing.preferred_time,
+          agentName: selectedShowing.assigned_agent_name
+        } : undefined}
       />
 
       <SubscribeModal
@@ -176,9 +181,8 @@ const OptimizedBuyerDashboard = () => {
       <RescheduleModal
         isOpen={showRescheduleModal}
         onClose={() => setShowRescheduleModal(false)}
-        onReschedule={handleRescheduleShowing}
         onSuccess={handleRescheduleSuccess}
-        showing={selectedShowing}
+        showingRequest={selectedShowing}
       />
 
       <PropertyRequestWizard

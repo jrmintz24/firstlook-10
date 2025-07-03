@@ -7,7 +7,11 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { getPropertiesToSubmit, getPreferredOptions, getEstimatedConfirmationDate } from "@/utils/propertyRequestUtils";
 
-export const useShowingSubmission = (formData: PropertyRequestFormData, onSuccess?: () => Promise<void>) => {
+export const useShowingSubmission = (
+  formData: PropertyRequestFormData, 
+  onSuccess?: () => Promise<void>,
+  onOptimisticUpdate?: (pendingTours: any[]) => void
+) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -48,6 +52,25 @@ export const useShowingSubmission = (formData: PropertyRequestFormData, onSucces
       const preferredDate = preferredOptions[0]?.date || '';
       const preferredTime = preferredOptions[0]?.time || '';
       const estimatedConfirmationDate = getEstimatedConfirmationDate();
+
+      // Create optimistic tour objects for immediate UI update
+      const optimisticTours = propertiesToSubmit.map(property => ({
+        id: `temp-${Date.now()}-${Math.random()}`,
+        user_id: user.id,
+        property_address: property,
+        preferred_date: preferredDate || null,
+        preferred_time: preferredTime || null,
+        message: formData.notes || null,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        estimated_confirmation_date: estimatedConfirmationDate
+      }));
+
+      // Apply optimistic update immediately
+      if (onOptimisticUpdate) {
+        console.log('Applying optimistic update with tours:', optimisticTours);
+        onOptimisticUpdate(optimisticTours);
+      }
 
       // Create showing requests for each property
       const requests = propertiesToSubmit.map(property => ({
@@ -95,9 +118,28 @@ export const useShowingSubmission = (formData: PropertyRequestFormData, onSucces
         description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
       });
 
-      // Call the success callback and wait for it to complete before proceeding
+      // Enhanced success callback with retry logic
       if (onSuccess) {
-        await onSuccess();
+        console.log('Calling onSuccess callback with delay for database consistency');
+        // Add a small delay to ensure database transaction completion
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            await onSuccess();
+            console.log('Success callback completed successfully');
+            break;
+          } catch (error) {
+            retryCount++;
+            console.log(`Success callback retry ${retryCount}/${maxRetries}`, error);
+            if (retryCount < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            }
+          }
+        }
       }
       
     } catch (error) {

@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle, Timer } from "lucide-react";
+import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle, Timer, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
@@ -10,6 +10,8 @@ import { getStatusInfo, type ShowingStatus } from "@/utils/showingStatus";
 
 const SimplifiedBuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [isProcessingTour, setIsProcessingTour] = useState(false);
+  const [optimisticTours, setOptimisticTours] = useState<any[]>([]);
   
   const {
     profile,
@@ -29,18 +31,60 @@ const SimplifiedBuyerDashboard = () => {
     reconnect
   } = useSimplifiedBuyerData();
 
-  // Handle successful form submission with optimistic updates
+  // Handle optimistic updates from tour submission
+  const handleOptimisticUpdate = useCallback((newTours: any[]) => {
+    console.log('SimplifiedBuyerDashboard: Received optimistic update:', newTours);
+    setOptimisticTours(newTours);
+    setIsProcessingTour(true);
+  }, []);
+
+  // Enhanced success handler with verification
   const handleFormSuccess = useCallback(async () => {
-    console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data');
+    console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data with verification');
     setShowPropertyForm(false);
     
-    // Immediate refresh to show new request
-    await fetchShowingRequests();
-    console.log('SimplifiedBuyerDashboard: Data refresh completed');
-  }, [fetchShowingRequests]);
+    try {
+      // Immediate refresh to show new request
+      await fetchShowingRequests();
+      
+      // Verify tours appeared (with retry logic)
+      let verificationAttempts = 0;
+      const maxVerificationAttempts = 3;
+      
+      while (verificationAttempts < maxVerificationAttempts) {
+        const hasNewTours = optimisticTours.length > 0;
+        const actualToursCount = pendingRequests.length + activeShowings.length;
+        
+        if (hasNewTours && actualToursCount > 0) {
+          console.log('SimplifiedBuyerDashboard: Tours verified successfully');
+          break;
+        }
+        
+        verificationAttempts++;
+        if (verificationAttempts < maxVerificationAttempts) {
+          console.log(`Verification attempt ${verificationAttempts}/${maxVerificationAttempts} - retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          await fetchShowingRequests();
+        }
+      }
+      
+      console.log('SimplifiedBuyerDashboard: Data refresh completed');
+    } catch (error) {
+      console.error('Error in form success handler:', error);
+    } finally {
+      // Clear optimistic state after actual data loads
+      setTimeout(() => {
+        setOptimisticTours([]);
+        setIsProcessingTour(false);
+      }, 1000);
+    }
+  }, [fetchShowingRequests, optimisticTours.length, pendingRequests.length, activeShowings.length]);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
+
+  // Combine actual tours with optimistic tours for display
+  const displayPendingRequests = [...pendingRequests, ...optimisticTours];
 
   // Show loading state
   if (loading || authLoading) {
@@ -86,10 +130,18 @@ const SimplifiedBuyerDashboard = () => {
 
   const renderShowingCard = (showing: any) => {
     const statusInfo = getStatusInfo(showing.status as ShowingStatus);
+    const isOptimistic = showing.id?.toString().startsWith('temp-');
     
     return (
-      <Card key={showing.id} className="hover:shadow-soft-md transition-shadow">
+      <Card key={showing.id} className={`hover:shadow-soft-md transition-shadow ${isOptimistic ? 'border-blue-200 bg-blue-50' : ''}`}>
         <CardContent className="p-4">
+          {isOptimistic && (
+            <div className="flex items-center gap-2 mb-3 text-blue-600 text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Processing your tour request...</span>
+            </div>
+          )}
+          
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -98,7 +150,7 @@ const SimplifiedBuyerDashboard = () => {
               </h3>
               <Badge className={`${statusInfo.bgColor} ${statusInfo.color} border-0 text-xs mb-2`}>
                 <span className="mr-1">{statusInfo.icon}</span>
-                {statusInfo.label}
+                {isOptimistic ? 'Submitting...' : statusInfo.label}
               </Badge>
             </div>
           </div>
@@ -123,7 +175,6 @@ const SimplifiedBuyerDashboard = () => {
             </div>
           )}
 
-          {/* Agent Information */}
           {showing.assigned_agent_name && (
             <div className="bg-green-50 border border-green-200 p-3 rounded-lg mb-3">
               <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
@@ -148,7 +199,6 @@ const SimplifiedBuyerDashboard = () => {
             </div>
           )}
 
-          {/* Notes */}
           {showing.message && (
             <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg mb-3">
               <div className="text-sm font-medium text-gray-800 mb-1">Your Notes</div>
@@ -157,7 +207,7 @@ const SimplifiedBuyerDashboard = () => {
           )}
 
           <p className="text-xs text-gray-400">
-            Requested on {new Date(showing.created_at).toLocaleDateString()}
+            {isOptimistic ? 'Submitting...' : `Requested on ${new Date(showing.created_at).toLocaleDateString()}`}
           </p>
         </CardContent>
       </Card>
@@ -213,6 +263,14 @@ const SimplifiedBuyerDashboard = () => {
               </div>
             </div>
             <p className="text-gray-600">Manage your property tours and requests</p>
+            
+            {/* Processing indicator */}
+            {isProcessingTour && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                <span className="text-blue-800 text-sm">Processing your tour request...</span>
+              </div>
+            )}
           </div>
 
           {/* Quick Stats */}
@@ -220,7 +278,7 @@ const SimplifiedBuyerDashboard = () => {
             <Card>
               <CardContent className="p-6 text-center">
                 <Clock className="h-8 w-8 text-orange-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900">{pendingRequests.length}</div>
+                <div className="text-2xl font-bold text-gray-900">{displayPendingRequests.length}</div>
                 <div className="text-sm text-gray-600">Pending Requests</div>
               </CardContent>
             </Card>
@@ -248,6 +306,7 @@ const SimplifiedBuyerDashboard = () => {
               onClick={() => setShowPropertyForm(true)}
               className="bg-black hover:bg-gray-800 text-white"
               size="lg"
+              disabled={isProcessingTour}
             >
               <Plus className="h-5 w-5 mr-2" />
               Request New Tour
@@ -260,17 +319,17 @@ const SimplifiedBuyerDashboard = () => {
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <Clock className="h-5 w-5 text-orange-500" />
-                Pending Requests ({pendingRequests.length})
+                Pending Requests ({displayPendingRequests.length})
               </h2>
               <div className="space-y-4">
-                {pendingRequests.length === 0 ? (
+                {displayPendingRequests.length === 0 ? (
                   <Card>
                     <CardContent className="p-6 text-center text-gray-500">
                       No pending requests. Ready to tour your next home?
                     </CardContent>
                   </Card>
                 ) : (
-                  pendingRequests.map(renderShowingCard)
+                  displayPendingRequests.map(renderShowingCard)
                 )}
               </div>
             </div>
@@ -314,6 +373,7 @@ const SimplifiedBuyerDashboard = () => {
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handleFormSuccess}
+        onOptimisticUpdate={handleOptimisticUpdate}
         skipNavigation={true}
       />
     </>

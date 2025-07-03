@@ -186,7 +186,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     metadata: Record<string, unknown> & { user_type?: string } = { user_type: 'buyer' }
   ): Promise<{ error: any; data?: any }> => {
     console.log('AuthContext.signUp called with user_type:', metadata.user_type);
-    return await authService.signUp(email, password, metadata)
+    
+    // First attempt signup
+    const signUpResult = await authService.signUp(email, password, metadata);
+    
+    if (signUpResult.error) {
+      return signUpResult;
+    }
+    
+    // If signup successful, immediately attempt sign in
+    console.log('AuthContext: Signup successful, attempting immediate sign in');
+    
+    try {
+      const signInResult = await authService.signIn(email, password);
+      
+      if (signInResult.error) {
+        console.log('AuthContext: Immediate sign in failed, but signup was successful');
+        // Return the signup result even if immediate signin fails
+        return signUpResult;
+      }
+      
+      console.log('AuthContext: Immediate sign in successful');
+      return signInResult;
+    } catch (error) {
+      console.log('AuthContext: Exception during immediate sign in:', error);
+      // Return the original signup result
+      return signUpResult;
+    }
   }
 
   const signIn = async (email: string, password: string): Promise<{ error: any; data?: any }> => {

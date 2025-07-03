@@ -28,7 +28,7 @@ export const useAuthForm = (
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSocialLogin = async (
@@ -124,7 +124,7 @@ export const useAuthForm = (
 
         console.log('useAuthForm: Signing up with metadata:', metadata);
 
-        const result = await authService.signUp(formData.email, formData.password, metadata);
+        const result = await signUp(formData.email, formData.password, metadata);
         
         if (result.error) {
           throw result.error;
@@ -132,15 +132,35 @@ export const useAuthForm = (
         
         console.log('useAuthForm: Signup successful for user type:', userType);
         
-        toast({
-          title: "Success!",
-          description: userType === 'agent' 
-            ? "Agent account created! You can now sign in."
-            : "Account created successfully! You can now sign in."
-        });
-        
-        // For agents and if email confirmation is required, switch to login mode
-        setIsLogin(true);
+        // Check if user is now authenticated (due to our improved signUp flow)
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          const actualUserType = data.user.user_metadata?.user_type || userType;
+          const redirectPath = getDashboardRedirect(actualUserType);
+          
+          console.log('useAuthForm: User authenticated after signup, redirecting to:', redirectPath);
+          
+          toast({
+            title: "Welcome to FirstLook!",
+            description: "Account created successfully! Redirecting to your dashboard..."
+          });
+          
+          onSuccess();
+          
+          // Navigate to dashboard
+          navigate(redirectPath, { replace: true });
+        } else {
+          // Fallback if immediate authentication didn't work
+          toast({
+            title: "Account Created!",
+            description: userType === 'agent' 
+              ? "Agent account created! You can now sign in."
+              : "Account created successfully! You can now sign in."
+          });
+          
+          // Switch to login mode for manual sign in
+          setIsLogin(true);
+        }
       }
     } catch (error: any) {
       console.error('useAuthForm: Auth error:', error);

@@ -49,10 +49,8 @@ const BuyerAuth = () => {
       description: "Redirecting to your dashboard...",
     });
     
-    // Navigate with a slight delay to ensure auth state is properly settled
-    setTimeout(() => {
-      navigate('/buyer-dashboard', { replace: true });
-    }, 1000);
+    // Navigate immediately since the useAuthForm now handles the full flow
+    navigate('/buyer-dashboard', { replace: true });
   });
 
   if (loading) {

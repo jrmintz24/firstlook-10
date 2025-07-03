@@ -66,7 +66,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
       // Close modal immediately
       onClose();
       
-      // Small delay to allow auth state to settle
+      // Small delay to allow auth state to settle, then call success callback
       setTimeout(() => {
         console.log('Calling onSuccess callback');
         onSuccess();

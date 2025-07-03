@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, MessageSquare, TrendingUp, CheckCircle, Clock } from "lucide-react";
@@ -17,7 +18,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 import BuyerPostShowingHub from "@/components/dashboard/BuyerPostShowingHub";
-import PropertyRequestWizard from "@/components/PropertyRequestWizard";
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 
 const BuyerDashboard = () => {
   const {
@@ -286,8 +287,8 @@ const BuyerDashboard = () => {
         />
       </div>
 
-      {/* Property Request Wizard Modal */}
-      <PropertyRequestWizard
+      {/* Modern Tour Scheduling Modal */}
+      <ModernTourSchedulingModal
         isOpen={showPropertyForm}
         onClose={() => setShowPropertyForm(false)}
         onSuccess={handlePropertyRequestSuccess}

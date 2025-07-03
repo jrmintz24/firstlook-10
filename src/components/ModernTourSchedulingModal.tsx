@@ -23,7 +23,11 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
   onOptimisticUpdate,
   skipNavigation = false
 }) => {
-  const [formData, setFormData] = useState<PropertyRequestFormData>({
+  const [isComplete, setIsComplete] = useState(false);
+  const { toast } = useToast();
+
+  // Create a minimal formData for the useShowingSubmission hook
+  const [formData] = useState<PropertyRequestFormData>({
     properties: [],
     preferredOptions: [],
     notes: "",
@@ -36,8 +40,6 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
     preferredTime3: "",
     selectedProperties: []
   });
-  const [isComplete, setIsComplete] = useState(false);
-  const { toast } = useToast();
 
   const { isSubmitting, submitShowingRequests } = useShowingSubmission(
     formData, 
@@ -48,38 +50,28 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        properties: [],
-        preferredOptions: [],
-        notes: "",
-        propertyAddress: "",
-        preferredDate1: "",
-        preferredTime1: "",
-        preferredDate2: "",
-        preferredTime2: "",
-        preferredDate3: "",
-        preferredTime3: "",
-        selectedProperties: []
-      });
       setIsComplete(false);
     }
   }, [isOpen]);
 
-  const handleFormComplete = async (finalData: PropertyRequestFormData) => {
-    setFormData(finalData);
+  const handleWizardSuccess = async () => {
     setIsComplete(true);
     
-    console.log('ModernTourSchedulingModal: Form completed, submitting requests');
+    console.log('ModernTourSchedulingModal: Wizard completed, triggering success callback');
     
-    try {
-      await submitShowingRequests();
-    } catch (error) {
-      console.error('Error submitting showing requests:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit your tour request. Please try again.",
-        variant: "destructive"
-      });
+    // The PropertyRequestWizard handles its own submission internally,
+    // so we just need to call our success callback
+    if (onSuccess) {
+      try {
+        await onSuccess();
+      } catch (error) {
+        console.error('Error in success callback:', error);
+        toast({
+          title: "Error",
+          description: "Failed to complete the tour request. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -126,7 +118,7 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
             <PropertyRequestWizard
               isOpen={isOpen}
               onClose={onClose}
-              onSuccess={handleFormComplete}
+              onSuccess={handleWizardSuccess}
               skipNavigation={skipNavigation}
             />
           )}

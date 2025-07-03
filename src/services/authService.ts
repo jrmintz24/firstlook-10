@@ -11,7 +11,7 @@ export const signUp = async (
   email: string,
   password: string,
   metadata: Record<string, unknown> & { user_type?: string }
-): Promise<{ error: AuthError | null }> => {
+): Promise<{ error: AuthError | null; data?: any }> => {
   const userType = metadata.user_type || 'buyer';
   const redirectPath = userType === 'agent'
     ? 'agent-dashboard'
@@ -21,7 +21,7 @@ export const signUp = async (
 
   console.log('authService.signUp - User type:', userType, 'Metadata:', metadata);
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -30,15 +30,15 @@ export const signUp = async (
     }
   });
 
-  return { error };
+  return { error, data };
 };
 
 export const signIn = async (
   email: string,
   password: string
-): Promise<{ error: AuthError | null }> => {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  return { error };
+): Promise<{ error: AuthError | null; data?: any }> => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  return { error, data };
 };
 
 export const signInWithProvider = async (

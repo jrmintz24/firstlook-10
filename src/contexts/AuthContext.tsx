@@ -8,8 +8,8 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string, metadata?: Record<string, unknown> & { user_type?: string }) => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, metadata?: Record<string, unknown> & { user_type?: string }) => Promise<{ error: any; data?: any }>
+  signIn: (email: string, password: string) => Promise<{ error: any; data?: any }>
   signOut: () => Promise<void>
   signInWithProvider: (
     provider: 'google' | 'github' | 'discord' | 'facebook'
@@ -153,14 +153,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string, 
     password: string, 
     metadata: Record<string, unknown> & { user_type?: string } = { user_type: 'buyer' }
-  ): Promise<void> => {
-    const { error } = await authService.signUp(email, password, metadata)
-    if (error) throw error
+  ): Promise<{ error: any; data?: any }> => {
+    return await authService.signUp(email, password, metadata)
   }
 
-  const signIn = async (email: string, password: string): Promise<void> => {
-    const { error } = await authService.signIn(email, password)
-    if (error) throw error
+  const signIn = async (email: string, password: string): Promise<{ error: any; data?: any }> => {
+    return await authService.signIn(email, password)
   }
 
   const signOut = async (): Promise<void> => {

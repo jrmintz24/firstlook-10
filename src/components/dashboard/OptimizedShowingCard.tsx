@@ -19,7 +19,8 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 
 interface ShowingRequest {
@@ -106,10 +107,11 @@ const OptimizedShowingCard = ({
   const isSpecialistRequestedStatus = showing.status === 'agent_requested';
   const isCompletedTour = showing.status === 'completed';
   const isConfirmedTour = ['confirmed', 'scheduled', 'in_progress'].includes(showing.status);
+  const isAwaitingAgreement = showing.status === 'awaiting_agreement';
 
   // Get appropriate styling based on status and requirements
   const getCardStyling = () => {
-    if (agreementRequired) {
+    if (agreementRequired || isAwaitingAgreement) {
       return 'border-orange-300 bg-orange-50';
     }
     if (isSpecialistRequestedStatus) {
@@ -132,62 +134,82 @@ const OptimizedShowingCard = ({
 
   return (
     <Card className={`border ${getCardStyling()} shadow-none hover:shadow-sm transition-all duration-200`}>
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
           {/* Header */}
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                <h3 className="font-medium text-gray-900 truncate">
+              <div className="flex items-start gap-2 mb-2">
+                <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                <h3 className="font-medium text-gray-900 text-sm sm:text-base leading-tight">
                   {showing.property_address}
                 </h3>
               </div>
               
-              {/* Status and Date Info */}
-              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                <StatusBadge 
-                  status={showing.status} 
-                  size="sm"
-                  className="font-medium"
-                />
+              {/* Mobile-optimized Status Row */}
+              <div className="space-y-2">
+                {/* Primary Status - Always Visible */}
+                <div className="flex items-center gap-2">
+                  <StatusBadge 
+                    status={showing.status} 
+                    size="sm"
+                    className="font-medium"
+                  />
+                  
+                  {/* Only show additional context for non-awaiting-agreement statuses */}
+                  {!isAwaitingAgreement && agreementRequired && (
+                    <Badge className="bg-orange-100 text-orange-800 border-orange-300 font-medium text-xs">
+                      <FileText className="w-3 h-3 mr-1" />
+                      <span className="hidden xs:inline">Agreement Required</span>
+                      <span className="xs:hidden">Agreement</span>
+                    </Badge>
+                  )}
+                </div>
                 
-                {/* Agreement Required Badge */}
-                {agreementRequired && (
-                  <Badge className="bg-orange-100 text-orange-800 border-orange-300 font-medium">
-                    <FileText className="w-3 h-3 mr-1" />
-                    Agreement Required
-                  </Badge>
-                )}
-                
-                {showing.preferred_date && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(showing.preferred_date)}</span>
-                    {showing.preferred_time && (
-                      <span className="ml-1">at {formatTime(showing.preferred_time)}</span>
-                    )}
+                {/* Secondary Info - Mobile Stacked */}
+                <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-3 text-xs sm:text-sm text-gray-600">
+                  {showing.preferred_date && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">
+                        {formatDate(showing.preferred_date)}
+                        {showing.preferred_time && (
+                          <span className="ml-1">at {formatTime(showing.preferred_time)}</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <Clock className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">Requested {formatDate(showing.created_at)}</span>
                   </div>
-                )}
-                
-                <div className="flex items-center gap-1 text-gray-500">
-                  <Clock className="h-3 w-3" />
-                  <span>Requested {formatDate(showing.created_at)}</span>
                 </div>
               </div>
 
-              {/* Agreement Alert Box */}
+              {/* Streamlined Agreement Alert Box */}
               {agreementRequired && (
                 <div className="mt-3 p-3 bg-orange-100 rounded-lg border border-orange-200">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-orange-900">
-                        Tour Agreement Required
+                    <FileText className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-orange-900 mb-1">
+                        Ready to Sign Tour Agreement
                       </p>
-                      <p className="text-xs text-orange-700 mt-1">
-                        Please sign the single-day tour agreement to confirm your appointment with {showing.assigned_agent_name}.
+                      <p className="text-xs text-orange-700 leading-relaxed">
+                        {showing.assigned_agent_name} has confirmed your tour. Sign the agreement to finalize your appointment.
                       </p>
+                      {/* Mobile-friendly Sign Button */}
+                      {onSignAgreement && (
+                        <Button
+                          onClick={() => onSignAgreement(showing)}
+                          className="mt-2 w-full xs:w-auto bg-orange-600 hover:bg-orange-700 text-white text-sm h-8 px-3"
+                          size="sm"
+                        >
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Sign Agreement
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -211,32 +233,19 @@ const OptimizedShowingCard = ({
               )}
             </div>
 
-            {/* Action Buttons */}
+            {/* Compact Action Buttons */}
             {showActions && (
-              <div className="flex items-center gap-2 ml-4">
-                {/* Sign Agreement Button - Most Prominent */}
-                {onSignAgreement && agreementRequired && (
-                  <InteractiveButton
-                    variant="default"
-                    size="sm"
-                    onClick={() => onSignAgreement(showing)}
-                    className="bg-orange-600 hover:bg-orange-700 text-white font-medium shadow-sm"
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    Sign Agreement
-                  </InteractiveButton>
-                )}
-
-                {/* Message Button */}
-                {onSendMessage && showing.assigned_agent_id && (
+              <div className="flex items-start gap-1 ml-2">
+                {/* Message Button - Only if agent assigned and not awaiting agreement */}
+                {onSendMessage && showing.assigned_agent_id && !agreementRequired && (
                   <InteractiveButton
                     variant="outline"
                     size="sm"
                     icon={MessageCircle}
                     onClick={() => onSendMessage(showing.id)}
-                    className="border-gray-300"
+                    className="border-gray-300 h-8 px-2"
                   >
-                    Message
+                    <span className="hidden xs:inline ml-1">Message</span>
                   </InteractiveButton>
                 )}
 
@@ -246,9 +255,9 @@ const OptimizedShowingCard = ({
                   size="sm"
                   icon={isExpanded ? ChevronUp : ChevronDown}
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 hover:text-gray-700 h-8 px-2"
                 >
-                  {isExpanded ? 'Less' : 'More'}
+                  <span className="hidden xs:inline ml-1">{isExpanded ? 'Less' : 'More'}</span>
                 </InteractiveButton>
               </div>
             )}
@@ -337,19 +346,6 @@ const OptimizedShowingCard = ({
               {/* Action Buttons in Expanded Section - Only for Non-Completed Tours */}
               {showActions && !isCompletedTour && !isConfirmedTour && (
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {/* Sign Agreement Button - Also in expanded section for emphasis */}
-                  {onSignAgreement && agreementRequired && (
-                    <InteractiveButton
-                      variant="default"
-                      size="sm"
-                      onClick={() => onSignAgreement(showing)}
-                      className="bg-orange-600 hover:bg-orange-700 text-white font-medium w-full sm:w-auto"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Sign Tour Agreement
-                    </InteractiveButton>
-                  )}
-
                   {/* Message Specialist */}
                   {onSendMessage && showing.assigned_agent_id && (
                     <InteractiveButton

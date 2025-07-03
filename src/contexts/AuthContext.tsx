@@ -34,25 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
     
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('AuthProvider: Initial session:', session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthProvider: Auth state changed:', event, session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
       
-      // Preserve user type during auth state changes
-      if (session?.user && event === 'TOKEN_REFRESHED') {
-        console.log('AuthProvider: Token refreshed, preserving user type:', session.user.user_metadata?.user_type);
-      }
-      
+      // Set auth state immediately
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -64,6 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await handleProfileCreation(session.user);
         }, 100);
       }
+    });
+
+    // THEN get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthProvider: Initial session:', session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -187,32 +183,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ error: any; data?: any }> => {
     console.log('AuthContext.signUp called with user_type:', metadata.user_type);
     
-    // First attempt signup
-    const signUpResult = await authService.signUp(email, password, metadata);
+    // Simply call the signup service and let Supabase handle session creation naturally
+    const result = await authService.signUp(email, password, metadata);
     
-    if (signUpResult.error) {
-      return signUpResult;
+    if (result.error) {
+      console.error('AuthContext: Signup error:', result.error);
+      return result;
     }
     
-    // If signup successful, immediately attempt sign in
-    console.log('AuthContext: Signup successful, attempting immediate sign in');
-    
-    try {
-      const signInResult = await authService.signIn(email, password);
-      
-      if (signInResult.error) {
-        console.log('AuthContext: Immediate sign in failed, but signup was successful');
-        // Return the signup result even if immediate signin fails
-        return signUpResult;
-      }
-      
-      console.log('AuthContext: Immediate sign in successful');
-      return signInResult;
-    } catch (error) {
-      console.log('AuthContext: Exception during immediate sign in:', error);
-      // Return the original signup result
-      return signUpResult;
-    }
+    console.log('AuthContext: Signup successful, waiting for auth state change');
+    return result;
   }
 
   const signIn = async (email: string, password: string): Promise<{ error: any; data?: any }> => {

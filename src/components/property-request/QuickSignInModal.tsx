@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface QuickSignInModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +38,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign up successful, user:', result.data?.user?.id);
+        console.log('Sign up successful');
         
         toast({
           title: "Account Created!",
@@ -55,7 +53,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign in successful, user:', result.data?.user?.id);
+        console.log('Sign in successful');
         
         toast({
           title: "Welcome Back!",

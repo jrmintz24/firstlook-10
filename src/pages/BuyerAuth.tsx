@@ -42,26 +42,28 @@ const BuyerAuth = () => {
     }
   }, [initialTab]);
 
+  // Handle successful authentication - let auth state change trigger navigation
   const buyerAuth = useAuthForm('buyer', () => {
-    // Always navigate to dashboard - the usePendingTourHandler will handle any pending requests
-    toast({
-      title: "Welcome to FirstLook!",
-      description: "Redirecting to your dashboard...",
-    });
-    
-    // Navigate immediately since the useAuthForm now handles the full flow
-    navigate('/buyer-dashboard', { replace: true });
+    console.log('BuyerAuth: Auth success callback triggered');
+    // Don't navigate here - let the auth state change handle it
   });
+
+  // Listen for auth state changes and navigate when user is authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('BuyerAuth: User authenticated, navigating to dashboard');
+      const userType = user.user_metadata?.user_type;
+      const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
+      navigate(dashboardPath, { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (user) {
-    // Redirect authenticated users immediately
-    const userType = user.user_metadata?.user_type;
-    const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard';
-    navigate(dashboardPath, { replace: true });
+    // This shouldn't happen due to the useEffect above, but just in case
     return null;
   }
 

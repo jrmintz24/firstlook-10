@@ -76,8 +76,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
   
-  // If userType is undefined/null, don't redirect - this might be a temporary state
-  // Let the component render and let auth context sort it out
-  console.log('ProtectedRoute - User type is undefined, allowing render to prevent redirect loops');
+  // If userType is undefined/null, allow render and let auth context sort it out
+  console.log('ProtectedRoute - User type is undefined, allowing render');
   return <>{children}</>
 }

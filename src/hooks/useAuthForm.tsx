@@ -132,35 +132,14 @@ export const useAuthForm = (
         
         console.log('useAuthForm: Signup successful for user type:', userType);
         
-        // Check if user is now authenticated (due to our improved signUp flow)
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          const actualUserType = data.user.user_metadata?.user_type || userType;
-          const redirectPath = getDashboardRedirect(actualUserType);
-          
-          console.log('useAuthForm: User authenticated after signup, redirecting to:', redirectPath);
-          
-          toast({
-            title: "Welcome to FirstLook!",
-            description: "Account created successfully! Redirecting to your dashboard..."
-          });
-          
-          onSuccess();
-          
-          // Navigate to dashboard
-          navigate(redirectPath, { replace: true });
-        } else {
-          // Fallback if immediate authentication didn't work
-          toast({
-            title: "Account Created!",
-            description: userType === 'agent' 
-              ? "Agent account created! You can now sign in."
-              : "Account created successfully! You can now sign in."
-          });
-          
-          // Switch to login mode for manual sign in
-          setIsLogin(true);
-        }
+        // Show success message and let auth state change handle navigation
+        toast({
+          title: "Welcome to FirstLook!",
+          description: "Account created successfully! Setting up your dashboard..."
+        });
+        
+        // The AuthContext will handle the auth state change and navigation will happen via onSuccess
+        onSuccess();
       }
     } catch (error: any) {
       console.error('useAuthForm: Auth error:', error);

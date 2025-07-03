@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -176,7 +177,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
         {/* Step content */}
         <Card>
           <CardHeader>
-            <CardTitle>{steps[currentStep - 1].title}</CardHeader>
+            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
           </CardHeader>
           <CardContent>
             {steps[currentStep - 1].component}

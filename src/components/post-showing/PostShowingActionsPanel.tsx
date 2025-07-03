@@ -19,6 +19,7 @@ interface PostShowingActionsPanelProps {
   propertyAddress: string;
   onActionCompleted?: (actionType: string) => void;
   onRequestShowing?: () => void;
+  onDataRefresh?: () => void; // Add this prop for triggering dashboard refresh
 }
 
 const PostShowingActionsPanel = ({
@@ -30,7 +31,8 @@ const PostShowingActionsPanel = ({
   agentPhone,
   propertyAddress,
   onActionCompleted,
-  onRequestShowing
+  onRequestShowing,
+  onDataRefresh
 }: PostShowingActionsPanelProps) => {
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showAgentProfile, setShowAgentProfile] = useState(false);
@@ -56,6 +58,11 @@ const PostShowingActionsPanel = ({
         actionType,
         actionDetails: { property_address: propertyAddress, agent_name: agentName }
       });
+    }
+
+    // Trigger dashboard refresh
+    if (onDataRefresh) {
+      onDataRefresh();
     }
 
     if (onActionCompleted) {
@@ -104,6 +111,8 @@ const PostShowingActionsPanel = ({
   };
 
   const handleFavoriteProperty = async (notes?: string) => {
+    console.log('Favoriting property from post-showing panel:', propertyAddress);
+    
     await favoriteProperty({
       showingId,
       buyerId,
@@ -113,6 +122,8 @@ const PostShowingActionsPanel = ({
     
     setShowFavoriteModal(false);
     await handleActionComplete('favorite_property');
+    
+    console.log('Property favorited, triggering dashboard refresh');
   };
 
   const actions = [

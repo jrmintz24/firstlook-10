@@ -17,7 +17,8 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
     postShowingActions, 
     favorites, 
     agentConnections,
-    loading 
+    loading,
+    refreshData
   } = usePostShowingDashboardData(buyerId);
 
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
@@ -161,6 +162,7 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
                                 agentPhone={showing.assigned_agent_phone}
                                 propertyAddress={showing.property_address}
                                 onActionCompleted={() => {}}
+                                onDataRefresh={refreshData}
                               />
                             </div>
                           ) : (

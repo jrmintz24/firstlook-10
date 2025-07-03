@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw } from "lucide-react";
+import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
@@ -17,6 +17,7 @@ const SimplifiedBuyerDashboard = () => {
     isRefreshing,
     authLoading,
     currentUser,
+    connectionStatus,
     pendingRequests,
     activeShowings,
     completedShowings,
@@ -27,9 +28,13 @@ const SimplifiedBuyerDashboard = () => {
   // Handle successful form submission with data refresh
   const handleFormSuccess = useCallback(async () => {
     console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data');
-    // Refresh the showing requests data after successful submission
-    await fetchShowingRequests();
-    console.log('SimplifiedBuyerDashboard: Data refresh completed');
+    setShowPropertyForm(false);
+    
+    // Add optimistic update - show loading state
+    setTimeout(async () => {
+      await fetchShowingRequests();
+      console.log('SimplifiedBuyerDashboard: Data refresh completed');
+    }, 1000); // Small delay to allow server to process
   }, [fetchShowingRequests]);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
@@ -46,6 +51,32 @@ const SimplifiedBuyerDashboard = () => {
       </div>
     );
   }
+
+  const getConnectionStatusIcon = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return <Wifi className="h-4 w-4 text-green-500" />;
+      case 'polling':
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      case 'error':
+        return <WifiOff className="h-4 w-4 text-red-500" />;
+      default:
+        return <Wifi className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  const getConnectionStatusText = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return 'Live updates active';
+      case 'polling':
+        return 'Checking for updates every 15s';
+      case 'error':
+        return 'Connection issues - using manual refresh';
+      default:
+        return 'Connecting...';
+    }
+  };
 
   const renderShowingCard = (showing: any) => {
     const statusInfo = getStatusInfo(showing.status as ShowingStatus);
@@ -135,10 +166,14 @@ const SimplifiedBuyerDashboard = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}!</h1>
-              <div className="flex items-center gap-2">
-                {isRefreshing && (
-                  <div className="text-sm text-gray-500">Refreshing...</div>
-                )}
+              <div className="flex items-center gap-4">
+                {/* Connection Status */}
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  {getConnectionStatusIcon()}
+                  <span className="hidden sm:inline">{getConnectionStatusText()}</span>
+                </div>
+                
+                {/* Refresh Button */}
                 <Button 
                   onClick={refreshData} 
                   variant="outline" 
@@ -147,7 +182,7 @@ const SimplifiedBuyerDashboard = () => {
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
             </div>

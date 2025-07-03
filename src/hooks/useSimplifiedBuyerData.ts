@@ -34,6 +34,7 @@ interface ShowingRequest {
 export const useSimplifiedBuyerData = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
+  const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
@@ -93,17 +94,133 @@ export const useSimplifiedBuyerData = () => {
     }
   }, [currentUser, toast]);
 
+  // Fetch tour agreements
+  const fetchAgreements = useCallback(async () => {
+    if (!currentUser) return;
+
+    try {
+      const { data: agreementsData, error: agreementsError } = await supabase
+        .from('tour_agreements')
+        .select('showing_request_id, signed')
+        .eq('buyer_id', currentUser.id);
+
+      if (agreementsError) {
+        console.error('Agreements error:', agreementsError);
+      } else {
+        const agreementsMap = (agreementsData || []).reduce((acc, agreement) => {
+          acc[agreement.showing_request_id] = agreement.signed;
+          return acc;
+        }, {} as Record<string, boolean>);
+        setAgreements(agreementsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching agreements:', error);
+    }
+  }, [currentUser]);
+
+  // Sign agreement function
+  const signAgreement = useCallback(async (showingId: string, signerName: string): Promise<boolean> => {
+    if (!currentUser) return false;
+
+    try {
+      // First, try to find existing agreement
+      let { data: agreement, error: findError } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('showing_request_id', showingId)
+        .eq('buyer_id', currentUser.id)
+        .single();
+
+      if (findError || !agreement) {
+        // Create agreement if it doesn't exist
+        console.log('Creating missing tour agreement...');
+        const { data: newAgreement, error: createError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: showingId,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: false,
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          })
+          .select('*')
+          .single();
+
+        if (createError) {
+          console.error('Error creating agreement:', createError);
+          throw new Error('Failed to create agreement');
+        }
+        agreement = newAgreement;
+      }
+
+      // Sign the agreement
+      const { error: signError } = await supabase
+        .from('tour_agreements')
+        .update({
+          signed: true,
+          signed_at: new Date().toISOString()
+        })
+        .eq('id', agreement.id);
+
+      if (signError) {
+        console.error('Error signing agreement:', signError);
+        throw new Error('Failed to sign agreement');
+      }
+
+      // Update showing status to confirmed
+      const { error: statusError } = await supabase
+        .from('showing_requests')
+        .update({
+          status: 'confirmed',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', showingId);
+
+      if (statusError) {
+        console.error('Error updating showing status:', statusError);
+        throw new Error('Failed to update showing status');
+      }
+
+      toast({
+        title: "Agreement Signed",
+        description: "Your tour agreement has been signed successfully. Your tour is now confirmed!"
+      });
+
+      // Refresh the data
+      await fetchShowingRequests();
+      await fetchAgreements();
+
+      return true;
+    } catch (error: any) {
+      console.error('Error signing agreement:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign agreement. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [currentUser, toast, fetchShowingRequests, fetchAgreements]);
+
   // Centralized realtime manager
   const { connectionStatus, isConnected, reconnect } = useRealtimeManager({
     userId: currentUser?.id || null,
-    onShowingRequestsChange: fetchShowingRequests,
+    onShowingRequestsChange: useCallback(async () => {
+      await fetchShowingRequests();
+      await fetchAgreements();
+    }, [fetchShowingRequests, fetchAgreements]),
     enabled: !!currentUser
   });
 
-  // Memoized categorized requests
+  // Memoized categorized requests with agreement awareness
   const categorizedRequests = useMemo(() => {
     const pendingRequests = showingRequests.filter(req => 
-      ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
+      ['pending', 'submitted', 'under_review', 'agent_assigned'].includes(req.status)
+    );
+    
+    const awaitingAgreement = showingRequests.filter(req => 
+      req.status === 'awaiting_agreement'
     );
     
     const activeShowings = showingRequests.filter(req => 
@@ -120,7 +237,7 @@ export const useSimplifiedBuyerData = () => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
-    return { pendingRequests, activeShowings, completedShowings };
+    return { pendingRequests, awaitingAgreement, activeShowings, completedShowings };
   }, [showingRequests]);
 
   // Fetch all data including profile
@@ -133,15 +250,16 @@ export const useSimplifiedBuyerData = () => {
     console.log('Fetching all buyer dashboard data for user:', currentUser.id);
 
     try {
-      // Fetch profile and showing requests in parallel
-      const [profileResult, requestsResult] = await Promise.allSettled([
+      // Fetch profile, showing requests, and agreements in parallel
+      const [profileResult, requestsResult, agreementsResult] = await Promise.allSettled([
         supabase
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
           .maybeSingle(),
         
-        fetchShowingRequests()
+        fetchShowingRequests(),
+        fetchAgreements()
       ]);
 
       // Handle profile result
@@ -164,7 +282,7 @@ export const useSimplifiedBuyerData = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser, fetchShowingRequests, toast]);
+  }, [currentUser, fetchShowingRequests, fetchAgreements, toast]);
 
   // Manual refresh function
   const refreshData = useCallback(async () => {
@@ -175,7 +293,8 @@ export const useSimplifiedBuyerData = () => {
     if (refreshedData) {
       setShowingRequests(refreshedData);
     }
-  }, [currentUser, manualRefresh]);
+    await fetchAgreements();
+  }, [currentUser, manualRefresh, fetchAgreements]);
 
   // Initialize data and start polling based on connection status
   useEffect(() => {
@@ -225,6 +344,8 @@ export const useSimplifiedBuyerData = () => {
     isConnected,
     currentPollingInterval,
     consecutiveErrors,
+    agreements,
+    signAgreement,
     refreshData,
     fetchShowingRequests,
     reconnect,

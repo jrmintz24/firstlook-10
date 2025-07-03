@@ -2,14 +2,18 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle, Timer } from "lucide-react";
+import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle, Timer, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
+import AgreementSigningCard from "@/components/dashboard/AgreementSigningCard";
+import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import { getStatusInfo, type ShowingStatus } from "@/utils/showingStatus";
 
 const SimplifiedBuyerDashboard = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [selectedShowing, setSelectedShowing] = useState<any>(null);
   
   const {
     profile,
@@ -22,8 +26,11 @@ const SimplifiedBuyerDashboard = () => {
     currentPollingInterval,
     consecutiveErrors,
     pendingRequests,
+    awaitingAgreement,
     activeShowings,
     completedShowings,
+    agreements,
+    signAgreement,
     refreshData,
     fetchShowingRequests,
     reconnect
@@ -38,6 +45,22 @@ const SimplifiedBuyerDashboard = () => {
     await fetchShowingRequests();
     console.log('SimplifiedBuyerDashboard: Data refresh completed');
   }, [fetchShowingRequests]);
+
+  // Handle agreement signing
+  const handleSignAgreement = useCallback(async (showingId: string, signerName: string) => {
+    const success = await signAgreement(showingId, signerName);
+    if (success) {
+      setShowAgreementModal(false);
+      setSelectedShowing(null);
+    }
+    return success;
+  }, [signAgreement]);
+
+  // Open agreement modal
+  const handleOpenAgreementModal = useCallback((showing: any) => {
+    setSelectedShowing(showing);
+    setShowAgreementModal(true);
+  }, []);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
@@ -86,6 +109,29 @@ const SimplifiedBuyerDashboard = () => {
 
   const renderShowingCard = (showing: any) => {
     const statusInfo = getStatusInfo(showing.status as ShowingStatus);
+    
+    // If this showing requires agreement signing, use the AgreementSigningCard
+    if (showing.status === 'awaiting_agreement') {
+      const showingWithAgreement = {
+        ...showing,
+        tour_agreement: {
+          id: `agreement_${showing.id}`,
+          showing_request_id: showing.id,
+          signed: agreements[showing.id] || false,
+          signed_at: null,
+          agreement_type: 'single_tour',
+          created_at: showing.created_at
+        }
+      };
+
+      return (
+        <AgreementSigningCard
+          key={showing.id}
+          showing={showingWithAgreement}
+          onSign={handleSignAgreement}
+        />
+      );
+    }
     
     return (
       <Card key={showing.id} className="hover:shadow-soft-md transition-shadow">
@@ -216,12 +262,20 @@ const SimplifiedBuyerDashboard = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardContent className="p-6 text-center">
                 <Clock className="h-8 w-8 text-orange-500 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-gray-900">{pendingRequests.length}</div>
                 <div className="text-sm text-gray-600">Pending Requests</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6 text-center">
+                <FileText className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-gray-900">{awaitingAgreement.length}</div>
+                <div className="text-sm text-gray-600">Need Agreement</div>
               </CardContent>
             </Card>
             
@@ -295,6 +349,19 @@ const SimplifiedBuyerDashboard = () => {
             </div>
           </div>
 
+          {/* Awaiting Agreement Section */}
+          {awaitingAgreement.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-amber-500" />
+                Agreement Required ({awaitingAgreement.length})
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {awaitingAgreement.map(renderShowingCard)}
+              </div>
+            </div>
+          )}
+
           {/* Completed Tours */}
           {completedShowings.length > 0 && (
             <div className="mt-8">
@@ -316,6 +383,20 @@ const SimplifiedBuyerDashboard = () => {
         onSuccess={handleFormSuccess}
         skipNavigation={true}
       />
+
+      {showAgreementModal && selectedShowing && (
+        <SignAgreementModal
+          isOpen={showAgreementModal}
+          onClose={() => setShowAgreementModal(false)}
+          onSign={(signerName: string) => handleSignAgreement(selectedShowing.id, signerName)}
+          showingDetails={{
+            propertyAddress: selectedShowing.property_address,
+            date: selectedShowing.preferred_date,
+            time: selectedShowing.preferred_time,
+            agentName: selectedShowing.assigned_agent_name
+          }}
+        />
+      )}
     </>
   );
 };

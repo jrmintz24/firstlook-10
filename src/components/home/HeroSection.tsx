@@ -21,16 +21,15 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-8 tracking-tight leading-none">
-            FirstLook
+            Finally, a Homebuying Platform That Gets You
           </h1>
           
           <h2 className="text-3xl md:text-5xl font-light text-gray-700 mb-8 leading-tight tracking-tight">
-            Your Home Journey, <span className="font-semibold text-gray-900">On Your Terms</span>
+            No pushy agents. <span className="font-semibold text-gray-900">No awkward commitments.</span>
           </h2>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
-            Instant, commitment-free home tours – first one's on us.<br />
-            <span className="text-gray-700 font-medium">No agent pressure. Full control. Save thousands.</span>
+            Just honest tools, clear pricing, and real savings.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">

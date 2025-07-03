@@ -1,10 +1,10 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimpleBuyerData } from "@/hooks/useSimpleBuyerData";
+import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import { getStatusInfo, type ShowingStatus } from "@/utils/showingStatus";
 
@@ -14,23 +14,29 @@ const SimplifiedBuyerDashboard = () => {
   const {
     profile,
     loading,
-    isRefreshing,
     authLoading,
     currentUser,
     pendingRequests,
     activeShowings,
     completedShowings,
-    refreshData,
-    fetchShowingRequests
+    refreshShowingRequests,
+    optimisticUpdateShowing
   } = useSimpleBuyerData();
+
+  // Add pending tour handler to process any tours from homepage signup
+  const { triggerPendingTourProcessing } = usePendingTourHandler({
+    onTourProcessed: async () => {
+      console.log('SimplifiedBuyerDashboard: Pending tour processed, refreshing data');
+      await refreshShowingRequests();
+    }
+  });
 
   // Handle successful form submission with data refresh
   const handleFormSuccess = useCallback(async () => {
     console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data');
-    // Refresh the showing requests data after successful submission
-    await fetchShowingRequests();
+    await refreshShowingRequests();
     console.log('SimplifiedBuyerDashboard: Data refresh completed');
-  }, [fetchShowingRequests]);
+  }, [refreshShowingRequests]);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
@@ -135,9 +141,6 @@ const SimplifiedBuyerDashboard = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}!</h1>
-              {isRefreshing && (
-                <div className="text-sm text-gray-500">Refreshing...</div>
-              )}
             </div>
             <p className="text-gray-600">Manage your property tours and requests</p>
           </div>

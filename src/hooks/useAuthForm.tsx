@@ -87,26 +87,16 @@ export const useAuthForm = (
           throw result.error;
         }
         
-        // Wait a bit for auth state to update
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('useAuthForm: Login successful');
         
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          const actualUserType = data.user.user_metadata?.user_type || userType;
-          const redirectPath = getDashboardRedirect(actualUserType);
-          
-          console.log('useAuthForm: Login successful, user type:', actualUserType, 'redirecting to:', redirectPath);
-          
-          toast({
-            title: "Success!",
-            description: "Welcome back!"
-          });
-          
-          onSuccess();
-          
-          // Use React Router navigate with replace to prevent back navigation issues
-          navigate(redirectPath, { replace: true });
-        }
+        toast({
+          title: "Success!",
+          description: "Welcome back!"
+        });
+        
+        // Call success callback - this will let natural auth flow handle navigation
+        onSuccess();
+        
       } else {
         console.log('useAuthForm: Attempting signup for user type:', userType);
         
@@ -132,13 +122,12 @@ export const useAuthForm = (
         
         console.log('useAuthForm: Signup successful for user type:', userType);
         
-        // Show success message and let auth state change handle navigation
         toast({
           title: "Welcome to FirstLook!",
           description: "Account created successfully! Setting up your dashboard..."
         });
         
-        // The AuthContext will handle the auth state change and navigation will happen via onSuccess
+        // Call success callback - this will let natural auth flow handle navigation
         onSuccess();
       }
     } catch (error: any) {

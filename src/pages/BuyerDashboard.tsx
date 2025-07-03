@@ -4,6 +4,7 @@ import { Calendar, MessageSquare, TrendingUp, CheckCircle, Clock } from "lucide-
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMessages } from "@/hooks/useMessages";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
+import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +35,14 @@ const BuyerDashboard = () => {
     connectionStatus,
     refresh,
   } = useUnifiedDashboardData('buyer');
+
+  // Add pending tour handler to process any tours from homepage signup
+  const { triggerPendingTourProcessing } = usePendingTourHandler({
+    onTourProcessed: async () => {
+      console.log('BuyerDashboard: Pending tour processed, refreshing data');
+      await refresh();
+    }
+  });
 
   const navigate = useNavigate();
   const isMobile = useIsMobile();

@@ -39,16 +39,20 @@ export default function Index() {
   }
 
   const handleTourModalSuccess = async () => {
-    // If user is authenticated, navigate to dashboard
+    console.log('Index: Tour modal success - user authenticated:', !!user);
+    
+    // Simplified success handling - let natural auth flow work
     if (user) {
+      console.log('Index: User authenticated, navigating to dashboard');
       toast({
         title: "Tour Request Submitted!",
         description: "Redirecting to your dashboard...",
       });
       navigate('/buyer-dashboard', { replace: true });
     } else {
+      console.log('Index: User not authenticated - auth flow will handle navigation');
       // For unauthenticated users, the auth flow will handle navigation
-      console.log('Tour submitted for unauthenticated user - auth flow will handle navigation');
+      // The pending tour will be processed when they land on the dashboard
     }
   }
 

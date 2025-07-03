@@ -93,33 +93,20 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
 
       if (uploadError) throw uploadError;
 
-      // Save metadata to database using raw SQL to avoid type issues
-      const { error: dbError } = await supabase.rpc('create_offer_document', {
-        p_offer_intent_id: offerIntentId,
-        p_file_name: file.name,
-        p_file_path: filePath,
-        p_file_type: file.type,
-        p_file_size: file.size,
-        p_document_category: 'general',
-        p_uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
-      });
+      // Save metadata to database using direct insert
+      const { error: dbError } = await supabase
+        .from('offer_documents' as any)
+        .insert({
+          offer_intent_id: offerIntentId,
+          file_name: file.name,
+          file_path: filePath,
+          file_type: file.type,
+          file_size: file.size,
+          document_category: 'general',
+          uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
+        });
 
-      if (dbError) {
-        // Fallback to direct insert if RPC doesn't exist
-        const { error: insertError } = await supabase
-          .from('offer_documents' as any)
-          .insert({
-            offer_intent_id: offerIntentId,
-            file_name: file.name,
-            file_path: filePath,
-            file_type: file.type,
-            file_size: file.size,
-            document_category: 'general',
-            uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
-          });
-
-        if (insertError) throw insertError;
-      }
+      if (dbError) throw dbError;
 
       toast({
         title: "Document uploaded",
@@ -148,12 +135,12 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
       if (error) throw error;
 
       const url = URL.createObjectURL(data);
-      const a = window.document.createElement('a');
+      const a = document.createElement('a');
       a.href = url;
       a.download = doc.file_name;
-      window.document.body.appendChild(a);
+      document.body.appendChild(a);
       a.click();
-      window.document.body.removeChild(a);
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
@@ -243,7 +230,7 @@ const DocumentUpload = ({ offerIntentId, documents, onDocumentUploaded, onDocume
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.document.getElementById(`file-upload-${offerIntentId}`)?.click()}
+            onClick={() => document.getElementById(`file-upload-${offerIntentId}`)?.click()}
             disabled={uploading}
           >
             <Plus className="w-4 h-4 mr-2" />

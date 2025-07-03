@@ -17,6 +17,7 @@ import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 import BuyerPostShowingHub from "@/components/dashboard/BuyerPostShowingHub";
+import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 
 const BuyerDashboard = () => {
   const {
@@ -39,13 +40,19 @@ const BuyerDashboard = () => {
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showReportIssueModal, setShowReportIssueModal] = useState(false);
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
 
   console.log('BuyerDashboard - Current user:', currentUser?.id);
   console.log('BuyerDashboard - Loading states:', { loading, authLoading });
 
   const handleRequestShowing = () => {
-    navigate('/');
+    setShowPropertyForm(true);
+  };
+
+  const handlePropertyRequestSuccess = async () => {
+    setShowPropertyForm(false);
+    await refresh(); // Refresh dashboard data after successful submission
   };
 
   const handleMakeOffer = () => {
@@ -278,6 +285,14 @@ const BuyerDashboard = () => {
           onTabChange={setActiveTab}
         />
       </div>
+
+      {/* Property Request Wizard Modal */}
+      <PropertyRequestWizard
+        isOpen={showPropertyForm}
+        onClose={() => setShowPropertyForm(false)}
+        onSuccess={handlePropertyRequestSuccess}
+        skipNavigation={true}
+      />
 
       {/* Modals */}
       {selectedShowing && (

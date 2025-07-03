@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, BarChart3 } from "lucide-react";
-import { useAgentDashboard } from "@/hooks/useAgentDashboard";
-import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMessages } from "@/hooks/useMessages";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
+import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
 import UpcomingSection from "@/components/dashboard/shared/UpcomingSection";
+import UnifiedConnectionStatus from "@/components/dashboard/UnifiedConnectionStatus";
 
 // Existing components
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
@@ -17,7 +18,7 @@ import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 
-// New post-showing components
+// Post-showing components
 import AgentPostShowingInsights from "@/components/dashboard/AgentPostShowingInsights";
 import PostShowingAnalytics from "@/components/dashboard/PostShowingAnalytics";
 import AgentNotificationsPanel from "@/components/dashboard/AgentNotificationsPanel";
@@ -30,20 +31,20 @@ const AgentDashboard = () => {
     completedRequests,
     loading,
     authLoading,
-    handleStatusUpdate,
-    fetchAgentData
-  } = useAgentDashboard();
+    currentUser,
+    connectionStatus,
+    refresh,
+  } = useUnifiedDashboardData('agent');
 
   const { confirmShowing } = useAgentConfirmation();
+  const { unreadCount } = useMessages(currentUser?.id || null);
+  const isMobile = useIsMobile();
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showReportIssueModal, setShowReportIssueModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("pending");
-  const isMobile = useIsMobile();
-
-  const currentUser = profile;
-  const { unreadCount } = useMessages(currentUser?.id || null);
 
   console.log('AgentDashboard - Current user:', currentUser?.id);
   console.log('AgentDashboard - Loading states:', { loading, authLoading });
@@ -70,21 +71,20 @@ const AgentDashboard = () => {
     if (success) {
       setShowConfirmModal(false);
       setSelectedRequest(null);
-      fetchAgentData();
+      refresh();
     }
   };
 
-  const handleStatusUpdateSuccess = (requestId: string, newStatus: string, estimatedDate?: string) => {
-    handleStatusUpdate(requestId, newStatus, estimatedDate);
+  const handleStatusUpdateSuccess = () => {
     setShowStatusModal(false);
     setSelectedRequest(null);
-    fetchAgentData();
+    refresh();
   };
 
   const handleReportIssueSuccess = () => {
     setShowReportIssueModal(false);
     setSelectedRequest(null);
-    fetchAgentData();
+    refresh();
   };
 
   const handleStatClick = (tab: string) => {
@@ -118,6 +118,12 @@ const AgentDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-lg mb-4">Unable to load profile</div>
+          <button
+            onClick={refresh}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -146,7 +152,7 @@ const AgentDashboard = () => {
           onConfirmShowing={handleConfirmShowing}
           onReportIssue={handleReportIssue}
           userType="agent"
-          onComplete={fetchAgentData}
+          onComplete={refresh}
           currentUserId={currentUser?.id}
         />
       )
@@ -170,7 +176,7 @@ const AgentDashboard = () => {
           onRescheduleShowing={() => {}}
           onReportIssue={handleReportIssue}
           userType="agent"
-          onComplete={fetchAgentData}
+          onComplete={refresh}
           currentUserId={currentUser?.id}
         />
       )
@@ -191,7 +197,7 @@ const AgentDashboard = () => {
           title="Unable to Load Messages"
           description="Please refresh the page to load your messages."
           buttonText="Refresh"
-          onButtonClick={() => window.location.reload()}
+          onButtonClick={refresh}
           icon={MessageSquare}
         />
       )
@@ -212,7 +218,7 @@ const AgentDashboard = () => {
           title="Unable to Load Insights"
           description="Please refresh the page to load your insights."
           buttonText="Refresh"
-          onButtonClick={() => window.location.reload()}
+          onButtonClick={refresh}
           icon={TrendingUp}
         />
       )
@@ -233,7 +239,7 @@ const AgentDashboard = () => {
           title="Unable to Load Analytics"
           description="Please refresh the page to load your analytics."
           buttonText="Refresh"
-          onButtonClick={() => window.location.reload()}
+          onButtonClick={refresh}
           icon={BarChart3}
         />
       )
@@ -257,7 +263,7 @@ const AgentDashboard = () => {
           onRescheduleShowing={() => {}}
           showActions={false}
           userType="agent"
-          onComplete={fetchAgentData}
+          onComplete={refresh}
           currentUserId={currentUser?.id}
         />
       )
@@ -266,6 +272,17 @@ const AgentDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
+      {/* Connection Status */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-gray-900">Connection Status</h3>
+        </div>
+        <UnifiedConnectionStatus 
+          status={connectionStatus}
+          onRetry={refresh}
+        />
+      </div>
+
       {/* Post-Showing Notifications */}
       {currentUser?.id && (
         <AgentNotificationsPanel agentId={currentUser.id} />
@@ -291,7 +308,6 @@ const AgentDashboard = () => {
 
   return (
     <>
-      {/* Remove the redundant header, use only the main navigation */}
       <div className="pt-6">
         <UnifiedDashboardLayout
           title={`Welcome back, ${displayName}`}

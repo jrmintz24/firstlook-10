@@ -123,15 +123,29 @@ export const usePostShowingWorkflow = () => {
   const submitBuyerFeedback = async (showing_request_id: string, feedback: BuyerFeedback) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('post-showing-workflow', {
-        body: {
-          action: 'submit_buyer_feedback',
-          showing_request_id,
-          ...feedback
-        }
-      });
+      console.log('Submitting buyer feedback directly to database:', feedback);
 
-      if (error) throw error;
+      // Insert feedback directly into the buyer_feedback table
+      const { data, error } = await supabase
+        .from('buyer_feedback')
+        .insert({
+          showing_request_id,
+          buyer_id: feedback.buyer_id,
+          agent_id: feedback.agent_id,
+          property_rating: feedback.property_rating,
+          agent_rating: feedback.agent_rating,
+          property_comments: feedback.property_comments,
+          agent_comments: feedback.agent_comments
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Feedback submitted successfully:', data);
 
       toast({
         title: "Feedback Submitted",
@@ -143,7 +157,7 @@ export const usePostShowingWorkflow = () => {
       console.error('Error submitting buyer feedback:', error);
       toast({
         title: "Error",
-        description: "Failed to submit feedback.",
+        description: "Failed to submit feedback. Please try again.",
         variant: "destructive"
       });
       throw error;
@@ -155,13 +169,20 @@ export const usePostShowingWorkflow = () => {
   const submitAgentFeedback = async (showing_request_id: string, feedback: AgentFeedback) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('post-showing-workflow', {
-        body: {
-          action: 'submit_agent_feedback',
+      // Insert feedback directly into the agent_feedback table
+      const { data, error } = await supabase
+        .from('agent_feedback')
+        .insert({
           showing_request_id,
-          ...feedback
-        }
-      });
+          agent_id: feedback.agent_id,
+          buyer_id: feedback.buyer_id,
+          buyer_interest_level: feedback.buyer_interest_level,
+          buyer_seriousness_rating: feedback.buyer_seriousness_rating,
+          notes: feedback.notes,
+          recommend_buyer: feedback.recommend_buyer
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 

@@ -29,11 +29,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   const [propertyComments, setPropertyComments] = useState("");
   const [specialistComments, setSpecialistComments] = useState("");
   
-  const { 
-    loading, 
-    submitBuyerFeedback
-  } = usePostShowingWorkflow();
-
+  const { loading, submitBuyerFeedback } = usePostShowingWorkflow();
   const { toast } = useToast();
 
   const handleAttendanceSubmit = async () => {
@@ -130,6 +126,8 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       };
 
       console.log('Submitting feedback:', feedback);
+      
+      // Submit feedback using the optimized direct database insertion
       await submitBuyerFeedback(showing.id, feedback);
       
       // Update showing status to completed after feedback is submitted

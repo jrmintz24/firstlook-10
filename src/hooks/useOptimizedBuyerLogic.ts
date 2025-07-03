@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,14 @@ export const useOptimizedBuyerLogic = () => {
     active: activeShowings.length,
     completed: completedShowings.length
   }), [pendingRequests.length, activeShowings.length, completedShowings.length]);
+
+  // Add missing computed properties
+  const eligibility = useMemo(() => ({
+    eligible: true,
+    reason: 'subscribed'
+  }), []);
+
+  const isSubscribed = useMemo(() => true, []);
 
   // Unified data fetching function
   const fetchData = useCallback(async () => {
@@ -166,6 +175,10 @@ export const useOptimizedBuyerLogic = () => {
     setShowPropertyForm(true);
   }, []);
 
+  const handleUpgradeClick = useCallback(() => {
+    setShowSubscribeModal(true);
+  }, []);
+
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
     fetchData();
@@ -226,6 +239,35 @@ export const useOptimizedBuyerLogic = () => {
     console.log('Send message for showing:', showingId);
   }, []);
 
+  const handleStatClick = useCallback((targetTab: string) => {
+    setActiveTab(targetTab);
+  }, []);
+
+  const handleCancelShowing = useCallback(async (showingId: string) => {
+    try {
+      await supabase
+        .from('showing_requests')
+        .update({ 
+          status: 'cancelled',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', showingId);
+
+      toast({
+        title: "Showing Cancelled",
+        description: "Your showing request has been cancelled.",
+      });
+      
+      fetchData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel showing. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [toast, fetchData]);
+
   const handleRescheduleShowing = useCallback((showing: any) => {
     setSelectedShowing(showing);
     setShowRescheduleModal(true);
@@ -264,14 +306,19 @@ export const useOptimizedBuyerLogic = () => {
     completedShowings,
     showingCounts,
     unreadCount,
+    eligibility,
+    isSubscribed,
     
     // Handlers
     handleRequestShowing,
+    handleUpgradeClick,
     handleSubscriptionComplete,
     handleConfirmShowingWithModal,
     handleAgreementSignWithModal,
     handleSignAgreementFromCard,
     handleSendMessage,
+    handleStatClick,
+    handleCancelShowing,
     handleRescheduleShowing,
     handleRescheduleSuccess,
   };

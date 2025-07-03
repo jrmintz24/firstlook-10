@@ -11,6 +11,8 @@ interface FreeShowingLimitModalProps {
   onCancelPendingShowing: () => Promise<void>;
   pendingShowingAddress?: string;
   activeShowingCount?: number;
+  toursUsed?: number;
+  toursLimit?: number;
 }
 
 const FreeShowingLimitModal = ({ 
@@ -18,7 +20,9 @@ const FreeShowingLimitModal = ({
   onClose, 
   onCancelPendingShowing,
   pendingShowingAddress,
-  activeShowingCount = 1
+  activeShowingCount = 1,
+  toursUsed = 5,
+  toursLimit = 5
 }: FreeShowingLimitModalProps) => {
   const navigate = useNavigate();
 
@@ -38,7 +42,7 @@ const FreeShowingLimitModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Calendar className="h-6 w-6 text-purple-600" />
-            Free Showing Already Scheduled
+            Monthly Tour Limit Reached
           </DialogTitle>
         </DialogHeader>
 
@@ -47,13 +51,13 @@ const FreeShowingLimitModal = ({
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-blue-600 mt-1" />
               <div>
-                <h3 className="font-medium text-blue-900">You already have a showing scheduled!</h3>
+                <h3 className="font-medium text-blue-900">You've used all your tours this month!</h3>
                 <p className="text-blue-700 text-sm mt-1">
-                  Your free FirstLook showing is currently scheduled. To see additional homes, you'll need to subscribe or manage your existing booking.
+                  You've completed {toursUsed} of {toursLimit} free tours this month. To schedule additional tours, you'll need to subscribe or wait until next month.
                 </p>
                 {pendingShowingAddress && (
                   <p className="text-blue-600 text-sm font-medium mt-2">
-                    Current showing: {pendingShowingAddress}
+                    Recent tour: {pendingShowingAddress}
                   </p>
                 )}
               </div>
@@ -72,7 +76,7 @@ const FreeShowingLimitModal = ({
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Subscribe to FirstLook</h4>
                   <p className="text-sm text-gray-600 mb-4">
-                    Get unlimited showings, priority scheduling, and exclusive features
+                    Get unlimited tours, priority scheduling, and exclusive features
                   </p>
                   <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white">
                     View Plans & Subscribe
@@ -80,18 +84,18 @@ const FreeShowingLimitModal = ({
                 </CardContent>
               </Card>
 
-              {/* Cancel Current Option */}
-              <Card className="border-2 border-orange-200 hover:border-orange-400 transition-colors cursor-pointer" onClick={handleCancelShowing}>
+              {/* Wait for Next Month Option */}
+              <Card className="border-2 border-green-200 hover:border-green-400 transition-colors">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <X className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="h-6 w-6 text-white" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Cancel Current Showing</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Wait for Next Month</h4>
                   <p className="text-sm text-gray-600 mb-4">
-                    Cancel your scheduled showing to book a different property instead
+                    Your tour quota will reset next month and you'll get 5 new free tours
                   </p>
-                  <Button variant="outline" className="w-full border-orange-500 text-orange-600 hover:bg-orange-50">
-                    Cancel & Choose Different Home
+                  <Button variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50" onClick={onClose}>
+                    I'll Wait for Next Month
                   </Button>
                 </CardContent>
               </Card>
@@ -106,8 +110,8 @@ const FreeShowingLimitModal = ({
 
           <div className="bg-gray-50 p-4 rounded-lg text-center">
             <p className="text-sm text-gray-600">
-              <strong>Note:</strong> Your first showing with FirstLook is completely free with no commitments. 
-              Additional showings require a subscription to ensure we can provide the best service to all our buyers.
+              <strong>Free Plan:</strong> You get 5 tours per month with FirstLook at no cost. 
+              For unlimited tours and priority scheduling, consider upgrading to our Pro plan.
             </p>
           </div>
         </div>

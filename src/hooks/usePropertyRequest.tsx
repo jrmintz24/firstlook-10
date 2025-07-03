@@ -125,7 +125,8 @@ export const usePropertyRequest = (
     const currentEligibility = await checkEligibility();
     
     if (!currentEligibility?.eligible) {
-      if (currentEligibility?.reason === 'free_showing_used') {
+      // Fixed: Check for monthly_limit_exceeded instead of free_showing_used
+      if (currentEligibility?.reason === 'monthly_limit_exceeded') {
         setModalFlow('limit');
         return;
       }

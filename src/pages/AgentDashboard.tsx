@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, MessageSquare } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";

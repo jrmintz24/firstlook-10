@@ -25,9 +25,9 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   const [step, setStep] = useState<'attendance' | 'feedback'>('attendance');
   const [attended, setAttended] = useState<boolean | null>(null);
   const [propertyRating, setPropertyRating] = useState(0);
-  const [agentRating, setAgentRating] = useState(0);
+  const [specialistRating, setSpecialistRating] = useState(0);
   const [propertyComments, setPropertyComments] = useState("");
-  const [agentComments, setAgentComments] = useState("");
+  const [specialistComments, setSpecialistComments] = useState("");
   
   const { 
     loading, 
@@ -110,10 +110,10 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     }
 
     if (!showing.assigned_agent_id) {
-      console.error('No assigned agent ID:', showing);
+      console.error('No assigned specialist ID:', showing);
       toast({
         title: "Error",
-        description: "Agent information is missing. Please contact support.",
+        description: "Showing specialist information is missing. Please contact support.",
         variant: "destructive",
       });
       return;
@@ -124,9 +124,9 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
         buyer_id: buyerId,
         agent_id: showing.assigned_agent_id,
         property_rating: propertyRating > 0 ? propertyRating : undefined,
-        agent_rating: agentRating > 0 ? agentRating : undefined,
+        agent_rating: specialistRating > 0 ? specialistRating : undefined,
         property_comments: propertyComments.trim() || undefined,
-        agent_comments: agentComments.trim() || undefined
+        agent_comments: specialistComments.trim() || undefined
       };
 
       console.log('Submitting feedback:', feedback);
@@ -235,8 +235,8 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
               
               {showing.assigned_agent_name && (
                 <StarRating
-                  rating={agentRating}
-                  onRatingChange={setAgentRating}
+                  rating={specialistRating}
+                  onRatingChange={setSpecialistRating}
                   label={`How would you rate ${showing.assigned_agent_name}?`}
                 />
               )}
@@ -255,11 +255,11 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
 
               {showing.assigned_agent_name && (
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Agent feedback (optional)</label>
+                  <label className="text-sm font-medium mb-2 block">Showing specialist feedback (optional)</label>
                   <Textarea
                     placeholder={`How was your experience with ${showing.assigned_agent_name}?`}
-                    value={agentComments}
-                    onChange={(e) => setAgentComments(e.target.value)}
+                    value={specialistComments}
+                    onChange={(e) => setSpecialistComments(e.target.value)}
                     rows={3}
                   />
                 </div>

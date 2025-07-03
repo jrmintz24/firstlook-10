@@ -50,12 +50,12 @@ const AgentRequestCard = ({
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
   
-  // Agent can only see buyer contact info if showing is completed AND buyer consents
+  // Specialist can only see buyer contact info if showing is completed AND buyer consents
   const canAccessBuyerContact = request.status === 'completed' && 
     request.buyer_consents_to_contact === true && 
     request.assigned_agent_id === currentAgentId;
 
-  // Agent can message if assigned and showing is not cancelled
+  // Specialist can message if assigned and showing is not cancelled
   const canMessage = request.assigned_agent_id === currentAgentId && 
     !['cancelled'].includes(request.status) &&
     request.user_id; // Make sure there's a buyer to message
@@ -63,8 +63,8 @@ const AgentRequestCard = ({
   const handleMessageClick = () => {
     console.log('Message button clicked for request:', request.id);
     console.log('Can message:', canMessage);
-    console.log('Current agent ID:', currentAgentId);
-    console.log('Assigned agent ID:', request.assigned_agent_id);
+    console.log('Current specialist ID:', currentAgentId);
+    console.log('Assigned specialist ID:', request.assigned_agent_id);
     console.log('User ID:', request.user_id);
     
     if (canMessage) {
@@ -123,7 +123,7 @@ const AgentRequestCard = ({
               </div>
             )}
 
-            {/* Buyer Contact Information - Only shown if agent has access */}
+            {/* Buyer Contact Information - Only shown if specialist has access */}
             {canAccessBuyerContact && (
               <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
@@ -174,12 +174,12 @@ const AgentRequestCard = ({
               </div>
             )}
 
-            {/* Agent Information */}
+            {/* Showing Specialist Information */}
             {request.assigned_agent_name && (
               <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
                 <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  Assigned Agent
+                  Assigned Showing Specialist
                 </div>
                 <div className="text-green-700 font-medium">{request.assigned_agent_name}</div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
@@ -246,7 +246,7 @@ const AgentRequestCard = ({
             </Button>
           )}
 
-          {/* Report Issue button for assigned agents who can't fulfill the showing */}
+          {/* Report Issue button for assigned specialists who can't fulfill the showing */}
           {!showAssignButton && request.assigned_agent_id === currentAgentId && 
            ['agent_assigned', 'confirmed'].includes(request.status) && (
             <Button 

@@ -61,7 +61,7 @@ const NextTourCard = ({ showing, onMessageAgent }: NextTourCardProps) => {
     switch (status) {
       case 'confirmed':
       case 'agent_confirmed':
-        return 'Agent Confirmed';
+        return 'Specialist Confirmed';
       case 'pending':
         return 'Pending Confirmation';
       default:
@@ -99,7 +99,7 @@ const NextTourCard = ({ showing, onMessageAgent }: NextTourCardProps) => {
 
       {showing.assigned_agent_name && (
         <div className="bg-gray-50 rounded-lg p-4 mb-4">
-          <p className="text-sm text-gray-600 mb-2">Your Agent</p>
+          <p className="text-sm text-gray-600 mb-2">Your Showing Specialist</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">

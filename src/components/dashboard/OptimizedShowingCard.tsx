@@ -7,6 +7,7 @@ import StatusBadge from "./shared/StatusBadge";
 import InteractiveButton from "./shared/InteractiveButton";
 import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
+import ShowingSpecialistCard from "./ShowingSpecialistCard";
 import { 
   Calendar,
   Clock,
@@ -96,13 +97,13 @@ const OptimizedShowingCard = ({
     const agreementStatuses = ['agent_confirmed', 'awaiting_agreement'];
     const statusRequiresAgreement = agreementStatuses.includes(showing.status);
     const alreadySigned = agreements[showing.id] === true;
-    const hasAssignedAgent = showing.assigned_agent_id && showing.assigned_agent_name;
+    const hasAssignedSpecialist = showing.assigned_agent_id && showing.assigned_agent_name;
     
-    return statusRequiresAgreement && !alreadySigned && hasAssignedAgent;
+    return statusRequiresAgreement && !alreadySigned && hasAssignedSpecialist;
   };
 
   const agreementRequired = isAgreementRequired();
-  const isAgentRequestedStatus = showing.status === 'agent_requested';
+  const isSpecialistRequestedStatus = showing.status === 'agent_requested';
   const isCompletedTour = showing.status === 'completed';
   const isConfirmedTour = ['confirmed', 'scheduled', 'in_progress'].includes(showing.status);
 
@@ -111,7 +112,7 @@ const OptimizedShowingCard = ({
     if (agreementRequired) {
       return 'border-orange-300 bg-orange-50';
     }
-    if (isAgentRequestedStatus) {
+    if (isSpecialistRequestedStatus) {
       return 'border-orange-300 bg-orange-50';
     }
     if (isCompletedTour) {
@@ -121,6 +122,12 @@ const OptimizedShowingCard = ({
       return 'border-blue-200 bg-blue-50';
     }
     return 'border-gray-200 bg-white';
+  };
+
+  const handleMessageSpecialist = () => {
+    if (onSendMessage) {
+      onSendMessage(showing.id);
+    }
   };
 
   return (
@@ -247,6 +254,19 @@ const OptimizedShowingCard = ({
             )}
           </div>
 
+          {/* Enhanced Showing Specialist Card for Confirmed Tours */}
+          {isConfirmedTour && showing.assigned_agent_name && (
+            <div className="mt-4">
+              <ShowingSpecialistCard
+                specialistName={showing.assigned_agent_name}
+                specialistPhone={showing.assigned_agent_phone || undefined}
+                specialistEmail={showing.assigned_agent_email || undefined}
+                specialistId={showing.assigned_agent_id || undefined}
+                onMessageClick={handleMessageSpecialist}
+              />
+            </div>
+          )}
+
           {/* Complete Tour Button for Confirmed Tours - Prominent Placement */}
           {isConfirmedTour && userType === 'buyer' && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -287,10 +307,10 @@ const OptimizedShowingCard = ({
           {/* Expanded Content */}
           {isExpanded && (
             <div className="space-y-4 pt-4 border-t border-gray-100">
-              {/* Agent Info */}
-              {showing.assigned_agent_name && (
+              {/* Showing Specialist Info for Non-Confirmed Tours */}
+              {!isConfirmedTour && showing.assigned_agent_name && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Agent Information</h4>
+                  <h4 className="text-sm font-medium text-gray-700">Showing Specialist Information</h4>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">{showing.assigned_agent_name}</span>
@@ -330,7 +350,7 @@ const OptimizedShowingCard = ({
                     </InteractiveButton>
                   )}
 
-                  {/* Message Agent */}
+                  {/* Message Specialist */}
                   {onSendMessage && showing.assigned_agent_id && (
                     <InteractiveButton
                       variant="outline"
@@ -339,7 +359,7 @@ const OptimizedShowingCard = ({
                       onClick={() => onSendMessage(showing.id)}
                       className="border-gray-300 w-full sm:w-auto"
                     >
-                      Message Agent
+                      Message Specialist
                     </InteractiveButton>
                   )}
 

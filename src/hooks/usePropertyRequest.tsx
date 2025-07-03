@@ -114,8 +114,12 @@ export const usePropertyRequest = (
   };
 
   const handleContinueToSubscriptions = async () => {
-    if (!user) {
-      console.log('usePropertyRequest: Storing tour request for unauthenticated user:', formData);
+    console.log('handleContinueToSubscriptions called');
+    console.log('Current user:', user?.id);
+    console.log('Form data:', formData);
+
+    if (!user?.id) {
+      console.log('usePropertyRequest: No authenticated user, storing tour request');
       localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
       setModalFlow('auth');
       return;
@@ -123,16 +127,20 @@ export const usePropertyRequest = (
 
     // Check eligibility before submission
     const currentEligibility = await checkEligibility();
+    console.log('User eligibility:', currentEligibility);
     
     if (!currentEligibility?.eligible) {
-      // Fixed: Check for monthly_limit_exceeded instead of free_showing_used
+      // Check for monthly_limit_exceeded
       if (currentEligibility?.reason === 'monthly_limit_exceeded') {
+        console.log('Monthly limit exceeded, showing limit modal');
         setModalFlow('limit');
         return;
       }
     }
 
     try {
+      console.log('Submitting showing requests for authenticated user:', user.id);
+      
       // Submit the requests and wait for completion
       await submitShowingRequests();
       
@@ -152,8 +160,9 @@ export const usePropertyRequest = (
         onClose();
       }
       
-      // Always navigate to dashboard for authenticated users
-      if (user && !skipNavigation) {
+      // Navigate to dashboard for authenticated users if not skipping
+      if (!skipNavigation) {
+        console.log('Navigating to buyer dashboard');
         navigate('/buyer-dashboard', { replace: true });
       }
       

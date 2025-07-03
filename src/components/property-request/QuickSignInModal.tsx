@@ -29,12 +29,18 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
 
     try {
       if (isSignUp) {
-        console.log('Quick sign up attempt:', email);
+        console.log('Quick sign up attempt for:', email);
         
         // Store flag to indicate this is a new user from property request
         localStorage.setItem('newUserFromPropertyRequest', 'true');
         
-        await signUp(email, password);
+        const result = await signUp(email, password);
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        console.log('Sign up successful, user:', result.data?.user?.id);
         
         toast({
           title: "Account Created!",
@@ -42,8 +48,14 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         });
         
       } else {
-        console.log('Quick sign in attempt:', email);
-        await signIn(email, password);
+        console.log('Quick sign in attempt for:', email);
+        const result = await signIn(email, password);
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        console.log('Sign in successful, user:', result.data?.user?.id);
         
         toast({
           title: "Welcome Back!",
@@ -54,19 +66,30 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
       // Close modal immediately
       onClose();
       
-      // Call success callback to handle tour processing
-      onSuccess();
-      
-      // Navigate to dashboard after brief delay to allow auth state to settle
+      // Small delay to allow auth state to settle
       setTimeout(() => {
-        navigate('/buyer-dashboard', { replace: true });
-      }, 1000);
+        console.log('Calling onSuccess callback');
+        onSuccess();
+      }, 500);
       
     } catch (error: any) {
       console.error('Auth error:', error);
+      
+      let errorMessage = error.message || "Failed to authenticate. Please try again.";
+      
+      // Handle specific error cases
+      if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Try signing in instead.";
+        setIsSignUp(false);
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password. Please check your credentials.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Please check your email and click the confirmation link.";
+      }
+      
       toast({
         title: "Authentication Error",
-        description: error.message || "Failed to authenticate. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

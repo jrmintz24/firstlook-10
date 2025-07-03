@@ -3,110 +3,124 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
-import { getPropertiesToSubmit, getPreferredOptions, getEstimatedConfirmationDate } from "@/utils/propertyRequestUtils";
 
-export const useShowingSubmission = (formData: PropertyRequestFormData, onSuccess?: () => Promise<void>) => {
+export const useShowingSubmission = (
+  formData: PropertyRequestFormData,
+  onDataRefresh?: () => Promise<void>
+) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { checkEligibility, markFreeShowingUsed } = useShowingEligibility();
 
   const submitShowingRequests = async () => {
-    if (!user) {
+    if (!user?.id) {
+      console.error('No authenticated user found for showing submission');
       toast({
         title: "Authentication Required",
-        description: "Please sign in to submit your showing request",
+        description: "Please sign in to submit tour requests.",
         variant: "destructive"
       });
-      return;
+      throw new Error('User must be authenticated to submit showing requests');
     }
 
     setIsSubmitting(true);
+    
     try {
       console.log('Submitting showing requests for user:', user.id);
-      
-      const propertiesToSubmit = getPropertiesToSubmit(formData);
-      console.log('Properties to submit:', propertiesToSubmit);
+      console.log('Form data:', formData);
 
-      // Check eligibility before submission - especially for multiple properties
-      if (propertiesToSubmit.length > 1) {
-        const currentEligibility = await checkEligibility();
-        
-        if (!currentEligibility?.eligible || currentEligibility.reason !== 'subscribed') {
-          toast({
-            title: "Subscription Required",
-            description: "Multiple properties in one tour session require a subscription. Please subscribe to continue!",
-            variant: "destructive"
-          });
-          return;
+      const showingRequests = [];
+
+      // Handle multiple properties if they exist
+      if (formData.properties && formData.properties.length > 0) {
+        for (const property of formData.properties) {
+          if (property.address.trim()) {
+            showingRequests.push({
+              user_id: user.id, // Ensure user_id is always set
+              property_address: property.address.trim(),
+              message: property.notes || formData.notes || null,
+              preferred_date: formData.preferredDate1 || null,
+              preferred_time: formData.preferredTime1 || null,
+              status: 'pending'
+            });
+          }
         }
       }
 
-      const preferredOptions = getPreferredOptions(formData);
-      const preferredDate = preferredOptions[0]?.date || '';
-      const preferredTime = preferredOptions[0]?.time || '';
-      const estimatedConfirmationDate = getEstimatedConfirmationDate();
+      // Handle single property from direct form fields
+      if (formData.propertyAddress && formData.propertyAddress.trim()) {
+        const request = {
+          user_id: user.id, // Ensure user_id is always set
+          property_address: formData.propertyAddress.trim(),
+          message: formData.notes || null,
+          preferred_date: formData.preferredDate1 || null,
+          preferred_time: formData.preferredTime1 || null,
+          status: 'pending'
+        };
 
-      // Create showing requests for each property
-      const requests = propertiesToSubmit.map(property => ({
-        user_id: user.id,
-        property_address: property,
-        preferred_date: preferredDate || null,
-        preferred_time: preferredTime || null,
-        message: formData.notes || null,
-        internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
-        status: 'pending',
-        estimated_confirmation_date: estimatedConfirmationDate
-      }));
+        // Avoid duplicates
+        const isDuplicate = showingRequests.some(req => 
+          req.property_address === request.property_address
+        );
+        
+        if (!isDuplicate) {
+          showingRequests.push(request);
+        }
+      }
 
-      console.log('Inserting showing requests:', requests);
+      if (showingRequests.length === 0) {
+        throw new Error('No valid properties to submit');
+      }
 
+      console.log('Submitting requests:', showingRequests);
+
+      // Submit all requests
       const { data, error } = await supabase
         .from('showing_requests')
-        .insert(requests)
+        .insert(showingRequests)
         .select();
 
       if (error) {
-        console.error('Error creating showing requests:', error);
-        toast({
-          title: "Error",
-          description: `Failed to submit showing request: ${error.message}`,
-          variant: "destructive"
-        });
-        return;
+        console.error('Supabase error:', error);
+        throw error;
       }
 
-      console.log('Successfully created showing requests:', data);
+      console.log('Successfully submitted showing requests:', data);
 
-      // Mark free showing as used for first-time users
-      const currentEligibility = await checkEligibility();
-      if (currentEligibility?.reason === 'first_free_showing') {
-        await markFreeShowingUsed();
-      }
-
-      // Clear any pending tour data
+      // Clear any pending tour request from localStorage
       localStorage.removeItem('pendingTourRequest');
-      
-      // Show success message
+
+      // Refresh dashboard data if callback provided
+      if (onDataRefresh) {
+        await onDataRefresh();
+      }
+
       toast({
-        title: "Request Submitted Successfully! 🎉",
-        description: `Your showing request${propertiesToSubmit.length > 1 ? 's have' : ' has'} been submitted. We'll review and assign a showing partner within 2-4 hours.`,
+        title: "Tour Request Submitted",
+        description: `Successfully submitted ${showingRequests.length} tour request${showingRequests.length > 1 ? 's' : ''}!`,
       });
 
-      // Call the success callback and wait for it to complete before proceeding
-      if (onSuccess) {
-        await onSuccess();
-      }
-      
-    } catch (error) {
+      return data;
+
+    } catch (error: any) {
       console.error('Error submitting showing requests:', error);
+      
+      let errorMessage = "Failed to submit tour request. Please try again.";
+      
+      if (error.message?.includes('violates row-level security')) {
+        errorMessage = "Authentication error. Please sign in and try again.";
+      } else if (error.message?.includes('check_user_id_not_null')) {
+        errorMessage = "Authentication required. Please ensure you're signed in.";
+      }
+
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Submission Error",
+        description: errorMessage,
         variant: "destructive"
       });
+
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

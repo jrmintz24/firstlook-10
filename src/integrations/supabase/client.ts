@@ -6,7 +6,7 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://uugchegukcccuqpcsqhl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1Z2NoZWd1a2NjY3VxcGNzcWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3MTU4NzQsImV4cCI6MjA2NDI5MTg3NH0.4r_GivJvzSZGgFizHGKoGdGnxa7hbZJr2FhgnAUeGdE";
 
-// Consolidated Supabase client with optimized real-time configuration
+// Optimized Supabase client with enhanced real-time configuration
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
@@ -16,14 +16,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   },
   realtime: {
     params: {
-      eventsPerSecond: 2,
+      eventsPerSecond: 1, // Reduced from 2 to prevent rate limiting
     },
-    heartbeatIntervalMs: 30000,
-    reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 30000),
+    heartbeatIntervalMs: 45000, // Increased from 30s to reduce connection overhead
+    reconnectAfterMs: (tries: number) => {
+      // Exponential backoff with jitter to prevent thundering herd
+      const baseDelay = Math.min(tries * 2000, 30000);
+      const jitter = Math.random() * 1000;
+      return baseDelay + jitter;
+    },
   },
   global: {
     headers: {
-      'X-Client-Info': 'firstlook-web-app',
+      'X-Client-Info': 'firstlook-web-app-unified',
     },
   },
 });

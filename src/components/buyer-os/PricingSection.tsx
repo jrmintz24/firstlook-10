@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,7 +213,7 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
             <div className="mt-12 text-center">
               <Card className="border-2 border-blue-200 bg-blue-50/50 p-6">
                 <h4 className="text-xl font-semibold text-slate-800 mb-2">
-                  Complete Package: $1,098
+                  Professional Offer + Transaction Coordination: $999
                 </h4>
                 <p className="text-gray-700 mb-4">
                   Get both agent-coached offer strategy AND complete transaction coordination for maximum support through your home purchase.

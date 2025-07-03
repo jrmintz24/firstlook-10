@@ -1,4 +1,3 @@
-
 import { useState, Suspense, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import { SubscribeModal } from "@/components/subscription/SubscribeModal";
 import InlineMessagesPanel from "@/components/messaging/InlineMessagesPanel";
 import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 
 // Redesigned Components - loaded lazily
 import JourneyProgressBar from "@/components/dashboard/redesigned/JourneyProgressBar";
@@ -156,6 +156,11 @@ const OptimizedBuyerDashboard = () => {
   const handleMakeOffer = () => console.log("Make offer clicked");
   const handleScheduleAnotherTour = async () => handleRequestShowing();
   const handleSeeOtherProperties = () => handleRequestShowing();
+
+  const handleTourModalSuccess = async () => {
+    // Refresh data after successful tour request
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -334,8 +339,8 @@ const OptimizedBuyerDashboard = () => {
                 completedShowings={completedShowings || []}
                 onMakeOffer={handleMakeOffer}
                 onWorkWithAgent={() => {}}
-                onScheduleAnotherTour={handleScheduleAnotherTour}
-                onSeeOtherProperties={handleSeeOtherProperties}
+                onScheduleAnotherTour={handleRequestShowing}
+                onSeeOtherProperties={handleRequestShowing}
                 isLoading={isSubmitting}
               />
             </div>
@@ -396,6 +401,13 @@ const OptimizedBuyerDashboard = () => {
           onClose={() => setShowPropertyForm(false)}
         />
       </ErrorBoundary>
+
+      <ModernTourSchedulingModal
+        isOpen={showPropertyForm}
+        onClose={() => setShowPropertyForm(false)}
+        onSuccess={handleTourModalSuccess}
+        skipNavigation={true}
+      />
 
       {selectedShowing && (
         <>

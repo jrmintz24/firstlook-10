@@ -26,7 +26,8 @@ const initialFormData: PropertyRequestFormData = {
 export const usePropertyRequest = (
   onClose?: () => void, 
   onDataRefresh?: () => Promise<void>,
-  skipNavigation?: boolean
+  skipNavigation?: boolean,
+  disableLocalStorageLoad?: boolean // New parameter to control localStorage loading
 ) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
@@ -56,7 +57,17 @@ export const usePropertyRequest = (
   }, []);
 
   useEffect(() => {
-    // Check for pending tour request from localStorage
+    // Only load localStorage data if:
+    // 1. Not explicitly disabled
+    // 2. User is not authenticated (homepage flow)
+    // 3. Or if there's a pending tour and user just authenticated
+    const shouldLoadFromStorage = !disableLocalStorageLoad && (!user || !user);
+    
+    if (!shouldLoadFromStorage) {
+      console.log('usePropertyRequest: Skipping localStorage load - user authenticated or disabled');
+      return;
+    }
+
     const pendingTourRequest = localStorage.getItem('pendingTourRequest');
     if (pendingTourRequest) {
       try {
@@ -83,7 +94,7 @@ export const usePropertyRequest = (
         localStorage.removeItem('pendingTourRequest');
       }
     }
-  }, []);
+  }, [user, disableLocalStorageLoad]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => {
@@ -134,6 +145,10 @@ export const usePropertyRequest = (
     try {
       // Submit the requests and wait for completion
       await submitShowingRequests();
+      
+      // Clear localStorage after successful submission
+      localStorage.removeItem('pendingTourRequest');
+      console.log('usePropertyRequest: Cleared localStorage after successful submission');
       
       // Clear form and close modal after successful submission
       setFormData(initialFormData);

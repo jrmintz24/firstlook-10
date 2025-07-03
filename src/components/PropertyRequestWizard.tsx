@@ -2,6 +2,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
+import { useAuth } from "@/contexts/AuthContext";
 import PropertySelectionStep from "@/components/property-request/PropertySelectionStep";
 import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
@@ -21,6 +22,11 @@ const PropertyRequestWizard = ({
   onSuccess, 
   skipNavigation = true 
 }: PropertyRequestWizardProps) => {
+  const { user } = useAuth();
+  
+  // Disable localStorage loading for authenticated users from dashboard
+  const disableLocalStorageLoad = !!user;
+  
   const {
     currentStep,
     formData,
@@ -38,7 +44,7 @@ const PropertyRequestWizard = ({
     handleCancelPendingShowing,
     pendingShowingAddress,
     resetForm
-  } = usePropertyRequest(onClose, onSuccess, skipNavigation);
+  } = usePropertyRequest(onClose, onSuccess, skipNavigation, disableLocalStorageLoad);
 
   const handleClose = () => {
     resetForm();

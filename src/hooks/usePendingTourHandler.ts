@@ -100,9 +100,10 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
 
       console.log('usePendingTourHandler: Successfully created showing request:', data);
 
-      // Clear the pending data
+      // Clear all related localStorage data after successful processing
       localStorage.removeItem('pendingTourRequest');
       localStorage.removeItem('newUserFromPropertyRequest');
+      console.log('usePendingTourHandler: Cleared localStorage after successful processing');
 
       // Show success message
       const isNewUserFromRequest = localStorage.getItem('newUserFromPropertyRequest') === 'true';
@@ -134,6 +135,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       // Clear corrupted/problematic data
       localStorage.removeItem('pendingTourRequest');
       localStorage.removeItem('newUserFromPropertyRequest');
+      console.log('usePendingTourHandler: Cleared localStorage after error');
       
       toast({
         title: "Error",

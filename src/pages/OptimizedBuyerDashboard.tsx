@@ -1,10 +1,11 @@
+
 import React, { useCallback } from "react";
 import { Clock, Calendar, CheckCircle } from "lucide-react";
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
-import AgreementModal from "@/components/AgreementModal";
-import SubscribeModal from "@/components/SubscribeModal";
-import RescheduleModal from "@/components/RescheduleModal";
+import AgreementModal from "@/components/dashboard/SignAgreementModal";
+import { SubscribeModal } from "@/components/subscription/SubscribeModal";
+import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 
 const OptimizedBuyerDashboard = () => {
@@ -64,6 +65,11 @@ const OptimizedBuyerDashboard = () => {
     setActiveTab(tab);
   }, [setActiveTab]);
 
+  // Fix the function signature to match ShowingListTab expectations
+  const handleSignAgreementWrapper = useCallback((showing: any) => {
+    handleSignAgreementFromCard(showing.id, showing.user_name || 'Buyer');
+  }, [handleSignAgreementFromCard]);
+
   if (authLoading) {
     return <div>Loading authentication...</div>;
   }
@@ -119,7 +125,7 @@ const OptimizedBuyerDashboard = () => {
         onRescheduleShowing={handleRescheduleShowing}
         onConfirmShowing={handleConfirmShowingWithModal}
         onSendMessage={handleSendMessage}
-        onSignAgreement={handleSignAgreementFromCard}
+        onSignAgreement={handleSignAgreementWrapper}
         currentUserId={currentUser?.id}
         agreements={agreementsByShowing}
         eligibility={eligibility}

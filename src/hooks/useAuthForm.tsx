@@ -79,69 +79,89 @@ export const useAuthForm = (
     try {
       const isLoginMode = loginMode ?? isLogin;
       if (isLoginMode) {
-        try {
-          await signIn(formData.email, formData.password);
-          
-          // Wait a bit for auth state to update
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          const { data } = await supabase.auth.getUser();
-          if (data.user) {
-            const type = (data.user.user_metadata?.user_type as string) ?? userType;
-            const redirectPath = getDashboardRedirect(type);
-            
-            console.log('useAuthForm - Login successful, redirecting to:', redirectPath);
-            
-            toast({
-              title: "Success!",
-              description: "Welcome back!"
-            });
-            
-            onSuccess();
-            
-            // Use React Router navigate with replace to prevent back navigation issues
-            navigate(redirectPath, { replace: true });
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
-          toast({
-            title: "Error",
-            description: message,
-            variant: "destructive"
-          });
+        console.log('useAuthForm: Attempting login for:', formData.email);
+        
+        const result = await signIn(formData.email, formData.password);
+        
+        if (result.error) {
+          throw result.error;
         }
-      } else {
-        try {
-          // Prepare metadata for signup
-          const metadata: Record<string, unknown> & { user_type?: string } = {
-            user_type: userType,
-            first_name: formData.firstName,
-            phone: formData.phone
-          };
-
-          // Add license number for agents
-          if (userType === 'agent' && formData.licenseNumber) {
-            metadata.license_number = formData.licenseNumber;
-          }
-
-          console.log('useAuthForm - Signing up with metadata:', metadata);
-
-          await authService.signUp(formData.email, formData.password, metadata);
+        
+        // Wait a bit for auth state to update
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          const actualUserType = data.user.user_metadata?.user_type || userType;
+          const redirectPath = getDashboardRedirect(actualUserType);
+          
+          console.log('useAuthForm: Login successful, user type:', actualUserType, 'redirecting to:', redirectPath);
           
           toast({
             title: "Success!",
-            description: "Account created successfully! Please check your email to verify your account."
+            description: "Welcome back!"
           });
-          setIsLogin(true);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
-          toast({
-            title: "Error",
-            description: message,
-            variant: "destructive"
-          });
+          
+          onSuccess();
+          
+          // Use React Router navigate with replace to prevent back navigation issues
+          navigate(redirectPath, { replace: true });
         }
+      } else {
+        console.log('useAuthForm: Attempting signup for user type:', userType);
+        
+        // Prepare metadata for signup
+        const metadata: Record<string, unknown> & { user_type?: string } = {
+          user_type: userType,
+          first_name: formData.firstName,
+          phone: formData.phone
+        };
+
+        // Add license number for agents
+        if (userType === 'agent' && formData.licenseNumber) {
+          metadata.license_number = formData.licenseNumber;
+        }
+
+        console.log('useAuthForm: Signing up with metadata:', metadata);
+
+        const result = await authService.signUp(formData.email, formData.password, metadata);
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        console.log('useAuthForm: Signup successful for user type:', userType);
+        
+        toast({
+          title: "Success!",
+          description: userType === 'agent' 
+            ? "Agent account created! You can now sign in."
+            : "Account created successfully! You can now sign in."
+        });
+        
+        // For agents and if email confirmation is required, switch to login mode
+        setIsLogin(true);
       }
+    } catch (error: any) {
+      console.error('useAuthForm: Auth error:', error);
+      
+      let message = error.message || "Unknown error";
+      
+      // Handle specific error cases
+      if (message.includes('User already registered')) {
+        message = "An account with this email already exists. Try signing in instead.";
+        setIsLogin(true);
+      } else if (message.includes('Invalid login credentials')) {
+        message = "Invalid email or password. Please check your credentials.";
+      } else if (message.includes('Email not confirmed')) {
+        message = "Please check your email and click the confirmation link before signing in.";
+      }
+      
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

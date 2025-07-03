@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('AuthProvider: Initial session:', session?.user?.id);
+      console.log('AuthProvider: Initial session:', session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('AuthProvider: Auth state changed:', event, session?.user?.id);
+      console.log('AuthProvider: Auth state changed:', event, session?.user?.id, 'User type:', session?.user?.user_metadata?.user_type);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -65,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleProfileCreation = async (user: User) => {
     try {
+      console.log('AuthProvider: Checking profile for user:', user.id, 'User type:', user.user_metadata?.user_type);
+      
       // Check if profile exists
       const { data: existingProfile, error: profileFetchError } = await supabase
         .from('profiles')
@@ -74,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Only create profile if it doesn't exist
       if (profileFetchError?.code === 'PGRST116' || !existingProfile) {
-        console.log('AuthProvider: Creating new profile');
+        console.log('AuthProvider: Creating new profile for user type:', user.user_metadata?.user_type);
         
         // Check for signup form data
         const signupFormData = localStorage.getItem('signupFormData');
@@ -94,6 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           last_name: formData?.lastName || user.user_metadata?.last_name || null,
           phone: formData?.phone || user.user_metadata?.phone || null,
           user_type: user.user_metadata?.user_type || 'buyer',
+          license_number: user.user_metadata?.license_number || null,
           buyer_preferences: formData ? {
             budget: formData.budget || null,
             desiredAreas: formData.desiredAreas ? formData.desiredAreas.split(',').map(s => s.trim()) : null
@@ -113,13 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (createError) {
           console.error('AuthProvider: Error creating profile:', createError);
         } else {
-          console.log('AuthProvider: Profile created successfully');
+          console.log('AuthProvider: Profile created successfully for user type:', profileData.user_type);
           
           // Send welcome email for new users (non-blocking)
           setTimeout(async () => {
             await sendWelcomeEmail(user, profileData);
           }, 500);
         }
+      } else {
+        console.log('AuthProvider: Profile already exists for user:', user.id);
       }
     } catch (error) {
       console.error('AuthProvider: Error in profile creation:', error);
@@ -128,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendWelcomeEmail = async (user: User, profileData: any) => {
     try {
-      console.log('AuthProvider: Sending welcome email to:', user.email);
+      console.log('AuthProvider: Sending welcome email to:', user.email, 'User type:', profileData.user_type);
       
       const { error } = await supabase.functions.invoke('send-welcome-email', {
         body: {
@@ -154,10 +159,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string, 
     metadata: Record<string, unknown> & { user_type?: string } = { user_type: 'buyer' }
   ): Promise<{ error: any; data?: any }> => {
+    console.log('AuthContext.signUp called with user_type:', metadata.user_type);
     return await authService.signUp(email, password, metadata)
   }
 
   const signIn = async (email: string, password: string): Promise<{ error: any; data?: any }> => {
+    console.log('AuthContext.signIn called');
     return await authService.signIn(email, password)
   }
 

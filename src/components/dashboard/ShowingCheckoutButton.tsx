@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { usePostShowingWorkflow } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
 import BuyerFeedbackModal from "@/components/post-showing/BuyerFeedbackModal";
 import PostShowingNextStepsModal from "@/components/post-showing/PostShowingNextStepsModal";
@@ -39,7 +38,6 @@ const ShowingCheckoutButton = ({
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showNextStepsModal, setShowNextStepsModal] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const { checkAttendance } = usePostShowingWorkflow();
   const { toast } = useToast();
 
   // Only show checkout button for completed/scheduled showings
@@ -58,8 +56,6 @@ const ShowingCheckoutButton = ({
 
   const handleCheckout = async () => {
     try {
-      const actualShowingId = showingId || showing.id;
-      
       // Get current user ID if buyerId is not provided
       let effectiveBuyerId = buyerId;
       if (!effectiveBuyerId) {
@@ -77,37 +73,28 @@ const ShowingCheckoutButton = ({
 
       setCurrentUserId(effectiveBuyerId);
 
-      // This will now update the showing status to 'completed' in the hook
-      await checkAttendance(actualShowingId, {
-        user_type: userType,
-        attended: true,
-        checked_out: true
-      });
-
-      setIsCheckedOut(true);
-      
-      // Only show feedback modal for buyers
+      // For buyers, show the feedback modal which will handle the complete flow
       if (userType === 'buyer') {
         setShowFeedbackModal(true);
-      }
-      
-      if (onCheckout) {
-        onCheckout();
-      }
+      } else {
+        // For agents, just mark as completed directly
+        setIsCheckedOut(true);
+        
+        if (onCheckout) {
+          onCheckout();
+        }
 
-      // Trigger dashboard refresh to move tour to completed section
-      if (onComplete) {
-        setTimeout(() => {
-          onComplete();
-        }, 1000); // Small delay to ensure status update is processed
-      }
+        if (onComplete) {
+          setTimeout(() => {
+            onComplete();
+          }, 1000);
+        }
 
-      toast({
-        title: "Tour Completed",
-        description: userType === 'buyer' 
-          ? "Thanks for touring with us! Please share your feedback."
-          : "Tour marked as completed.",
-      });
+        toast({
+          title: "Tour Completed",
+          description: "Tour marked as completed.",
+        });
+      }
     } catch (error) {
       console.error('Error checking out:', error);
       toast({
@@ -125,7 +112,9 @@ const ShowingCheckoutButton = ({
 
   const handleNextStepsComplete = () => {
     setShowNextStepsModal(false);
-    // Trigger another refresh after post-showing actions are completed
+    setIsCheckedOut(true);
+    
+    // Trigger dashboard refresh after post-showing actions are completed
     if (onComplete) {
       setTimeout(() => {
         onComplete();
@@ -140,49 +129,49 @@ const ShowingCheckoutButton = ({
 
   if (isCheckedOut) {
     return (
-      <>
-        <Button
-          disabled
-          className="w-full bg-green-600 hover:bg-green-600 text-white"
-        >
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Tour Completed
-        </Button>
-
-        {userType === 'buyer' && (
-          <>
-            <BuyerFeedbackModal
-              isOpen={showFeedbackModal}
-              onClose={() => setShowFeedbackModal(false)}
-              onComplete={handleFeedbackComplete}
-              showing={showing}
-              buyerId={currentUserId || buyerId || ''}
-            />
-
-            <PostShowingNextStepsModal
-              isOpen={showNextStepsModal}
-              onClose={handleNextStepsComplete}
-              propertyAddress={showing.property_address}
-              agentId={showing.assigned_agent_id}
-              agentName={showing.assigned_agent_name}
-              buyerId={currentUserId || buyerId || ''}
-              showingRequestId={showing.id}
-              onActionTaken={handleNextStepsComplete}
-            />
-          </>
-        )}
-      </>
+      <Button
+        disabled
+        className="w-full bg-green-600 hover:bg-green-600 text-white"
+      >
+        <CheckCircle className="w-4 h-4 mr-2" />
+        Tour Completed
+      </Button>
     );
   }
 
   return (
-    <Button
-      onClick={handleCheckout}
-      className="w-full bg-black hover:bg-gray-800 text-white border border-gray-300"
-    >
-      <CheckCircle className="w-4 h-4 mr-2" />
-      Complete Tour
-    </Button>
+    <>
+      <Button
+        onClick={handleCheckout}
+        className="w-full bg-black hover:bg-gray-800 text-white border border-gray-300"
+      >
+        <CheckCircle className="w-4 h-4 mr-2" />
+        Complete Tour
+      </Button>
+
+      {userType === 'buyer' && (
+        <>
+          <BuyerFeedbackModal
+            isOpen={showFeedbackModal}
+            onClose={() => setShowFeedbackModal(false)}
+            onComplete={handleFeedbackComplete}
+            showing={showing}
+            buyerId={currentUserId || buyerId || ''}
+          />
+
+          <PostShowingNextStepsModal
+            isOpen={showNextStepsModal}
+            onClose={handleNextStepsComplete}
+            propertyAddress={showing.property_address}
+            agentId={showing.assigned_agent_id}
+            agentName={showing.assigned_agent_name}
+            buyerId={currentUserId || buyerId || ''}
+            showingRequestId={showing.id}
+            onActionTaken={handleNextStepsComplete}
+          />
+        </>
+      )}
+    </>
   );
 };
 

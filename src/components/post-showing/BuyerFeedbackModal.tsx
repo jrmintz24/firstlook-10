@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -29,7 +31,6 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   
   const { 
     loading, 
-    checkAttendance, 
     submitBuyerFeedback
   } = usePostShowingWorkflow();
 
@@ -39,16 +40,32 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     if (attended === null) return;
     
     try {
-      await checkAttendance(showing.id, {
-        user_type: 'buyer',
-        attended,
-        checked_out: true
-      });
-      
+      // Update showing attendance
+      const { error: attendanceError } = await supabase
+        .from('showing_attendance')
+        .upsert({
+          showing_request_id: showing.id,
+          buyer_attended: attended,
+          buyer_checked_out: true,
+          buyer_checkout_time: new Date().toISOString()
+        }, {
+          onConflict: 'showing_request_id'
+        });
+
+      if (attendanceError) {
+        console.error('Error updating attendance:', attendanceError);
+      }
+
       if (attended) {
+        // If attended, proceed to feedback
         setStep('feedback');
       } else {
-        // If didn't attend, skip to completion
+        // If didn't attend, update showing status to completed and close
+        await updateShowingToCompleted();
+        toast({
+          title: "Tour Status Updated",
+          description: "Thank you for letting us know you didn't attend.",
+        });
         onComplete?.();
       }
     } catch (error) {
@@ -58,6 +75,24 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
         description: "Failed to submit attendance. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const updateShowingToCompleted = async () => {
+    try {
+      const { error } = await supabase
+        .from('showing_requests')
+        .update({ 
+          status: 'completed',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', showing.id);
+
+      if (error) {
+        console.error('Error updating showing status:', error);
+      }
+    } catch (error) {
+      console.error('Error updating showing status:', error);
     }
   };
 
@@ -97,6 +132,9 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       console.log('Submitting feedback:', feedback);
       await submitBuyerFeedback(showing.id, feedback);
       
+      // Update showing status to completed after feedback is submitted
+      await updateShowingToCompleted();
+      
       toast({
         title: "Feedback Submitted",
         description: "Thank you for your feedback!",
@@ -130,7 +168,10 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     </div>
   );
 
-  const handleSkipFeedback = () => {
+  const handleSkipFeedback = async () => {
+    // Update showing status to completed even if skipping feedback
+    await updateShowingToCompleted();
+    
     toast({
       title: "Feedback Skipped",
       description: "You can always provide feedback later.",

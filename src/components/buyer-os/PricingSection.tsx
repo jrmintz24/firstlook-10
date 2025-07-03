@@ -67,7 +67,7 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
     <div className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200/70 px-6 py-3 text-lg shadow-smooth backdrop-blur-sm">
+          <Badge variant="secondary" className="mb-6 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200/70 px-6 py-3 text-lg shadow-soft backdrop-blur-sm">
             <Star className="w-4 h-4 mr-2" />
             New Simplified Pricing
           </Badge>
@@ -83,8 +83,8 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
         <div className="mb-20">
           <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Free Plan */}
-            <Card className="border-2 border-gray-200/50 shadow-smooth hover:shadow-smooth-lg relative overflow-hidden bg-white/95 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+            <Card className="border-2 border-gray-200/50 shadow-soft relative overflow-hidden bg-white/95 backdrop-blur-sm transition-all duration-200">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
               <CardHeader className="text-center pb-4 relative z-10">
                 <CardTitle className="text-2xl text-slate-800">Free Plan</CardTitle>
                 <div className="text-4xl font-bold text-gray-900 mb-2">
@@ -103,7 +103,7 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
                 </div>
                 <Button 
                   onClick={handleStartFree}
-                  className="w-full bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 text-white py-4 text-lg shadow-smooth hover:shadow-smooth-lg"
+                  className="w-full bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 text-white py-4 text-lg shadow-soft hover:shadow-soft-lg"
                 >
                   Start Free
                 </Button>
@@ -111,11 +111,11 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
             </Card>
 
             {/* Pro Plan */}
-            <Card className="border-2 border-blue-200/70 shadow-glow relative overflow-hidden bg-white/95 backdrop-blur-sm">
+            <Card className="border-2 border-blue-200/70 shadow-glow relative overflow-hidden bg-white/95 backdrop-blur-sm card-interactive card-primary">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-indigo-50/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
               
-              <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-smooth">
+              <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-soft">
                 Most Popular
               </Badge>
 
@@ -159,8 +159,8 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {offerServices.map((service, index) => (
-              <Card key={index} className={`border-2 shadow-smooth hover:shadow-smooth-lg relative overflow-hidden bg-white/95 backdrop-blur-sm ${
-                index === 0 ? 'border-green-200/70 hover:shadow-glow-green' : 'border-orange-200/70 hover:shadow-glow-orange'
+              <Card key={index} className={`border-2 shadow-soft relative overflow-hidden bg-white/95 backdrop-blur-sm card-interactive transition-all duration-200 ${
+                index === 0 ? 'border-green-200/70 card-success' : 'border-orange-200/70 card-warning'
               }`}>
                 <div className={`absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 ${
                   index === 0 ? 'bg-gradient-to-br from-green-50/20 via-emerald-50/10 to-transparent' : 'bg-gradient-to-br from-orange-50/20 via-amber-50/10 to-transparent'
@@ -190,7 +190,7 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
           </div>
 
           <div className="mt-12 text-center">
-            <Card className="border-2 border-blue-200/70 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-6 shadow-glow backdrop-blur-sm">
+            <Card className="border-2 border-blue-200/70 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-6 shadow-glow backdrop-blur-sm card-utility">
               <h4 className="text-xl font-semibold text-slate-800 mb-2">
                 Professional Offer + Transaction Coordination: $999
               </h4>
@@ -217,27 +217,27 @@ const PricingSection = ({ onStartTour }: PricingSectionProps) => {
 
         {/* Value Proposition Footer */}
         <div className="mt-20 text-center">
-          <div className="bg-white/90 backdrop-blur-lg border border-gray-200/50 rounded-3xl p-8 max-w-4xl mx-auto shadow-smooth hover:shadow-smooth-lg transition-all duration-300">
+          <div className="bg-white/90 backdrop-blur-lg border border-gray-200/50 rounded-3xl p-8 max-w-4xl mx-auto shadow-soft transition-all duration-200 card-utility">
             <h3 className="text-2xl font-semibold text-slate-800 mb-4">
               Why Choose FirstLook?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
               <div>
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-smooth">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-soft">
                   <Users className="h-6 w-6 text-blue-600" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-2">Licensed Professionals</h4>
                 <p className="text-sm text-gray-600">All our showing partners are licensed real estate professionals in DC/MD/VA</p>
               </div>
               <div>
-                <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-smooth">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-soft">
                   <Shield className="h-6 w-6 text-green-600" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-2">No Pressure</h4>
                 <p className="text-sm text-gray-600">Tour homes without sales pressure. We're here to help, not to push</p>
               </div>
               <div>
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-smooth">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-soft">
                   <Clock className="h-6 w-6 text-purple-600" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-2">Save Time</h4>

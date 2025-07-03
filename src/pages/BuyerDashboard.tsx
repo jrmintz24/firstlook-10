@@ -62,7 +62,7 @@ const BuyerDashboard = () => {
     setShowReportIssueModal(true);
   };
 
-  const handleAgreementSign = async (showingId: string) => {
+  const handleAgreementSign = async (name: string) => {
     // Handle agreement signing logic here
     setShowAgreementModal(false);
     setSelectedShowing(null);
@@ -195,7 +195,6 @@ const BuyerDashboard = () => {
       content: currentUser?.id ? (
         <BuyerPostShowingHub 
           buyerId={currentUser.id}
-          onMakeOffer={handleMakeOffer}
         />
       ) : (
         <EmptyStateCard
@@ -286,15 +285,20 @@ const BuyerDashboard = () => {
           <SignAgreementModal
             isOpen={showAgreementModal}
             onClose={() => setShowAgreementModal(false)}
-            showing={selectedShowing}
             onSign={handleAgreementSign}
+            showingDetails={{
+              propertyAddress: selectedShowing.property_address,
+              date: selectedShowing.preferred_date,
+              time: selectedShowing.preferred_time,
+              agentName: selectedShowing.assigned_agent_name
+            }}
           />
 
           <ReportIssueModal
             isOpen={showReportIssueModal}
             onClose={() => setShowReportIssueModal(false)}
             request={selectedShowing}
-            buyerId={currentUser?.id || ''}
+            agentId={selectedShowing.assigned_agent_id || ''}
             onComplete={() => {
               setShowReportIssueModal(false);
               setSelectedShowing(null);

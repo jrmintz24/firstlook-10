@@ -18,13 +18,17 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
     <div className="py-16 sm:py-20 relative overflow-hidden bg-white">
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-extralight text-gray-900 mb-8 tracking-tight leading-none">
-            Finally, a Homebuying Platform That Gets You
+          <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-6 tracking-tight leading-none">
+            FirstLook
           </h1>
           
-          <h2 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
-            No pushy agents. <span className="font-medium text-gray-900">No awkward commitments.</span>
+          <h2 className="text-4xl md:text-6xl font-extralight text-gray-900 mb-6 tracking-tight leading-tight max-w-4xl mx-auto">
+            Finally, a Homebuying Platform That Gets You
           </h2>
+          
+          <h3 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
+            No pushy agents. <span className="font-medium text-gray-900">No awkward commitments.</span>
+          </h3>
           
           <div className="space-y-4 mb-12">
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">

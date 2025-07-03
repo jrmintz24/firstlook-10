@@ -15,15 +15,23 @@ interface PropertyRequestWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  skipNavigation?: boolean;
 }
 
-const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWizardProps) => {
+const PropertyRequestWizard = ({ isOpen, onClose, onSuccess, skipNavigation }: PropertyRequestWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>({
     properties: [{ address: "", notes: "" }],
+    preferredOptions: [],
+    notes: "",
+    propertyAddress: "",
     preferredDate1: "",
     preferredTime1: "",
-    notes: ""
+    preferredDate2: "",
+    preferredTime2: "",
+    preferredDate3: "",
+    preferredTime3: "",
+    selectedProperties: []
   });
 
   const { user, loading: authLoading, profileReady } = useAuth();
@@ -35,9 +43,16 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
       setCurrentStep(1);
       setFormData({
         properties: [{ address: "", notes: "" }],
+        preferredOptions: [],
+        notes: "",
+        propertyAddress: "",
         preferredDate1: "",
         preferredTime1: "",
-        notes: ""
+        preferredDate2: "",
+        preferredTime2: "",
+        preferredDate3: "",
+        preferredTime3: "",
+        selectedProperties: []
       });
     }
   }, [isOpen]);
@@ -52,6 +67,27 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddProperty = () => {
+    if (formData.propertyAddress.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        properties: [...prev.properties, { address: prev.propertyAddress, notes: "" }],
+        propertyAddress: ""
+      }));
+    }
+  };
+
+  const handleRemoveProperty = (address: string) => {
+    setFormData(prev => ({
+      ...prev,
+      properties: prev.properties.filter(p => p.address !== address)
+    }));
   };
 
   const handleSubmit = async () => {
@@ -93,7 +129,9 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
       component: (
         <PropertySelectionStep
           formData={formData}
-          setFormData={setFormData}
+          onInputChange={handleInputChange}
+          onAddProperty={handleAddProperty}
+          onRemoveProperty={handleRemoveProperty}
           onNext={handleNext}
         />
       )
@@ -104,7 +142,7 @@ const PropertyRequestWizard = ({ isOpen, onClose, onSuccess }: PropertyRequestWi
       component: (
         <SchedulingStep
           formData={formData}
-          setFormData={setFormData}
+          onInputChange={handleInputChange}
           onNext={handleNext}
           onBack={handleBack}
         />

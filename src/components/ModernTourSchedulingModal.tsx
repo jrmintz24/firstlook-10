@@ -126,7 +126,7 @@ const ModernTourSchedulingModal: React.FC<ModernTourSchedulingModalProps> = ({
             <PropertyRequestWizard
               isOpen={isOpen}
               onClose={onClose}
-              onComplete={handleFormComplete}
+              onSuccess={handleFormComplete}
               skipNavigation={skipNavigation}
             />
           )}

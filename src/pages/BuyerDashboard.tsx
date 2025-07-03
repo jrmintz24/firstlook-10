@@ -4,6 +4,8 @@ import { Calendar, MessageSquare, TrendingUp, CheckCircle, Clock } from "lucide-
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMessages } from "@/hooks/useMessages";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
@@ -36,6 +38,7 @@ const BuyerDashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { unreadCount } = useMessages(currentUser?.id || null);
+  const { toast } = useToast();
 
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
@@ -70,10 +73,90 @@ const BuyerDashboard = () => {
   };
 
   const handleAgreementSign = async (name: string) => {
-    // Handle agreement signing logic here
-    setShowAgreementModal(false);
-    setSelectedShowing(null);
-    refresh(); // Use the unified refresh function
+    if (!selectedShowing || !currentUser) {
+      toast({
+        title: "Error",
+        description: "Missing showing or user information",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('Signing agreement for showing:', selectedShowing.id);
+
+      // Check for existing agreement
+      const { data: existingAgreement } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('showing_request_id', selectedShowing.id)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
+
+      if (existingAgreement) {
+        // Update existing agreement
+        const { error: updateAgreementError } = await supabase
+          .from('tour_agreements')
+          .update({
+            signed: true,
+            signed_at: new Date().toISOString()
+          })
+          .eq('id', existingAgreement.id);
+
+        if (updateAgreementError) {
+          throw updateAgreementError;
+        }
+      } else {
+        // Create new agreement
+        const { error: createAgreementError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: selectedShowing.id,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: true,
+            signed_at: new Date().toISOString(),
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+
+        if (createAgreementError) {
+          throw createAgreementError;
+        }
+      }
+
+      // Update showing request status to confirmed
+      const { error: updateShowingError } = await supabase
+        .from('showing_requests')
+        .update({
+          status: 'confirmed',
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedShowing.id);
+
+      if (updateShowingError) {
+        throw updateShowingError;
+      }
+
+      toast({
+        title: "Agreement Signed",
+        description: "You have successfully signed the tour agreement and confirmed your showing.",
+      });
+
+      setShowAgreementModal(false);
+      setSelectedShowing(null);
+      
+      // Refresh dashboard data to show updated status
+      await refresh();
+
+    } catch (error) {
+      console.error('Error signing agreement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign agreement. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleStatClick = (tab: string) => {

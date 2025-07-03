@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,66 +81,79 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   const tabs = [
     {
       id: "overview",
-      title: "Overview",
+      title: isMobile ? "Home" : "Overview",
       icon: Calendar,
       count: 0,
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Pending Tours</p>
-                    <p className="text-3xl font-bold text-orange-600 leading-none">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Pending Tours</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-orange-600 leading-none">
                       {pendingShowings.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-4">
-                    <Clock className="h-8 w-8 text-orange-600" />
+                  <div className="flex-shrink-0 ml-3 sm:ml-4">
+                    <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Upcoming Tours</p>
-                    <p className="text-3xl font-bold text-blue-600 leading-none">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Upcoming Tours</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-600 leading-none">
                       {upcomingShowings.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-4">
-                    <Calendar className="h-8 w-8 text-blue-600" />
+                  <div className="flex-shrink-0 ml-3 sm:ml-4">
+                    <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Completed Tours</p>
-                    <p className="text-3xl font-bold text-green-600 leading-none">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Completed Tours</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-green-600 leading-none">
                       {completedShowingsList.length}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 ml-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="flex-shrink-0 ml-3 sm:ml-4">
+                    <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Dashboard Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+          {/* Mobile-first layout: sidebar content first, then main content */}
+          <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
+            {/* Mobile: Show sidebar content first */}
+            <div className="space-y-4 sm:space-y-6 lg:order-2">
+              <SmartReminders 
+                showingRequests={allShowings}
+                userType="buyer"
+              />
+              
+              <QuickActions 
+                onRequestShowing={onRequestTour}
+                onMakeOffer={handleMakeOffer}
+              />
+            </div>
+            
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:order-1">
               <RecentTours 
                 pendingRequests={pendingShowings}
                 activeShowings={upcomingShowings}
@@ -151,26 +165,13 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
               />
               
               <Card>
-                <CardHeader>
-                  <CardTitle>Tour Progress</CardTitle>
+                <CardHeader className="pb-3 sm:pb-6">
+                  <CardTitle className="text-lg sm:text-xl">Tour Progress</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Track your tour progress here</p>
+                <CardContent className="pt-0">
+                  <p className="text-sm sm:text-base text-gray-600">Track your tour progress here</p>
                 </CardContent>
               </Card>
-            </div>
-            
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              <SmartReminders 
-                showingRequests={allShowings}
-                userType="buyer"
-              />
-              
-              <QuickActions 
-                onRequestShowing={onRequestTour}
-                onMakeOffer={handleMakeOffer}
-              />
             </div>
           </div>
         </div>
@@ -202,7 +203,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
     },
     {
       id: "upcoming",
-      title: "Upcoming",
+      title: isMobile ? "Active" : "Upcoming",
       icon: Calendar,
       count: upcomingShowings.length,
       content: (
@@ -226,7 +227,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
     },
     {
       id: "offers",
-      title: "My Offers",
+      title: isMobile ? "Offers" : "My Offers",
       icon: FileText,
       count: 0,
       content: (
@@ -253,7 +254,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
       content: (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Tour History</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">Tour History</h2>
           </div>
           {completedShowingsList.length === 0 ? (
             <EmptyStateCard
@@ -264,16 +265,16 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
               onButtonClick={onRequestTour}
             />
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {completedShowingsList.map((showing) => (
                 <Card key={showing.id} className="border rounded-lg">
-                  <div className="p-4 border-b">
-                    <h3 className="font-medium">{showing.property_address}</h3>
-                    <p className="text-sm text-gray-600">
+                  <div className="p-3 sm:p-4 border-b">
+                    <h3 className="font-medium text-sm sm:text-base">{showing.property_address}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
                       Completed: {showing.status_updated_at ? new Date(showing.status_updated_at).toLocaleDateString() : 'Recently'}
                     </p>
                   </div>
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     <PostShowingActionsPanel
                       showingId={showing.id}
                       buyerId={userId}
@@ -306,47 +307,55 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
               Welcome back, {displayName}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Find your perfect home with personalized tours
             </p>
           </div>
           
-          <Button onClick={onRequestTour} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Request Tour
-          </Button>
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={onRequestTour} 
+              className="w-full sm:w-auto flex items-center justify-center gap-2 h-10 sm:h-auto"
+              size={isMobile ? "default" : "default"}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm sm:text-base">Request Tour</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="border-b border-gray-200 mb-6">
-          <TabsList className="bg-transparent border-0 p-0 h-auto">
-            {tabs.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="relative px-4 py-3 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600"
-              >
-                <div className="flex items-center gap-2">
-                  <tab.icon className="w-4 h-4" />
-                  <span>{tab.title}</span>
-                  {tab.count > 0 && (
-                    <Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
-                      {tab.count}
-                    </Badge>
-                  )}
-                </div>
-              </TabsTrigger>
-            ))}
+        <div className="border-b border-gray-200 mb-4 sm:mb-6">
+          <TabsList className="bg-transparent border-0 p-0 h-auto w-full justify-start overflow-x-auto">
+            <div className="flex space-x-1 min-w-max px-1">
+              {tabs.map((tab) => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="relative px-3 sm:px-4 py-2 sm:py-3 bg-transparent border-0 rounded-none text-gray-600 font-medium hover:text-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-blue-600 whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">{tab.title}</span>
+                    {tab.count > 0 && (
+                      <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs h-4 min-w-[16px] flex items-center justify-center">
+                        {tab.count}
+                      </Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+              ))}
+            </div>
           </TabsList>
         </div>
 

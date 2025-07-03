@@ -1,160 +1,150 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, AlertCircle, CheckCircle, Calendar, Phone, MapPin } from "lucide-react";
+import { Clock, Calendar, CheckCircle, AlertCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-interface Reminder {
+interface ShowingRequest {
   id: string;
-  type: 'urgent' | 'info' | 'success';
-  title: string;
-  description: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-  icon: React.ReactNode;
+  property_address: string;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  status: string;
+  created_at: string;
 }
 
 interface SmartRemindersProps {
-  showingRequests: any[];
+  showingRequests: ShowingRequest[];
   userType: 'buyer' | 'agent';
-  onSendMessage?: (requestId: string) => void;
 }
 
-const SmartReminders = ({ showingRequests, userType, onSendMessage }: SmartRemindersProps) => {
-  const generateReminders = (): Reminder[] => {
-    const reminders: Reminder[] = [];
-    const now = new Date();
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+const SmartReminders = ({ showingRequests, userType }: SmartRemindersProps) => {
+  const isMobile = useIsMobile();
 
-    showingRequests.forEach(request => {
-      // Tour tomorrow reminder
-      if (request.preferred_date && ['confirmed', 'scheduled'].includes(request.status)) {
-        const tourDate = new Date(request.preferred_date);
-        if (tourDate.toDateString() === tomorrow.toDateString()) {
-          reminders.push({
-            id: `tour-tomorrow-${request.id}`,
-            type: 'urgent',
-            title: 'Tour Tomorrow!',
-            description: `Your tour at ${request.property_address} is at ${request.preferred_time || 'TBD'}`,
-            icon: <Calendar className="h-4 w-4" />,
-            action: request.assigned_agent_phone ? {
-              label: 'Contact Agent',
-              onClick: () => window.open(`tel:${request.assigned_agent_phone}`)
-            } : undefined
-          });
-        }
-      }
+  // Get upcoming reminders
+  const upcomingShowings = showingRequests
+    .filter(showing => 
+      showing.status === 'confirmed' && 
+      showing.preferred_date &&
+      new Date(showing.preferred_date) > new Date()
+    )
+    .sort((a, b) => 
+      new Date(a.preferred_date!).getTime() - new Date(b.preferred_date!).getTime()
+    )
+    .slice(0, 3);
 
-      // Pending confirmation reminder
-      if (request.status === 'confirmed' && userType === 'buyer') {
-        reminders.push({
-          id: `sign-agreement-${request.id}`,
-          type: 'info',
-          title: 'Agreement Pending',
-          description: `Sign tour agreement for ${request.property_address}`,
-          icon: <AlertCircle className="h-4 w-4" />
-        });
-      }
+  const pendingShowings = showingRequests.filter(showing => showing.status === 'pending');
 
-      // New agent assignment
-      if (request.assigned_agent_name && request.status === 'agent_assigned' && userType === 'buyer') {
-        reminders.push({
-          id: `new-agent-${request.id}`,
-          type: 'success',
-          title: 'Agent Assigned!',
-          description: `${request.assigned_agent_name} will handle your tour`,
-          icon: <CheckCircle className="h-4 w-4" />,
-          action: onSendMessage ? {
-            label: 'Send Message',
-            onClick: () => onSendMessage(request.id)
-          } : undefined
-        });
-      }
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return { icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-50' };
+      case 'confirmed':
+        return { icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-50' };
+      case 'completed':
+        return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' };
+      default:
+        return { icon: AlertCircle, color: 'text-gray-600', bgColor: 'bg-gray-50' };
+    }
+  };
 
-      // Prep reminders for tours today/tomorrow
-      if (request.preferred_date && ['confirmed', 'scheduled'].includes(request.status)) {
-        const tourDate = new Date(request.preferred_date);
-        const isToday = tourDate.toDateString() === now.toDateString();
-        const isTomorrow = tourDate.toDateString() === tomorrow.toDateString();
-        
-        if (isToday || isTomorrow) {
-          reminders.push({
-            id: `prep-${request.id}`,
-            type: 'info',
-            title: `Tour ${isToday ? 'Today' : 'Tomorrow'} Prep`,
-            description: 'Bring ID, questions ready, arrive 5 mins early',
-            icon: <Clock className="h-4 w-4" />
-          });
-        }
-      }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isMobile) {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric'
+      });
+    }
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
     });
-
-    return reminders.slice(0, 5); // Limit to 5 reminders
   };
 
-  const getTypeStyles = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'border-l-4 border-l-red-500 bg-red-50';
-      case 'success':
-        return 'border-l-4 border-l-green-500 bg-green-50';
-      default:
-        return 'border-l-4 border-l-blue-500 bg-blue-50';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'text-red-600';
-      case 'success':
-        return 'text-green-600';
-      default:
-        return 'text-blue-600';
-    }
-  };
-
-  const reminders = generateReminders();
+  const reminders = [
+    ...upcomingShowings.map(showing => ({
+      id: showing.id,
+      type: 'upcoming',
+      title: isMobile ? 'Upcoming Tour' : 'Upcoming Showing',
+      description: showing.property_address,
+      date: showing.preferred_date!,
+      time: showing.preferred_time,
+      status: showing.status
+    })),
+    ...pendingShowings.slice(0, 2).map(showing => ({
+      id: showing.id,
+      type: 'pending',
+      title: 'Pending Request',
+      description: showing.property_address,
+      date: showing.created_at,
+      time: null,
+      status: showing.status
+    }))
+  ].slice(0, isMobile ? 3 : 4);
 
   if (reminders.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-base sm:text-lg">Reminders</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-xs sm:text-sm text-gray-500 text-center py-4">
+            No reminders at this time
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-orange-500" />
-          Smart Reminders
-        </CardTitle>
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="text-base sm:text-lg">Reminders</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-3">
-          {reminders.map((reminder) => (
-            <div key={reminder.id} className={`p-3 rounded-lg ${getTypeStyles(reminder.type)}`}>
-              <div className="flex items-start gap-3">
-                <div className={`flex-shrink-0 ${getTypeColor(reminder.type)}`}>
-                  {reminder.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-900">{reminder.title}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{reminder.description}</p>
-                  {reminder.action && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-2 text-xs"
-                      onClick={reminder.action.onClick}
-                    >
-                      {reminder.action.label}
-                    </Button>
-                  )}
+          {reminders.map((reminder) => {
+            const statusInfo = getStatusInfo(reminder.status);
+            const StatusIcon = statusInfo.icon;
+            
+            return (
+              <div 
+                key={reminder.id} 
+                className={`p-3 rounded-lg border ${statusInfo.bgColor} border-gray-200`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                    <StatusIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${statusInfo.color}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                          {reminder.title}
+                        </p>
+                        <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                          {reminder.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-600 truncate mb-1">
+                        {reminder.description}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>{formatDate(reminder.date)}</span>
+                        {reminder.time && (
+                          <>
+                            <span>•</span>
+                            <span>{reminder.time}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

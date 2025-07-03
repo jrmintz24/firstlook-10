@@ -63,41 +63,6 @@ export const useBuyerDashboardData = () => {
     return { pendingRequests, activeShowings, completedShowings };
   }, [showingRequests]);
 
-  const fetchShowingRequests = useCallback(async () => {
-    if (!currentUser) return;
-
-    try {
-      console.log('Fetching showing requests for user:', currentUser.id);
-      
-      const { data: requestsData, error: requestsError } = await supabase
-        .from('showing_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      console.log('Showing requests result:', { 
-        count: requestsData?.length || 0, 
-        error: requestsError,
-        requests: requestsData
-      });
-
-      if (requestsError) {
-        console.error('Requests error:', requestsError);
-        toast({
-          title: "Error",
-          description: "Failed to load showing requests.",
-          variant: "destructive"
-        });
-        setShowingRequests([]);
-      } else {
-        setShowingRequests(requestsData || []);
-      }
-    } catch (error) {
-      console.error('Error fetching showing requests:', error);
-      setShowingRequests([]);
-    }
-  }, [currentUser, toast]);
-
   // Optimized parallel data fetching
   const fetchAllData = useCallback(async () => {
     if (!currentUser) {
@@ -155,7 +120,6 @@ export const useBuyerDashboardData = () => {
           });
           setShowingRequests([]);
         } else {
-          console.log('Successfully loaded showing requests:', requestsData?.length || 0);
           setShowingRequests(requestsData || []);
         }
       }
@@ -186,6 +150,33 @@ export const useBuyerDashboardData = () => {
     }
   }, [currentUser, toast]);
 
+  const fetchShowingRequests = useCallback(async () => {
+    if (!currentUser) return;
+
+    try {
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (requestsError) {
+        console.error('Requests error:', requestsError);
+        toast({
+          title: "Error",
+          description: "Failed to load showing requests.",
+          variant: "destructive"
+        });
+        setShowingRequests([]);
+      } else {
+        setShowingRequests(requestsData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching showing requests:', error);
+      setShowingRequests([]);
+    }
+  }, [currentUser, toast]);
+
   useEffect(() => {
     if (authLoading) return;
     
@@ -197,18 +188,6 @@ export const useBuyerDashboardData = () => {
 
     fetchAllData();
   }, [user, session, authLoading, navigate, fetchAllData]);
-
-  // Set up polling since realtime is failing
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const pollInterval = setInterval(() => {
-      console.log('Polling for updates...');
-      fetchShowingRequests();
-    }, 30000); // Poll every 30 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [currentUser, fetchShowingRequests]);
 
   return {
     profile,

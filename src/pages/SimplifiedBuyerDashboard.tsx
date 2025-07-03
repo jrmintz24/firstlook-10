@@ -1,8 +1,7 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw } from "lucide-react";
+import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
@@ -51,7 +50,7 @@ const SimplifiedBuyerDashboard = () => {
     const statusInfo = getStatusInfo(showing.status as ShowingStatus);
     
     return (
-      <Card key={showing.id} className="hover:shadow-soft-md transition-shadow">
+      <Card key={showing.id} className="hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
@@ -135,21 +134,9 @@ const SimplifiedBuyerDashboard = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}!</h1>
-              <div className="flex items-center gap-2">
-                {isRefreshing && (
-                  <div className="text-sm text-gray-500">Refreshing...</div>
-                )}
-                <Button 
-                  onClick={refreshData} 
-                  variant="outline" 
-                  size="sm"
-                  disabled={isRefreshing}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-              </div>
+              {isRefreshing && (
+                <div className="text-sm text-gray-500">Refreshing...</div>
+              )}
             </div>
             <p className="text-gray-600">Manage your property tours and requests</p>
           </div>

@@ -1,9 +1,10 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useShowingRequestsSubscription } from "./useShowingRequestsSubscription";
 
 interface Profile {
   id: string;
@@ -37,96 +38,120 @@ export const useSimplifiedBuyerData = () => {
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
+  
   const currentUser = user || session?.user;
 
-  // Memoized categorized requests
-  const pendingRequests = showingRequests.filter(req => 
-    ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
-  );
-  
-  const activeShowings = showingRequests.filter(req => 
-    ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
-  );
-  
-  const completedShowings = showingRequests
-    .filter(req => ['completed', 'cancelled'].includes(req.status))
-    .sort((a, b) => {
-      if (a.status !== b.status) {
-        if (a.status === 'completed' && b.status === 'cancelled') return -1;
-        if (a.status === 'cancelled' && b.status === 'completed') return 1;
-      }
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+  // Memoized categorized requests to prevent recalculation
+  const categorizedRequests = useMemo(() => {
+    const pendingRequests = showingRequests.filter(req => 
+      ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
+    );
+    
+    const activeShowings = showingRequests.filter(req => 
+      ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
+    );
+    
+    const completedShowings = showingRequests
+      .filter(req => ['completed', 'cancelled'].includes(req.status))
+      .sort((a, b) => {
+        if (a.status !== b.status) {
+          if (a.status === 'completed' && b.status === 'cancelled') return -1;
+          if (a.status === 'cancelled' && b.status === 'completed') return 1;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
+    return { pendingRequests, activeShowings, completedShowings };
+  }, [showingRequests]);
+
+  // Fetch showing requests
   const fetchShowingRequests = useCallback(async () => {
-    if (!currentUser) {
-      console.log('No current user available for fetchShowingRequests');
-      return;
-    }
+    if (!currentUser) return;
 
     try {
       console.log('Fetching showing requests for user:', currentUser.id);
-      
-      const { data: showingData, error: showingError } = await supabase
+      const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      console.log('Showing requests fetch result:', { showingData, showingError });
-
-      if (showingError) {
-        console.error('Error fetching showing requests:', showingError);
-        throw showingError;
+      if (requestsError) {
+        console.error('Requests error:', requestsError);
+        toast({
+          title: "Error",
+          description: "Failed to load showing requests.",
+          variant: "destructive"
+        });
+        setShowingRequests([]);
+      } else {
+        console.log('Loaded showing requests:', requestsData?.length || 0);
+        setShowingRequests(requestsData || []);
       }
-
-      setShowingRequests(showingData || []);
     } catch (error) {
-      console.error('Error in fetchShowingRequests:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load your showing requests. Please try again.",
-        variant: "destructive"
-      });
+      console.error('Error fetching showing requests:', error);
+      setShowingRequests([]);
     }
   }, [currentUser, toast]);
 
-  const fetchAllData = useCallback(async () => {
+  // Fetch all data
+  const fetchAllData = useCallback(async (isRefresh = false) => {
     if (!currentUser) {
       setLoading(false);
       return;
     }
 
-    console.log('Fetching simplified buyer data for user:', currentUser.id);
-    setIsRefreshing(true);
+    if (isRefresh) {
+      setIsRefreshing(true);
+    }
+
+    console.log('Fetching simplified buyer dashboard data for user:', currentUser.id);
 
     try {
-      // Fetch profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .maybeSingle();
+      // Fetch profile and showing requests in parallel
+      const [profileResult, requestsResult] = await Promise.allSettled([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .maybeSingle(),
+        
+        supabase
+          .from('showing_requests')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+      ]);
 
-      console.log('Profile fetch result:', { profileData, profileError });
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Profile error:', profileError);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data.",
-          variant: "destructive"
-        });
-      } else {
-        setProfile(profileData);
+      // Handle profile result
+      if (profileResult.status === 'fulfilled') {
+        const { data: profileData, error: profileError } = profileResult.value;
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Profile error:', profileError);
+        } else {
+          setProfile(profileData);
+        }
       }
 
-      // Fetch showing requests
-      await fetchShowingRequests();
+      // Handle showing requests result
+      if (requestsResult.status === 'fulfilled') {
+        const { data: requestsData, error: requestsError } = requestsResult.value;
+        if (requestsError) {
+          console.error('Requests error:', requestsError);
+          toast({
+            title: "Error",
+            description: "Failed to load showing requests.",
+            variant: "destructive"
+          });
+          setShowingRequests([]);
+        } else {
+          console.log('Loaded showing requests:', requestsData?.length || 0);
+          setShowingRequests(requestsData || []);
+        }
+      }
 
     } catch (error) {
-      console.error('Error fetching simplified buyer data:', error);
+      console.error('Error fetching dashboard data:', error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data.",
@@ -136,16 +161,19 @@ export const useSimplifiedBuyerData = () => {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [currentUser, toast, fetchShowingRequests]);
+  }, [currentUser, toast]);
 
-  // Refresh data function for manual refresh
   const refreshData = useCallback(async () => {
-    if (!currentUser) return;
-    
-    setIsRefreshing(true);
-    await fetchShowingRequests();
-    setIsRefreshing(false);
-  }, [currentUser, fetchShowingRequests]);
+    console.log('Refreshing simplified buyer dashboard data...');
+    await fetchAllData(true);
+  }, [fetchAllData]);
+
+  // Set up real-time subscription for showing requests
+  useShowingRequestsSubscription({
+    userId: currentUser?.id || null,
+    onDataChange: fetchShowingRequests,
+    enabled: !!currentUser
+  });
 
   useEffect(() => {
     if (authLoading) return;
@@ -159,28 +187,14 @@ export const useSimplifiedBuyerData = () => {
     fetchAllData();
   }, [user, session, authLoading, navigate, fetchAllData]);
 
-  // Set up polling fallback since realtime is failing
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const pollInterval = setInterval(() => {
-      console.log('Polling for showing requests updates...');
-      fetchShowingRequests();
-    }, 30000); // Poll every 30 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [currentUser, fetchShowingRequests]);
-
   return {
     profile,
     loading,
     isRefreshing,
     authLoading,
     currentUser,
-    pendingRequests,
-    activeShowings,
-    completedShowings,
     refreshData,
-    fetchShowingRequests
+    fetchShowingRequests,
+    ...categorizedRequests
   };
 };

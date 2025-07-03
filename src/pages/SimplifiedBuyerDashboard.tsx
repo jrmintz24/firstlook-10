@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
+import { useSimpleBuyerData } from "@/hooks/useSimpleBuyerData";
 import PropertyRequestWizard from "@/components/PropertyRequestWizard";
 import { getStatusInfo, type ShowingStatus } from "@/utils/showingStatus";
 
@@ -22,7 +22,7 @@ const SimplifiedBuyerDashboard = () => {
     completedShowings,
     refreshData,
     fetchShowingRequests
-  } = useSimplifiedBuyerData();
+  } = useSimpleBuyerData();
 
   // Handle successful form submission with data refresh
   const handleFormSuccess = useCallback(async () => {

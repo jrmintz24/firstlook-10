@@ -40,6 +40,11 @@ interface ShowingListTabProps {
   onComplete?: () => void;
   currentUserId?: string;
   agreements?: Record<string, boolean>;
+  eligibility?: {
+    eligible: boolean;
+    reason: string;
+  };
+  onUpgradeClick?: () => void;
 }
 
 const ShowingListTab = ({
@@ -60,7 +65,9 @@ const ShowingListTab = ({
   userType = 'buyer',
   onComplete,
   currentUserId,
-  agreements = {}
+  agreements = {},
+  eligibility,
+  onUpgradeClick
 }: ShowingListTabProps) => {
   if (showings.length === 0) {
     return (
@@ -69,6 +76,9 @@ const ShowingListTab = ({
         description={emptyDescription}
         buttonText={emptyButtonText}
         onButtonClick={emptyButtonText ? onRequestShowing : undefined}
+        onUpgradeClick={onUpgradeClick}
+        showUpgradeButton={true}
+        eligibility={eligibility}
         icon={emptyIcon}
       />
     );

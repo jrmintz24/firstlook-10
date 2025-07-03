@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUnifiedRealtimeManager } from "./useUnifiedRealtimeManager";
+import { useShowingEligibility } from "./useShowingEligibility";
 
 interface UseOptimizedBuyerLogicProps {
   onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
@@ -27,10 +28,12 @@ export const useOptimizedBuyerLogic = () => {
   const [activeShowings, setActiveShowings] = useState<any[]>([]);
   const [completedShowings, setCompletedShowings] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
 
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const { subscribe, unsubscribeAll, getConnectionStatus } = useUnifiedRealtimeManager();
+  const { eligibility, checkEligibility } = useShowingEligibility();
   
   const currentUser = user || session?.user;
 
@@ -41,13 +44,10 @@ export const useOptimizedBuyerLogic = () => {
     completed: completedShowings.length
   }), [pendingRequests.length, activeShowings.length, completedShowings.length]);
 
-  // Add missing computed properties
-  const eligibility = useMemo(() => ({
-    eligible: true,
-    reason: 'subscribed'
-  }), []);
-
-  const isSubscribed = useMemo(() => true, []);
+  // Real eligibility and subscription status
+  const isSubscribed = useMemo(() => {
+    return subscriptionStatus?.subscribed === true;
+  }, [subscriptionStatus]);
 
   // Unified data fetching function
   const fetchData = useCallback(async () => {
@@ -57,7 +57,7 @@ export const useOptimizedBuyerLogic = () => {
       console.log('Fetching buyer dashboard data for user:', currentUser.id);
 
       // Fetch all data in parallel
-      const [profileResult, showingsResult, agreementsResult, messagesResult] = await Promise.all([
+      const [profileResult, showingsResult, agreementsResult, messagesResult, subscriptionResult] = await Promise.all([
         supabase
           .from('profiles')
           .select('*')
@@ -79,13 +79,20 @@ export const useOptimizedBuyerLogic = () => {
           .from('messages')
           .select('id, read_at')
           .eq('receiver_id', currentUser.id)
-          .is('read_at', null)
+          .is('read_at', null),
+
+        supabase
+          .from('subscribers')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .maybeSingle()
       ]);
 
       if (profileResult.error) throw profileResult.error;
       if (showingsResult.error) throw showingsResult.error;
       
       setProfile(profileResult.data);
+      setSubscriptionStatus(subscriptionResult.data);
       
       const showings = showingsResult.data || [];
       setPendingRequests(showings.filter(s => 
@@ -106,6 +113,9 @@ export const useOptimizedBuyerLogic = () => {
         setUnreadCount(messagesResult.data.length);
       }
 
+      // Check eligibility after fetching data
+      await checkEligibility();
+
     } catch (error) {
       console.error('Error fetching buyer dashboard data:', error);
       toast({
@@ -118,7 +128,7 @@ export const useOptimizedBuyerLogic = () => {
       setDetailLoading(false);
       setIsInitialLoad(false);
     }
-  }, [currentUser, toast]);
+  }, [currentUser, toast, checkEligibility]);
 
   // Setup unified realtime subscriptions
   useEffect(() => {
@@ -172,8 +182,13 @@ export const useOptimizedBuyerLogic = () => {
 
   // Handler functions
   const handleRequestShowing = useCallback(() => {
+    // Check eligibility before allowing request
+    if (eligibility && !eligibility.eligible) {
+      setShowSubscribeModal(true);
+      return;
+    }
     setShowPropertyForm(true);
-  }, []);
+  }, [eligibility]);
 
   const handleUpgradeClick = useCallback(() => {
     setShowSubscribeModal(true);
@@ -181,6 +196,7 @@ export const useOptimizedBuyerLogic = () => {
 
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
+    // Refresh data to update eligibility and subscription status
     fetchData();
   }, [fetchData]);
 

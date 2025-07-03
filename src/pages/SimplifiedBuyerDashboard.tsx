@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle } from "lucide-react";
+import { Calendar, Clock, CheckCircle, Plus, MapPin, User, Phone, Mail, RefreshCw, Wifi, WifiOff, AlertCircle, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSimplifiedBuyerData } from "@/hooks/useSimplifiedBuyerData";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
@@ -18,23 +18,25 @@ const SimplifiedBuyerDashboard = () => {
     authLoading,
     currentUser,
     connectionStatus,
+    isConnected,
+    currentPollingInterval,
+    consecutiveErrors,
     pendingRequests,
     activeShowings,
     completedShowings,
     refreshData,
-    fetchShowingRequests
+    fetchShowingRequests,
+    reconnect
   } = useSimplifiedBuyerData();
 
-  // Handle successful form submission with data refresh
+  // Handle successful form submission with optimistic updates
   const handleFormSuccess = useCallback(async () => {
     console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data');
     setShowPropertyForm(false);
     
-    // Add optimistic update - show loading state
-    setTimeout(async () => {
-      await fetchShowingRequests();
-      console.log('SimplifiedBuyerDashboard: Data refresh completed');
-    }, 1000); // Small delay to allow server to process
+    // Immediate refresh to show new request
+    await fetchShowingRequests();
+    console.log('SimplifiedBuyerDashboard: Data refresh completed');
   }, [fetchShowingRequests]);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
@@ -56,6 +58,8 @@ const SimplifiedBuyerDashboard = () => {
     switch (connectionStatus) {
       case 'connected':
         return <Wifi className="h-4 w-4 text-green-500" />;
+      case 'connecting':
+        return <Timer className="h-4 w-4 text-blue-500 animate-spin" />;
       case 'polling':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       case 'error':
@@ -69,10 +73,12 @@ const SimplifiedBuyerDashboard = () => {
     switch (connectionStatus) {
       case 'connected':
         return 'Live updates active';
+      case 'connecting':
+        return 'Connecting to live updates...';
       case 'polling':
-        return 'Checking for updates every 15s';
+        return `Checking for updates every ${Math.round(currentPollingInterval / 1000)}s`;
       case 'error':
-        return 'Connection issues - using manual refresh';
+        return consecutiveErrors > 3 ? 'Connection issues - manual refresh available' : 'Retrying connection...';
       default:
         return 'Connecting...';
     }
@@ -162,28 +168,48 @@ const SimplifiedBuyerDashboard = () => {
     <>
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
+          {/* Enhanced Header with Connection Status */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {displayName}!</h1>
               <div className="flex items-center gap-4">
-                {/* Connection Status */}
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                {/* Enhanced Connection Status */}
+                <div className="flex items-center gap-2 text-sm">
                   {getConnectionStatusIcon()}
-                  <span className="hidden sm:inline">{getConnectionStatusText()}</span>
+                  <div className="flex flex-col">
+                    <span className="hidden sm:inline text-gray-600">{getConnectionStatusText()}</span>
+                    {consecutiveErrors > 0 && (
+                      <span className="text-xs text-red-500">
+                        {consecutiveErrors} connection errors
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
-                {/* Refresh Button */}
-                <Button 
-                  onClick={refreshData} 
-                  variant="outline" 
-                  size="sm"
-                  disabled={isRefreshing}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  <span className="hidden sm:inline">Refresh</span>
-                </Button>
+                {/* Enhanced Refresh Button */}
+                <div className="flex items-center gap-2">
+                  {!isConnected && (
+                    <Button 
+                      onClick={reconnect} 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Wifi className="h-4 w-4" />
+                      <span className="hidden sm:inline">Reconnect</span>
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={refreshData} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={isRefreshing}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <p className="text-gray-600">Manage your property tours and requests</p>

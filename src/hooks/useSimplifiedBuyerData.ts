@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useRealtimeManager } from "./useRealtimeManager";
+import { useEnhancedDataFetching } from "./useEnhancedDataFetching";
 
 interface Profile {
   id: string;
@@ -33,27 +35,82 @@ export const useSimplifiedBuyerData = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'polling' | 'error'>('connected');
   const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const currentUser = user || session?.user;
 
+  // Enhanced data fetching with smart polling
+  const {
+    isRefreshing,
+    startPolling,
+    stopPolling,
+    manualRefresh,
+    currentPollingInterval,
+    consecutiveErrors
+  } = useEnhancedDataFetching({
+    userId: currentUser?.id || null,
+    enabled: !!currentUser
+  });
+
+  // Fetch showing requests with enhanced error handling
+  const fetchShowingRequests = useCallback(async () => {
+    if (!currentUser) return;
+
+    try {
+      console.log('Fetching showing requests for user:', currentUser.id);
+      
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (requestsError) {
+        console.error('Requests error:', requestsError);
+        throw requestsError;
+      }
+
+      console.log('Successfully loaded showing requests:', {
+        total: requestsData?.length || 0,
+        statuses: requestsData?.reduce((acc, req) => {
+          acc[req.status] = (acc[req.status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>) || {}
+      });
+      
+      setShowingRequests(requestsData || []);
+      return requestsData || [];
+    } catch (error) {
+      console.error('Error fetching showing requests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your showing requests. Please try again.",
+        variant: "destructive"
+      });
+      return [];
+    }
+  }, [currentUser, toast]);
+
+  // Centralized realtime manager
+  const { connectionStatus, isConnected, reconnect } = useRealtimeManager({
+    userId: currentUser?.id || null,
+    onShowingRequestsChange: fetchShowingRequests,
+    enabled: !!currentUser
+  });
+
   // Memoized categorized requests
-  const pendingRequests = useMemo(() => 
-    showingRequests.filter(req => 
+  const categorizedRequests = useMemo(() => {
+    const pendingRequests = showingRequests.filter(req => 
       ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
-    ), [showingRequests]);
-  
-  const activeShowings = useMemo(() => 
-    showingRequests.filter(req => 
+    );
+    
+    const activeShowings = showingRequests.filter(req => 
       ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
-    ), [showingRequests]);
-  
-  const completedShowings = useMemo(() => 
-    showingRequests
+    );
+    
+    const completedShowings = showingRequests
       .filter(req => ['completed', 'cancelled'].includes(req.status))
       .sort((a, b) => {
         if (a.status !== b.status) {
@@ -61,78 +118,44 @@ export const useSimplifiedBuyerData = () => {
           if (a.status === 'cancelled' && b.status === 'completed') return 1;
         }
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      }), [showingRequests]);
-
-  const fetchShowingRequests = useCallback(async () => {
-    if (!currentUser) {
-      console.log('No current user available for fetchShowingRequests');
-      return;
-    }
-
-    try {
-      console.log('Fetching showing requests for user:', currentUser.id);
-      
-      const { data: showingData, error: showingError } = await supabase
-        .from('showing_requests')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      console.log('Showing requests fetch result:', { showingData, showingError });
-
-      if (showingError) {
-        console.error('Error fetching showing requests:', showingError);
-        throw showingError;
-      }
-
-      setShowingRequests(showingData || []);
-      setConnectionStatus('connected');
-    } catch (error) {
-      console.error('Error in fetchShowingRequests:', error);
-      setConnectionStatus('error');
-      toast({
-        title: "Error",
-        description: "Failed to load your showing requests. Please try again.",
-        variant: "destructive"
       });
-    }
-  }, [currentUser, toast]);
 
+    return { pendingRequests, activeShowings, completedShowings };
+  }, [showingRequests]);
+
+  // Fetch all data including profile
   const fetchAllData = useCallback(async () => {
     if (!currentUser) {
       setLoading(false);
       return;
     }
 
-    console.log('Fetching simplified buyer data for user:', currentUser.id);
-    setIsRefreshing(true);
+    console.log('Fetching all buyer dashboard data for user:', currentUser.id);
 
     try {
-      // Fetch profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .maybeSingle();
+      // Fetch profile and showing requests in parallel
+      const [profileResult, requestsResult] = await Promise.allSettled([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .maybeSingle(),
+        
+        fetchShowingRequests()
+      ]);
 
-      console.log('Profile fetch result:', { profileData, profileError });
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Profile error:', profileError);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data.",
-          variant: "destructive"
-        });
-      } else {
-        setProfile(profileData);
+      // Handle profile result
+      if (profileResult.status === 'fulfilled') {
+        const { data: profileData, error: profileError } = profileResult.value;
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Profile error:', profileError);
+        } else {
+          setProfile(profileData);
+        }
       }
 
-      // Fetch showing requests
-      await fetchShowingRequests();
-
     } catch (error) {
-      console.error('Error fetching simplified buyer data:', error);
+      console.error('Error fetching dashboard data:', error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data.",
@@ -140,90 +163,21 @@ export const useSimplifiedBuyerData = () => {
       });
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
-  }, [currentUser, toast, fetchShowingRequests]);
+  }, [currentUser, fetchShowingRequests, toast]);
 
   // Manual refresh function
   const refreshData = useCallback(async () => {
     if (!currentUser) return;
     
     console.log('Manual refresh triggered');
-    setIsRefreshing(true);
-    await fetchShowingRequests();
-    setIsRefreshing(false);
-  }, [currentUser, fetchShowingRequests]);
+    const refreshedData = await manualRefresh();
+    if (refreshedData) {
+      setShowingRequests(refreshedData);
+    }
+  }, [currentUser, manualRefresh]);
 
-  // Enhanced real-time setup with circuit breaker pattern
-  useEffect(() => {
-    if (!currentUser) return;
-
-    let retryCount = 0;
-    const maxRetries = 3;
-    let channel: any = null;
-
-    const setupRealtime = () => {
-      console.log('Setting up real-time subscription, attempt:', retryCount + 1);
-      
-      channel = supabase
-        .channel(`showing_requests_${currentUser.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'showing_requests',
-            filter: `user_id=eq.${currentUser.id}`
-          },
-          (payload) => {
-            console.log('Real-time showing request change detected:', payload);
-            fetchShowingRequests();
-          }
-        )
-        .subscribe((status) => {
-          console.log('Showing requests subscription status:', status);
-          
-          if (status === 'SUBSCRIBED') {
-            setConnectionStatus('connected');
-            retryCount = 0; // Reset retry count on success
-          } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
-            console.log('Real-time connection failed, switching to polling');
-            setConnectionStatus('polling');
-            
-            if (retryCount < maxRetries) {
-              retryCount++;
-              setTimeout(setupRealtime, 2000 * retryCount); // Exponential backoff
-            }
-          }
-        });
-    };
-
-    setupRealtime();
-
-    return () => {
-      if (channel) {
-        console.log('Cleaning up showing requests subscription');
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [currentUser, fetchShowingRequests]);
-
-  // Polling fallback when real-time fails
-  useEffect(() => {
-    if (!currentUser || connectionStatus !== 'polling') return;
-
-    console.log('Starting polling mode due to real-time connection issues');
-    const pollInterval = setInterval(() => {
-      console.log('Polling for showing requests updates...');
-      fetchShowingRequests();
-    }, 15000); // Poll every 15 seconds
-
-    return () => {
-      console.log('Stopping polling mode');
-      clearInterval(pollInterval);
-    };
-  }, [currentUser, connectionStatus, fetchShowingRequests]);
-
+  // Initialize data and start polling based on connection status
   useEffect(() => {
     if (authLoading) return;
     
@@ -236,17 +190,44 @@ export const useSimplifiedBuyerData = () => {
     fetchAllData();
   }, [user, session, authLoading, navigate, fetchAllData]);
 
+  // Smart polling management based on realtime connection
+  useEffect(() => {
+    if (!currentUser) return;
+
+    if (isConnected) {
+      console.log('Realtime connected, stopping polling');
+      stopPolling();
+    } else {
+      console.log('Realtime not connected, starting smart polling');
+      startPolling();
+    }
+
+    return () => {
+      stopPolling();
+    };
+  }, [currentUser, isConnected, startPolling, stopPolling]);
+
+  // Enhanced connection status
+  const enhancedConnectionStatus = useMemo(() => {
+    if (connectionStatus === 'connected') return 'connected';
+    if (connectionStatus === 'connecting') return 'connecting';
+    if (consecutiveErrors > 0) return 'error';
+    return 'polling';
+  }, [connectionStatus, consecutiveErrors]);
+
   return {
     profile,
     loading,
     isRefreshing,
     authLoading,
     currentUser,
-    connectionStatus,
-    pendingRequests,
-    activeShowings,
-    completedShowings,
+    connectionStatus: enhancedConnectionStatus,
+    isConnected,
+    currentPollingInterval,
+    consecutiveErrors,
     refreshData,
-    fetchShowingRequests
+    fetchShowingRequests,
+    reconnect,
+    ...categorizedRequests
   };
 };

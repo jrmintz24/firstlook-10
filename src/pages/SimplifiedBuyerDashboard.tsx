@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,24 +20,24 @@ const SimplifiedBuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
-    refreshShowingRequests,
-    optimisticUpdateShowing
+    refreshData,
+    fetchShowingRequests
   } = useSimpleBuyerData();
 
   // Add pending tour handler to process any tours from homepage signup
   const { triggerPendingTourProcessing } = usePendingTourHandler({
     onTourProcessed: async () => {
       console.log('SimplifiedBuyerDashboard: Pending tour processed, refreshing data');
-      await refreshShowingRequests();
+      await refreshData();
     }
   });
 
   // Handle successful form submission with data refresh
   const handleFormSuccess = useCallback(async () => {
     console.log('SimplifiedBuyerDashboard: Tour submitted, refreshing data');
-    await refreshShowingRequests();
+    await refreshData();
     console.log('SimplifiedBuyerDashboard: Data refresh completed');
-  }, [refreshShowingRequests]);
+  }, [refreshData]);
 
   const displayName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : 
                      currentUser?.email?.split('@')[0] || 'User';
@@ -52,6 +53,12 @@ const SimplifiedBuyerDashboard = () => {
       </div>
     );
   }
+
+  // Optimistic update function for showing status changes
+  const optimisticUpdateShowing = useCallback((showingId: string, updates: any) => {
+    // Since useSimpleBuyerData doesn't have optimistic updates, we'll just refresh the data
+    fetchShowingRequests();
+  }, [fetchShowingRequests]);
 
   const renderShowingCard = (showing: any) => {
     const statusInfo = getStatusInfo(showing.status as ShowingStatus);

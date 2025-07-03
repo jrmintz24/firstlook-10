@@ -2,6 +2,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { useAuthValidation } from './useAuthValidation';
 
 interface UseReliableSubscriptionProps {
   channelName: string;
@@ -21,8 +22,13 @@ export const useReliableSubscription = ({
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const retryCountRef = useRef(0);
+  const authRetryCountRef = useRef(0);
   const maxRetries = 5;
+  const maxAuthRetries = 3;
   const baseRetryDelay = 1000;
+  const authRetryDelay = 2000;
+  
+  const { validateAuthSession } = useAuthValidation();
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
@@ -35,15 +41,37 @@ export const useReliableSubscription = ({
     }
   }, [channelName]);
 
-  const setupSubscription = useCallback(() => {
+  const setupSubscription = useCallback(async () => {
     if (!enabled) {
       cleanup();
       return;
     }
 
+    // Validate auth session before attempting subscription
+    const { isValid, userId } = await validateAuthSession();
+    
+    if (!isValid || !userId) {
+      console.warn(`Auth not ready for subscription: ${channelName}. Retrying...`);
+      
+      // Retry auth validation up to maxAuthRetries times
+      if (authRetryCountRef.current < maxAuthRetries) {
+        authRetryCountRef.current++;
+        retryTimeoutRef.current = setTimeout(() => {
+          setupSubscription();
+        }, authRetryDelay);
+      } else {
+        console.error(`Max auth retries reached for ${channelName}. Subscription aborted.`);
+        authRetryCountRef.current = 0; // Reset for future attempts
+      }
+      return;
+    }
+
+    // Reset auth retry count on successful validation
+    authRetryCountRef.current = 0;
+
     cleanup();
 
-    console.log(`Setting up reliable subscription: ${channelName}`);
+    console.log(`Setting up reliable subscription: ${channelName} for user: ${userId}`);
 
     const channel = supabase
       .channel(channelName)
@@ -67,7 +95,7 @@ export const useReliableSubscription = ({
           retryCountRef.current = 0;
           console.log(`Successfully subscribed to ${channelName}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(`${channelName} subscription error`);
+          console.error(`${channelName} subscription error - Auth valid: ${isValid}, User ID: ${userId}`);
           
           if (retryCountRef.current < maxRetries) {
             const delay = baseRetryDelay * Math.pow(2, retryCountRef.current);
@@ -86,7 +114,7 @@ export const useReliableSubscription = ({
       });
 
     channelRef.current = channel;
-  }, [channelName, table, filter, onDataChange, enabled, cleanup]);
+  }, [channelName, table, filter, onDataChange, enabled, cleanup, validateAuthSession]);
 
   useEffect(() => {
     setupSubscription();
@@ -95,6 +123,7 @@ export const useReliableSubscription = ({
 
   useEffect(() => {
     retryCountRef.current = 0;
+    authRetryCountRef.current = 0;
   }, [enabled]);
 
   return {

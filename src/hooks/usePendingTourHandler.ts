@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthValidation } from "./useAuthValidation";
 
 interface UsePendingTourHandlerProps {
   onTourProcessed?: () => Promise<void>;
@@ -16,6 +17,8 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
   const hasProcessedRef = useRef(false);
   const processingRef = useRef(false);
   const userIdRef = useRef<string | null>(null);
+  
+  const { validateAuthSession } = useAuthValidation();
 
   const processPendingTour = useCallback(async () => {
     if (loading || !user || hasProcessedRef.current || processingRef.current) {
@@ -25,6 +28,18 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
         hasProcessed: hasProcessedRef.current,
         processing: processingRef.current
       });
+      return;
+    }
+
+    // Validate auth session before processing
+    const { isValid, userId } = await validateAuthSession();
+    
+    if (!isValid || !userId) {
+      console.warn('usePendingTourHandler: Invalid auth session, delaying tour processing');
+      // Retry after a short delay
+      setTimeout(() => {
+        processPendingTour();
+      }, 2000);
       return;
     }
 
@@ -70,15 +85,15 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
       const preferredDate = preferredOptions[0]?.date || '';
       const preferredTime = preferredOptions[0]?.time || '';
 
-      // Create the showing request with "pending" status for manual agent assignment
+      // Create the showing request with validated user ID
       const showingRequest = {
-        user_id: user.id,
+        user_id: userId, // Use validated user ID
         property_address: tourData.propertyAddress,
         preferred_date: preferredDate || null,
         preferred_time: preferredTime || null,
         message: tourData.notes || null,
         internal_notes: preferredOptions.length > 1 ? JSON.stringify({ preferredOptions }) : null,
-        status: 'pending', // Always start as pending for manual assignment
+        status: 'pending',
         assigned_agent_id: null,
         assigned_agent_name: null,
         assigned_agent_phone: null,
@@ -152,7 +167,7 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
     } finally {
       processingRef.current = false;
     }
-  }, [user, loading, toast, onTourProcessed, navigate]);
+  }, [user, loading, toast, onTourProcessed, navigate, validateAuthSession]);
 
   // Reset flags when user changes
   useEffect(() => {
@@ -165,10 +180,10 @@ export const usePendingTourHandler = ({ onTourProcessed }: UsePendingTourHandler
   }, [user]);
 
   useEffect(() => {
-    // Wait for auth to be ready, then process
+    // Wait for auth to be ready, then process with additional buffer
     if (!loading && user && !hasProcessedRef.current) {
-      // Add a small delay to ensure auth state is fully settled
-      const timeoutId = setTimeout(processPendingTour, 500);
+      // Add a buffer to ensure auth state is fully settled
+      const timeoutId = setTimeout(processPendingTour, 1500); // Increased buffer
       return () => clearTimeout(timeoutId);
     }
   }, [loading, user, processPendingTour]);

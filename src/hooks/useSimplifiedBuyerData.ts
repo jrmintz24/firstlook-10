@@ -1,200 +1,197 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { useShowingRequestsSubscription } from "./useShowingRequestsSubscription";
-
-interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  user_type: string;
-  free_showing_used?: boolean;
-}
-
-interface ShowingRequest {
-  id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_name?: string | null;
-  assigned_agent_phone?: string | null;
-  assigned_agent_email?: string | null;
-  estimated_confirmation_date?: string | null;
-  status_updated_at?: string | null;
-}
+import { useAuth } from "@/contexts/AuthContext";
+import { useSimplifiedRealtime } from "./useSimplifiedRealtime";
+import { useAuthValidation } from "./useAuthValidation";
 
 export const useSimplifiedBuyerData = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
+  const { user: currentUser, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [showingRequests, setShowingRequests] = useState<any[]>([]);
+  const [agreements, setAgreements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const { toast } = useToast();
-  const { user, session, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(false);
   
-  const currentUser = user || session?.user;
-
-  // Memoized categorized requests to prevent recalculation
-  const categorizedRequests = useMemo(() => {
-    const pendingRequests = showingRequests.filter(req => 
-      ['pending', 'submitted', 'under_review', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
-    );
-    
-    const activeShowings = showingRequests.filter(req => 
-      ['confirmed', 'agent_confirmed', 'scheduled'].includes(req.status)
-    );
-    
-    const completedShowings = showingRequests
-      .filter(req => ['completed', 'cancelled'].includes(req.status))
-      .sort((a, b) => {
-        if (a.status !== b.status) {
-          if (a.status === 'completed' && b.status === 'cancelled') return -1;
-          if (a.status === 'cancelled' && b.status === 'completed') return 1;
-        }
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-
-    return { pendingRequests, activeShowings, completedShowings };
-  }, [showingRequests]);
+  const { validateAuthSession } = useAuthValidation();
 
   // Fetch showing requests
   const fetchShowingRequests = useCallback(async () => {
-    if (!currentUser) return;
-
+    if (!currentUser?.id) return;
+    
     try {
       console.log('Fetching showing requests for user:', currentUser.id);
-      const { data: requestsData, error: requestsError } = await supabase
+      
+      const { data, error } = await supabase
         .from('showing_requests')
-        .select('*')
+        .select(`
+          *,
+          tour_agreements(*)
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
-      if (requestsError) {
-        console.error('Requests error:', requestsError);
-        toast({
-          title: "Error",
-          description: "Failed to load showing requests.",
-          variant: "destructive"
-        });
-        setShowingRequests([]);
-      } else {
-        console.log('Loaded showing requests:', requestsData?.length || 0);
-        setShowingRequests(requestsData || []);
-      }
+      if (error) throw error;
+      
+      console.log('Fetched showing requests:', data?.length || 0);
+      setShowingRequests(data || []);
     } catch (error) {
       console.error('Error fetching showing requests:', error);
       setShowingRequests([]);
     }
-  }, [currentUser, toast]);
+  }, [currentUser?.id]);
 
-  // Fetch all data
-  const fetchAllData = useCallback(async (isRefresh = false) => {
-    if (!currentUser) {
-      setLoading(false);
-      return;
-    }
-
-    if (isRefresh) {
-      setIsRefreshing(true);
-    }
-
-    console.log('Fetching simplified buyer dashboard data for user:', currentUser.id);
-
+  // Fetch profile
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser?.id) return;
+    
     try {
-      // Fetch profile and showing requests in parallel
-      const [profileResult, requestsResult] = await Promise.allSettled([
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle(),
-        
-        supabase
-          .from('showing_requests')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false })
-      ]);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
 
-      // Handle profile result
-      if (profileResult.status === 'fulfilled') {
-        const { data: profileData, error: profileError } = profileResult.value;
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile error:', profileError);
-        } else {
-          setProfile(profileData);
-        }
-      }
-
-      // Handle showing requests result
-      if (requestsResult.status === 'fulfilled') {
-        const { data: requestsData, error: requestsError } = requestsResult.value;
-        if (requestsError) {
-          console.error('Requests error:', requestsError);
-          toast({
-            title: "Error",
-            description: "Failed to load showing requests.",
-            variant: "destructive"
-          });
-          setShowingRequests([]);
-        } else {
-          console.log('Loaded showing requests:', requestsData?.length || 0);
-          setShowingRequests(requestsData || []);
-        }
-      }
-
+      if (error) throw error;
+      setProfile(data);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
+      console.error('Error fetching profile:', error);
+      setProfile(null);
     }
-  }, [currentUser, toast]);
+  }, [currentUser?.id]);
 
-  const refreshData = useCallback(async () => {
-    console.log('Refreshing simplified buyer dashboard data...');
-    await fetchAllData(true);
-  }, [fetchAllData]);
+  // Fetch agreements
+  const fetchAgreements = useCallback(async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('tour_agreements')
+        .select('*')
+        .eq('buyer_id', currentUser.id);
 
-  // Set up real-time subscription for showing requests
-  useShowingRequestsSubscription({
+      if (error) throw error;
+      setAgreements(data || []);
+    } catch (error) {
+      console.error('Error fetching agreements:', error);
+      setAgreements([]);
+    }
+  }, [currentUser?.id]);
+
+  // Enable subscriptions with auth validation and buffer
+  useEffect(() => {
+    const enableSubscriptions = async () => {
+      if (!currentUser?.id || authLoading) {
+        setSubscriptionsEnabled(false);
+        return;
+      }
+
+      // Add a small buffer to allow auth state to settle
+      setTimeout(async () => {
+        const { isValid } = await validateAuthSession();
+        
+        if (isValid) {
+          console.log('Enabling subscriptions for user:', currentUser.id);
+          setSubscriptionsEnabled(true);
+        } else {
+          console.warn('Auth session not valid, delaying subscription setup');
+          // Retry after another buffer period
+          setTimeout(async () => {
+            const { isValid: retryValid } = await validateAuthSession();
+            if (retryValid) {
+              setSubscriptionsEnabled(true);
+            }
+          }, 2000);
+        }
+      }, 1000); // 1 second buffer
+    };
+
+    enableSubscriptions();
+  }, [currentUser?.id, authLoading, validateAuthSession]);
+
+  // Initial data loading
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (!currentUser?.id || authLoading) return;
+      
+      setLoading(true);
+      await Promise.all([
+        fetchProfile(),
+        fetchShowingRequests(),
+        fetchAgreements()
+      ]);
+      setLoading(false);
+      setIsInitialLoad(false);
+    };
+
+    loadInitialData();
+  }, [currentUser?.id, authLoading, fetchProfile, fetchShowingRequests, fetchAgreements]);
+
+  // Set up simplified realtime connection with auth validation
+  useSimplifiedRealtime({
     userId: currentUser?.id || null,
-    onDataChange: fetchShowingRequests,
-    enabled: !!currentUser
+    onShowingRequestsChange: fetchShowingRequests,
+    enabled: subscriptionsEnabled && !!currentUser?.id
   });
 
-  useEffect(() => {
-    if (authLoading) return;
-    
-    if (!user && !session) {
-      setLoading(false);
-      navigate('/');
-      return;
-    }
+  // Optimistic update function
+  const optimisticUpdateShowing = useCallback((showingId: string, updates: any) => {
+    setShowingRequests(prev => 
+      prev.map(showing => 
+        showing.id === showingId 
+          ? { ...showing, ...updates }
+          : showing
+      )
+    );
+  }, []);
 
-    fetchAllData();
-  }, [user, session, authLoading, navigate, fetchAllData]);
+  // Categorize showings
+  const { pendingRequests, activeShowings, completedShowings } = useMemo(() => {
+    const pending = showingRequests.filter(req => 
+      ['pending', 'agent_assigned', 'awaiting_agreement'].includes(req.status)
+    );
+    const active = showingRequests.filter(req => 
+      ['confirmed'].includes(req.status)
+    );
+    const completed = showingRequests.filter(req => 
+      ['completed'].includes(req.status)
+    );
+
+    return {
+      pendingRequests: pending,
+      activeShowings: active,
+      completedShowings: completed
+    };
+  }, [showingRequests]);
+
+  // Calculate showing counts
+  const showingCounts = useMemo(() => ({
+    pending: pendingRequests.length,
+    active: activeShowings.length,
+    completed: completedShowings.length,
+    total: showingRequests.length
+  }), [pendingRequests.length, activeShowings.length, completedShowings.length, showingRequests.length]);
 
   return {
+    // Data
     profile,
+    showingCounts,
+    agreements,
+    pendingRequests,
+    activeShowings,
+    completedShowings,
+    
+    // Loading states
     loading,
-    isRefreshing,
+    detailLoading,
     authLoading,
+    isInitialLoad,
     currentUser,
-    refreshData,
-    fetchShowingRequests,
-    ...categorizedRequests
+    
+    // Functions
+    refreshShowingRequests: fetchShowingRequests,
+    optimisticUpdateShowing
   };
 };

@@ -8,6 +8,7 @@ export const usePostShowingDashboardData = (userId: string) => {
   const [postShowingActions, setPostShowingActions] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [agentConnections, setAgentConnections] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -42,6 +43,15 @@ export const usePostShowingDashboardData = (userId: string) => {
         .order('created_at', { ascending: false });
 
       if (favoritesError) throw favoritesError;
+
+      // Get offers
+      const { data: offersData, error: offersError } = await supabase
+        .from('offer_intents')
+        .select('*')
+        .eq('buyer_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (offersError) throw offersError;
 
       // Get buyer-agent matches first
       const { data: matchesData, error: matchesError } = await supabase
@@ -106,6 +116,7 @@ export const usePostShowingDashboardData = (userId: string) => {
       setCompletedShowings(showingsData || []);
       setPostShowingActions(actionsData || []);
       setFavorites(favoritesData || []);
+      setOffers(offersData || []);
       setAgentConnections(connectionsWithAgents || []);
       setLoading(false);
 
@@ -162,6 +173,24 @@ export const usePostShowingDashboardData = (userId: string) => {
       )
       .subscribe();
 
+    // Subscribe to offer intents
+    const offersChannel = supabase
+      .channel(`offer_intents_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'offer_intents',
+          filter: `buyer_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('Offer intents change:', payload);
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
     // Subscribe to buyer-agent matches
     const matchesChannel = supabase
       .channel(`buyer_agent_matches_${userId}`)
@@ -205,6 +234,7 @@ export const usePostShowingDashboardData = (userId: string) => {
       console.log('Cleaning up post-showing dashboard subscriptions');
       supabase.removeChannel(favoritesChannel);
       supabase.removeChannel(actionsChannel);
+      supabase.removeChannel(offersChannel);
       supabase.removeChannel(matchesChannel);
       supabase.removeChannel(showingsChannel);
     };
@@ -220,6 +250,7 @@ export const usePostShowingDashboardData = (userId: string) => {
     totalActions: postShowingActions.length,
     favoritedProperties: favorites.length,
     agentConnections: agentConnections.length,
+    offers: offers.length,
     offerIntents: postShowingActions.filter(action => action.action_type === 'offer_intent').length
   };
 
@@ -233,6 +264,7 @@ export const usePostShowingDashboardData = (userId: string) => {
     completedShowings,
     postShowingActions,
     favorites,
+    offers,
     agentConnections,
     loading,
     actionsSummary,

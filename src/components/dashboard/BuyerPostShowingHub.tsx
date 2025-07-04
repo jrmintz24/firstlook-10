@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, TrendingUp, FileText } from "lucide-react";
+import { Heart, MessageCircle, FileText, TrendingUp } from "lucide-react";
 import { usePostShowingDashboardData } from "@/hooks/usePostShowingDashboardData";
 import PostShowingActionsPanel from "@/components/post-showing/PostShowingActionsPanel";
 import AgentConnectionCard from "@/components/dashboard/AgentConnectionCard";
+import OfferTabContent from "@/components/dashboard/OfferTabContent";
 
 interface BuyerPostShowingHubProps {
   buyerId: string;
@@ -17,6 +18,7 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
     completedShowings, 
     postShowingActions, 
     favorites, 
+    offers,
     agentConnections,
     loading,
     refreshData
@@ -40,6 +42,11 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
     }
   };
 
+  const handleCreateOffer = () => {
+    // TODO: Implement create offer functionality
+    console.log('Create offer clicked');
+  };
+
   if (loading) {
     return (
       <Card>
@@ -58,6 +65,7 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
     total: completedShowings.length,
     withActions: postShowingActions.length,
     favorites: favorites.length,
+    offers: offers.length,
     agentConnections: agentConnections.length
   };
 
@@ -102,9 +110,9 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-900 leading-none mb-1">
-                {showingStats.withActions}
+                {showingStats.offers}
               </div>
-              <div className="text-sm text-gray-600">Actions Taken</div>
+              <div className="text-sm text-gray-600">Offers Created</div>
             </div>
           </CardContent>
         </Card>
@@ -120,6 +128,7 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
             <TabsList>
               <TabsTrigger value="recent">Recent Tours</TabsTrigger>
               <TabsTrigger value="favorites">Favorites ({showingStats.favorites})</TabsTrigger>
+              <TabsTrigger value="offers">Offers ({showingStats.offers})</TabsTrigger>
               <TabsTrigger value="connections">Agent Connections ({showingStats.agentConnections})</TabsTrigger>
             </TabsList>
 
@@ -228,6 +237,13 @@ const BuyerPostShowingHub = ({ buyerId }: BuyerPostShowingHubProps) => {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="offers" className="space-y-4">
+              <OfferTabContent 
+                buyerId={buyerId} 
+                onCreateOffer={handleCreateOffer}
+              />
             </TabsContent>
 
             <TabsContent value="connections" className="space-y-4">

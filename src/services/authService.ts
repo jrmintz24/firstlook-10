@@ -12,20 +12,12 @@ export const signUp = async (
   password: string,
   metadata: Record<string, unknown> & { user_type?: string }
 ): Promise<{ error: AuthError | null; data?: any }> => {
-  const userType = metadata.user_type || 'buyer';
-  const redirectPath = userType === 'agent'
-    ? '/agent-dashboard'
-    : userType === 'admin'
-    ? '/admin-dashboard'
-    : '/buyer-dashboard';
-
-  console.log('authService.signUp - User type:', userType, 'Metadata:', metadata);
+  console.log('authService.signUp - User type:', metadata.user_type, 'Metadata:', metadata);
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${getRedirectUrl()}${redirectPath}`,
       data: metadata
     }
   });

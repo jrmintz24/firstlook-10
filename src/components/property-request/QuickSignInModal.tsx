@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +20,25 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [loading, setLoading] = useState(false);
   const { signUp, signIn, user } = useAuth();
   const { toast } = useToast();
+
+  // Watch for user authentication after signup
+  useEffect(() => {
+    if (user && loading && isSignUp) {
+      console.log('User authenticated after signup');
+      setLoading(false);
+      
+      toast({
+        title: "Account Created!",
+        description: "Welcome to FirstLook! Processing your tour request...",
+      });
+      
+      onClose();
+      setTimeout(() => {
+        console.log('Calling onSuccess callback after signup');
+        onSuccess();
+      }, 500);
+    }
+  }, [user, loading, isSignUp, onClose, onSuccess, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,37 +57,8 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign up successful, checking if user is immediately authenticated...');
-        
-        // Wait a moment for auth state to potentially update
-        setTimeout(() => {
-          if (user) {
-            // User is authenticated immediately (email confirmation disabled)
-            console.log('User authenticated after signup');
-            toast({
-              title: "Account Created!",
-              description: "Welcome to FirstLook! Processing your tour request...",
-            });
-            
-            onClose();
-            setTimeout(() => {
-              console.log('Calling onSuccess callback after signup');
-              onSuccess();
-            }, 500);
-          } else {
-            // User needs to confirm email
-            console.log('Signup successful but email confirmation required');
-            toast({
-              title: "Account Created!",
-              description: "Please check your email to confirm your account, then sign in below.",
-            });
-            
-            // Switch to sign in mode
-            setIsSignUp(false);
-            setPassword(''); // Clear password for security
-          }
-          setLoading(false);
-        }, 1000);
+        console.log('Sign up successful, waiting for auth state update...');
+        // The useEffect above will handle the success case when user becomes authenticated
         
       } else {
         console.log('Quick sign in attempt for:', email);
@@ -79,16 +69,14 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         }
         
         console.log('Sign in successful');
+        setLoading(false);
         
         toast({
           title: "Welcome Back!",
           description: "Processing your tour request...",
         });
         
-        // Close modal immediately for sign in
         onClose();
-        
-        // Small delay to allow auth state to settle, then call success callback
         setTimeout(() => {
           console.log('Calling onSuccess callback after sign in');
           onSuccess();
@@ -107,8 +95,6 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         setIsSignUp(false);
       } else if (error.message?.includes('Invalid login credentials')) {
         errorMessage = "Invalid email or password. Please check your credentials.";
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Please check your email and click the confirmation link, then try signing in again.";
       }
       
       toast({

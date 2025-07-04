@@ -18,7 +18,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,12 +38,37 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           throw result.error;
         }
         
-        console.log('Sign up successful');
+        console.log('Sign up successful, checking if user is immediately authenticated...');
         
-        toast({
-          title: "Account Created!",
-          description: "Welcome to FirstLook! Processing your tour request...",
-        });
+        // Wait a moment for auth state to potentially update
+        setTimeout(() => {
+          if (user) {
+            // User is authenticated immediately (email confirmation disabled)
+            console.log('User authenticated after signup');
+            toast({
+              title: "Account Created!",
+              description: "Welcome to FirstLook! Processing your tour request...",
+            });
+            
+            onClose();
+            setTimeout(() => {
+              console.log('Calling onSuccess callback after signup');
+              onSuccess();
+            }, 500);
+          } else {
+            // User needs to confirm email
+            console.log('Signup successful but email confirmation required');
+            toast({
+              title: "Account Created!",
+              description: "Please check your email to confirm your account, then sign in below.",
+            });
+            
+            // Switch to sign in mode
+            setIsSignUp(false);
+            setPassword(''); // Clear password for security
+          }
+          setLoading(false);
+        }, 1000);
         
       } else {
         console.log('Quick sign in attempt for:', email);
@@ -59,19 +84,20 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
           title: "Welcome Back!",
           description: "Processing your tour request...",
         });
+        
+        // Close modal immediately for sign in
+        onClose();
+        
+        // Small delay to allow auth state to settle, then call success callback
+        setTimeout(() => {
+          console.log('Calling onSuccess callback after sign in');
+          onSuccess();
+        }, 500);
       }
-      
-      // Close modal immediately
-      onClose();
-      
-      // Small delay to allow auth state to settle, then call success callback
-      setTimeout(() => {
-        console.log('Calling onSuccess callback');
-        onSuccess();
-      }, 500);
       
     } catch (error: any) {
       console.error('Auth error:', error);
+      setLoading(false);
       
       let errorMessage = error.message || "Failed to authenticate. Please try again.";
       
@@ -82,7 +108,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
       } else if (error.message?.includes('Invalid login credentials')) {
         errorMessage = "Invalid email or password. Please check your credentials.";
       } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Please check your email and click the confirmation link.";
+        errorMessage = "Please check your email and click the confirmation link, then try signing in again.";
       }
       
       toast({
@@ -90,8 +116,6 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
         description: errorMessage,
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 

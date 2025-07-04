@@ -23,16 +23,16 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
           </h1>
           
           <h2 className="text-4xl md:text-6xl font-extralight text-gray-900 mb-6 tracking-tight leading-tight max-w-4xl mx-auto">
-            Finally, a Homebuying Platform That Gets You
+            The Smarter Way to Buy a Home
           </h2>
           
           <h3 className="text-2xl md:text-4xl font-light text-gray-800 mb-8 leading-tight tracking-tight max-w-4xl mx-auto">
-            No pushy agents. <span className="font-medium text-gray-900">No awkward commitments.</span>
+            A modern approach without pressure or contracts.
           </h3>
           
           <div className="space-y-4 mb-12">
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-              Just honest tools, clear pricing, and real savings.
+              Expert help. On your terms.
             </p>
           </div>
           

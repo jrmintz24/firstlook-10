@@ -1,3 +1,4 @@
+
 const HowItWorks = () => {
   const steps = [
     {
@@ -13,7 +14,7 @@ const HowItWorks = () => {
     {
       emoji: "🎯",
       title: "Choose Your Offer Path",
-      description: "• **Self-guided contract**\n• **Agent-coached strategy** — You decide how hands-on you want to be.",
+      description: "• Self-guided contract\n• Agent-coached strategy — You decide how hands-on you want to be.",
     },
     {
       emoji: "🤝",
@@ -52,7 +53,26 @@ const HowItWorks = () => {
                 <span className="text-sm font-semibold text-gray-700">Step {index + 1}</span>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center w-full">{step.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{step.description}</p>
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                {step.description.split('\n').map((line, lineIndex) => {
+                  if (line.includes('Self-guided contract') || line.includes('Agent-coached strategy')) {
+                    const parts = line.split('—');
+                    return (
+                      <span key={lineIndex}>
+                        <strong>{parts[0].trim()}</strong>
+                        {parts[1] && ` — ${parts[1].trim()}`}
+                        {lineIndex < step.description.split('\n').length - 1 && <br />}
+                      </span>
+                    );
+                  }
+                  return (
+                    <span key={lineIndex}>
+                      {line}
+                      {lineIndex < step.description.split('\n').length - 1 && <br />}
+                    </span>
+                  );
+                })}
+              </p>
             </div>
           ))}
         </div>

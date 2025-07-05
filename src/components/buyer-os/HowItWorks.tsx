@@ -1,5 +1,3 @@
-
-
 const HowItWorks = () => {
   const steps = [
     {
@@ -15,7 +13,7 @@ const HowItWorks = () => {
     {
       emoji: "🎯",
       title: "Choose Your Offer Path",
-      description: "• Self-guided contract\n• Agent-coached strategy — You decide how hands-on you want to be.",
+      description: "• **Self-guided contract**\n• **Agent-coached strategy** — You decide how hands-on you want to be.",
     },
     {
       emoji: "🤝",
@@ -25,7 +23,7 @@ const HowItWorks = () => {
     {
       emoji: "💰",
       title: "Unlock Pro Rewards",
-      description: "FirstLook Members earn serious rebates — often $5K+. Upgrade when you're ready.",
+      description: "FirstLook Members earn serious rebates — often $20K+. Upgrade when you're ready.",
     },
   ];
 
@@ -64,4 +62,3 @@ const HowItWorks = () => {
 };
 
 export default HowItWorks;
-

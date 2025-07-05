@@ -125,14 +125,9 @@ const FAQ = () => {
       {/* Hero Section */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-blue-50/30" />
-        <div className="relative container mx-auto px-6 py-24 lg:py-32">
+        <div className="relative container mx-auto px-6 py-16 lg:py-20">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-full px-4 py-2 mb-8">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-gray-700">Your questions, answered</span>
-            </div>
-            
-            <h1 className="text-5xl lg:text-7xl font-extralight tracking-tight text-gray-900 mb-8 leading-[1.1]">
+            <h1 className="text-5xl lg:text-7xl font-extralight tracking-tight text-gray-900 mb-6 leading-[1.1]">
               Everything You Need
               <br />
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
@@ -197,7 +192,7 @@ const FAQ = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center max-w-3xl mx-auto mt-24">
+        <div className="text-center max-w-3xl mx-auto mt-20">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-3xl" />
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl" />

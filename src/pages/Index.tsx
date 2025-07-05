@@ -4,8 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
 import HowItWorks from '../components/buyer-os/HowItWorks'
-import TrustStory from '../components/buyer-os/TrustStory'
-import IndustryContext from '../components/buyer-os/IndustryContext'
+import IndustryAndStories from '../components/buyer-os/IndustryAndStories'
 import CommissionExplainer from '../components/buyer-os/CommissionExplainer'
 import PricingSection from '../components/buyer-os/PricingSection'
 import FAQSection from '../components/buyer-os/FAQSection'
@@ -79,11 +78,8 @@ export default function Index() {
       {/* How It Works */}
       <HowItWorks />
 
-      {/* Trust Stories */}
-      <TrustStory />
-
-      {/* Industry Context - Why FirstLook Exists */}
-      <IndustryContext />
+      {/* Industry Context + Real Buyer Stories Combined */}
+      <IndustryAndStories />
 
       {/* Commission Explainer */}
       <CommissionExplainer />

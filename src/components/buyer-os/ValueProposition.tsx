@@ -36,12 +36,12 @@ const ValueProposition = () => {
   ];
 
   return (
-    <div className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+    <div className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 via-transparent to-purple-100/20"></div>
       
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
-        <div className="text-center mb-16 max-w-5xl mx-auto">
+        <div className="text-center mb-12 max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight leading-tight">
             Why FirstLook?
           </h2>

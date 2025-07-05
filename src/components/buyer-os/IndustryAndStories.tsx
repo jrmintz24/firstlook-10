@@ -26,7 +26,7 @@ const IndustryAndStories = () => {
   return (
     <div>
       {/* Industry Context Section */}
-      <div className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-white">
+      <div className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
         <div className="container mx-auto px-6 sm:px-8">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-6">
@@ -110,15 +110,15 @@ const IndustryAndStories = () => {
       </div>
 
       {/* Real Buyer Stories Section */}
-      <div className="py-16 sm:py-20 bg-white">
+      <div className="py-12 sm:py-16 bg-white">
         <div className="container mx-auto px-6 sm:px-8">
-          <div className="text-center mb-16 max-w-4xl mx-auto">
+          <div className="text-center mb-12 max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight">
               Real Buyer Stories
             </h2>
           </div>
           
-          <div className="space-y-16">
+          <div className="space-y-12">
             {stories.map((story, index) => (
               <div key={index} className="max-w-4xl mx-auto">
                 <div className="text-center mb-8">

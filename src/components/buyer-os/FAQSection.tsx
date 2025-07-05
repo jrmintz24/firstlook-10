@@ -59,9 +59,9 @@ const FAQSection = () => {
   ];
 
   return (
-    <div className="py-16 sm:py-24 bg-white">
+    <div className="py-12 sm:py-18 bg-white">
       <div className="mx-auto max-w-4xl px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center mb-16">
+        <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-4xl sm:text-5xl font-light tracking-tight text-gray-900 mb-6">
             Everything You Need to Know About Touring, Offers, and Buying With FirstLook
           </h2>
@@ -85,7 +85,7 @@ const FAQSection = () => {
         </Accordion>
 
         {/* Ready to Start CTA */}
-        <div className="mt-16 text-center">
+        <div className="mt-12 text-center">
           <div className="bg-gradient-to-br from-gray-900 to-blue-900 rounded-3xl p-8 sm:p-12 text-white">
             <h3 className="text-3xl sm:text-4xl font-light mb-6 tracking-tight">
               🏁 Ready to Start Touring?

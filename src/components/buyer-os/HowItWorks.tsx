@@ -2,22 +2,27 @@
 const HowItWorks = () => {
   const steps = [
     {
+      emoji: "🏠",
       title: "Drop an Address",
       description: "Just enter the home you want to see. No gatekeepers, no logins.",
     },
     {
+      emoji: "📅",
       title: "Schedule Your Tour",
       description: "Pick your time — we'll handle the rest. Meet a local FirstLook Pro or tour solo.",
     },
     {
+      emoji: "🎯",
       title: "Choose Your Offer Path",
       description: "✅ Self-guided contract  ✅ Agent-coached strategy  — You decide how hands-on you want to be.",
     },
     {
+      emoji: "🤝",
       title: "Get Extra Help, Anytime",
       description: "Tap into real estate expertise only when needed. No pressure. All on-demand.",
     },
     {
+      emoji: "💰",
       title: "Unlock Pro Rewards",
       description: "FirstLook Members earn serious rebates — often $5K+. Upgrade when you're ready.",
     },
@@ -42,8 +47,8 @@ const HowItWorks = () => {
               className="flex flex-col items-start p-6 rounded-2xl bg-white shadow-sm w-full md:w-1/5 hover:shadow-md transition-all duration-300"
             >
               <div className="flex items-center mb-4">
-                <div className="h-6 w-6 border-2 border-gray-400 rounded-full flex items-center justify-center text-sm font-medium mr-2">
-                  {index + 1}
+                <div className="text-2xl mr-3">
+                  {step.emoji}
                 </div>
                 <span className="text-sm font-semibold text-gray-700">Step {index + 1}</span>
               </div>

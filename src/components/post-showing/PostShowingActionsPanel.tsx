@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ const PostShowingActionsPanel = ({
   const handleScheduleAnotherTour = async () => {
     // Record the action for analytics
     await scheduleAnotherTour(buyerId, showingId);
-    await handleActionComplete('schedule_another_tour');
+    await handleActionComplete('scheduled_more_tours');
     
     // Open the property request modal
     if (onRequestShowing) {
@@ -98,7 +99,7 @@ const PostShowingActionsPanel = ({
     });
     
     setShowAgentProfile(false);
-    await handleActionComplete('hire_agent');
+    await handleActionComplete('hired_agent');
   };
 
   const handleMakeOffer = () => {
@@ -121,14 +122,14 @@ const PostShowingActionsPanel = ({
     }, notes);
     
     setShowFavoriteModal(false);
-    await handleActionComplete('favorite_property');
+    await handleActionComplete('favorited');
     
     console.log('Property favorited, triggering dashboard refresh');
   };
 
   const actions = [
     {
-      id: 'schedule_another_tour',
+      id: 'scheduled_more_tours',
       title: 'Schedule Another Tour',
       description: 'Find more properties to visit',
       icon: Calendar,
@@ -137,7 +138,7 @@ const PostShowingActionsPanel = ({
       available: true
     },
     {
-      id: 'hire_agent',
+      id: 'hired_agent',
       title: `Work with ${agentName}`,
       description: 'Get dedicated agent support',
       icon: User,
@@ -155,7 +156,7 @@ const PostShowingActionsPanel = ({
       available: true
     },
     {
-      id: 'favorite_property',
+      id: 'favorited',
       title: 'Save to Favorites',
       description: 'Keep track of this property',
       icon: Heart,

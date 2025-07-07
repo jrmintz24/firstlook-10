@@ -15,7 +15,7 @@ export const useEnhancedPostShowingActions = () => {
         .insert({
           showing_request_id: showingId,
           buyer_id: buyerId,
-          action_type: 'schedule_another_tour',
+          action_type: 'scheduled_more_tours',
           action_details: { timestamp: new Date().toISOString() }
         });
 
@@ -75,7 +75,7 @@ export const useEnhancedPostShowingActions = () => {
         .insert({
           showing_request_id: data.showingId,
           buyer_id: data.buyerId,
-          action_type: 'hire_agent',
+          action_type: 'hired_agent',
           action_details: {
             agent_id: data.agentId,
             agent_name: data.agentName,

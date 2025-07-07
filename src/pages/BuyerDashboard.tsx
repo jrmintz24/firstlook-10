@@ -6,7 +6,6 @@ import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
 import UpcomingSection from "@/components/dashboard/shared/UpcomingSection";
-import UnifiedConnectionStatus from "@/components/dashboard/UnifiedConnectionStatus";
 
 // Existing components
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
@@ -239,17 +238,6 @@ const BuyerDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
-      {/* Connection Status */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-900">Connection Status</h3>
-        </div>
-        <UnifiedConnectionStatus 
-          status={connectionStatus}
-          onRetry={refresh}
-        />
-      </div>
-
       {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming Tours"
@@ -280,6 +268,10 @@ const BuyerDashboard = () => {
           sidebar={sidebar}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          primaryAction={{
+            label: "Request a Tour",
+            onClick: handleRequestTour
+          }}
         />
       </div>
 

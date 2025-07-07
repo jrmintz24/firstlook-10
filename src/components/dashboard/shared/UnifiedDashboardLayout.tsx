@@ -25,6 +25,10 @@ interface UnifiedDashboardLayoutProps {
   defaultTab?: string;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  primaryAction?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 const UnifiedDashboardLayout = ({
@@ -36,7 +40,8 @@ const UnifiedDashboardLayout = ({
   sidebar,
   defaultTab,
   activeTab,
-  onTabChange
+  onTabChange,
+  primaryAction
 }: UnifiedDashboardLayoutProps) => {
   const getUserTypeStyles = () => {
     return userType === 'agent' 
@@ -70,6 +75,16 @@ const UnifiedDashboardLayout = ({
             </div>
             
             <div className="flex items-center gap-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              {/* Primary Action Button - Only show for buyers */}
+              {userType === 'buyer' && primaryAction && (
+                <Button 
+                  onClick={primaryAction.onClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                >
+                  {primaryAction.label}
+                </Button>
+              )}
+              
               <div className={`flex items-center gap-2 text-sm text-gray-600 px-3 py-1.5 rounded-full border transition-all duration-200 hover:shadow-md ${getUserTypeBadge()}`}>
                 <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
                 <span className="capitalize font-medium">{userType}</span>

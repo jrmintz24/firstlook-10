@@ -39,10 +39,7 @@ const ProposalsTab = ({ agentId, title = "Offer Proposals" }: ProposalsTabProps)
       // Get offer intents for this agent
       const { data: offerIntents, error: intentsError } = await supabase
         .from('offer_intents')
-        .select(`
-          *,
-          profiles!offer_intents_buyer_id_fkey(first_name, last_name)
-        `)
+        .select('*')
         .eq('agent_id', agentId)
         .order('created_at', { ascending: false });
 
@@ -50,13 +47,32 @@ const ProposalsTab = ({ agentId, title = "Offer Proposals" }: ProposalsTabProps)
         throw intentsError;
       }
 
-      // Transform data to include buyer names
-      const proposalsWithBuyers = offerIntents?.map(intent => ({
-        ...intent,
-        buyer_name: intent.profiles 
-          ? `${intent.profiles.first_name || ''} ${intent.profiles.last_name || ''}`.trim() || 'Unknown Buyer'
-          : 'Unknown Buyer'
-      })) || [];
+      if (!offerIntents || offerIntents.length === 0) {
+        setProposals([]);
+        return;
+      }
+
+      // Get buyer profiles separately
+      const buyerIds = offerIntents.map(intent => intent.buyer_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', buyerIds);
+
+      if (profilesError) {
+        console.error('Error fetching buyer profiles:', profilesError);
+      }
+
+      // Combine the data
+      const proposalsWithBuyers = offerIntents.map(intent => {
+        const profile = profiles?.find(p => p.id === intent.buyer_id);
+        return {
+          ...intent,
+          buyer_name: profile 
+            ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unknown Buyer'
+            : 'Unknown Buyer'
+        };
+      });
 
       setProposals(proposalsWithBuyers);
     } catch (error) {

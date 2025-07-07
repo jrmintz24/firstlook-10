@@ -43,11 +43,11 @@ const ShowingSpecialistCard = ({
   // Mock specialties - in the future this would come from specialist profile
   const specialties = ["First-Time Buyers", "Investment Properties", "Luxury Homes"];
 
-  const handleSMSClick = () => {
+  const handleSMSClick = async () => {
     if (specialistPhone) {
-      // Track the contact attempt
+      // Track the contact attempt silently (no user notification)
       if (onContactAttempt) {
-        onContactAttempt('sms', {
+        await onContactAttempt('sms', {
           specialist_id: specialistId,
           specialist_name: specialistName,
           specialist_phone: specialistPhone,
@@ -61,20 +61,19 @@ const ShowingSpecialistCard = ({
         window.open(smsUrl, '_self');
       } catch (error) {
         console.error('Failed to open SMS app:', error);
-        // Fallback to internal messaging
+        // Fallback to internal messaging if available
         if (onMessageClick) {
           onMessageClick();
         }
       }
     }
-    onCallClick?.();
   };
 
-  const handleCallClick = () => {
+  const handleCallClick = async () => {
     if (specialistPhone) {
-      // Track the contact attempt
+      // Track the contact attempt silently (no user notification)
       if (onContactAttempt) {
-        onContactAttempt('call', {
+        await onContactAttempt('call', {
           specialist_id: specialistId,
           specialist_name: specialistName,
           specialist_phone: specialistPhone,
@@ -90,14 +89,18 @@ const ShowingSpecialistCard = ({
         console.error('Failed to open phone app:', error);
       }
     }
-    onCallClick?.();
+    
+    // Call the optional callback
+    if (onCallClick) {
+      onCallClick();
+    }
   };
 
-  const handleEmailClick = () => {
+  const handleEmailClick = async () => {
     if (specialistEmail) {
-      // Track the contact attempt
+      // Track the contact attempt silently (no user notification)
       if (onContactAttempt) {
-        onContactAttempt('email', {
+        await onContactAttempt('email', {
           specialist_id: specialistId,
           specialist_name: specialistName,
           specialist_email: specialistEmail,
@@ -113,7 +116,11 @@ const ShowingSpecialistCard = ({
         console.error('Failed to open email app:', error);
       }
     }
-    onEmailClick?.();
+    
+    // Call the optional callback
+    if (onEmailClick) {
+      onEmailClick();
+    }
   };
 
   return (
@@ -241,9 +248,9 @@ const ShowingSpecialistCard = ({
             )}
           </div>
 
-          {/* Privacy Notice */}
+          {/* Privacy Notice - Updated to reflect silent tracking */}
           <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-            Your contact attempts are logged for service improvement and specialist insights.
+            Contact attempts help us improve our service and provide insights to specialists.
           </div>
         </div>
       </CardContent>

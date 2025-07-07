@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +75,7 @@ const OptimizedShowingCard = ({
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   
   // Initialize the post-showing actions manager for contact tracking
-  const { recordContactAttempt } = usePostShowingActionsManager(showing.user_id || currentUserId);
+  const { recordContactAttemptSilently } = usePostShowingActionsManager(showing.user_id || currentUserId);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -156,13 +155,14 @@ const OptimizedShowingCard = ({
     }
   };
 
-  // Handle contact attempt tracking
+  // Handle contact attempt tracking with silent recording
   const handleContactAttempt = async (contactMethod: 'sms' | 'call' | 'email', specialistDetails: any) => {
     try {
-      await recordContactAttempt(showing.id, contactMethod, specialistDetails);
+      await recordContactAttemptSilently(showing.id, contactMethod, specialistDetails);
       console.log(`Contact attempt logged: ${contactMethod}`, specialistDetails);
     } catch (error) {
       console.error('Failed to log contact attempt:', error);
+      // Fail silently - don't impact user experience
     }
   };
 

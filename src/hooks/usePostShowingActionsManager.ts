@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -104,15 +103,48 @@ export const usePostShowingActionsManager = (buyerId?: string) => {
     }
   }, [buyerId, fetchActionsForShowing, toast]);
 
-  // New method to record contact attempts
+  // Silent method to record contact attempts without user notifications
+  const recordContactAttemptSilently = useCallback(async (
+    showingId: string, 
+    contactMethod: 'sms' | 'call' | 'email', 
+    specialistDetails: any
+  ): Promise<boolean> => {
+    if (!buyerId) return false;
+
+    const actionType = `attempted_contact_${contactMethod}`;
+    
+    try {
+      const { error } = await supabase
+        .from('post_showing_actions')
+        .insert({
+          showing_request_id: showingId,
+          buyer_id: buyerId,
+          action_type: actionType,
+          action_details: specialistDetails || {}
+        });
+
+      if (error) throw error;
+
+      // Refresh actions for this showing silently
+      await fetchActionsForShowing(showingId);
+      
+      console.log(`Contact attempt logged: ${contactMethod}`, specialistDetails);
+      return true;
+    } catch (error) {
+      console.error('Error recording contact attempt:', error);
+      // Don't show error to user - fail silently for better UX
+      return false;
+    }
+  }, [buyerId, fetchActionsForShowing]);
+
+  // Keep the old method for backwards compatibility, but now it uses the silent version
   const recordContactAttempt = useCallback(async (
     showingId: string, 
     contactMethod: 'sms' | 'call' | 'email', 
     specialistDetails: any
   ): Promise<boolean> => {
-    const actionType = `attempted_contact_${contactMethod}`;
-    return await recordAction(showingId, actionType, specialistDetails);
-  }, [recordAction]);
+    return await recordContactAttemptSilently(showingId, contactMethod, specialistDetails);
+  }, [recordContactAttemptSilently]);
 
   const getAgentFromShowing = useCallback((showing: ShowingWithAgent) => {
     return {
@@ -132,6 +164,7 @@ export const usePostShowingActionsManager = (buyerId?: string) => {
     getCompletedActionTypes,
     recordAction,
     recordContactAttempt,
+    recordContactAttemptSilently,
     getAgentFromShowing
   };
 };

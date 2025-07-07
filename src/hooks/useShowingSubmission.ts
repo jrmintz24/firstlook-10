@@ -6,14 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 
 export const useShowingSubmission = (
-  formData: PropertyRequestFormData,
   onDataRefresh?: () => Promise<void>
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const submitShowingRequests = async () => {
+  const submitShowingRequests = async (formData: PropertyRequestFormData) => {
     if (!user?.id) {
       console.error('No authenticated user found for showing submission');
       toast({

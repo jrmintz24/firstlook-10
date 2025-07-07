@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -111,7 +110,6 @@ const ModernTourSchedulingModal = ({
     isSubmitting,
     modalFlow,
     setModalFlow,
-    setFormData,
     handleContinueToSubscriptions,
     handleCancelPendingShowing,
     pendingShowingAddress,
@@ -187,19 +185,23 @@ const ModernTourSchedulingModal = ({
       return;
     }
 
-    // Update the hook's form data synchronously before submission
-    setFormData(prev => ({
-      ...prev,
+    // Create the form data object with current values
+    const currentFormData = {
+      properties: [{ address: propertyAddress, notes: notes }],
+      preferredOptions: [{ date: selectedDate, time: selectedTime }],
+      notes: notes,
       propertyAddress: propertyAddress,
       preferredDate1: selectedDate,
       preferredTime1: selectedTime,
-      notes: notes,
-      properties: [{ address: propertyAddress, notes: notes }],
+      preferredDate2: '',
+      preferredTime2: '',
+      preferredDate3: '',
+      preferredTime3: '',
       selectedProperties: [propertyAddress]
-    }));
+    };
 
-    // Start the submission flow - this will handle auth/limit modals as needed
-    await handleContinueToSubscriptions();
+    // Pass the current form data directly to the submission handler
+    await handleContinueToSubscriptions(currentFormData);
   };
 
   const handleAuthSuccess = async () => {

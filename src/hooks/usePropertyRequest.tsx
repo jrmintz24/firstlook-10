@@ -38,7 +38,7 @@ export const usePropertyRequest = (
 
   // Get management hooks
   const { handleAddProperty, handleRemoveProperty } = usePropertyManagement(formData, setFormData);
-  const { isSubmitting, submitShowingRequests } = useShowingSubmission(formData, onDataRefresh);
+  const { isSubmitting, submitShowingRequests } = useShowingSubmission(onDataRefresh);
   const { eligibility, checkEligibility } = useShowingEligibility();
   const { 
     pendingShowingAddress, 
@@ -113,14 +113,17 @@ export const usePropertyRequest = (
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleContinueToSubscriptions = async () => {
+  const handleContinueToSubscriptions = async (currentFormData?: PropertyRequestFormData) => {
     console.log('handleContinueToSubscriptions called');
     console.log('Current user:', user?.id);
-    console.log('Form data:', formData);
+    
+    // Use provided form data or current state
+    const dataToSubmit = currentFormData || formData;
+    console.log('Form data to submit:', dataToSubmit);
 
     if (!user?.id) {
       console.log('usePropertyRequest: No authenticated user, storing tour request');
-      localStorage.setItem('pendingTourRequest', JSON.stringify(formData));
+      localStorage.setItem('pendingTourRequest', JSON.stringify(dataToSubmit));
       setModalFlow('auth');
       return;
     }
@@ -142,7 +145,7 @@ export const usePropertyRequest = (
       console.log('Submitting showing requests for authenticated user:', user.id);
       
       // Submit the requests and wait for completion
-      await submitShowingRequests();
+      await submitShowingRequests(dataToSubmit);
       
       // Clear form and close modal after successful submission
       setFormData(initialFormData);

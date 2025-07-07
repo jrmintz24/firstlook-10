@@ -1,12 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Calendar, MessageSquare, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { Calendar, Clock, CheckCircle, TrendingUp, FileText, Home } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useMessages } from "@/hooks/useMessages";
-import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
-import { usePendingTourHandler } from "@/hooks/usePendingTourHandler";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
@@ -16,160 +11,78 @@ import UnifiedConnectionStatus from "@/components/dashboard/UnifiedConnectionSta
 // Existing components
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
+import ConfirmShowingModal from "@/components/dashboard/ConfirmShowingModal";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
-import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
-import MessagingInterface from "@/components/messaging/MessagingInterface";
+
+// Offer management components
+import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
+
+// Post-showing components
 import BuyerPostShowingHub from "@/components/dashboard/BuyerPostShowingHub";
-import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 
 const BuyerDashboard = () => {
+  // Add dummy onOpenChat handler
+  const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
+    console.log('Chat opened', { defaultTab, showingId });
+  };
+
   const {
     profile,
-    pendingRequests,
-    activeShowings,
-    completedShowings,
-    agreements,
     loading,
     authLoading,
     currentUser,
     connectionStatus,
+    pendingRequests,
+    activeShowings,
+    completedShowings,
+    agreements,
+    isSubscribed,
     refresh,
-  } = useUnifiedDashboardData('buyer');
+    handleCancelShowing,
+    handleRescheduleShowing,
+    handleConfirmShowingWithModal,
+    handleSignAgreementFromCard,
+    handleSendMessage,
+    fetchShowingRequests
+  } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
-  // Add pending tour handler to process any tours from homepage signup
-  const { triggerPendingTourProcessing } = usePendingTourHandler({
-    onTourProcessed: async () => {
-      console.log('BuyerDashboard: Pending tour processed, refreshing data');
-      await refresh();
-    }
-  });
-
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("requested");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSignAgreementModal, setShowSignAgreementModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const isMobile = useIsMobile();
-  const { unreadCount } = useMessages(currentUser?.id || null);
-  const { toast } = useToast();
-
-  const [selectedShowing, setSelectedShowing] = useState<any>(null);
-  const [showAgreementModal, setShowAgreementModal] = useState(false);
-  const [showReportIssueModal, setShowReportIssueModal] = useState(false);
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const [activeTab, setActiveTab] = useState("pending");
 
   console.log('BuyerDashboard - Current user:', currentUser?.id);
   console.log('BuyerDashboard - Loading states:', { loading, authLoading });
 
-  const handleRequestShowing = () => {
-    setShowPropertyForm(true);
-  };
-
-  const handlePropertyRequestSuccess = async () => {
-    setShowPropertyForm(false);
-    await refresh(); // Refresh dashboard data after successful submission
-  };
-
-  const handleMakeOffer = () => {
-    navigate('/offer-questionnaire');
-  };
-
-  const handleConfirmShowing = (showing: any) => {
-    setSelectedShowing(showing);
-    setShowAgreementModal(true);
-  };
-
-  const handleReportIssue = (showing: any) => {
-    setSelectedShowing(showing);
-    setShowReportIssueModal(true);
-  };
-
-  const handleAgreementSign = async (name: string) => {
-    if (!selectedShowing || !currentUser) {
-      toast({
-        title: "Error",
-        description: "Missing showing or user information",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      console.log('Signing agreement for showing:', selectedShowing.id);
-
-      // Check for existing agreement
-      const { data: existingAgreement } = await supabase
-        .from('tour_agreements')
-        .select('*')
-        .eq('showing_request_id', selectedShowing.id)
-        .eq('buyer_id', currentUser.id)
-        .maybeSingle();
-
-      if (existingAgreement) {
-        // Update existing agreement
-        const { error: updateAgreementError } = await supabase
-          .from('tour_agreements')
-          .update({
-            signed: true,
-            signed_at: new Date().toISOString()
-          })
-          .eq('id', existingAgreement.id);
-
-        if (updateAgreementError) {
-          throw updateAgreementError;
-        }
-      } else {
-        // Create new agreement
-        const { error: createAgreementError } = await supabase
-          .from('tour_agreements')
-          .insert({
-            showing_request_id: selectedShowing.id,
-            buyer_id: currentUser.id,
-            agreement_type: 'single_tour',
-            signed: true,
-            signed_at: new Date().toISOString(),
-            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          });
-
-        if (createAgreementError) {
-          throw createAgreementError;
-        }
-      }
-
-      // Update showing request status to confirmed
-      const { error: updateShowingError } = await supabase
-        .from('showing_requests')
-        .update({
-          status: 'confirmed',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedShowing.id);
-
-      if (updateShowingError) {
-        throw updateShowingError;
-      }
-
-      toast({
-        title: "Agreement Signed",
-        description: "You have successfully signed the tour agreement and confirmed your showing.",
-      });
-
-      setShowAgreementModal(false);
-      setSelectedShowing(null);
-      
-      // Refresh dashboard data to show updated status
-      await refresh();
-
-    } catch (error) {
-      console.error('Error signing agreement:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign agreement. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleStatClick = (tab: string) => {
     setActiveTab(tab);
+  };
+
+  const handleRequestTour = () => {
+    console.log('Request tour clicked');
+  };
+
+  const handleConfirm = (request: any) => {
+    setSelectedRequest(request);
+    setShowConfirmModal(true);
+  };
+
+  const handleSignAgreement = (request: any) => {
+    setSelectedRequest(request);
+    setShowSignAgreementModal(true);
+  };
+
+  const handleConfirmSuccess = () => {
+    setShowConfirmModal(false);
+    setSelectedRequest(null);
+    refresh();
+  };
+
+  const handleSignAgreementSuccess = () => {
+    setShowSignAgreementModal(false);
+    setSelectedRequest(null);
+    refresh();
   };
 
   if (authLoading) {
@@ -210,97 +123,94 @@ const BuyerDashboard = () => {
     );
   }
 
-  const displayName = profile.first_name || 'there';
+  const displayName = profile.first_name || 'Buyer';
 
   const dashboardTabs = [
     {
-      id: "pending",
-      title: "Pending",
+      id: "requested",
+      title: "Requested",
       icon: Clock,
       count: pendingRequests.length,
       color: "bg-orange-100 text-orange-700",
       content: (
         <ShowingListTab
-          title="Pending Tours"
+          title="Requested Tours"
           showings={pendingRequests}
           emptyIcon={Clock}
           emptyTitle="No Pending Tours"
-          emptyDescription="Ready to find your dream home? Let's schedule a tour!"
-          emptyButtonText="Request Tour"
-          onRequestShowing={handleRequestShowing}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          onConfirmShowing={handleConfirmShowing}
-          onSignAgreement={handleConfirmShowing}
-          onReportIssue={handleReportIssue}
+          emptyDescription="You don't have any pending tour requests."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={handleRequestTour}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleRescheduleShowing}
+          onConfirmShowing={handleConfirm}
+          onSendMessage={handleSendMessage}
+          onSignAgreement={handleSignAgreement}
           userType="buyer"
+          currentUserId={currentUser?.id}
           agreements={agreements}
           onComplete={refresh}
-          currentUserId={currentUser?.id}
         />
       )
     },
     {
-      id: "active",
-      title: "Active",
-      icon: Calendar,
+      id: "confirmed",
+      title: "Confirmed",
+      icon: CheckCircle,
       count: activeShowings.length,
-      color: "bg-blue-100 text-blue-700",
+      color: "bg-green-100 text-green-700",
       content: (
         <ShowingListTab
-          title="Active Tours"
+          title="Confirmed Tours"
           showings={activeShowings}
-          emptyIcon={Calendar}
-          emptyTitle="No Active Tours"
-          emptyDescription="Confirmed tours will appear here."
-          emptyButtonText="Request Tour"
-          onRequestShowing={handleRequestShowing}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          onSignAgreement={handleConfirmShowing}
-          onReportIssue={handleReportIssue}
+          emptyIcon={CheckCircle}
+          emptyTitle="No Confirmed Tours"
+          emptyDescription="You don't have any confirmed tours scheduled."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={handleRequestTour}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleRescheduleShowing}
+          onSendMessage={handleSendMessage}
           userType="buyer"
+          currentUserId={currentUser?.id}
           agreements={agreements}
           onComplete={refresh}
-          currentUserId={currentUser?.id}
         />
       )
     },
     {
-      id: "messages",
-      title: "Messages",
-      icon: MessageSquare,
-      count: unreadCount,
-      color: "bg-red-100 text-red-700",
-      content: currentUser?.id ? (
-        <MessagingInterface
-          userId={currentUser.id}
-          userType="buyer"
-        />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Messages"
-          description="Please refresh the page to load your messages."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={MessageSquare}
-        />
-      )
-    },
-    {
-      id: "post-showing",
-      title: "Actions",
-      icon: TrendingUp,
+      id: "offers",
+      title: "My Offers",
+      icon: FileText,
       count: 0,
       color: "bg-purple-100 text-purple-700",
       content: currentUser?.id ? (
-        <BuyerPostShowingHub 
-          buyerId={currentUser.id}
+        <OfferManagementDashboard 
+          buyerId={currentUser.id} 
+          onCreateOffer={handleRequestTour}
         />
       ) : (
         <EmptyStateCard
-          title="Unable to Load Actions"
-          description="Please refresh the page to load your actions."
+          title="Unable to Load Offers"
+          description="Please refresh the page to load your offers."
+          buttonText="Refresh"
+          onButtonClick={refresh}
+          icon={FileText}
+        />
+      )
+    },
+    {
+      id: "activity",
+      title: "Activity",
+      icon: TrendingUp,
+      count: 0,
+      color: "bg-blue-100 text-blue-700",
+      content: currentUser?.id ? (
+        <BuyerPostShowingHub buyerId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Activity"
+          description="Please refresh the page to load your activity."
           buttonText="Refresh"
           onButtonClick={refresh}
           icon={TrendingUp}
@@ -308,28 +218,27 @@ const BuyerDashboard = () => {
       )
     },
     {
-      id: "completed",
+      id: "history",
       title: "History",
-      icon: CheckCircle,
+      icon: Calendar,
       count: completedShowings.length,
-      color: "bg-green-100 text-green-700",
+      color: "bg-gray-100 text-gray-700",
       content: (
         <ShowingListTab
           title="Tour History"
           showings={completedShowings}
-          emptyIcon={CheckCircle}
+          emptyIcon={Calendar}
           emptyTitle="No Tour History"
-          emptyDescription="Completed tours will appear here."
-          emptyButtonText=""
-          onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          onSignAgreement={handleConfirmShowing}
+          emptyDescription="You haven't completed any tours yet."
+          emptyButtonText="Request a Tour"
+          onRequestShowing={handleRequestTour}
+          onCancelShowing={handleCancelShowing}
+          onRescheduleShowing={handleRescheduleShowing}
           showActions={false}
           userType="buyer"
+          currentUserId={currentUser?.id}
           agreements={agreements}
           onComplete={refresh}
-          currentUserId={currentUser?.id}
         />
       )
     }
@@ -348,11 +257,11 @@ const BuyerDashboard = () => {
         />
       </div>
 
-      {/* Upcoming Tours */}
+      {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming Tours"
         showings={activeShowings}
-        onViewAll={() => handleStatClick("active")}
+        onViewAll={() => handleStatClick("confirmed")}
         maxItems={3}
       />
 
@@ -360,7 +269,7 @@ const BuyerDashboard = () => {
       <UpcomingSection
         title="Recent Activity"
         showings={completedShowings}
-        onViewAll={() => handleStatClick("completed")}
+        onViewAll={() => handleStatClick("history")}
         maxItems={3}
       />
     </div>
@@ -371,7 +280,7 @@ const BuyerDashboard = () => {
       <div className="pt-6">
         <UnifiedDashboardLayout
           title={`Welcome back, ${displayName}`}
-          subtitle="Track your tours and find your perfect home"
+          subtitle="Find your perfect home with personalized tours"
           userType="buyer"
           displayName={displayName}
           tabs={dashboardTabs}
@@ -381,39 +290,21 @@ const BuyerDashboard = () => {
         />
       </div>
 
-      {/* Modern Tour Scheduling Modal */}
-      <ModernTourSchedulingModal
-        isOpen={showPropertyForm}
-        onClose={() => setShowPropertyForm(false)}
-        onSuccess={handlePropertyRequestSuccess}
-        skipNavigation={true}
-      />
-
       {/* Modals */}
-      {selectedShowing && (
+      {selectedRequest && (
         <>
-          <SignAgreementModal
-            isOpen={showAgreementModal}
-            onClose={() => setShowAgreementModal(false)}
-            onSign={handleAgreementSign}
-            showingDetails={{
-              propertyAddress: selectedShowing.property_address,
-              date: selectedShowing.preferred_date,
-              time: selectedShowing.preferred_time,
-              agentName: selectedShowing.assigned_agent_name
-            }}
+          <ConfirmShowingModal
+            isOpen={showConfirmModal}
+            onClose={() => setShowConfirmModal(false)}
+            request={selectedRequest}
+            onConfirm={handleConfirmSuccess}
           />
-
-          <ReportIssueModal
-            isOpen={showReportIssueModal}
-            onClose={() => setShowReportIssueModal(false)}
-            request={selectedShowing}
-            agentId={selectedShowing.assigned_agent_id || ''}
-            onComplete={() => {
-              setShowReportIssueModal(false);
-              setSelectedShowing(null);
-              refresh();
-            }}
+          
+          <SignAgreementModal
+            isOpen={showSignAgreementModal}
+            onClose={() => setShowSignAgreementModal(false)}
+            request={selectedRequest}
+            onSuccess={handleSignAgreementSuccess}
           />
         </>
       )}

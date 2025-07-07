@@ -17,7 +17,6 @@ import SmartReminders from "./SmartReminders";
 import QuickActions from "./QuickActions";
 import ShowingListTab from "./ShowingListTab";
 import EmptyStateCard from "./EmptyStateCard";
-import MessagingInterface from "@/components/messaging/MessagingInterface";
 import BuyerPostShowingHub from "./BuyerPostShowingHub";
 
 interface SimpleBuyerDashboardProps {
@@ -40,7 +39,6 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
     pendingRequests,
     activeShowings,
     completedShowings,
-    unreadCount,
     isSubscribed,
     agreements,
     handleCancelShowing,

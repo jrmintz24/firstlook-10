@@ -1,187 +1,85 @@
 
-import React from "react";
-import { Clock, CheckCircle, History, Calendar } from "lucide-react";
-import ShowingListTab from "./ShowingListTab";
-import ConsultationsSection from "./ConsultationsSection";
-import { default as MessagesTab } from "../messaging/MessagesTab";
-import ProfileTab from "./ProfileTab";
-import QuickActions from "./QuickActions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Calendar, CheckCircle } from "lucide-react";
 
-interface ShowingRequest {
-  id: string;
-  property_address: string;
-  preferred_date: string | null;
-  preferred_time: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-  assigned_agent_name?: string | null;
-  assigned_agent_phone?: string | null;
-  assigned_agent_email?: string | null;
-  assigned_agent_id?: string | null;
-  estimated_confirmation_date?: string | null;
-  status_updated_at?: string | null;
-  user_id?: string | null;
+interface BuyerDashboardSectionsProps {
+  pendingCount: number;
+  upcomingCount: number;
+  completedCount: number;
+  onSectionClick: (section: string) => void;
 }
 
-interface Consultation {
-  id: string;
-  propertyAddress: string;
-  scheduledAt: string;
-  consultationType: 'phone' | 'video';
-  agentName: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-}
-
-interface GenerateBuyerDashboardSectionsProps {
-  pendingRequests: ShowingRequest[];
-  activeShowings: ShowingRequest[];
-  completedShowings: ShowingRequest[];
-  consultations: Consultation[];
-  agreements: Record<string, boolean>;
-  currentUser: any;
-  profile: any;
-  displayName: string;
-  unreadCount: number;
-  onRequestShowing: () => void;
-  onCancelShowing: (id: string) => void;
-  onRescheduleShowing: (id: string) => void;
-  onConfirmShowing: (showing: ShowingRequest) => void;
-  onSignAgreement: (showing: ShowingRequest) => void;
-  fetchShowingRequests: () => void;
-  onSendMessage: (showingId: string) => void;
-  onJoinConsultation: (consultationId: string) => void;
-  onRescheduleConsultation: (consultationId: string) => void;
-  onComplete?: () => void;
-  onMakeOffer: () => void;
-}
-
-export const generateBuyerDashboardSections = ({
-  pendingRequests,
-  activeShowings,
-  completedShowings,
-  consultations,
-  agreements,
-  currentUser,
-  profile,
-  displayName,
-  unreadCount,
-  onRequestShowing,
-  onCancelShowing,
-  onRescheduleShowing,
-  onConfirmShowing,
-  onSignAgreement,
-  fetchShowingRequests,
-  onSendMessage,
-  onJoinConsultation,
-  onRescheduleConsultation,
-  onComplete,
-  onMakeOffer
-}: GenerateBuyerDashboardSectionsProps) => {
-  return [
+const BuyerDashboardSections = ({
+  pendingCount,
+  upcomingCount,
+  completedCount,
+  onSectionClick
+}: BuyerDashboardSectionsProps) => {
+  const sections = [
     {
-      id: "requested",
-      title: "Requested",
-      component: (
-        <div className="space-y-6">
-          <ShowingListTab
-            title="Requested Tours"
-            showings={pendingRequests}
-            emptyIcon={Clock}
-            emptyTitle="No pending requests"
-            emptyDescription="Ready to find your dream home?"
-            emptyButtonText="Request Your Free Showing"
-            onRequestShowing={onRequestShowing}
-            onCancelShowing={onCancelShowing}
-            onRescheduleShowing={onRescheduleShowing}
-            onConfirmShowing={onConfirmShowing}
-            onSignAgreement={onSignAgreement}  
-            currentUserId={currentUser?.id}
-            onSendMessage={onSendMessage}
-            agreements={agreements}
-            onComplete={onComplete}
-          />
-          <QuickActions 
-            onRequestShowing={onRequestShowing} 
-            onMakeOffer={onMakeOffer}
-          />
-        </div>
-      )
+      id: "pending",
+      title: "Pending Tours",
+      count: pendingCount,
+      icon: Clock,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+      description: "Tours awaiting confirmation"
     },
     {
-      id: "confirmed",
-      title: "Confirmed",
-      component: (
-        <div className="space-y-6">
-          <ShowingListTab
-            title="Confirmed Tours"
-            showings={activeShowings}
-            emptyIcon={CheckCircle}
-            emptyTitle="No confirmed tours"
-            emptyDescription="Your confirmed tours will appear here"
-            emptyButtonText="Request Your Free Showing"
-            onRequestShowing={onRequestShowing}
-            onCancelShowing={onCancelShowing}
-            onRescheduleShowing={onRescheduleShowing}
-            onConfirmShowing={onConfirmShowing}
-            onSignAgreement={onSignAgreement}
-            currentUserId={currentUser?.id}
-            onSendMessage={onSendMessage}
-            agreements={agreements}
-            onComplete={onComplete}
-          />
-          <QuickActions 
-            onRequestShowing={onRequestShowing} 
-            onMakeOffer={onMakeOffer}
-          />
-        </div>
-      )
+      id: "upcoming",
+      title: "Upcoming Tours",
+      count: upcomingCount,
+      icon: Calendar,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+      description: "Confirmed tours scheduled"
     },
     {
-      id: "history",
-      title: "History",
-      component: (
-        <div className="space-y-6">
-          <ShowingListTab
-            title="Tour History"
-            showings={completedShowings}
-            emptyIcon={History}
-            emptyTitle="No completed tours yet"
-            emptyDescription="Your tour history will appear here"
-            emptyButtonText="Request Your First Tour"
-            onRequestShowing={onRequestShowing}
-            onCancelShowing={onCancelShowing}
-            onRescheduleShowing={onRescheduleShowing}
-            onConfirmShowing={onConfirmShowing}
-            onSignAgreement={onSignAgreement}
-            currentUserId={currentUser?.id}
-            onSendMessage={onSendMessage}
-            agreements={agreements}
-            onComplete={onComplete}
-          />
-          <QuickActions 
-            onRequestShowing={onRequestShowing} 
-            onMakeOffer={onMakeOffer}
-          />
-        </div>
-      )
-    },
-    {
-      id: "consultations",
-      title: "Consultations",
-      component: (
-        <div className="space-y-6">
-          <ConsultationsSection
-            consultations={consultations}
-            onJoinCall={onJoinConsultation}
-            onReschedule={onRescheduleConsultation}
-          />
-          <QuickActions 
-            onRequestShowing={onRequestShowing} 
-            onMakeOffer={onMakeOffer}
-          />
-        </div>
-      )
+      id: "completed",
+      title: "Completed Tours", 
+      count: completedCount,
+      icon: CheckCircle,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+      description: "Tours you've finished"
     }
   ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {sections.map((section) => {
+        const Icon = section.icon;
+        return (
+          <Card 
+            key={section.id}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => onSectionClick(section.id)}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {section.title}
+              </CardTitle>
+              <div className={`p-2 rounded-lg ${section.bgColor}`}>
+                <Icon className={`h-4 w-4 ${section.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{section.count}</div>
+                {section.count > 0 && (
+                  <Badge variant="secondary">{section.count}</Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {section.description}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
 };
+
+export default BuyerDashboardSections;

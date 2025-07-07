@@ -1,5 +1,5 @@
 
-import { Clock, Calendar, CheckCircle, MessageSquare, AlertCircle, Users } from "lucide-react";
+import { Clock, Calendar, CheckCircle, AlertCircle, Users } from "lucide-react";
 import OptimizedStatsCard from "./OptimizedStatsCard";
 
 interface QuickStatsGridProps {
@@ -7,7 +7,6 @@ interface QuickStatsGridProps {
   pendingCount: number;
   activeCount: number;
   completedCount: number;
-  unreadCount?: number;
   onStatClick?: (tab: string) => void;
 }
 
@@ -15,8 +14,7 @@ const QuickStatsGrid = ({
   userType, 
   pendingCount, 
   activeCount, 
-  completedCount, 
-  unreadCount = 0,
+  completedCount,
   onStatClick 
 }: QuickStatsGridProps) => {
   const getStatsConfig = () => {
@@ -47,12 +45,12 @@ const QuickStatsGrid = ({
           tabId: "completed"
         },
         {
-          title: "Messages",
-          value: unreadCount,
-          icon: MessageSquare,
+          title: "Insights",
+          value: 0,
+          icon: AlertCircle,
           color: "text-purple-600",
           bgColor: "bg-purple-100",
-          tabId: "messages"
+          tabId: "insights"
         }
       ];
     } else {
@@ -82,12 +80,12 @@ const QuickStatsGrid = ({
           tabId: "history"
         },
         {
-          title: "Messages",
-          value: unreadCount,
-          icon: MessageSquare,
+          title: "Activity",
+          value: 0,
+          icon: Users,
           color: "text-purple-600",
           bgColor: "bg-purple-100",
-          tabId: "messages"
+          tabId: "activity"
         }
       ];
     }

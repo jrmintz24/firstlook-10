@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useMessages } from "@/hooks/useMessages";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
 
@@ -16,7 +15,6 @@ import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
 import AgentConfirmationModal from "@/components/dashboard/AgentConfirmationModal";
 import StatusUpdateModal from "@/components/dashboard/StatusUpdateModal";
 import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
-import MessagingInterface from "@/components/messaging/MessagingInterface";
 
 // Post-showing components
 import AgentPostShowingInsights from "@/components/dashboard/AgentPostShowingInsights";
@@ -37,7 +35,6 @@ const AgentDashboard = () => {
   } = useUnifiedDashboardData('agent');
 
   const { confirmShowing } = useAgentConfirmation();
-  const { unreadCount } = useMessages(currentUser?.id || null);
   const isMobile = useIsMobile();
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);

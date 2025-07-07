@@ -1,208 +1,176 @@
 
-import { useState, useCallback, useMemo } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useBuyerDashboardData } from "./useBuyerDashboardData";
-import { useMessages } from "./useMessages";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useTourAgreements } from "@/hooks/useTourAgreements";
 
-interface BuyerDashboardLogicProps {
-  onOpenChat?: (defaultTab: 'property' | 'support', showingId?: string) => void;
+interface ShowingRequest {
+  id: string;
+  property_address: string;
+  preferred_date: string;
+  preferred_time: string;
+  message: string;
+  status: string;
+  created_at: string;
+  assigned_agent_name?: string;
+  assigned_agent_phone?: string;
+  assigned_agent_email?: string;
+  assigned_agent_id?: string;
+  user_id?: string;
+  status_updated_at?: string;
 }
 
-export const useBuyerDashboardLogic = (props: BuyerDashboardLogicProps = {}) => {
-  const { onOpenChat } = props;
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const [showAgreementModal, setShowAgreementModal] = useState(false);
-  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
-  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("requested");
-  const [selectedShowing, setSelectedShowing] = useState<any>(null);
+interface BuyerDashboardLogicProps {
+  onOpenChat: (defaultTab?: 'property' | 'support', showingId?: string) => void;
+}
 
+export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps) => {
+  const [loading, setLoading] = useState(true);
+  const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSignAgreementModal, setShowSignAgreementModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
+  
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  const { agreements, fetchAgreements } = useTourAgreements(currentUser?.id);
 
-  // Use optimized data fetching hook
-  const {
-    profile,
-    agreements,
-    loading,
-    authLoading,
-    currentUser,
-    pendingRequests,
-    activeShowings,
-    completedShowings,
-    fetchShowingRequests
-  } = useBuyerDashboardData();
-
-  // Get messages data
-  const { unreadCount } = useMessages(currentUser?.id || null);
-
-  // Memoized computed values
-  const eligibility = useMemo(() => ({
-    eligible: true,
-    reason: 'subscribed'
-  }), []);
-
-  const isSubscribed = useMemo(() => true, []);
-  const subscriptionTier = useMemo(() => 'premium', []);
-
-  // Optimized event handlers with useCallback
-  const handleRequestShowing = useCallback(() => {
-    setShowPropertyForm(true);
-  }, []);
-
-  const handleUpgradeClick = useCallback(() => {
-    setShowSubscribeModal(true);
-  }, []);
-
-  const handleSubscriptionComplete = useCallback(() => {
-    setShowSubscribeModal(false);
-    toast({
-      title: "Success",
-      description: "Subscription activated successfully!",
-    });
-  }, [toast]);
-
-  const handleConfirmShowingWithModal = useCallback((showing: any) => {
-    setSelectedShowing(showing);
-    setShowAgreementModal(true);
-  }, []);
-
-  const handleAgreementSignWithModal = useCallback(async (name: string) => {
-    if (!selectedShowing || !currentUser) return;
+  const fetchShowingRequests = useCallback(async () => {
+    if (!currentUser?.id) {
+      setLoading(false);
+      return;
+    }
 
     try {
+      const { data, error } = await supabase
+        .from('showing_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setShowingRequests(data || []);
+    } catch (error) {
+      console.error('Error fetching showing requests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load showing requests.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.id, toast]);
+
+  const fetchSubscriptionData = useCallback(async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching subscription:', error);
+        return;
+      }
+
+      setSubscriptionData(data);
+    } catch (error) {
+      console.error('Error fetching subscription data:', error);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchShowingRequests();
+      fetchSubscriptionData();
+      fetchAgreements();
+    }
+  }, [currentUser?.id, fetchShowingRequests, fetchSubscriptionData, fetchAgreements]);
+
+  const handleCancelShowing = async (id: string) => {
+    try {
       const { error } = await supabase
-        .from('tour_agreements')
-        .upsert({
-          showing_request_id: selectedShowing.id,
-          buyer_id: currentUser.id,
-          agreement_type: 'single_tour',
-          signed: true,
-          signed_at: new Date().toISOString(),
-          email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        });
+        .from('showing_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
 
       if (error) throw error;
 
-      await supabase
-        .from('showing_requests')
-        .update({
-          status: 'confirmed',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedShowing.id);
-
       toast({
-        title: "Agreement Signed",
-        description: "You have successfully signed the tour agreement.",
+        title: "Tour Cancelled",
+        description: "Your tour request has been cancelled.",
       });
 
-      setShowAgreementModal(false);
-      setSelectedShowing(null);
-      fetchShowingRequests();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign agreement. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }, [selectedShowing, currentUser, toast, fetchShowingRequests]);
-
-  const handleSignAgreementFromCard = useCallback((showingId: string, buyerName: string) => {
-    const showing = [...pendingRequests, ...activeShowings, ...completedShowings].find(s => s.id === showingId);
-    if (showing) {
-      setSelectedShowing(showing);
-      setShowAgreementModal(true);
-    }
-  }, [pendingRequests, activeShowings, completedShowings]);
-
-  const handleSendMessage = useCallback((showingId: string) => {
-    if (onOpenChat) {
-      onOpenChat('property', showingId);
-    } else {
-      console.log('No onOpenChat handler provided for showing:', showingId);
-    }
-  }, [onOpenChat]);
-
-  const handleStatClick = useCallback((targetTab: string) => {
-    setActiveTab(targetTab);
-  }, []);
-
-  const handleCancelShowing = useCallback(async (id: string) => {
-    try {
-      await supabase
-        .from('showing_requests')
-        .update({ 
-          status: 'cancelled',
-          status_updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      toast({
-        title: "Showing Cancelled",
-        description: "Your showing request has been cancelled.",
-      });
-      
       fetchShowingRequests();
     } catch (error) {
+      console.error('Error cancelling showing:', error);
       toast({
         title: "Error",
-        description: "Failed to cancel showing. Please try again.",
-        variant: "destructive"
+        description: "Failed to cancel tour request.",
+        variant: "destructive",
       });
     }
-  }, [toast, fetchShowingRequests]);
+  };
 
-  const handleRescheduleShowing = useCallback((showing: any) => {
-    setSelectedShowing(showing);
-    setShowRescheduleModal(true);
-  }, []);
+  const handleRescheduleShowing = (id: string) => {
+    console.log('Reschedule showing:', id);
+    // This will be handled by a modal or separate component
+  };
 
-  const handleRescheduleSuccess = useCallback(() => {
-    setShowRescheduleModal(false);
-    setSelectedShowing(null);
-    fetchShowingRequests();
-  }, [fetchShowingRequests]);
+  const handleConfirmShowingWithModal = (request: ShowingRequest) => {
+    setSelectedRequest(request);
+    setShowConfirmModal(true);
+  };
+
+  const handleSignAgreementFromCard = (request: ShowingRequest) => {
+    setSelectedRequest(request);
+    setShowSignAgreementModal(true);
+  };
+
+  const handleSendMessage = (showingId: string) => {
+    onOpenChat('property', showingId);
+  };
+
+  // Categorize showings
+  const pendingRequests = showingRequests.filter(req => 
+    ['pending', 'agent_requested', 'agent_confirmed', 'awaiting_agreement'].includes(req.status)
+  );
+
+  const activeShowings = showingRequests.filter(req => 
+    ['confirmed', 'scheduled', 'in_progress'].includes(req.status)
+  );
+
+  const completedShowings = showingRequests.filter(req => 
+    ['completed', 'cancelled'].includes(req.status)
+  );
+
+  const isSubscribed = subscriptionData?.subscribed || false;
 
   return {
-    showPropertyForm,
-    setShowPropertyForm,
-    showAgreementModal,
-    setShowAgreementModal,
-    showSubscribeModal,
-    setShowSubscribeModal,
-    showRescheduleModal,
-    setShowRescheduleModal,
-    activeTab,
-    setActiveTab,
-    
-    profile,
-    selectedShowing,
-    agreements,
     loading,
-    authLoading,
-    currentUser,
+    showingRequests,
     pendingRequests,
     activeShowings,
     completedShowings,
-    eligibility,
     isSubscribed,
-    subscriptionTier,
-    unreadCount,
-    
-    handleRequestShowing,
-    handleUpgradeClick,
-    handleSubscriptionComplete,
-    handleConfirmShowingWithModal,
-    handleAgreementSignWithModal,
-    handleSignAgreementFromCard,
-    handleSendMessage,
-    handleStatClick,
+    agreements,
+    showConfirmModal,
+    showSignAgreementModal,
+    selectedRequest,
+    setShowConfirmModal,
+    setShowSignAgreementModal,
+    setSelectedRequest,
     handleCancelShowing,
     handleRescheduleShowing,
-    handleRescheduleSuccess,
-    fetchShowingRequests
+    handleConfirmShowingWithModal,
+    handleSignAgreementFromCard,
+    handleSendMessage,
+    fetchShowingRequests,
   };
 };

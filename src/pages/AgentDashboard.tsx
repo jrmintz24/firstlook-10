@@ -195,13 +195,13 @@ const AgentDashboard = () => {
     },
     {
       id: "completed",
-      title: "History",
+      title: "Completed",
       icon: CheckCircle,
       count: completedRequests.length,
       color: "bg-green-100 text-green-700",
       content: (
         <ShowingListTab
-          title="History"
+          title="Completed"
           showings={completedRequests}
           emptyIcon={CheckCircle}
           emptyTitle="No Completed Showings"

@@ -37,7 +37,7 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
   });
 
   const { eligibility } = useShowingEligibility();
-  const { isSubmitting, submitShowingRequests } = useShowingSubmission(formData, onSuccess);
+  const { isSubmitting, submitShowingRequests } = useShowingSubmission(onSuccess);
 
   const handleAddProperty = () => {
     if (formData.properties.length >= 3) return;
@@ -101,7 +101,7 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
       return;
     }
 
-    await submitShowingRequests();
+    await submitShowingRequests(formData);
     onClose();
   };
 

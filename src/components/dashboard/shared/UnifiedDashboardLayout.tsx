@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LucideIcon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LucideIcon, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardTab {
   id: string;
@@ -43,6 +46,9 @@ const UnifiedDashboardLayout = ({
   onTabChange,
   primaryAction
 }: UnifiedDashboardLayoutProps) => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+
   const getUserTypeStyles = () => {
     return userType === 'agent' 
       ? 'from-blue-50 via-indigo-50/30 to-white' 
@@ -53,6 +59,15 @@ const UnifiedDashboardLayout = ({
     return userType === 'agent'
       ? 'bg-blue-50 text-blue-700 border-blue-200'
       : 'bg-purple-50 text-purple-700 border-purple-200';
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -89,9 +104,30 @@ const UnifiedDashboardLayout = ({
                 <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
                 <span className="capitalize font-medium">{userType}</span>
               </div>
-              <div className="text-sm font-medium text-gray-900 hidden sm:block">
-                Welcome, <span className="text-blue-600">{displayName}</span>
-              </div>
+
+              {/* User Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 hover:bg-gray-100">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline font-medium text-gray-900">
+                      {displayName}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Profile & Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

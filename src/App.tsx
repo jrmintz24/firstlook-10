@@ -111,7 +111,7 @@ function App() {
                   }
                 />
 
-                {/* My Offers - Protected Route */}
+                {/* My Offers - Protected Route for buyers only */}
                 <Route
                   path="/my-offers"
                   element={
@@ -121,17 +121,17 @@ function App() {
                   }
                 />
 
-                {/* Profile - Protected Route */}
+                {/* Profile - Protected Route for both buyers and agents */}
                 <Route
                   path="/profile"
                   element={
-                    <ProtectedRoute requiredUserType="buyer">
+                    <ProtectedRoute>
                       <Profile />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Offer Questionnaire - Protected Route */}
+                {/* Offer Questionnaire - Protected Route for buyers only */}
                 <Route
                   path="/offer-questionnaire"
                   element={

@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, Phone, Mail, MessageCircle, Shield, Award } from "lucide-react";
+import { Star, Phone, Mail, MessageCircle, Shield, Award, Building, Clock, MapPin, AlertCircle } from "lucide-react";
+import { useEnhancedAgentProfile } from "@/hooks/useEnhancedAgentProfile";
 
 interface ShowingSpecialistCardProps {
   specialistName: string;
@@ -30,6 +31,8 @@ const ShowingSpecialistCard = ({
   onEmailClick,
   onContactAttempt
 }: ShowingSpecialistCardProps) => {
+  const { profile: enhancedProfile, loading, error } = useEnhancedAgentProfile(specialistId);
+
   // Generate initials from name
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -40,23 +43,27 @@ const ShowingSpecialistCard = ({
   const reviewCount = 127;
   const completedTours = 340;
 
-  // Mock specialties - in the future this would come from specialist profile
-  const specialties = ["First-Time Buyers", "Investment Properties", "Luxury Homes"];
+  // Use enhanced profile data if available, otherwise fall back to props
+  const agentDetails = enhancedProfile?.agent_details || {};
+  const displayName = enhancedProfile ? `${enhancedProfile.first_name} ${enhancedProfile.last_name}` : specialistName;
+  const displayPhone = enhancedProfile?.phone || specialistPhone;
+  const displayPhoto = enhancedProfile?.photo_url || photoUrl;
+  const displayLicense = agentDetails.licenseNumber || licenseNumber;
 
   const handleSMSClick = async () => {
-    if (specialistPhone) {
+    if (displayPhone) {
       // Track the contact attempt silently (no user notification)
       if (onContactAttempt) {
         await onContactAttempt('sms', {
           specialist_id: specialistId,
-          specialist_name: specialistName,
-          specialist_phone: specialistPhone,
+          specialist_name: displayName,
+          specialist_phone: displayPhone,
           contact_method: 'sms'
         });
       }
       
       // Open native SMS app
-      const smsUrl = `sms:${specialistPhone}`;
+      const smsUrl = `sms:${displayPhone}`;
       try {
         window.open(smsUrl, '_self');
       } catch (error) {
@@ -70,19 +77,19 @@ const ShowingSpecialistCard = ({
   };
 
   const handleCallClick = async () => {
-    if (specialistPhone) {
+    if (displayPhone) {
       // Track the contact attempt silently (no user notification)
       if (onContactAttempt) {
         await onContactAttempt('call', {
           specialist_id: specialistId,
-          specialist_name: specialistName,
-          specialist_phone: specialistPhone,
+          specialist_name: displayName,
+          specialist_phone: displayPhone,
           contact_method: 'call'
         });
       }
       
       // Open native phone app
-      const telUrl = `tel:${specialistPhone}`;
+      const telUrl = `tel:${displayPhone}`;
       try {
         window.open(telUrl, '_self');
       } catch (error) {
@@ -102,7 +109,7 @@ const ShowingSpecialistCard = ({
       if (onContactAttempt) {
         await onContactAttempt('email', {
           specialist_id: specialistId,
-          specialist_name: specialistName,
+          specialist_name: displayName,
           specialist_email: specialistEmail,
           contact_method: 'email'
         });
@@ -123,6 +130,53 @@ const ShowingSpecialistCard = ({
     }
   };
 
+  if (loading) {
+    return (
+      <Card className="border-blue-200 bg-blue-50/30">
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error && !enhancedProfile) {
+    return (
+      <Card className="border-yellow-200 bg-yellow-50/30">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 text-yellow-700 mb-2">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">Limited Profile Information</span>
+          </div>
+          <p className="text-sm text-yellow-600 mb-4">
+            Using basic contact information. Full profile details are temporarily unavailable.
+          </p>
+          {/* Fall back to basic display */}
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12">
+              <AvatarImage src={displayPhoto} alt={displayName} />
+              <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
+                {getInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h4 className="font-semibold text-gray-900">{displayName}</h4>
+              <p className="text-sm text-gray-600">Licensed Showing Specialist</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-blue-200 bg-blue-50/30">
       <CardContent className="p-6">
@@ -131,27 +185,47 @@ const ShowingSpecialistCard = ({
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-5 h-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-blue-900">Your Showing Specialist</h3>
+            {enhancedProfile?.profile_completion_percentage && (
+              <Badge 
+                variant={enhancedProfile.profile_completion_percentage >= 80 ? "default" : "secondary"}
+                className="ml-auto text-xs"
+              >
+                {enhancedProfile.profile_completion_percentage}% Complete
+              </Badge>
+            )}
           </div>
 
           {/* Specialist Profile */}
           <div className="flex items-start gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={photoUrl} alt={specialistName} />
+              <AvatarImage src={displayPhoto} alt={displayName} />
               <AvatarFallback className="bg-blue-100 text-blue-700 text-lg font-semibold">
-                {getInitials(specialistName)}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-xl font-semibold text-gray-900">{specialistName}</h4>
-                <Badge className="bg-blue-100 text-blue-800 text-xs">
-                  <Award className="w-3 h-3 mr-1" />
-                  Licensed
-                </Badge>
+                <h4 className="text-xl font-semibold text-gray-900">{displayName}</h4>
+                {displayLicense && (
+                  <Badge className="bg-blue-100 text-blue-800 text-xs">
+                    <Award className="w-3 h-3 mr-1" />
+                    Licensed
+                  </Badge>
+                )}
               </div>
               
-              <p className="text-blue-700 font-medium mb-2">Licensed Showing Specialist</p>
+              <div className="flex items-center gap-2 mb-2">
+                {agentDetails.brokerage && (
+                  <p className="text-blue-700 font-medium flex items-center gap-1">
+                    <Building className="w-4 h-4" />
+                    {agentDetails.brokerage}
+                  </p>
+                )}
+                {!agentDetails.brokerage && (
+                  <p className="text-blue-700 font-medium">Licensed Showing Specialist</p>
+                )}
+              </div>
               
               {/* Rating */}
               <div className="flex items-center gap-2 mb-2">
@@ -173,26 +247,67 @@ const ShowingSpecialistCard = ({
               {/* Stats */}
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                 <span>{completedTours}+ tours completed</span>
-                {licenseNumber && (
-                  <span>License: {licenseNumber}</span>
+                {agentDetails.yearsExperience && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {agentDetails.yearsExperience}+ years
+                    </span>
+                  </>
+                )}
+                {displayLicense && (
+                  <>
+                    <span>•</span>
+                    <span>License: {displayLicense}</span>
+                  </>
                 )}
               </div>
 
               {/* Specialties */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {specialties.map((specialty, index) => (
-                  <Badge key={index} variant="outline" className="text-xs border-blue-200 text-blue-700">
-                    {specialty}
-                  </Badge>
-                ))}
-              </div>
+              {agentDetails.specialties && agentDetails.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {agentDetails.specialties.slice(0, 3).map((specialty, index) => (
+                    <Badge key={index} variant="outline" className="text-xs border-blue-200 text-blue-700">
+                      {specialty}
+                    </Badge>
+                  ))}
+                  {agentDetails.specialties.length > 3 && (
+                    <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
+                      +{agentDetails.specialties.length - 3} more
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              {/* Areas Served */}
+              {agentDetails.areasServed && agentDetails.areasServed.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    Areas Served:
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {agentDetails.areasServed.slice(0, 2).map((area, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {area}
+                      </Badge>
+                    ))}
+                    {agentDetails.areasServed.length > 2 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{agentDetails.areasServed.length - 2} more
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Contact Information */}
               <div className="space-y-2">
-                {specialistPhone && (
+                {displayPhone && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Phone className="w-4 h-4" />
-                    <span>{specialistPhone}</span>
+                    <span>{displayPhone}</span>
                   </div>
                 )}
                 {specialistEmail && (
@@ -206,16 +321,15 @@ const ShowingSpecialistCard = ({
           </div>
 
           {/* Professional Bio */}
-          <div className="bg-white/60 p-3 rounded-lg border border-blue-100">
-            <p className="text-sm text-gray-700">
-              "I specialize in helping buyers find their perfect home with personalized attention and local market expertise. 
-              My goal is to make your home buying journey smooth, informed, and stress-free."
-            </p>
-          </div>
+          {agentDetails.bio && (
+            <div className="bg-white/60 p-3 rounded-lg border border-blue-100">
+              <p className="text-sm text-gray-700">{agentDetails.bio}</p>
+            </div>
+          )}
 
           {/* Action Buttons - Enhanced with native contact functionality */}
           <div className="flex gap-2 pt-2">
-            {specialistPhone && (
+            {displayPhone && (
               <Button 
                 onClick={handleSMSClick}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
@@ -225,7 +339,7 @@ const ShowingSpecialistCard = ({
               </Button>
             )}
             
-            {specialistPhone && (
+            {displayPhone && (
               <Button 
                 variant="outline" 
                 onClick={handleCallClick}
@@ -247,6 +361,15 @@ const ShowingSpecialistCard = ({
               </Button>
             )}
           </div>
+
+          {/* Profile Completion Notice for Incomplete Profiles */}
+          {enhancedProfile?.profile_completion_percentage && enhancedProfile.profile_completion_percentage < 80 && (
+            <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+              <p className="text-xs text-amber-700">
+                This specialist is still completing their profile. Full details will be available soon.
+              </p>
+            </div>
+          )}
 
           {/* Privacy Notice - Updated to reflect silent tracking */}
           <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">

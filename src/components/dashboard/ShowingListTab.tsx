@@ -54,6 +54,8 @@ interface ShowingListTabProps {
     latestAction?: string;
     actionTimestamp?: string;
   }>;
+  eligibility?: any;
+  onUpgradeClick?: () => void;
 }
 
 const ShowingListTab: React.FC<ShowingListTabProps> = ({
@@ -75,7 +77,9 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   currentUserId,
   agreements = {},
   onSignAgreement,
-  buyerActions = {}
+  buyerActions = {},
+  eligibility,
+  onUpgradeClick
 }) => {
 
   if (showings.length === 0) {

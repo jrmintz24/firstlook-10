@@ -37,7 +37,7 @@ const SubscriptionStatus = ({ isSubscribed, eligibility, onUpgradeClick }: Subsc
               <h3 className="font-medium text-gray-900 mb-1">Tour Limit Reached</h3>
               <p className="text-sm text-gray-600 mb-3">
                 {eligibility.reason === 'monthly_limit_exceeded' 
-                  ? `You've used all ${eligibility.tours_limit} tours this month. Upgrade for unlimited access.`
+                  ? `You've used all 5 tours this month. Upgrade for unlimited access.`
                   : "Upgrade for unlimited tours and same-day booking."}
               </p>
               <Button 

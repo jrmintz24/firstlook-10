@@ -4,9 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const TOUR_LIMITS = {
-  free: 1,
-  pro: 2,
-  premium: 5,
+  free: 5,
+  pro: 50,
+  premium: 100,
 };
 
 interface TourQuota {
@@ -20,9 +20,9 @@ interface TourQuota {
 export const useTourQuota = () => {
   const { user } = useAuth();
   const [quota, setQuota] = useState<TourQuota>({
-    limit: 1,
+    limit: 5,
     used: 0,
-    remaining: 1,
+    remaining: 5,
     isExceeded: false,
     loading: true,
   });
@@ -37,7 +37,7 @@ export const useTourQuota = () => {
       try {
         // Get user's plan tier from profiles table or user metadata
         const planTier = user.user_metadata?.plan_tier || 'free';
-        const limit = TOUR_LIMITS[planTier as keyof typeof TOUR_LIMITS] || 1;
+        const limit = TOUR_LIMITS[planTier as keyof typeof TOUR_LIMITS] || 5;
 
         // Get current month's showing request count
         const currentMonth = new Date();

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar, Clock, CheckCircle, TrendingUp, FileText, Home } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,6 +18,9 @@ import OfferManagementDashboard from "@/components/offer-management/OfferManagem
 
 // Post-showing components
 import BuyerPostShowingHub from "@/components/dashboard/BuyerPostShowingHub";
+
+// Tour scheduling modal
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
@@ -48,6 +52,7 @@ const BuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState("requested");
   const [showSignAgreementModal, setShowSignAgreementModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [showTourModal, setShowTourModal] = useState(false);
   const isMobile = useIsMobile();
 
   console.log('BuyerDashboard - Current user:', currentUser?.id);
@@ -58,7 +63,11 @@ const BuyerDashboard = () => {
   };
 
   const handleRequestTour = () => {
-    console.log('Request tour clicked');
+    setShowTourModal(true);
+  };
+
+  const handleTourModalSuccess = async () => {
+    await refresh();
   };
 
   const handleSignAgreement = (request: any) => {
@@ -289,6 +298,12 @@ const BuyerDashboard = () => {
           }}
         />
       )}
+
+      <ModernTourSchedulingModal
+        isOpen={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onSuccess={handleTourModalSuccess}
+      />
     </>
   );
 };

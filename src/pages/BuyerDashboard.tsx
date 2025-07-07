@@ -11,7 +11,6 @@ import UnifiedConnectionStatus from "@/components/dashboard/UnifiedConnectionSta
 // Existing components
 import ShowingListTab from "@/components/dashboard/ShowingListTab";
 import EmptyStateCard from "@/components/dashboard/EmptyStateCard";
-import ConfirmShowingModal from "@/components/dashboard/ConfirmShowingModal";
 import SignAgreementModal from "@/components/dashboard/SignAgreementModal";
 
 // Offer management components
@@ -43,11 +42,11 @@ const BuyerDashboard = () => {
     handleConfirmShowingWithModal,
     handleSignAgreementFromCard,
     handleSendMessage,
-    fetchShowingRequests
+    fetchShowingRequests,
+    signAgreement
   } = useBuyerDashboardLogic({ onOpenChat: handleOpenChat });
 
   const [activeTab, setActiveTab] = useState("requested");
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSignAgreementModal, setShowSignAgreementModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const isMobile = useIsMobile();
@@ -63,26 +62,20 @@ const BuyerDashboard = () => {
     console.log('Request tour clicked');
   };
 
-  const handleConfirm = (request: any) => {
-    setSelectedRequest(request);
-    setShowConfirmModal(true);
-  };
-
   const handleSignAgreement = (request: any) => {
     setSelectedRequest(request);
     setShowSignAgreementModal(true);
   };
 
-  const handleConfirmSuccess = () => {
-    setShowConfirmModal(false);
-    setSelectedRequest(null);
-    refresh();
-  };
-
-  const handleSignAgreementSuccess = () => {
-    setShowSignAgreementModal(false);
-    setSelectedRequest(null);
-    refresh();
+  const handleSignAgreementSuccess = async () => {
+    if (selectedRequest && currentUser?.id) {
+      const success = await signAgreement(selectedRequest.id, 'Buyer Name');
+      if (success) {
+        setShowSignAgreementModal(false);
+        setSelectedRequest(null);
+        refresh();
+      }
+    }
   };
 
   if (authLoading) {
@@ -143,7 +136,7 @@ const BuyerDashboard = () => {
           onRequestShowing={handleRequestTour}
           onCancelShowing={handleCancelShowing}
           onRescheduleShowing={handleRescheduleShowing}
-          onConfirmShowing={handleConfirm}
+          onConfirmShowing={handleConfirmShowingWithModal}
           onSendMessage={handleSendMessage}
           onSignAgreement={handleSignAgreement}
           userType="buyer"
@@ -292,21 +285,17 @@ const BuyerDashboard = () => {
 
       {/* Modals */}
       {selectedRequest && (
-        <>
-          <ConfirmShowingModal
-            isOpen={showConfirmModal}
-            onClose={() => setShowConfirmModal(false)}
-            request={selectedRequest}
-            onConfirm={handleConfirmSuccess}
-          />
-          
-          <SignAgreementModal
-            isOpen={showSignAgreementModal}
-            onClose={() => setShowSignAgreementModal(false)}
-            request={selectedRequest}
-            onSuccess={handleSignAgreementSuccess}
-          />
-        </>
+        <SignAgreementModal
+          isOpen={showSignAgreementModal}
+          onClose={() => setShowSignAgreementModal(false)}
+          onSign={handleSignAgreementSuccess}
+          showingDetails={{
+            propertyAddress: selectedRequest.property_address,
+            date: selectedRequest.preferred_date,
+            time: selectedRequest.preferred_time,
+            agentName: selectedRequest.assigned_agent_name
+          }}
+        />
       )}
     </>
   );

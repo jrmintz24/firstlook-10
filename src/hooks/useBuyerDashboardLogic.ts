@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { useTourAgreements } from "@/hooks/useTourAgreements";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardAgreements } from "@/hooks/useDashboardAgreements";
 
 interface ShowingRequest {
   id: string;
@@ -21,21 +21,58 @@ interface ShowingRequest {
   status_updated_at?: string;
 }
 
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  user_type: string;
+  free_showing_used?: boolean;
+}
+
 interface BuyerDashboardLogicProps {
   onOpenChat: (defaultTab?: 'property' | 'support', showingId?: string) => void;
 }
 
 export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps) => {
   const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [subscriptionData, setSubscriptionData] = useState<any>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSignAgreementModal, setShowSignAgreementModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ShowingRequest | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('connected');
   
   const { toast } = useToast();
-  const { currentUser } = useAuth();
-  const { agreements, fetchAgreements } = useTourAgreements(currentUser?.id);
+  const { user, session, loading: contextAuthLoading } = useAuth();
+  const currentUser = user || session?.user;
+  
+  const { showingsWithAgreements, signAgreement } = useDashboardAgreements(currentUser?.id || '');
+  
+  // Create agreements object from showingsWithAgreements
+  const agreements = showingsWithAgreements.reduce((acc, showing) => {
+    acc[showing.id] = showing.tour_agreement?.signed || false;
+    return acc;
+  }, {} as Record<string, boolean>);
+
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  }, [currentUser?.id]);
 
   const fetchShowingRequests = useCallback(async () => {
     if (!currentUser?.id) {
@@ -85,13 +122,29 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
     }
   }, [currentUser?.id]);
 
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchProfile(),
+      fetchShowingRequests(), 
+      fetchSubscriptionData()
+    ]);
+    setLoading(false);
+  }, [fetchProfile, fetchShowingRequests, fetchSubscriptionData]);
+
+  useEffect(() => {
+    setAuthLoading(contextAuthLoading);
+  }, [contextAuthLoading]);
+
   useEffect(() => {
     if (currentUser?.id) {
+      fetchProfile();
       fetchShowingRequests();
       fetchSubscriptionData();
-      fetchAgreements();
+    } else if (!contextAuthLoading) {
+      setLoading(false);
     }
-  }, [currentUser?.id, fetchShowingRequests, fetchSubscriptionData, fetchAgreements]);
+  }, [currentUser?.id, contextAuthLoading, fetchProfile, fetchShowingRequests, fetchSubscriptionData]);
 
   const handleCancelShowing = async (id: string) => {
     try {
@@ -154,6 +207,10 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
 
   return {
     loading,
+    authLoading,
+    profile,
+    currentUser,
+    connectionStatus,
     showingRequests,
     pendingRequests,
     activeShowings,
@@ -172,5 +229,7 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
     handleSignAgreementFromCard,
     handleSendMessage,
     fetchShowingRequests,
+    refresh,
+    signAgreement,
   };
 };

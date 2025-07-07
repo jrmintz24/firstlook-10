@@ -104,6 +104,16 @@ export const usePostShowingActionsManager = (buyerId?: string) => {
     }
   }, [buyerId, fetchActionsForShowing, toast]);
 
+  // New method to record contact attempts
+  const recordContactAttempt = useCallback(async (
+    showingId: string, 
+    contactMethod: 'sms' | 'call' | 'email', 
+    specialistDetails: any
+  ): Promise<boolean> => {
+    const actionType = `attempted_contact_${contactMethod}`;
+    return await recordAction(showingId, actionType, specialistDetails);
+  }, [recordAction]);
+
   const getAgentFromShowing = useCallback((showing: ShowingWithAgent) => {
     return {
       id: showing.assigned_agent_id || showing.assigned_agent_email,
@@ -121,6 +131,7 @@ export const usePostShowingActionsManager = (buyerId?: string) => {
     hasCompletedAction,
     getCompletedActionTypes,
     recordAction,
+    recordContactAttempt,
     getAgentFromShowing
   };
 };

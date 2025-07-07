@@ -9,6 +9,7 @@ import PostShowingActionsPanel from "@/components/post-showing/PostShowingAction
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import ShowingSpecialistCard from "./ShowingSpecialistCard";
 import RescheduleModal from "./RescheduleModal";
+import { usePostShowingActionsManager } from "@/hooks/usePostShowingActionsManager";
 import { 
   Calendar,
   Clock,
@@ -73,6 +74,9 @@ const OptimizedShowingCard = ({
 }: OptimizedShowingCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  
+  // Initialize the post-showing actions manager for contact tracking
+  const { recordContactAttempt } = usePostShowingActionsManager(showing.user_id || currentUserId);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -149,6 +153,16 @@ const OptimizedShowingCard = ({
     setShowRescheduleModal(false);
     if (onComplete) {
       onComplete();
+    }
+  };
+
+  // Handle contact attempt tracking
+  const handleContactAttempt = async (contactMethod: 'sms' | 'call' | 'email', specialistDetails: any) => {
+    try {
+      await recordContactAttempt(showing.id, contactMethod, specialistDetails);
+      console.log(`Contact attempt logged: ${contactMethod}`, specialistDetails);
+    } catch (error) {
+      console.error('Failed to log contact attempt:', error);
     }
   };
 
@@ -288,7 +302,7 @@ const OptimizedShowingCard = ({
               )}
             </div>
 
-            {/* Enhanced Showing Specialist Card for Confirmed Tours */}
+            {/* Enhanced Showing Specialist Card for Confirmed Tours with Contact Tracking */}
             {isConfirmedTour && showing.assigned_agent_name && (
               <div className="mt-4">
                 <ShowingSpecialistCard
@@ -297,6 +311,7 @@ const OptimizedShowingCard = ({
                   specialistEmail={showing.assigned_agent_email || undefined}
                   specialistId={showing.assigned_agent_id || undefined}
                   onMessageClick={handleMessageSpecialist}
+                  onContactAttempt={handleContactAttempt}
                 />
               </div>
             )}

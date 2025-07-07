@@ -6,7 +6,9 @@ import {
   UserCheck, 
   Calendar, 
   MessageCircle, 
-  Star 
+  Star,
+  Phone,
+  Mail
 } from "lucide-react";
 
 interface BuyerActionIndicatorsProps {
@@ -20,6 +22,9 @@ interface BuyerActionIndicatorsProps {
     agentRating?: number;
     latestAction?: string;
     actionTimestamp?: string;
+    attemptedContactSms?: boolean;
+    attemptedContactCall?: boolean;
+    attemptedContactEmail?: boolean;
   };
 }
 
@@ -37,6 +42,12 @@ const BuyerActionIndicators = ({ actions }: BuyerActionIndicatorsProps) => {
         return 'Favorited';
       case 'asked_question':
         return 'Asked Question';
+      case 'attempted_contact_sms':
+        return 'Texted Specialist';
+      case 'attempted_contact_call':
+        return 'Called Specialist';
+      case 'attempted_contact_email':
+        return 'Emailed Specialist';
       default:
         return actionType.replace(/_/g, ' ');
     }
@@ -49,7 +60,11 @@ const BuyerActionIndicators = ({ actions }: BuyerActionIndicatorsProps) => {
       (actions.hiredAgent ? 4 : 0) +
       (actions.scheduledMoreTours ? 2 : 0) +
       (actions.askedQuestions || 0) +
-      (actions.propertyRating && actions.propertyRating >= 4 ? 2 : 0);
+      (actions.propertyRating && actions.propertyRating >= 4 ? 2 : 0) +
+      // Add points for contact attempts (shows engagement)
+      (actions.attemptedContactSms ? 1 : 0) +
+      (actions.attemptedContactCall ? 1 : 0) +
+      (actions.attemptedContactEmail ? 1 : 0);
 
     if (score >= 6) return 'high';
     if (score >= 3) return 'medium';
@@ -58,7 +73,8 @@ const BuyerActionIndicators = ({ actions }: BuyerActionIndicatorsProps) => {
 
   const interestLevel = getInterestLevel();
   const hasActions = actions.favorited || actions.madeOffer || actions.hiredAgent || 
-                    actions.scheduledMoreTours || (actions.askedQuestions && actions.askedQuestions > 0);
+                    actions.scheduledMoreTours || (actions.askedQuestions && actions.askedQuestions > 0) ||
+                    actions.attemptedContactSms || actions.attemptedContactCall || actions.attemptedContactEmail;
 
   if (!hasActions) {
     return (
@@ -122,6 +138,28 @@ const BuyerActionIndicators = ({ actions }: BuyerActionIndicatorsProps) => {
           <Badge variant="outline" className="text-xs border-orange-300 bg-orange-50 text-orange-700">
             <MessageCircle className="w-3 h-3 mr-1" />
             {actions.askedQuestions} Question{actions.askedQuestions > 1 ? 's' : ''}
+          </Badge>
+        )}
+
+        {/* Contact Attempt Badges */}
+        {actions.attemptedContactSms && (
+          <Badge variant="outline" className="text-xs border-indigo-300 bg-indigo-50 text-indigo-700">
+            <MessageCircle className="w-3 h-3 mr-1" />
+            Texted
+          </Badge>
+        )}
+
+        {actions.attemptedContactCall && (
+          <Badge variant="outline" className="text-xs border-emerald-300 bg-emerald-50 text-emerald-700">
+            <Phone className="w-3 h-3 mr-1" />
+            Called
+          </Badge>
+        )}
+
+        {actions.attemptedContactEmail && (
+          <Badge variant="outline" className="text-xs border-cyan-300 bg-cyan-50 text-cyan-700">
+            <Mail className="w-3 h-3 mr-1" />
+            Emailed
           </Badge>
         )}
       </div>

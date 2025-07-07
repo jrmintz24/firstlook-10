@@ -15,6 +15,7 @@ interface ShowingSpecialistCardProps {
   onMessageClick?: () => void;
   onCallClick?: () => void;
   onEmailClick?: () => void;
+  onContactAttempt?: (contactMethod: 'sms' | 'call' | 'email', specialistDetails: any) => void;
 }
 
 const ShowingSpecialistCard = ({
@@ -26,7 +27,8 @@ const ShowingSpecialistCard = ({
   licenseNumber,
   onMessageClick,
   onCallClick,
-  onEmailClick
+  onEmailClick,
+  onContactAttempt
 }: ShowingSpecialistCardProps) => {
   // Generate initials from name
   const getInitials = (name: string) => {
@@ -41,16 +43,75 @@ const ShowingSpecialistCard = ({
   // Mock specialties - in the future this would come from specialist profile
   const specialties = ["First-Time Buyers", "Investment Properties", "Luxury Homes"];
 
+  const handleSMSClick = () => {
+    if (specialistPhone) {
+      // Track the contact attempt
+      if (onContactAttempt) {
+        onContactAttempt('sms', {
+          specialist_id: specialistId,
+          specialist_name: specialistName,
+          specialist_phone: specialistPhone,
+          contact_method: 'sms'
+        });
+      }
+      
+      // Open native SMS app
+      const smsUrl = `sms:${specialistPhone}`;
+      try {
+        window.open(smsUrl, '_self');
+      } catch (error) {
+        console.error('Failed to open SMS app:', error);
+        // Fallback to internal messaging
+        if (onMessageClick) {
+          onMessageClick();
+        }
+      }
+    }
+    onCallClick?.();
+  };
+
   const handleCallClick = () => {
     if (specialistPhone) {
-      window.open(`tel:${specialistPhone}`, '_self');
+      // Track the contact attempt
+      if (onContactAttempt) {
+        onContactAttempt('call', {
+          specialist_id: specialistId,
+          specialist_name: specialistName,
+          specialist_phone: specialistPhone,
+          contact_method: 'call'
+        });
+      }
+      
+      // Open native phone app
+      const telUrl = `tel:${specialistPhone}`;
+      try {
+        window.open(telUrl, '_self');
+      } catch (error) {
+        console.error('Failed to open phone app:', error);
+      }
     }
     onCallClick?.();
   };
 
   const handleEmailClick = () => {
     if (specialistEmail) {
-      window.open(`mailto:${specialistEmail}`, '_self');
+      // Track the contact attempt
+      if (onContactAttempt) {
+        onContactAttempt('email', {
+          specialist_id: specialistId,
+          specialist_name: specialistName,
+          specialist_email: specialistEmail,
+          contact_method: 'email'
+        });
+      }
+      
+      // Open native email app
+      const mailtoUrl = `mailto:${specialistEmail}`;
+      try {
+        window.open(mailtoUrl, '_self');
+      } catch (error) {
+        console.error('Failed to open email app:', error);
+      }
     }
     onEmailClick?.();
   };
@@ -145,15 +206,15 @@ const ShowingSpecialistCard = ({
             </p>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Enhanced with native contact functionality */}
           <div className="flex gap-2 pt-2">
-            {onMessageClick && (
+            {specialistPhone && (
               <Button 
-                onClick={onMessageClick}
+                onClick={handleSMSClick}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
-                Message
+                Text
               </Button>
             )}
             
@@ -178,6 +239,11 @@ const ShowingSpecialistCard = ({
                 Email
               </Button>
             )}
+          </div>
+
+          {/* Privacy Notice */}
+          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+            Your contact attempts are logged for service improvement and specialist insights.
           </div>
         </div>
       </CardContent>

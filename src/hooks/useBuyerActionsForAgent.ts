@@ -14,6 +14,9 @@ interface BuyerAction {
     agentRating?: number;
     latestAction?: string;
     actionTimestamp?: string;
+    attemptedContactSms?: boolean;
+    attemptedContactCall?: boolean;
+    attemptedContactEmail?: boolean;
   };
 }
 
@@ -94,6 +97,11 @@ export const useBuyerActionsForAgent = (agentId: string) => {
         const showingActions = postShowingActions.data?.filter(a => a.showing_request_id === showingId) || [];
         actions.madeOffer = showingActions.some(a => a.action_type === 'request_offer_assistance');
         actions.scheduledMoreTours = showingActions.some(a => a.action_type.includes('schedule'));
+        
+        // Check for contact attempts
+        actions.attemptedContactSms = showingActions.some(a => a.action_type === 'attempted_contact_sms');
+        actions.attemptedContactCall = showingActions.some(a => a.action_type === 'attempted_contact_call');
+        actions.attemptedContactEmail = showingActions.some(a => a.action_type === 'attempted_contact_email');
 
         // Check if favorited
         actions.favorited = propertyFavorites.data?.some(f => f.showing_request_id === showingId) || false;
@@ -113,7 +121,7 @@ export const useBuyerActionsForAgent = (agentId: string) => {
         // Count questions
         actions.askedQuestions = followUpQuestions.data?.filter(q => q.showing_request_id === showingId).length || 0;
 
-        // Get latest action
+        // Get latest action (including contact attempts)
         const allActions = [
           ...(showingActions.map(a => ({ type: a.action_type, date: a.created_at }))),
           ...(propertyFavorites.data?.filter(f => f.showing_request_id === showingId).map(f => ({ type: 'favorited', date: f.created_at })) || []),

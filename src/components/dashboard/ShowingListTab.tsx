@@ -36,6 +36,7 @@ interface ShowingListTabProps {
   onRescheduleShowing: (id: string) => void;
   onConfirmShowing?: (request: ShowingRequest) => void;
   onReportIssue?: (request: ShowingRequest) => void;
+  onSendMessage?: (id: string) => void;
   showActions?: boolean;
   userType?: 'buyer' | 'agent';
   onComplete?: () => void;
@@ -67,6 +68,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   onRescheduleShowing,
   onConfirmShowing,
   onReportIssue,
+  onSendMessage,
   showActions = true,
   userType = 'buyer',
   onComplete,
@@ -100,7 +102,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 request={showing}
                 onAssign={() => {}}
                 onUpdateStatus={(status, estimatedDate) => {}}
-                onSendMessage={() => {}}
+                onSendMessage={() => onSendMessage?.(showing.id)}
                 onConfirm={onConfirmShowing}
                 onReportIssue={onReportIssue}
                 showAssignButton={!showing.assigned_agent_id}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, MessageCircle, AlertTriangle } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
+import BuyerActionIndicators from "./BuyerActionIndicators";
 
 interface ShowingRequest {
   id: string;
@@ -34,6 +35,17 @@ interface AgentRequestCardProps {
   showAssignButton: boolean;
   onComplete?: () => void;
   currentAgentId?: string;
+  buyerActions?: {
+    favorited?: boolean;
+    madeOffer?: boolean;
+    hiredAgent?: boolean;
+    scheduledMoreTours?: boolean;
+    askedQuestions?: number;
+    propertyRating?: number;
+    agentRating?: number;
+    latestAction?: string;
+    actionTimestamp?: string;
+  };
 }
 
 const AgentRequestCard = ({ 
@@ -45,7 +57,8 @@ const AgentRequestCard = ({
   onReportIssue,
   showAssignButton,
   onComplete,
-  currentAgentId
+  currentAgentId,
+  buyerActions
 }: AgentRequestCardProps) => {
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
@@ -134,6 +147,16 @@ const AgentRequestCard = ({
                   Buyer has consented to share contact information with you.
                 </div>
                 {/* Here you would show actual buyer contact details */}
+              </div>
+            )}
+
+            {/* Buyer Action Indicators for Completed Showings */}
+            {request.status === 'completed' && buyerActions && (
+              <div className="bg-blue-50/80 border border-blue-200/50 p-3 rounded-lg mb-4">
+                <div className="text-sm font-medium text-blue-800 mb-2">
+                  Buyer Post-Tour Activity
+                </div>
+                <BuyerActionIndicators actions={buyerActions} />
               </div>
             )}
 

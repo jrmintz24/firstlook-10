@@ -5,6 +5,7 @@ import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
+import { useBuyerActionsForAgent } from "@/hooks/useBuyerActionsForAgent";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
@@ -33,6 +34,7 @@ const AgentDashboard = () => {
     fetchAgentData
   } = useAgentDashboard();
 
+  const { buyerActions, loading: actionsLoading } = useBuyerActionsForAgent(profile?.id || '');
   const { confirmShowing } = useAgentConfirmation();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -163,6 +165,7 @@ const AgentDashboard = () => {
           userType="agent"
           onComplete={fetchAgentData}
           currentUserId={currentUser?.id}
+          buyerActions={buyerActions}
         />
       )
     },
@@ -187,6 +190,7 @@ const AgentDashboard = () => {
           userType="agent"
           onComplete={fetchAgentData}
           currentUserId={currentUser?.id}
+          buyerActions={buyerActions}
         />
       )
     },
@@ -232,6 +236,7 @@ const AgentDashboard = () => {
           userType="agent"
           onComplete={fetchAgentData}
           currentUserId={currentUser?.id}
+          buyerActions={buyerActions}
         />
       )
     }

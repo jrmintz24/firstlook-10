@@ -109,6 +109,29 @@ export const useEnhancedPostShowingActions = () => {
   ) => {
     setIsSubmitting(true);
     try {
+      // First, check if the property is already favorited by this buyer
+      const { data: existingFavorite, error: checkError } = await supabase
+        .from('property_favorites')
+        .select('id')
+        .eq('buyer_id', params.buyerId)
+        .eq('property_address', params.propertyAddress)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing favorite:', checkError);
+        throw checkError;
+      }
+
+      // If already favorited, show a friendly message
+      if (existingFavorite) {
+        toast({
+          title: "Already in Favorites",
+          description: `${params.propertyAddress} is already in your favorites.`,
+        });
+        return;
+      }
+
+      // If not favorited, proceed with insertion
       const { error } = await supabase
         .from('property_favorites')
         .insert({
@@ -118,7 +141,17 @@ export const useEnhancedPostShowingActions = () => {
           notes: notes
         });
 
-      if (error) throw error;
+      if (error) {
+        // Handle the duplicate key constraint error as a fallback
+        if (error.code === '23505') {
+          toast({
+            title: "Already in Favorites",
+            description: `${params.propertyAddress} is already in your favorites.`,
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Property Saved",

@@ -109,6 +109,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 onSendMessage={() => onSendMessage?.(showing.id)}
                 onConfirm={onConfirmShowing}
                 onReportIssue={onReportIssue}
+                onReschedule={onRescheduleShowing}
                 showAssignButton={!showing.assigned_agent_id}
                 onComplete={onComplete}
                 currentAgentId={currentUserId}

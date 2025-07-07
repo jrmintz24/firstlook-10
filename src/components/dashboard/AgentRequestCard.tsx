@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, MessageCircle, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import BuyerActionIndicators from "./BuyerActionIndicators";
@@ -32,6 +32,7 @@ interface AgentRequestCardProps {
   onSendMessage: () => void;
   onConfirm?: (request: ShowingRequest) => void;
   onReportIssue?: (request: ShowingRequest) => void;
+  onReschedule?: (requestId: string) => void;
   showAssignButton: boolean;
   onComplete?: () => void;
   currentAgentId?: string;
@@ -55,6 +56,7 @@ const AgentRequestCard = ({
   onSendMessage, 
   onConfirm, 
   onReportIssue,
+  onReschedule,
   showAssignButton,
   onComplete,
   currentAgentId,
@@ -68,22 +70,9 @@ const AgentRequestCard = ({
     request.buyer_consents_to_contact === true && 
     request.assigned_agent_id === currentAgentId;
 
-  // Specialist can message if assigned and showing is not cancelled
-  const canMessage = request.assigned_agent_id === currentAgentId && 
-    !['cancelled'].includes(request.status) &&
-    request.user_id; // Make sure there's a buyer to message
-
-  const handleMessageClick = () => {
-    console.log('Message button clicked for request:', request.id);
-    console.log('Can message:', canMessage);
-    console.log('Current specialist ID:', currentAgentId);
-    console.log('Assigned specialist ID:', request.assigned_agent_id);
-    console.log('User ID:', request.user_id);
-    
-    if (canMessage) {
-      onSendMessage();
-    }
-  };
+  // Specialist can reschedule if assigned and showing is not completed/cancelled
+  const canReschedule = request.assigned_agent_id === currentAgentId && 
+    ['agent_assigned', 'confirmed', 'scheduled'].includes(request.status);
 
   const handleReportIssue = () => {
     if (onReportIssue) {
@@ -94,6 +83,12 @@ const AgentRequestCard = ({
   const handleAcceptRequest = () => {
     if (onConfirm) {
       onConfirm(request);
+    }
+  };
+
+  const handleReschedule = () => {
+    if (onReschedule) {
+      onReschedule(request.id);
     }
   };
 
@@ -258,14 +253,15 @@ const AgentRequestCard = ({
             />
           )}
 
-          {canMessage && (
+          {/* Reschedule Button - Replaced Message Client button */}
+          {canReschedule && (
             <Button 
               variant="outline" 
-              onClick={handleMessageClick}
+              onClick={handleReschedule}
               className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm w-full sm:w-auto"
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Message Client
+              <Calendar className="h-4 w-4 mr-2" />
+              Reschedule
             </Button>
           )}
 
@@ -284,13 +280,7 @@ const AgentRequestCard = ({
 
           {request.status === 'cancelled' && (
             <div className="text-xs text-gray-500 italic">
-              Messaging disabled for cancelled showings
-            </div>
-          )}
-
-          {!canMessage && request.assigned_agent_id === currentAgentId && request.status !== 'cancelled' && !request.user_id && (
-            <div className="text-xs text-gray-500 italic">
-              No buyer contact available for messaging
+              This showing has been cancelled
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, UserPlus, Eye,
 import { getStatusInfo, getEstimatedTimeline, type ShowingStatus } from "@/utils/showingStatus";
 import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import BuyerActionIndicators from "./BuyerActionIndicators";
+import { useBuyerContactInfo } from "@/hooks/useBuyerContactInfo";
 
 interface ShowingRequest {
   id: string;
@@ -65,10 +66,11 @@ const AgentRequestCard = ({
   const statusInfo = getStatusInfo(request.status as ShowingStatus);
   const timeline = getEstimatedTimeline(request.status as ShowingStatus);
   
-  // Specialist can only see buyer contact info if showing is completed AND buyer consents
-  const canAccessBuyerContact = request.status === 'completed' && 
-    request.buyer_consents_to_contact === true && 
-    request.assigned_agent_id === currentAgentId;
+  // Use the new hook to get buyer contact info
+  const { buyerInfo, loading: buyerInfoLoading, canAccess } = useBuyerContactInfo(
+    request.id, 
+    currentAgentId || ''
+  );
 
   // Specialist can reschedule if assigned and showing is not completed/cancelled
   const canReschedule = request.assigned_agent_id === currentAgentId && 
@@ -114,34 +116,52 @@ const AgentRequestCard = ({
               <span className="truncate">{request.property_address}</span>
             </h3>
 
-            {/* Privacy Protection Notice */}
-            {!canAccessBuyerContact && (
-              <div className="bg-amber-50/80 border border-amber-200/50 p-3 rounded-lg mb-4">
-                <div className="flex items-center gap-2 text-amber-700 text-sm">
-                  <EyeOff className="h-4 w-4" />
-                  <span className="font-medium">Buyer Contact Protected</span>
-                </div>
-                <div className="text-amber-600 text-xs mt-1">
-                  {request.status === 'completed' 
-                    ? "Contact info available only if buyer consents to work with you"
-                    : showAssignButton 
-                      ? "Accept this request to begin messaging with buyer"
-                      : "Contact information protected until showing completion"}
-                </div>
-              </div>
-            )}
-
-            {/* Buyer Contact Information - Only shown if specialist has access */}
-            {canAccessBuyerContact && (
-              <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg mb-4">
-                <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  Buyer Contact Information
-                </div>
-                <div className="text-green-700 text-sm">
-                  Buyer has consented to share contact information with you.
-                </div>
-                {/* Here you would show actual buyer contact details */}
+            {/* Buyer Contact Information - Show actual contact info if consented */}
+            {request.status === 'completed' && (
+              <div className="mb-4">
+                {buyerInfoLoading ? (
+                  <div className="bg-gray-50/80 border border-gray-200/50 p-3 rounded-lg">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ) : canAccess && buyerInfo ? (
+                  <div className="bg-green-50/80 border border-green-200/50 p-3 rounded-lg">
+                    <div className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
+                      <Eye className="h-4 w-4" />
+                      Buyer Contact Information
+                    </div>
+                    <div className="space-y-2">
+                      <div className="font-medium text-green-900">
+                        {buyerInfo.first_name} {buyerInfo.last_name}
+                      </div>
+                      {buyerInfo.phone && (
+                        <div className="flex items-center gap-2 text-sm text-green-700">
+                          <Phone className="h-3 w-3" />
+                          <a href={`tel:${buyerInfo.phone}`} className="hover:underline">
+                            {buyerInfo.phone}
+                          </a>
+                        </div>
+                      )}
+                      <div className="text-xs text-green-600">
+                        Buyer has consented to share contact information with you.
+                      </div>
+                    </div>
+                  </div>
+                ) : !canAccess ? (
+                  <div className="bg-amber-50/80 border border-amber-200/50 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 text-amber-700 text-sm">
+                      <EyeOff className="h-4 w-4" />
+                      <span className="font-medium">Buyer Contact Protected</span>
+                    </div>
+                    <div className="text-amber-600 text-xs mt-1">
+                      {showAssignButton 
+                        ? "Accept this request to begin messaging with buyer"
+                        : "Contact information available only if buyer consents to work with you"}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 

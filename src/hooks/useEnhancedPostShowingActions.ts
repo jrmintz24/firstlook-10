@@ -1,170 +1,137 @@
 
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-interface ScheduleAnotherTourParams {
-  showingId: string;
-  buyerId: string;
-}
-
-interface HireAgentParams {
-  showingId: string;
-  buyerId: string;
-  agentId: string;
-  propertyAddress: string;
-  agentName?: string;
-}
-
-interface FavoritePropertyParams {
-  showingId: string;
-  buyerId: string;
-  propertyAddress: string;
-  agentName?: string;
-}
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const useEnhancedPostShowingActions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const scheduleAnotherTour = async (buyerId?: string, showingId?: string) => {
+  const scheduleAnotherTour = async (buyerId: string, showingId: string) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Tour Scheduled",
-        description: "We'll help you schedule another property tour.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to schedule tour. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const hireAgent = async ({ 
-    showingId, 
-    buyerId, 
-    agentId, 
-    propertyAddress, 
-    agentName 
-  }: {
-    showingId: string;
-    buyerId: string;
-    agentId: string;
-    propertyAddress: string;
-    agentName: string;
-  }) => {
-    setIsSubmitting(true);
-    try {
-      // In a real implementation, this would call the Supabase API
-      const { data, error } = await supabase
-        .from('buyer_agent_matches')
+      const { error } = await supabase
+        .from('post_showing_actions')
         .insert({
-          buyer_id: buyerId,
-          agent_id: agentId,
           showing_request_id: showingId,
-          match_source: 'post_showing'
+          buyer_id: buyerId,
+          action_type: 'schedule_another_tour',
+          action_details: { timestamp: new Date().toISOString() }
         });
 
       if (error) throw error;
 
-      // Create an agent referral record
-      await supabase
-        .from('agent_referrals')
-        .insert({
-          buyer_id: buyerId,
-          agent_id: agentId,
-          showing_request_id: showingId,
-          referral_type: 'hire_agent',
-          status: 'active'
-        });
-
       toast({
-        title: "Agent Connected",
-        description: `You're now working with ${agentName}. They'll be in touch soon!`,
+        title: "Interest Recorded",
+        description: "We've noted your interest in scheduling another tour.",
       });
     } catch (error) {
-      console.error('Error hiring agent:', error);
+      console.error('Error recording tour scheduling interest:', error);
       toast({
-        title: "Connection Failed",
-        description: "Failed to connect with agent. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to record your interest. Please try again.",
+        variant: "destructive",
       });
-      throw error;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const favoriteProperty = async (
-    params: FavoritePropertyParams,
-    notes?: string
-  ) => {
+  const hireAgent = async (data: {
+    showingId: string;
+    buyerId: string;
+    agentId: string;
+    propertyAddress: string;
+    agentName?: string;
+  }) => {
     setIsSubmitting(true);
     try {
-      // First, check if the property is already favorited by this buyer
-      const { data: existingFavorite, error: checkError } = await supabase
-        .from('property_favorites')
-        .select('id')
-        .eq('buyer_id', params.buyerId)
-        .eq('property_address', params.propertyAddress)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking existing favorite:', checkError);
-        throw checkError;
-      }
-
-      // If already favorited, show a friendly message
-      if (existingFavorite) {
-        toast({
-          title: "Already in Favorites",
-          description: `${params.propertyAddress} is already in your favorites.`,
+      // Insert the agent referral record
+      const { error: referralError } = await supabase
+        .from('agent_referrals')
+        .insert({
+          buyer_id: data.buyerId,
+          agent_id: data.agentId,
+          showing_request_id: data.showingId,
+          referral_type: 'hire_agent',
+          status: 'active'
         });
-        return;
-      }
 
-      // If not favorited, proceed with insertion
+      if (referralError) throw referralError;
+
+      // Update the showing request to set buyer consent
+      const { error: showingError } = await supabase
+        .from('showing_requests')
+        .update({
+          buyer_consents_to_contact: true
+        })
+        .eq('id', data.showingId);
+
+      if (showingError) throw showingError;
+
+      // Record the post-showing action
+      const { error: actionError } = await supabase
+        .from('post_showing_actions')
+        .insert({
+          showing_request_id: data.showingId,
+          buyer_id: data.buyerId,
+          action_type: 'hire_agent',
+          action_details: {
+            agent_id: data.agentId,
+            agent_name: data.agentName,
+            property_address: data.propertyAddress,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+      if (actionError) throw actionError;
+
+      toast({
+        title: "Agent Hired",
+        description: `You've chosen to work with ${data.agentName}. They now have access to your contact information.`,
+      });
+    } catch (error) {
+      console.error('Error hiring agent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect with agent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const favoriteProperty = async (data: {
+    showingId: string;
+    buyerId: string;
+    propertyAddress: string;
+    agentName?: string;
+  }, notes?: string) => {
+    setIsSubmitting(true);
+    try {
       const { error } = await supabase
         .from('property_favorites')
         .insert({
-          buyer_id: params.buyerId,
-          showing_request_id: params.showingId,
-          property_address: params.propertyAddress,
-          notes: notes
+          buyer_id: data.buyerId,
+          showing_request_id: data.showingId,
+          property_address: data.propertyAddress,
+          notes: notes || null
         });
 
-      if (error) {
-        // Handle the duplicate key constraint error as a fallback
-        if (error.code === '23505') {
-          toast({
-            title: "Already in Favorites",
-            description: `${params.propertyAddress} is already in your favorites.`,
-          });
-          return;
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
-        title: "Property Saved",
-        description: `${params.propertyAddress} has been added to your favorites.`,
+        title: "Property Favorited",
+        description: "This property has been added to your favorites.",
       });
     } catch (error) {
-      console.error('Error saving property:', error);
+      console.error('Error favoriting property:', error);
       toast({
-        title: "Save Failed",
-        description: "Failed to save property. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to favorite property. Please try again.",
+        variant: "destructive",
       });
-      throw error;
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp } from "lucide-react";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -191,27 +190,6 @@ const AgentDashboard = () => {
           onComplete={fetchAgentData}
           currentUserId={currentUser?.id}
           buyerActions={buyerActions}
-        />
-      )
-    },
-    {
-      id: "messages",
-      title: "Messages",
-      icon: MessageSquare,
-      count: unreadCount,
-      color: "bg-red-100 text-red-700",
-      content: currentUser?.id ? (
-        <MessagingInterface
-          userId={currentUser.id}
-          userType="agent"
-        />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Messages"
-          description="Please refresh the page to load your messages."
-          buttonText="Refresh"
-          onButtonClick={() => window.location.reload()}
-          icon={MessageSquare}
         />
       )
     },

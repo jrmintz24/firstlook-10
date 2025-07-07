@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3 } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3, FileText } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
@@ -20,6 +20,7 @@ import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import AgentPostShowingInsights from "@/components/dashboard/AgentPostShowingInsights";
 import PostShowingAnalytics from "@/components/dashboard/PostShowingAnalytics";
 import AgentNotificationsPanel from "@/components/dashboard/AgentNotificationsPanel";
+import ProposalsTab from "@/components/dashboard/ProposalsTab";
 
 const AgentDashboard = () => {
   const {
@@ -175,6 +176,24 @@ const AgentDashboard = () => {
           userType="agent"
           onComplete={refresh}
           currentUserId={currentUser?.id}
+        />
+      )
+    },
+    {
+      id: "proposals",
+      title: "Proposals",
+      icon: FileText,
+      count: 0,
+      color: "bg-purple-100 text-purple-700",
+      content: currentUser?.id ? (
+        <ProposalsTab agentId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Proposals"
+          description="Please refresh the page to load your proposals."
+          buttonText="Refresh"
+          onButtonClick={refresh}
+          icon={FileText}
         />
       )
     },

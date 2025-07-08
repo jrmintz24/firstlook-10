@@ -35,14 +35,8 @@ const FAQSection = () => {
   ];
 
   return (
-    <div className="py-12 sm:py-18 bg-white">
+    <div className="py-8 sm:py-12 bg-white">
       <div className="mx-auto max-w-4xl px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-light tracking-tight text-gray-900 mb-6">
-            Quick Answers
-          </h2>
-        </div>
-        
         <Accordion type="single" collapsible className="w-full space-y-4">
           {faqs.map((faq, index) => (
             <AccordionItem 

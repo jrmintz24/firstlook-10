@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+
+import React, { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +51,7 @@ const allTimeSlots = [
   { value: "11:30 AM", label: "11:30 AM" },
   { value: "12:00 PM", label: "12:00 PM" },
   { value: "12:30 PM", label: "12:30 PM" },
-  { value: "1:00 PM", label: "1:00 PM" },
+  { value: "1:00 PM", label: "1:30 PM" },
   { value: "1:30 PM", label: "1:30 PM" },
   { value: "2:00 PM", label: "2:00 PM" },
   { value: "2:30 PM", label: "2:30 PM" },
@@ -116,6 +117,30 @@ const ModernTourSchedulingModal = ({
     resetForm
   } = usePropertyRequest(onClose, onSuccess, skipNavigation);
 
+  // Sync modal flow with isOpen prop - ensure modal flow resets when opened fresh
+  useEffect(() => {
+    console.log('Modal isOpen changed:', isOpen, 'Current modalFlow:', modalFlow);
+    if (isOpen && modalFlow === 'closed') {
+      console.log('Resetting modal flow to scheduling');
+      setModalFlow('scheduling');
+    } else if (!isOpen && modalFlow !== 'closed') {
+      console.log('Setting modal flow to closed');
+      setModalFlow('closed');
+    }
+  }, [isOpen, modalFlow, setModalFlow]);
+
+  // Reset form state when modal opens fresh
+  useEffect(() => {
+    if (isOpen && modalFlow === 'scheduling') {
+      console.log('Resetting form state for fresh modal open');
+      setPropertyAddress("");
+      setSelectedDate("");
+      setSelectedTime("");
+      setNotes("");
+      setShowAllTimes(false);
+    }
+  }, [isOpen, modalFlow]);
+
   // Determine user capabilities
   const isGuest = !user;
   const isPaidUser = eligibility?.eligible && eligibility.reason === 'subscribed';
@@ -124,6 +149,7 @@ const ModernTourSchedulingModal = ({
   const timeSlotsToShow = showAllTimes ? allTimeSlots : coreTimeSlots;
 
   const handleClose = () => {
+    console.log('Modal handleClose called');
     resetForm();
     setPropertyAddress("");
     setSelectedDate("");
@@ -185,6 +211,8 @@ const ModernTourSchedulingModal = ({
       return;
     }
 
+    console.log('Submitting tour request:', { propertyAddress, selectedDate, selectedTime });
+
     // Create the form data object with current values
     const currentFormData = {
       properties: [{ address: propertyAddress, notes: notes }],
@@ -205,6 +233,7 @@ const ModernTourSchedulingModal = ({
   };
 
   const handleAuthSuccess = async () => {
+    console.log('Auth success - continuing with submission');
     // After successful auth, continue with the submission
     await handleContinueToSubscriptions();
   };
@@ -228,6 +257,8 @@ const ModernTourSchedulingModal = ({
 
   // Only show scheduling modal when flow is 'scheduling' and isOpen is true
   const showSchedulingModal = isOpen && modalFlow === 'scheduling';
+
+  console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal });
 
   return (
     <>

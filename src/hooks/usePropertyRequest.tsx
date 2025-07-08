@@ -31,7 +31,7 @@ export const usePropertyRequest = (
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
   const [showQuickSignIn, setShowQuickSignIn] = useState(false);
-  const [modalFlow, setModalFlow] = useState<'scheduling' | 'auth' | 'limit' | 'closed'>('scheduling');
+  const [modalFlow, setModalFlow] = useState<'scheduling' | 'auth' | 'limit' | 'closed'>('closed');
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -46,6 +46,8 @@ export const usePropertyRequest = (
     getPendingShowingAddress, 
     handleCancelPendingShowing 
   } = usePendingShowingManagement();
+
+  console.log('usePropertyRequest - Current modalFlow:', modalFlow);
 
   useEffect(() => {
     const loadPendingShowing = async () => {
@@ -180,18 +182,19 @@ export const usePropertyRequest = (
   };
 
   const resetForm = () => {
+    console.log('Resetting form and modal state');
     setFormData(initialFormData);
     setCurrentStep(1);
-    setModalFlow('scheduling');
+    setModalFlow('closed');
   };
 
   return {
     // Legacy properties for backward compatibility
     step: currentStep,
     showAuthModal: modalFlow === 'auth',
-    setShowAuthModal: (show: boolean) => setModalFlow(show ? 'auth' : 'scheduling'),
+    setShowAuthModal: (show: boolean) => setModalFlow(show ? 'auth' : 'closed'),
     showFreeShowingLimitModal: modalFlow === 'limit',
-    setShowFreeShowingLimitModal: (show: boolean) => setModalFlow(show ? 'limit' : 'scheduling'),
+    setShowFreeShowingLimitModal: (show: boolean) => setModalFlow(show ? 'limit' : 'closed'),
     eligibility,
     
     // Current properties

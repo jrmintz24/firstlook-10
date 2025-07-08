@@ -53,26 +53,6 @@ const FAQSection = () => {
             </AccordionItem>
           ))}
         </Accordion>
-
-        {/* Ready to Start CTA */}
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-to-br from-gray-900 to-blue-900 rounded-3xl p-8 sm:p-12 text-white">
-            <h3 className="text-3xl sm:text-4xl font-light mb-6 tracking-tight">
-              🏁 Ready to Start Touring?
-            </h3>
-            <p className="text-gray-300 mb-8 text-lg leading-relaxed font-light max-w-2xl mx-auto">
-              Pick your plan, find a home, and book your first tour today. Your future home is closer than you think.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-medium text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg">
-                Get Your Free Tour
-              </button>
-              <button className="bg-transparent border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-medium text-lg hover:bg-white/10 transition-all duration-300">
-                View Pricing Plans
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

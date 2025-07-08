@@ -15,7 +15,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
   };
 
   return (
-    <div className="py-16 sm:py-20 relative overflow-hidden bg-white">
+    <div className="py-12 sm:py-16 relative overflow-hidden bg-white">
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-6 tracking-tight leading-none">

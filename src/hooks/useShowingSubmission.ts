@@ -13,6 +13,8 @@ export const useShowingSubmission = (
   const { user } = useAuth();
 
   const submitShowingRequests = async (formData: PropertyRequestFormData) => {
+    console.log('DEBUG: submitShowingRequests called with formData:', formData);
+    
     if (!user?.id) {
       console.error('No authenticated user found for showing submission');
       toast({
@@ -33,8 +35,10 @@ export const useShowingSubmission = (
 
       // Handle multiple properties if they exist
       if (formData.properties && formData.properties.length > 0) {
+        console.log('DEBUG: Processing properties array:', formData.properties);
         for (const property of formData.properties) {
-          if (property.address.trim()) {
+          if (property.address && property.address.trim()) {
+            console.log('DEBUG: Adding property from properties array:', property.address.trim());
             showingRequests.push({
               user_id: user.id, // Ensure user_id is always set
               property_address: property.address.trim(),
@@ -49,6 +53,7 @@ export const useShowingSubmission = (
 
       // Handle single property from direct form fields
       if (formData.propertyAddress && formData.propertyAddress.trim()) {
+        console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
         const request = {
           user_id: user.id, // Ensure user_id is always set
           property_address: formData.propertyAddress.trim(),
@@ -64,11 +69,17 @@ export const useShowingSubmission = (
         );
         
         if (!isDuplicate) {
+          console.log('DEBUG: Adding single property:', request.property_address);
           showingRequests.push(request);
+        } else {
+          console.log('DEBUG: Skipping duplicate property:', request.property_address);
         }
       }
 
+      console.log('DEBUG: Final showing requests to submit:', showingRequests);
+
       if (showingRequests.length === 0) {
+        console.error('DEBUG: No valid properties found to submit');
         throw new Error('No valid properties to submit');
       }
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ const allTimeSlots = [
   { value: "11:30 AM", label: "11:30 AM" },
   { value: "12:00 PM", label: "12:00 PM" },
   { value: "12:30 PM", label: "12:30 PM" },
-  { value: "1:00 PM", label: "1:30 PM" },
+  { value: "1:00 PM", label: "1:00 PM" },
   { value: "1:30 PM", label: "1:30 PM" },
   { value: "2:00 PM", label: "2:00 PM" },
   { value: "2:30 PM", label: "2:30 PM" },
@@ -207,26 +206,36 @@ const ModernTourSchedulingModal = ({
   };
 
   const handleSubmit = async () => {
+    console.log('DEBUG: handleSubmit called with:', {
+      propertyAddress: propertyAddress.trim(),
+      selectedDate,
+      selectedTime,
+      canSubmit: propertyAddress.trim() && selectedDate && selectedTime
+    });
+
     if (!propertyAddress.trim() || !selectedDate || !selectedTime) {
+      console.log('DEBUG: Validation failed - missing required fields');
       return;
     }
 
-    console.log('Submitting tour request:', { propertyAddress, selectedDate, selectedTime });
+    console.log('DEBUG: Creating form data with address:', propertyAddress);
 
     // Create the form data object with current values
     const currentFormData = {
-      properties: [{ address: propertyAddress, notes: notes }],
+      properties: [{ address: propertyAddress.trim(), notes: notes }],
       preferredOptions: [{ date: selectedDate, time: selectedTime }],
       notes: notes,
-      propertyAddress: propertyAddress,
+      propertyAddress: propertyAddress.trim(),
       preferredDate1: selectedDate,
       preferredTime1: selectedTime,
       preferredDate2: '',
       preferredTime2: '',
       preferredDate3: '',
       preferredTime3: '',
-      selectedProperties: [propertyAddress]
+      selectedProperties: [propertyAddress.trim()]
     };
+
+    console.log('DEBUG: Final form data being submitted:', currentFormData);
 
     // Pass the current form data directly to the submission handler
     await handleContinueToSubscriptions(currentFormData);

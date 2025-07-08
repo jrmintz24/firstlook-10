@@ -2,12 +2,12 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
+import FAQSection from '../components/buyer-os/FAQSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'
 import HowItWorks from '../components/buyer-os/HowItWorks'
 import IndustryAndStories from '../components/buyer-os/IndustryAndStories'
 import CommissionExplainer from '../components/buyer-os/CommissionExplainer'
 import PricingSection from '../components/buyer-os/PricingSection'
-import FAQSection from '../components/buyer-os/FAQSection'
 import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
@@ -72,6 +72,9 @@ export default function Index() {
       {/* Hero Section */}
       <HeroSection onStartTour={handleStartTour} />
 
+      {/* FAQ Section - moved directly after hero */}
+      <FAQSection />
+
       {/* Value Proposition */}
       <ValueProposition />
 
@@ -86,9 +89,6 @@ export default function Index() {
 
       {/* Pricing Section */}
       <PricingSection onStartTour={handleStartTour} />
-
-      {/* FAQ Section */}
-      <FAQSection />
 
       {/* Trust Indicators - moved towards bottom */}
       <TrustIndicators />

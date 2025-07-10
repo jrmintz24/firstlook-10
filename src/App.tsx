@@ -34,6 +34,8 @@ import OfferQuestionnaire from './pages/OfferQuestionnaire'
 import MyOffers from './pages/MyOffers'
 import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
+import Search from './pages/Search'
+import Property from './pages/Property'
 
 const queryClient = new QueryClient()
 
@@ -160,6 +162,10 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* Property Search Pages */}
+                <Route path="/search" element={<Search />} />
+                <Route path="/property/:mlsId" element={<Property />} />
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />

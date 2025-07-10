@@ -125,18 +125,17 @@ export const SearchFilters = ({ filters, onFiltersChange, onSearch, isLoading }:
         {/* Expanded Filters */}
         {isExpanded && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-            {/* Bedrooms */}
             <div className="space-y-2">
               <Label htmlFor="minBeds">Min Bedrooms</Label>
               <Select
-                value={filters.minBeds?.toString() || ''}
-                onValueChange={(value) => handleFilterChange('minBeds', value ? parseInt(value) : undefined)}
+                value={filters.minBeds?.toString() || 'any'}
+                onValueChange={(value) => handleFilterChange('minBeds', value === 'any' ? undefined : parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="1">1+</SelectItem>
                   <SelectItem value="2">2+</SelectItem>
                   <SelectItem value="3">3+</SelectItem>
@@ -150,14 +149,14 @@ export const SearchFilters = ({ filters, onFiltersChange, onSearch, isLoading }:
             <div className="space-y-2">
               <Label htmlFor="minBaths">Min Bathrooms</Label>
               <Select
-                value={filters.minBaths?.toString() || ''}
-                onValueChange={(value) => handleFilterChange('minBaths', value ? parseInt(value) : undefined)}
+                value={filters.minBaths?.toString() || 'any'}
+                onValueChange={(value) => handleFilterChange('minBaths', value === 'any' ? undefined : parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="1">1+</SelectItem>
                   <SelectItem value="2">2+</SelectItem>
                   <SelectItem value="3">3+</SelectItem>
@@ -170,14 +169,14 @@ export const SearchFilters = ({ filters, onFiltersChange, onSearch, isLoading }:
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type</Label>
               <Select
-                value={filters.propertyType || ''}
-                onValueChange={(value) => handleFilterChange('propertyType', value || undefined)}
+                value={filters.propertyType || 'any'}
+                onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? undefined : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Any Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Type</SelectItem>
+                  <SelectItem value="any">Any Type</SelectItem>
                   <SelectItem value="Residential">Residential</SelectItem>
                   <SelectItem value="Condo">Condo</SelectItem>
                   <SelectItem value="Townhouse">Townhouse</SelectItem>

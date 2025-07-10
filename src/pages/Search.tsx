@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react"
-import { SearchFilters } from "@/components/property/SearchFilters"
+import { ModernSearchFilters } from "@/components/property/ModernSearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
 import { MapView } from "@/components/property/MapView"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Property, SearchFilters as SearchFiltersType, SearchResponse } from "@/types/simplyrets"
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
-import { Loader2, Grid, Map, Home, AlertCircle, RefreshCw } from "lucide-react"
+import { Loader2, Grid, Map, AlertCircle, RefreshCw } from "lucide-react"
 
 const Search = () => {
   const [properties, setProperties] = useState<Property[]>([])
@@ -103,31 +103,45 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Home className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Property Search</h1>
-              <p className="text-gray-600">Find your perfect home in the DC/Baltimore area</p>
+      {/* Hero Section with Modern Search */}
+      <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-[60vh] flex items-center justify-center">
+        {/* Background Image Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')"
+          }}
+        />
+        
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl md:text-6xl font-light text-white mb-4">
+              Find the best place
+            </h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Discover your perfect home in the DC/Baltimore area with our comprehensive property search
+            </p>
+          </div>
+
+          {/* Modern Search Card */}
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <ModernSearchFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                onSearch={searchProperties}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Search Filters */}
-        <SearchFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          onSearch={searchProperties}
-          isLoading={isLoading}
-        />
-
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive" className="mb-6">
+      {/* Error Alert */}
+      {error && (
+        <div className="container mx-auto px-4 py-6">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               <span>{error}</span>
@@ -142,15 +156,17 @@ const Search = () => {
               </Button>
             </AlertDescription>
           </Alert>
-        )}
+        </div>
+      )}
 
-        {/* Results Section */}
-        {hasSearched && (
+      {/* Results Section */}
+      {hasSearched && (
+        <div className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             {/* Results Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-semibold text-gray-900">
                   {properties.length > 0 ? `${properties.length} Properties Found` : 'No Properties Found'}
                 </h2>
                 {properties.length > 0 && (
@@ -255,7 +271,7 @@ const Search = () => {
             ) : !error && (
               <div className="text-center py-12">
                 <div className="text-gray-500 mb-4">
-                  <Home className="h-12 w-12 mx-auto mb-2" />
+                  <Grid className="h-12 w-12 mx-auto mb-2" />
                   <p className="text-lg">No properties found</p>
                   <p className="text-sm">Try adjusting your search criteria</p>
                 </div>
@@ -265,17 +281,17 @@ const Search = () => {
               </div>
             )}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Tour Request Wizard */}
-        <PropertyRequestWizard
-          isOpen={showTourWizard}
-          onClose={() => {
-            setShowTourWizard(false)
-            setSelectedProperty(null)
-          }}
-        />
-      </div>
+      {/* Tour Request Wizard */}
+      <PropertyRequestWizard
+        isOpen={showTourWizard}
+        onClose={() => {
+          setShowTourWizard(false)
+          setSelectedProperty(null)
+        }}
+      />
     </div>
   )
 }

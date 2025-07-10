@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { ModernSearchFilters } from "@/components/property/ModernSearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
@@ -11,6 +10,7 @@ import { Property, SearchFilters as SearchFiltersType, SearchResponse } from "@/
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
 import { Loader2, Grid, Map, AlertCircle, RefreshCw } from "lucide-react"
+import { useLocation } from "react-router-dom"
 
 const Search = () => {
   const [properties, setProperties] = useState<Property[]>([])
@@ -24,18 +24,37 @@ const Search = () => {
     limit: 20
   })
   const { toast } = useToast()
+  const location = useLocation()
 
-  const searchProperties = async () => {
+  // Handle URL search query
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search)
+    const query = urlParams.get('q')
+    
+    if (query) {
+      // Update filters with the search query
+      setFilters(prev => ({
+        ...prev,
+        cities: query // Use the search query as the location filter
+      }))
+      // Automatically trigger search
+      searchPropertiesWithQuery(query)
+    }
+  }, [location.search])
+
+  const searchPropertiesWithQuery = async (query?: string) => {
     setIsLoading(true)
     setError(null)
     
     try {
-      console.log('Starting property search with filters:', filters)
+      console.log('Starting property search with filters:', query ? { ...filters, cities: query } : filters)
+      
+      const searchFilters = query ? { ...filters, cities: query } : filters
       
       const { data, error } = await supabase.functions.invoke('simplyrets-search', {
         body: { 
           endpoint: 'search',
-          params: filters 
+          params: searchFilters 
         }
       })
 
@@ -82,6 +101,10 @@ const Search = () => {
     }
   }
 
+  const searchProperties = async () => {
+    await searchPropertiesWithQuery()
+  }
+
   const handleScheduleTour = (property: Property) => {
     setSelectedProperty(property)
     setShowTourWizard(true)
@@ -96,9 +119,14 @@ const Search = () => {
     searchProperties()
   }
 
-  // Initial search on component mount
+  // Initial search on component mount (only if no URL query)
   useEffect(() => {
-    searchProperties()
+    const urlParams = new URLSearchParams(location.search)
+    const query = urlParams.get('q')
+    
+    if (!query) {
+      searchProperties()
+    }
   }, [])
 
   return (

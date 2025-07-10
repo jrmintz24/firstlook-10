@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import HeroSearchBar from "./HeroSearchBar";
 
 interface HeroSectionProps {
   onRequestShowing: () => void;
@@ -31,6 +32,9 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
           <p className="text-xl md:text-2xl text-gray-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
             Just honest tools, clear pricing, and real savings.
           </p>
+
+          {/* Hero Search Bar */}
+          <HeroSearchBar />
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Button 

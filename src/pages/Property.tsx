@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Property as PropertyType } from "@/types/simplyrets"
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
+import MakeOfferModal from "@/components/dashboard/MakeOfferModal"
 import { 
   ArrowLeft, 
   Bed, 
@@ -26,7 +27,8 @@ import {
   Car,
   Clock,
   CheckCircle,
-  Star
+  Star,
+  DollarSign
 } from "lucide-react"
 
 // Fake property data for demo mode
@@ -100,6 +102,7 @@ const Property = () => {
   const [property, setProperty] = useState<PropertyType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showTourWizard, setShowTourWizard] = useState(false)
+  const [showMakeOfferModal, setShowMakeOfferModal] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const { toast } = useToast()
 
@@ -128,12 +131,66 @@ const Property = () => {
     setShowTourWizard(true)
   }
 
-  const handleToggleFavorite = () => {
-    setIsFavorited(!isFavorited)
-    toast({
-      title: isFavorited ? "Removed from favorites" : "Added to favorites",
-      description: isFavorited ? "Property removed from your saved list" : "Property saved to your favorites"
-    })
+  const handleMakeOffer = () => {
+    setShowMakeOfferModal(true)
+  }
+
+  const handleToggleFavorite = async () => {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save favorites",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!property) return
+
+    try {
+      if (isFavorited) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('property_favorites')
+          .delete()
+          .eq('buyer_id', user.id)
+          .eq('property_address', property.address.full)
+
+        if (error) throw error
+
+        setIsFavorited(false)
+        toast({
+          title: "Removed from favorites",
+          description: "Property removed from your saved list"
+        })
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('property_favorites')
+          .insert({
+            buyer_id: user.id,
+            property_address: property.address.full
+          })
+
+        if (error) throw error
+
+        setIsFavorited(true)
+        toast({
+          title: "Added to favorites",
+          description: "Property saved to your favorites"
+        })
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   const totalBaths = property ? property.property.bathsFull + (property.property.bathsHalf * 0.5) : 0
@@ -284,19 +341,19 @@ const Property = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <Button 
                             variant="outline"
-                            onClick={handleScheduleTour}
+                            onClick={handleMakeOffer}
                             className="rounded-xl border-gray-300 font-light"
                           >
-                            <Clock className="h-4 w-4 mr-2" />
-                            Tour Today
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Make Offer
                           </Button>
                           <Button 
                             variant="outline"
-                            onClick={handleScheduleTour}
-                            className="rounded-xl border-gray-300 font-light"
+                            onClick={handleToggleFavorite}
+                            className={`rounded-xl border-gray-300 font-light ${isFavorited ? 'bg-red-50 border-red-200 text-red-700' : ''}`}
                           >
-                            <Star className="h-4 w-4 mr-2" />
-                            This Weekend
+                            <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+                            {isFavorited ? 'Favorited' : 'Favorite'}
                           </Button>
                         </div>
                       </div>
@@ -474,6 +531,13 @@ const Property = () => {
         <PropertyRequestWizard
           isOpen={showTourWizard}
           onClose={() => setShowTourWizard(false)}
+        />
+
+        {/* Make Offer Modal */}
+        <MakeOfferModal
+          isOpen={showMakeOfferModal}
+          onClose={() => setShowMakeOfferModal(false)}
+          propertyAddress={property.address.full}
         />
       </div>
     </div>

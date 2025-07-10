@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { ModernSearchFilters } from "@/components/property/ModernSearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
@@ -158,7 +157,6 @@ const FAKE_PROPERTIES: Property[] = [
     address: {
       streetNumber: "2468",
       streetName: "Georgia Avenue",
-      streetName: "Silver Spring",
       city: "Silver Spring",
       state: "MD",
       postalCode: "20910",

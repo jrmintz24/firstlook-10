@@ -1,19 +1,22 @@
+
 import { useState, useEffect } from "react"
 import { SearchFilters } from "@/components/property/SearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
 import { MapView } from "@/components/property/MapView"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { supabase } from "@/integrations/supabase/client"
 import { Property, SearchFilters as SearchFiltersType, SearchResponse } from "@/types/simplyrets"
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
-import { Loader2, Grid, Map, Home } from "lucide-react"
+import { Loader2, Grid, Map, Home, AlertCircle, RefreshCw } from "lucide-react"
 
 const Search = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const [showTourWizard, setShowTourWizard] = useState(false)
   const [filters, setFilters] = useState<SearchFiltersType>({
@@ -24,8 +27,10 @@ const Search = () => {
 
   const searchProperties = async () => {
     setIsLoading(true)
+    setError(null)
+    
     try {
-      console.log('Searching with filters:', filters)
+      console.log('Starting property search with filters:', filters)
       
       const { data, error } = await supabase.functions.invoke('simplyrets-search', {
         body: { 
@@ -35,26 +40,41 @@ const Search = () => {
       })
 
       if (error) {
-        console.error('Search error:', error)
-        throw new Error(error.message || 'Failed to search properties')
+        console.error('Supabase function error:', error)
+        setError(`Search failed: ${error.message}`)
+        toast({
+          title: "Search Error",
+          description: error.message || "Failed to search properties",
+          variant: "destructive"
+        })
+        return
       }
 
-      console.log('Search results:', data)
+      console.log('Search results received:', data)
       
+      if (!data) {
+        setError('No data received from search')
+        return
+      }
+
       const response = data as SearchResponse
-      setProperties(response.properties || [])
+      const propertiesArray = response.properties || []
+      
+      setProperties(propertiesArray)
       setHasSearched(true)
       
       toast({
         title: "Search Complete",
-        description: `Found ${response.properties?.length || 0} properties`,
+        description: `Found ${propertiesArray.length} properties`,
       })
       
     } catch (error) {
       console.error('Property search error:', error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to search properties"
+      setError(errorMessage)
       toast({
         title: "Search Error",
-        description: error instanceof Error ? error.message : "Failed to search properties",
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
@@ -69,6 +89,11 @@ const Search = () => {
 
   const handlePropertySelect = (property: Property) => {
     setSelectedProperty(property)
+  }
+
+  const retrySearch = () => {
+    setError(null)
+    searchProperties()
   }
 
   // Initial search on component mount
@@ -99,6 +124,25 @@ const Search = () => {
           onSearch={searchProperties}
           isLoading={isLoading}
         />
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={retrySearch}
+                className="ml-4"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Results Section */}
         {hasSearched && (
@@ -208,7 +252,7 @@ const Search = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-            ) : (
+            ) : !error && (
               <div className="text-center py-12">
                 <div className="text-gray-500 mb-4">
                   <Home className="h-12 w-12 mx-auto mb-2" />

@@ -6,24 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const SIMPLYRETS_BASE_URL = 'https://simplyrets.com/api'
+// Updated SimplyRETS demo API configuration
+const SIMPLYRETS_BASE_URL = 'https://api.simplyrets.com'
 const SIMPLYRETS_USERNAME = 'simplyrets'
 const SIMPLYRETS_PASSWORD = 'simplyrets'
 
 serve(async (req) => {
+  console.log(`[${new Date().toISOString()}] Request received: ${req.method} ${req.url}`)
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Request method:', req.method)
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
-    
     let requestBody
     try {
       requestBody = await req.json()
-      console.log('Request body received:', JSON.stringify(requestBody, null, 2))
+      console.log('Request body parsed successfully:', JSON.stringify(requestBody, null, 2))
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError)
       return new Response(JSON.stringify({ 
@@ -48,88 +49,142 @@ serve(async (req) => {
     // Create Basic Auth header
     const credentials = btoa(`${SIMPLYRETS_USERNAME}:${SIMPLYRETS_PASSWORD}`)
     const authHeader = `Basic ${credentials}`
-    console.log('Auth header created successfully')
+    console.log('Created auth header for SimplyRETS demo API')
 
     switch (endpoint) {
       case 'search': {
-        console.log('Processing search request with params:', params)
+        console.log('Processing search request with params:', JSON.stringify(params, null, 2))
         
-        // Build SimplyRETS query parameters from request body params
+        // Build SimplyRETS query parameters
         const mlsParams = new URLSearchParams()
         
-        // Location filters (DC/Baltimore area)
-        const cities = params?.cities
-        if (cities) {
-          mlsParams.set('cities', cities)
-        } else {
-          // Default to DC/Baltimore area
-          mlsParams.set('cities', 'Washington,Baltimore,Bethesda,Arlington,Alexandria,Silver Spring,Rockville,Gaithersburg,Annapolis')
+        // For demo, we'll use simpler parameters that are more likely to work
+        if (params?.cities) {
+          // Split multiple cities and use the first one for demo
+          const cityList = params.cities.split(',')
+          mlsParams.set('cities', cityList[0].trim())
+          console.log('Set city filter to:', cityList[0].trim())
         }
         
-        // Price filters
-        const minPrice = params?.minPrice
-        const maxPrice = params?.maxPrice
-        if (minPrice) mlsParams.set('minprice', minPrice.toString())
-        if (maxPrice) mlsParams.set('maxprice', maxPrice.toString())
+        if (params?.minPrice) {
+          mlsParams.set('minprice', params.minPrice.toString())
+          console.log('Set min price filter:', params.minPrice)
+        }
         
-        // Property filters
-        const minBeds = params?.minBeds
-        const minBaths = params?.minBaths
-        const propertyType = params?.propertyType
+        if (params?.maxPrice) {
+          mlsParams.set('maxprice', params.maxPrice.toString())
+          console.log('Set max price filter:', params.maxPrice)
+        }
         
-        if (minBeds) mlsParams.set('minbeds', minBeds.toString())
-        if (minBaths) mlsParams.set('minbaths', minBaths.toString())
-        if (propertyType) mlsParams.set('type', propertyType)
+        if (params?.minBeds) {
+          mlsParams.set('minbeds', params.minBeds.toString())
+          console.log('Set min beds filter:', params.minBeds)
+        }
         
-        // Pagination
-        const limit = params?.limit || 20
-        const lastId = params?.lastId
+        if (params?.minBaths) {
+          mlsParams.set('minbaths', params.minBaths.toString())
+          console.log('Set min baths filter:', params.minBaths)
+        }
         
+        if (params?.propertyType) {
+          mlsParams.set('type', params.propertyType)
+          console.log('Set property type filter:', params.propertyType)
+        }
+        
+        // Set reasonable defaults for demo
+        const limit = params?.limit || 10
         mlsParams.set('limit', limit.toString())
-        if (lastId) mlsParams.set('lastId', lastId)
         
-        // Status filter - only active listings
+        if (params?.lastId) {
+          mlsParams.set('lastId', params.lastId)
+        }
+        
+        // Only active listings
         mlsParams.set('status', 'Active')
         
+        // Construct the API URL
         const searchUrl = `${SIMPLYRETS_BASE_URL}/properties?${mlsParams.toString()}`
-        console.log('SimplyRETS search URL:', searchUrl)
-        console.log('SimplyRETS search params:', mlsParams.toString())
+        console.log('Making request to SimplyRETS API:', searchUrl)
+        console.log('Query parameters:', mlsParams.toString())
         
         try {
           const response = await fetch(searchUrl, {
+            method: 'GET',
             headers: {
               'Authorization': authHeader,
               'Content-Type': 'application/json',
+              'User-Agent': 'Lovable-App/1.0'
             },
           })
           
           console.log('SimplyRETS response status:', response.status)
           console.log('SimplyRETS response headers:', Object.fromEntries(response.headers.entries()))
           
+          // Get response text first to check if it's HTML or JSON
+          const responseText = await response.text()
+          console.log('SimplyRETS response preview (first 500 chars):', responseText.substring(0, 500))
+          
           if (!response.ok) {
-            const errorText = await response.text()
             console.error(`SimplyRETS API error: ${response.status} ${response.statusText}`)
-            console.error('SimplyRETS error response:', errorText)
+            
+            // Check if response is HTML (404 page)
+            if (responseText.includes('<!doctype html>') || responseText.includes('<html>')) {
+              console.error('Received HTML response instead of JSON - likely incorrect endpoint')
+              return new Response(JSON.stringify({
+                error: 'SimplyRETS API endpoint error',
+                message: `Got HTML response instead of JSON. Status: ${response.status}`,
+                suggestion: 'The API endpoint might be incorrect for demo data',
+                endpoint_used: searchUrl
+              }), {
+                status: 502,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              })
+            }
             
             return new Response(JSON.stringify({
               error: 'SimplyRETS API error',
               message: `${response.status} ${response.statusText}`,
-              details: errorText
+              details: responseText.substring(0, 1000)
             }), {
               status: response.status,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             })
           }
           
-          const data = await response.json()
-          console.log('SimplyRETS returned', Array.isArray(data) ? data.length : 'non-array', 'results')
+          // Try to parse as JSON
+          let data
+          try {
+            data = JSON.parse(responseText)
+            console.log('Successfully parsed JSON response')
+            console.log('Data type:', Array.isArray(data) ? 'array' : typeof data)
+            console.log('Number of properties:', Array.isArray(data) ? data.length : 'not an array')
+          } catch (jsonError) {
+            console.error('Failed to parse response as JSON:', jsonError)
+            return new Response(JSON.stringify({
+              error: 'Invalid JSON response from SimplyRETS',
+              message: 'API returned non-JSON data',
+              response_preview: responseText.substring(0, 500)
+            }), {
+              status: 502,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          
+          // Ensure data is an array
+          const properties = Array.isArray(data) ? data : []
           
           return new Response(JSON.stringify({
-            properties: data,
+            properties: properties,
             pagination: {
-              total: Array.isArray(data) ? data.length : 0,
+              total: properties.length,
               limit: parseInt(limit),
-              lastId: Array.isArray(data) && data.length > 0 ? data[data.length - 1].mlsId : null
+              lastId: properties.length > 0 ? properties[properties.length - 1].mlsId : null
+            },
+            debug: {
+              endpoint_used: searchUrl,
+              params_sent: Object.fromEntries(mlsParams),
+              response_type: typeof data,
+              is_array: Array.isArray(data)
             }
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -139,7 +194,8 @@ serve(async (req) => {
           console.error('Network error calling SimplyRETS:', fetchError)
           return new Response(JSON.stringify({
             error: 'Network error',
-            message: fetchError.message
+            message: fetchError.message,
+            endpoint: searchUrl
           }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -159,14 +215,19 @@ serve(async (req) => {
         console.log('Fetching property details for MLS ID:', mlsId)
         
         try {
-          const response = await fetch(`${SIMPLYRETS_BASE_URL}/properties/${mlsId}`, {
+          const propertyUrl = `${SIMPLYRETS_BASE_URL}/properties/${mlsId}`
+          console.log('Making property request to:', propertyUrl)
+          
+          const response = await fetch(propertyUrl, {
+            method: 'GET',
             headers: {
               'Authorization': authHeader,
               'Content-Type': 'application/json',
+              'User-Agent': 'Lovable-App/1.0'
             },
           })
           
-          console.log('Property fetch response status:', response.status)
+          console.log('Property response status:', response.status)
           
           if (!response.ok) {
             if (response.status === 404) {
@@ -175,21 +236,23 @@ serve(async (req) => {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
               })
             }
+            
             const errorText = await response.text()
             console.error(`SimplyRETS property API error: ${response.status} ${response.statusText}`)
-            console.error('Error response:', errorText)
+            console.error('Error response:', errorText.substring(0, 500))
             
             return new Response(JSON.stringify({
               error: 'SimplyRETS API error',
               message: `${response.status} ${response.statusText}`,
-              details: errorText
+              details: errorText.substring(0, 1000)
             }), {
               status: response.status,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             })
           }
           
-          const property = await response.json()
+          const responseText = await response.text()
+          const property = JSON.parse(responseText)
           console.log('Property data retrieved successfully')
           
           return new Response(JSON.stringify(property), {

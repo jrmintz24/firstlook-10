@@ -21,18 +21,35 @@ const propertyTypes = [
   { value: 'Multi-Family', label: 'Multi-Family' },
 ]
 
-const dcBaltimoreAreas = [
-  { value: 'Washington,Baltimore,Bethesda,Arlington,Alexandria,Silver Spring,Rockville,Gaithersburg,Annapolis', label: 'DC/Baltimore Metro' },
-  { value: 'Washington', label: 'Washington DC' },
-  { value: 'Baltimore', label: 'Baltimore' },
-  { value: 'Bethesda', label: 'Bethesda' },
-  { value: 'Arlington', label: 'Arlington' },
-  { value: 'Alexandria', label: 'Alexandria' },
-  { value: 'Silver Spring', label: 'Silver Spring' },
-  { value: 'Rockville', label: 'Rockville' },
-  { value: 'Gaithersburg', label: 'Gaithersburg' },
-  { value: 'Annapolis', label: 'Annapolis' },
-]
+const priceRanges = {
+  min: [
+    { value: '', label: 'Any' },
+    { value: '100000', label: '$100K' },
+    { value: '200000', label: '$200K' },
+    { value: '300000', label: '$300K' },
+    { value: '400000', label: '$400K' },
+    { value: '500000', label: '$500K' },
+    { value: '600000', label: '$600K' },
+    { value: '700000', label: '$700K' },
+    { value: '800000', label: '$800K' },
+    { value: '900000', label: '$900K' },
+    { value: '1000000', label: '$1M+' },
+  ],
+  max: [
+    { value: '', label: 'Any' },
+    { value: '200000', label: '$200K' },
+    { value: '300000', label: '$300K' },
+    { value: '400000', label: '$400K' },
+    { value: '500000', label: '$500K' },
+    { value: '600000', label: '$600K' },
+    { value: '700000', label: '$700K' },
+    { value: '800000', label: '$800K' },
+    { value: '900000', label: '$900K' },
+    { value: '1000000', label: '$1M' },
+    { value: '1500000', label: '$1.5M' },
+    { value: '2000000', label: '$2M+' },
+  ]
+}
 
 export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoading }: ModernSearchFiltersProps) => {
   const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([])
@@ -53,81 +70,108 @@ export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoad
     handleFilterChange('propertyType', newTypes.length === 0 ? undefined : newTypes.join(','))
   }
 
-  const formatPrice = (price: string) => {
-    const num = parseInt(price.replace(/[^0-9]/g, ''))
-    return isNaN(num) ? '' : num.toLocaleString()
+  const handleLocationChange = (value: string) => {
+    handleFilterChange('cities', value || undefined)
   }
 
   const handlePriceChange = (key: 'minPrice' | 'maxPrice', value: string) => {
-    const numericValue = parseInt(value.replace(/[^0-9]/g, ''))
-    handleFilterChange(key, isNaN(numericValue) ? undefined : numericValue)
+    const numericValue = value ? parseInt(value) : undefined
+    handleFilterChange(key, numericValue)
   }
 
   return (
     <div className="space-y-8">
       {/* Main Search Form */}
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {/* Location */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Location Input */}
         <div className="md:col-span-2 lg:col-span-2">
           <div className="relative">
             <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <Select
-              value={filters.cities || dcBaltimoreAreas[0].value}
-              onValueChange={(value) => handleFilterChange('cities', value)}
-            >
-              <SelectTrigger className="h-14 pl-12 text-left border-gray-200 rounded-xl">
-                <SelectValue placeholder="Where do you want to live?" />
-              </SelectTrigger>
-              <SelectContent>
-                {dcBaltimoreAreas.map((area) => (
-                  <SelectItem key={area.value} value={area.value}>
-                    {area.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              placeholder="Enter an address, neighborhood, city, or ZIP code"
+              value={filters.cities || ''}
+              onChange={(e) => handleLocationChange(e.target.value)}
+              className="h-14 pl-12 text-left border-gray-200 rounded-xl"
+            />
           </div>
         </div>
 
-        {/* Price Range */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Min Price"
-              value={filters.minPrice ? formatPrice(filters.minPrice.toString()) : ''}
-              onChange={(e) => handlePriceChange('minPrice', e.target.value)}
-              className="h-14 pl-10 border-gray-200 rounded-xl"
-            />
-          </div>
-          <div className="relative flex-1">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Max Price"
-              value={filters.maxPrice ? formatPrice(filters.maxPrice.toString()) : ''}
-              onChange={(e) => handlePriceChange('maxPrice', e.target.value)}
-              className="h-14 pl-10 border-gray-200 rounded-xl"
-            />
-          </div>
+        {/* Min Price Dropdown */}
+        <div className="relative">
+          <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+          <Select
+            value={filters.minPrice?.toString() || ''}
+            onValueChange={(value) => handlePriceChange('minPrice', value)}
+          >
+            <SelectTrigger className="h-14 pl-12 border-gray-200 rounded-xl">
+              <SelectValue placeholder="Min Price" />
+            </SelectTrigger>
+            <SelectContent>
+              {priceRanges.min.map((range) => (
+                <SelectItem key={range.value} value={range.value}>
+                  {range.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Max Price Dropdown */}
+        <div className="relative">
+          <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+          <Select
+            value={filters.maxPrice?.toString() || ''}
+            onValueChange={(value) => handlePriceChange('maxPrice', value)}
+          >
+            <SelectTrigger className="h-14 pl-12 border-gray-200 rounded-xl">
+              <SelectValue placeholder="Max Price" />
+            </SelectTrigger>
+            <SelectContent>
+              {priceRanges.max.map((range) => (
+                <SelectItem key={range.value} value={range.value}>
+                  {range.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Bedrooms */}
         <div className="relative">
-          <Home className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Home className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Select
             value={filters.minBeds?.toString() || 'any'}
             onValueChange={(value) => handleFilterChange('minBeds', value === 'any' ? undefined : parseInt(value))}
           >
             <SelectTrigger className="h-14 pl-12 border-gray-200 rounded-xl">
-              <SelectValue placeholder="Bedrooms" />
+              <SelectValue placeholder="Beds" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="any">Any Beds</SelectItem>
-              <SelectItem value="1">1+ Bed</SelectItem>
-              <SelectItem value="2">2+ Beds</SelectItem>
-              <SelectItem value="3">3+ Beds</SelectItem>
-              <SelectItem value="4">4+ Beds</SelectItem>
-              <SelectItem value="5">5+ Beds</SelectItem>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="1">1+</SelectItem>
+              <SelectItem value="2">2+</SelectItem>
+              <SelectItem value="3">3+</SelectItem>
+              <SelectItem value="4">4+</SelectItem>
+              <SelectItem value="5">5+</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Bathrooms */}
+        <div className="relative">
+          <Select
+            value={filters.minBaths?.toString() || 'any'}
+            onValueChange={(value) => handleFilterChange('minBaths', value === 'any' ? undefined : parseInt(value))}
+          >
+            <SelectTrigger className="h-14 border-gray-200 rounded-xl">
+              <SelectValue placeholder="Baths" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="1">1+</SelectItem>
+              <SelectItem value="2">2+</SelectItem>
+              <SelectItem value="3">3+</SelectItem>
+              <SelectItem value="4">4+</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -166,33 +210,20 @@ export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoad
         </div>
       </div>
 
-      {/* Additional Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Select
-          value={filters.minBaths?.toString() || 'any'}
-          onValueChange={(value) => handleFilterChange('minBaths', value === 'any' ? undefined : parseInt(value))}
-        >
-          <SelectTrigger className="h-12 border-gray-200 rounded-xl">
-            <SelectValue placeholder="Min Bathrooms" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any Baths</SelectItem>
-            <SelectItem value="1">1+ Bath</SelectItem>
-            <SelectItem value="2">2+ Baths</SelectItem>
-            <SelectItem value="3">3+ Baths</SelectItem>
-            <SelectItem value="4">4+ Baths</SelectItem>
-          </SelectContent>
-        </Select>
-
+      {/* Clear Filters */}
+      <div className="flex justify-start">
         <Button
           variant="outline"
-          onClick={() => onFiltersChange({
-            cities: dcBaltimoreAreas[0].value,
-            limit: 20
-          })}
+          onClick={() => {
+            setSelectedPropertyTypes([])
+            onFiltersChange({
+              cities: undefined,
+              limit: 20
+            })
+          }}
           className="h-12 border-gray-200 rounded-xl"
         >
-          Clear Filters
+          Clear All Filters
         </Button>
       </div>
     </div>

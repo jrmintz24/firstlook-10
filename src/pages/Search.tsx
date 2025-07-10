@@ -410,15 +410,16 @@ const Search = () => {
   const filterProperties = (searchFilters: SearchFiltersType) => {
     let filtered = [...FAKE_PROPERTIES]
 
-    // Filter by cities
-    if (searchFilters.cities) {
-      const searchCities = searchFilters.cities.toLowerCase().split(',').map(c => c.trim())
+    // Filter by cities (now supports free text search)
+    if (searchFilters.cities && searchFilters.cities.trim()) {
+      const searchTerm = searchFilters.cities.toLowerCase().trim()
       filtered = filtered.filter(property => 
-        searchCities.some(city => 
-          property.address.city.toLowerCase().includes(city) ||
-          property.address.state.toLowerCase().includes(city) ||
-          property.address.full.toLowerCase().includes(city)
-        )
+        property.address.city.toLowerCase().includes(searchTerm) ||
+        property.address.state.toLowerCase().includes(searchTerm) ||
+        property.address.postalCode.toLowerCase().includes(searchTerm) ||
+        property.address.full.toLowerCase().includes(searchTerm) ||
+        property.address.streetName.toLowerCase().includes(searchTerm) ||
+        property.mls.area?.toLowerCase().includes(searchTerm)
       )
     }
 

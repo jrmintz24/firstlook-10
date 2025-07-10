@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
+import HeroSearchBar from "../home/HeroSearchBar";
 
 interface HeroSectionProps {
   onStartTour: () => void;
@@ -35,6 +36,9 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               Expert help. On your terms.
             </p>
           </div>
+
+          {/* Hero Search Bar */}
+          <HeroSearchBar />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

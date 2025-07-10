@@ -16,22 +16,20 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url)
-    const pathname = url.pathname.split('/').pop()
+    const requestBody = await req.json()
+    const { endpoint, params, mlsId } = requestBody
 
     // Create Basic Auth header
     const credentials = btoa(`${SIMPLYRETS_USERNAME}:${SIMPLYRETS_PASSWORD}`)
     const authHeader = `Basic ${credentials}`
 
-    switch (pathname) {
+    switch (endpoint) {
       case 'search': {
-        const searchParams = new URLSearchParams(url.search)
-        
-        // Build SimplyRETS query parameters
+        // Build SimplyRETS query parameters from request body params
         const mlsParams = new URLSearchParams()
         
         // Location filters (DC/Baltimore area)
-        const cities = searchParams.get('cities')
+        const cities = params?.cities
         if (cities) {
           mlsParams.set('cities', cities)
         } else {
@@ -40,25 +38,25 @@ serve(async (req) => {
         }
         
         // Price filters
-        const minPrice = searchParams.get('minPrice')
-        const maxPrice = searchParams.get('maxPrice')
-        if (minPrice) mlsParams.set('minprice', minPrice)
-        if (maxPrice) mlsParams.set('maxprice', maxPrice)
+        const minPrice = params?.minPrice
+        const maxPrice = params?.maxPrice
+        if (minPrice) mlsParams.set('minprice', minPrice.toString())
+        if (maxPrice) mlsParams.set('maxprice', maxPrice.toString())
         
         // Property filters
-        const minBeds = searchParams.get('minBeds')
-        const minBaths = searchParams.get('minBaths')
-        const propertyType = searchParams.get('propertyType')
+        const minBeds = params?.minBeds
+        const minBaths = params?.minBaths
+        const propertyType = params?.propertyType
         
-        if (minBeds) mlsParams.set('minbeds', minBeds)
-        if (minBaths) mlsParams.set('minbaths', minBaths)
+        if (minBeds) mlsParams.set('minbeds', minBeds.toString())
+        if (minBaths) mlsParams.set('minbaths', minBaths.toString())
         if (propertyType) mlsParams.set('type', propertyType)
         
         // Pagination
-        const limit = searchParams.get('limit') || '20'
-        const lastId = searchParams.get('lastId')
+        const limit = params?.limit || 20
+        const lastId = params?.lastId
         
-        mlsParams.set('limit', limit)
+        mlsParams.set('limit', limit.toString())
         if (lastId) mlsParams.set('lastId', lastId)
         
         // Status filter - only active listings
@@ -92,8 +90,6 @@ serve(async (req) => {
       }
       
       case 'property': {
-        const mlsId = url.searchParams.get('mlsId')
-        
         if (!mlsId) {
           return new Response(JSON.stringify({ error: 'MLS ID is required' }), {
             status: 400,

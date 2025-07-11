@@ -46,7 +46,7 @@ const AddressAutocomplete = ({
     }
   }, [value]); // Removed setSearchTerm from dependencies to prevent infinite loop
 
-  // Handle debounced search
+  // Handle debounced search - removed clearResults from dependencies
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchLocations(debouncedSearchTerm);
@@ -54,7 +54,7 @@ const AddressAutocomplete = ({
       clearResults();
       setShowResults(false);
     }
-  }, [debouncedSearchTerm, fetchLocations, clearResults]);
+  }, [debouncedSearchTerm, fetchLocations]);
 
   useEffect(() => {
     if (results.length > 0) {

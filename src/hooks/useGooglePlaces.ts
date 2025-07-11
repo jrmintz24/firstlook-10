@@ -41,6 +41,10 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
     }
   }, []);
 
+  // Wrap helper functions in useCallback to prevent infinite loops
+  const clearResults = useCallback(() => setResults([]), []);
+  const clearError = useCallback(() => setError(null), []);
+
   const fetchLocations = useCallback(async (query: string) => {
     if (!query || query.length <= minSearchLength) {
       setResults([]);
@@ -146,7 +150,7 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
     isLoading,
     error,
     fetchLocations,
-    clearResults: () => setResults([]),
-    clearError: () => setError(null)
+    clearResults,
+    clearError
   };
 };

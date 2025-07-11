@@ -6,10 +6,14 @@ import { Card } from "@/components/ui/card";
 import { Search, Loader2, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGooglePlaces } from "@/hooks/useGooglePlaces";
+import { searchProperties } from "@/services/propertySearchService";
+import { useToast } from "@/hooks/use-toast";
 
 const HeroSearchBar = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showResults, setShowResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -57,12 +61,45 @@ const HeroSearchBar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = (query?: string) => {
+  const handleSearch = async (query?: string) => {
     const searchQuery = query || searchTerm;
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
+    if (!searchQuery.trim()) {
       navigate('/search');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Execute search before navigation
+      const searchResult = await searchProperties({
+        cities: searchQuery.trim(),
+        limit: 20
+      });
+
+      // Navigate with pre-loaded results
+      navigate('/search', {
+        state: {
+          searchResult,
+          fromHomePage: true
+        }
+      });
+
+      toast({
+        title: "Search Complete",
+        description: `Found ${searchResult.totalCount} properties`,
+      });
+
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search properties. Please try again.",
+        variant: "destructive"
+      });
+      // Still navigate to search page on error
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -97,7 +134,7 @@ const HeroSearchBar = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl shadow-lg border border-gray-200 p-2 hover:shadow-xl transition-shadow duration-300 gap-2 sm:gap-0">
         <div className="flex-1 px-2 sm:px-4 relative">
           <div className="absolute inset-y-0 left-2 sm:left-4 flex items-center pointer-events-none">
-            {isLoading ? (
+            {isLoading || isSearching ? (
               <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 animate-spin" />
             ) : (
               <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
@@ -111,15 +148,17 @@ const HeroSearchBar = () => {
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             onFocus={handleInputFocus}
+            disabled={isSearching}
             className="border-0 text-sm sm:text-base md:text-lg placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent h-10 sm:h-12 pl-8 sm:pl-10"
           />
         </div>
         <Button
           onClick={() => handleSearch()}
-          className="bg-gray-900 hover:bg-black text-white rounded-xl px-4 sm:px-6 md:px-8 py-3 h-10 sm:h-12 font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
+          disabled={isLoading || isSearching}
+          className="bg-gray-900 hover:bg-black text-white rounded-xl px-4 sm:px-6 md:px-8 py-3 h-10 sm:h-12 font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <Search className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-          Search
+          {isSearching ? 'Searching...' : 'Search'}
         </Button>
       </div>
 
@@ -130,7 +169,7 @@ const HeroSearchBar = () => {
         </p>
       )}
 
-      {showResults && results.length > 0 && (
+      {showResults && results.length > 0 && !isSearching && (
         <Card 
           ref={resultsRef}
           className="absolute z-50 w-full mt-2 border-2 border-gray-200 rounded-xl shadow-xl bg-white max-h-60 overflow-y-auto"

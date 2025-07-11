@@ -39,10 +39,14 @@ const AddressAutocomplete = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Sync with external value only when it changes
   useEffect(() => {
-    setSearchTerm(value);
-  }, [value, setSearchTerm]);
+    if (value !== searchTerm) {
+      setSearchTerm(value);
+    }
+  }, [value]); // Removed setSearchTerm from dependencies to prevent infinite loop
 
+  // Handle debounced search
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchLocations(debouncedSearchTerm);

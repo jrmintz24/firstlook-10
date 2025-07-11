@@ -23,8 +23,9 @@ const HeroSearchBar = () => {
     fetchLocations,
     clearResults,
     clearError
-  } = useGooglePlaces();
+  } = useGooglePlaces({ debounceMs: 1200 }); // Longer debounce for hero search
 
+  // Handle debounced search
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchLocations(debouncedSearchTerm);

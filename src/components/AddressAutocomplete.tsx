@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useDebounce } from "@/hooks/useDebounce";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useEffect, useRef } from 'react';
+import { useGooglePlaces } from "@/hooks/useGooglePlaces";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { MapPin, Search, Loader2 } from "lucide-react";
@@ -24,27 +23,40 @@ const AddressAutocomplete = ({
   label,
   id 
 }: AddressAutocompleteProps) => {
-  const [searchTerm, setSearchTerm] = useState(value);
-  const [results, setResults] = useState<string[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const {
+    searchTerm,
+    setSearchTerm,
+    debouncedSearchTerm,
+    results,
+    isLoading,
+    error,
+    fetchLocations,
+    clearResults,
+    clearError
+  } = useGooglePlaces();
+
+  const [showResults, setShowResults] = React.useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSearchTerm(value);
-  }, [value]);
+  }, [value, setSearchTerm]);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchLocations(debouncedSearchTerm);
     } else {
-      setResults([]);
+      clearResults();
       setShowResults(false);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, fetchLocations, clearResults]);
+
+  useEffect(() => {
+    if (results.length > 0) {
+      setShowResults(true);
+    }
+  }, [results]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,66 +74,18 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchLocations = async (searchTerm: string) => {
-    console.log('🔍 Starting location search for:', searchTerm);
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log('📡 Making request to google-places edge function...');
-      
-      const { data, error } = await supabase.functions.invoke('google-places', {
-        body: { input: searchTerm }
-      });
-
-      console.log('📡 Response received:', { data, error });
-
-      if (error) {
-        console.error('❌ Error from edge function:', error);
-        setError('Unable to search locations');
-        setResults([]);
-        return;
-      }
-
-      if (data && data.status === 'OK' && data.predictions) {
-        const formattedLocations = data.predictions.map((prediction: any) => prediction.description);
-        console.log('✅ Formatted locations:', formattedLocations);
-        setResults(formattedLocations);
-        setShowResults(true);
-      } else if (data && data.status === 'ZERO_RESULTS') {
-        console.log('🔍 No results found for:', searchTerm);
-        setError('No locations found. Try a different search term.');
-        setResults([]);
-      } else if (data && data.error) {
-        console.error('❌ Error from edge function:', data.error);
-        setError('Location search unavailable');
-        setResults([]);
-      } else {
-        console.error('❌ Error fetching locations:', data?.error_message || data?.status);
-        setError('Search temporarily unavailable');
-        setResults([]);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching locations:', error);
-      setError('Search temporarily unavailable');
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchTerm(newValue);
     onChange(newValue);
-    setError(null);
+    clearError();
   };
 
   const handleSelect = (location: string) => {
     setSearchTerm(location);
     onChange(location);
     setShowResults(false);
-    setResults([]);
+    clearResults();
   };
 
   const handleInputFocus = () => {

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Property, SearchFilters as SearchFiltersType } from "@/types/simplyrets"
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
+import MLSComplianceFooter from "@/components/MLSComplianceFooter"
 import { Loader2, Grid, Map, AlertCircle, RefreshCw, Info, ArrowLeft } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { searchProperties, SearchResult } from "@/services/propertySearchService"
@@ -325,6 +326,9 @@ const Search = () => {
           setSelectedProperty(null)
         }}
       />
+
+      {/* MLS Compliance Footer - Only show when search results are displayed */}
+      {hasSearched && properties.length > 0 && <MLSComplianceFooter />}
     </div>
   )
 }

@@ -12,6 +12,7 @@ import { Property as PropertyType } from "@/types/simplyrets"
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
 import MakeOfferModal from "@/components/dashboard/MakeOfferModal"
+import MLSComplianceFooter from "@/components/MLSComplianceFooter"
 import { 
   ArrowLeft, 
   Bed, 
@@ -540,6 +541,9 @@ const Property = () => {
           propertyAddress={property.address.full}
         />
       </div>
+
+      {/* MLS Compliance Footer */}
+      <MLSComplianceFooter />
     </div>
   )
 }

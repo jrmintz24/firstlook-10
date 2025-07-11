@@ -38,12 +38,8 @@ const priceRanges = {
 
 export const PriceRangeSelect = ({ type, value, onChange }: PriceRangeSelectProps) => {
   const handleChange = (selectedValue: string) => {
-    const numericValue = parseInt(selectedValue)
+    const numericValue = selectedValue === 'clear' || selectedValue === '' ? undefined : parseInt(selectedValue)
     onChange(numericValue)
-  }
-
-  const handleClear = () => {
-    onChange(undefined)
   }
 
   const placeholder = type === 'min' ? 'Min' : 'Max'
@@ -62,9 +58,8 @@ export const PriceRangeSelect = ({ type, value, onChange }: PriceRangeSelectProp
         <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg z-50">
           {value && (
             <SelectItem 
-              value=""
+              value="clear"
               className="hover:bg-indigo-50 focus:bg-indigo-50 cursor-pointer text-gray-500"
-              onClick={handleClear}
             >
               Clear {placeholder}
             </SelectItem>

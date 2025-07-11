@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ModernSearchFilters } from "@/components/property/ModernSearchFilters"
+import { EnhancedSearchFilters } from "@/components/property/EnhancedSearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
 import { MapView } from "@/components/property/MapView"
 import { Button } from "@/components/ui/button"
@@ -391,18 +391,15 @@ const Search = () => {
   const { toast } = useToast()
   const location = useLocation()
 
-  // Handle URL search query
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const query = urlParams.get('q')
     
     if (query) {
-      // Update filters with the search query
       setFilters(prev => ({
         ...prev,
-        cities: query // Use the search query as the location filter
+        cities: query
       }))
-      // Automatically trigger search
       searchPropertiesWithQuery(query)
     }
   }, [location.search])
@@ -410,7 +407,6 @@ const Search = () => {
   const filterProperties = (searchFilters: SearchFiltersType) => {
     let filtered = [...FAKE_PROPERTIES]
 
-    // Filter by cities (now supports free text search)
     if (searchFilters.cities && searchFilters.cities.trim()) {
       const searchTerm = searchFilters.cities.toLowerCase().trim()
       filtered = filtered.filter(property => 
@@ -423,7 +419,6 @@ const Search = () => {
       )
     }
 
-    // Filter by price range
     if (searchFilters.minPrice) {
       filtered = filtered.filter(property => property.listPrice >= searchFilters.minPrice!)
     }
@@ -431,19 +426,16 @@ const Search = () => {
       filtered = filtered.filter(property => property.listPrice <= searchFilters.maxPrice!)
     }
 
-    // Filter by bedrooms
     if (searchFilters.minBeds) {
       filtered = filtered.filter(property => property.property.bedrooms >= searchFilters.minBeds!)
     }
 
-    // Filter by bathrooms
     if (searchFilters.minBaths) {
       filtered = filtered.filter(property => 
         (property.property.bathsFull + property.property.bathsHalf * 0.5) >= searchFilters.minBaths!
       )
     }
 
-    // Filter by property type
     if (searchFilters.propertyType && searchFilters.propertyType !== 'all') {
       const types = searchFilters.propertyType.split(',')
       filtered = filtered.filter(property => 
@@ -466,7 +458,6 @@ const Search = () => {
       
       const searchFilters = query ? { ...filters, cities: query } : filters
       
-      // Simulate API delay for realistic feel
       await new Promise(resolve => setTimeout(resolve, 800))
       
       const filteredProperties = filterProperties(searchFilters)
@@ -511,7 +502,6 @@ const Search = () => {
     searchProperties()
   }
 
-  // Initial search on component mount (only if no URL query)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const query = urlParams.get('q')
@@ -522,10 +512,8 @@ const Search = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section with Modern Search */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-[60vh] flex items-center justify-center">
-        {/* Background Image Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
           style={{
@@ -533,7 +521,6 @@ const Search = () => {
           }}
         />
         
-        {/* Content */}
         <div className="relative z-10 container mx-auto px-4 py-16">
           <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-light text-white mb-4">
@@ -544,24 +531,18 @@ const Search = () => {
             </p>
           </div>
 
-          {/* Modern Search Card */}
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <ModernSearchFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-                onSearch={searchProperties}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
+          <EnhancedSearchFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onSearch={searchProperties}
+            isLoading={isLoading}
+          />
         </div>
       </div>
 
-      {/* Demo Mode Alert */}
       {isDemoMode && hasSearched && (
         <div className="container mx-auto px-4 py-4">
-          <Alert className="bg-blue-50 border-blue-200">
+          <Alert className="bg-blue-50 border-blue-200 max-w-6xl mx-auto">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
               <strong>Demo Mode:</strong> You're viewing sample property data. In production, this would connect to live MLS feeds.
@@ -570,10 +551,9 @@ const Search = () => {
         </div>
       )}
 
-      {/* Error Alert */}
       {error && (
         <div className="container mx-auto px-4 py-6">
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="max-w-6xl mx-auto">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               <span>{error}</span>
@@ -591,11 +571,9 @@ const Search = () => {
         </div>
       )}
 
-      {/* Results Section */}
       {hasSearched && (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="space-y-6">
-            {/* Results Header */}
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-semibold text-gray-900">
@@ -611,7 +589,7 @@ const Search = () => {
 
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                 <span className="ml-2 text-gray-600">Searching properties...</span>
               </div>
             ) : properties.length > 0 ? (
@@ -641,7 +619,6 @@ const Search = () => {
 
                 <TabsContent value="map">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Map */}
                     <div className="lg:col-span-1">
                       <MapView
                         properties={properties}
@@ -651,14 +628,13 @@ const Search = () => {
                       />
                     </div>
                     
-                    {/* Property List */}
                     <div className="lg:col-span-1 max-h-96 lg:max-h-[600px] overflow-y-auto space-y-4">
                       {properties.map((property) => (
                         <div
                           key={property.mlsId}
                           className={`border rounded-lg p-4 cursor-pointer transition-all ${
                             selectedProperty?.mlsId === property.mlsId
-                              ? 'border-blue-500 bg-blue-50'
+                              ? 'border-indigo-500 bg-indigo-50'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                           onClick={() => handlePropertySelect(property)}
@@ -716,7 +692,6 @@ const Search = () => {
         </div>
       )}
 
-      {/* Tour Request Wizard */}
       <PropertyRequestWizard
         isOpen={showTourWizard}
         onClose={() => {

@@ -30,6 +30,14 @@ const MobileNavigation = ({
             No Agent Buyer Guide
           </Button>
         </Link>
+        <Link to="/search" onClick={onMenuItemClick}>
+          <Button 
+            variant="ghost" 
+            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
+          >
+            Search
+          </Button>
+        </Link>
         <Link to="/faq" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
@@ -44,14 +52,6 @@ const MobileNavigation = ({
             className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
             Plans
-          </Button>
-        </Link>
-        <Link to="/blog" onClick={onMenuItemClick}>
-          <Button 
-            variant="ghost" 
-            className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
-          >
-            Blog
           </Button>
         </Link>
         

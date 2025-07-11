@@ -33,7 +33,7 @@ const RedesignedDashboardHeader = ({ displayName, unreadCount = 0 }: RedesignedD
 
           {/* Center: Logo (optional) */}
           <div className="hidden md:block">
-            <Link to="/search" className="text-xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            <Link to="/" className="text-xl font-light bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
               FirstLook
             </Link>
           </div>

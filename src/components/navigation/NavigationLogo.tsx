@@ -7,7 +7,7 @@ interface NavigationLogoProps {
 
 const NavigationLogo = ({ onLogoClick }: NavigationLogoProps) => {
   return (
-    <Link to="/search" className="flex items-center space-x-2" onClick={onLogoClick}>
+    <Link to="/" className="flex items-center space-x-2" onClick={onLogoClick}>
       <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
         <span className="text-white font-bold text-lg">F</span>
       </div>

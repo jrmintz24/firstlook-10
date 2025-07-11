@@ -10,6 +10,11 @@ const NavigationLinks = () => {
           No Agent Buyer Guide
         </Button>
       </Link>
+      <Link to="/search">
+        <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
+          Search
+        </Button>
+      </Link>
       <Link to="/faq">
         <Button 
           variant="ghost" 
@@ -21,11 +26,6 @@ const NavigationLinks = () => {
       <Link to="/subscriptions">
         <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
           Plans
-        </Button>
-      </Link>
-      <Link to="/blog">
-        <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
-          Blog
         </Button>
       </Link>
     </div>

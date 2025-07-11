@@ -19,7 +19,7 @@ interface AddressAutocompleteProps {
 const AddressAutocomplete = ({ 
   value, 
   onChange, 
-  placeholder = "Enter an address...", 
+  placeholder = "Enter city, neighborhood, or ZIP code...", 
   className,
   label,
   id 
@@ -39,7 +39,7 @@ const AddressAutocomplete = ({
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
-      fetchAddresses(debouncedSearchTerm);
+      fetchLocations(debouncedSearchTerm);
     } else {
       setResults([]);
       setShowResults(false);
@@ -62,8 +62,8 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchAddresses = async (searchTerm: string) => {
-    console.log('🔍 Starting address search for:', searchTerm);
+  const fetchLocations = async (searchTerm: string) => {
+    console.log('🔍 Starting location search for:', searchTerm);
     setIsLoading(true);
     setError(null);
     
@@ -78,27 +78,27 @@ const AddressAutocomplete = ({
 
       if (error) {
         console.error('❌ Error from edge function:', error);
-        setError('Unable to search addresses');
+        setError('Unable to search locations');
         setResults([]);
         return;
       }
 
       if (data && data.status === 'OK' && data.predictions) {
-        const formattedAddresses = data.predictions.map((prediction: any) => prediction.description);
-        console.log('✅ Formatted addresses:', formattedAddresses);
-        setResults(formattedAddresses);
+        const formattedLocations = data.predictions.map((prediction: any) => prediction.description);
+        console.log('✅ Formatted locations:', formattedLocations);
+        setResults(formattedLocations);
         setShowResults(true);
       } else if (data && data.error) {
         console.error('❌ Error from edge function:', data.error);
-        setError('Address search unavailable');
+        setError('Location search unavailable');
         setResults([]);
       } else {
-        console.error('❌ Error fetching addresses:', data?.error_message || data?.status);
-        setError('No addresses found');
+        console.error('❌ Error fetching locations:', data?.error_message || data?.status);
+        setError('No locations found');
         setResults([]);
       }
     } catch (error) {
-      console.error('❌ Error fetching addresses:', error);
+      console.error('❌ Error fetching locations:', error);
       setError('Search temporarily unavailable');
       setResults([]);
     } finally {
@@ -113,9 +113,9 @@ const AddressAutocomplete = ({
     setError(null);
   };
 
-  const handleSelect = (address: string) => {
-    setSearchTerm(address);
-    onChange(address);
+  const handleSelect = (location: string) => {
+    setSearchTerm(location);
+    onChange(location);
     setShowResults(false);
     setResults([]);
   };

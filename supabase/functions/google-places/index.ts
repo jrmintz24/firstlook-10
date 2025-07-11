@@ -40,8 +40,9 @@ serve(async (req) => {
 
     console.log('Making Google Places API request for input:', input);
 
-    // Call Google Places Autocomplete API
-    const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=address&components=country:us&key=${apiKey}`;
+    // Call Google Places Autocomplete API with location-focused types
+    // Using (cities) postal_code sublocality to get cities, zip codes, and neighborhoods
+    const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(cities)&components=country:us&key=${apiKey}`;
     
     const response = await fetch(placesUrl);
     const data = await response.json();

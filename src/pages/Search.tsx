@@ -385,7 +385,7 @@ const Search = () => {
   const [showTourWizard, setShowTourWizard] = useState(false)
   const [isDemoMode, setIsDemoMode] = useState(true)
   const [filters, setFilters] = useState<SearchFiltersType>({
-    cities: 'Washington,Baltimore,Bethesda,Arlington,Alexandria,Silver Spring,Rockville,Gaithersburg,Annapolis',
+    cities: undefined,
     limit: 20
   })
   const { toast } = useToast()
@@ -501,15 +501,6 @@ const Search = () => {
     setError(null)
     searchProperties()
   }
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const query = urlParams.get('q')
-    
-    if (!query) {
-      searchProperties()
-    }
-  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">

@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SearchFilters as SearchFiltersType } from "@/types/simplyrets"
 import { Search, RotateCcw, Loader2 } from "lucide-react"
-import { LocationInput } from "./LocationInput"
+import AddressAutocomplete from "@/components/AddressAutocomplete"
 import { PriceRangeSelect } from "./PriceRangeSelect"
 import { PropertyTypeFilter } from "./PropertyTypeFilter"
 import { BedroomBathroomSelect } from "./BedroomBathroomSelect"
@@ -74,9 +74,11 @@ export const EnhancedSearchFilters = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
           {/* Location - Takes 2 columns on large screens */}
           <div className="sm:col-span-2 lg:col-span-2">
-            <LocationInput
+            <AddressAutocomplete
               value={filters.cities || ''}
               onChange={handleLocationChange}
+              placeholder="Enter address, neighborhood, city, or ZIP"
+              className="w-full"
             />
           </div>
 

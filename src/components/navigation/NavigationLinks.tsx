@@ -20,7 +20,7 @@ const NavigationLinks = () => {
       </Link>
       <Link to="/subscriptions">
         <Button variant="ghost" className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-2 transition-colors">
-          Pricing
+          Plans
         </Button>
       </Link>
       <Link to="/blog">

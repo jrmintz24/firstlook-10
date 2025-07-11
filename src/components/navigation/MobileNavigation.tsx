@@ -43,7 +43,7 @@ const MobileNavigation = ({
             variant="ghost" 
             className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"
           >
-            Pricing
+            Plans
           </Button>
         </Link>
         <Link to="/blog" onClick={onMenuItemClick}>

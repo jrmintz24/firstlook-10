@@ -22,6 +22,7 @@ const Search = () => {
   const [showTourWizard, setShowTourWizard] = useState(false)
   const [isDemoMode, setIsDemoMode] = useState(true)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
+  const [fromHomePage, setFromHomePage] = useState(false)
   const [filters, setFilters] = useState<SearchFiltersType>({
     cities: undefined,
     limit: 20
@@ -39,6 +40,7 @@ const Search = () => {
       setSearchResult(state.searchResult);
       setProperties(state.searchResult.properties);
       setHasSearched(true);
+      setFromHomePage(true);
       setFilters(prev => ({
         ...prev,
         cities: state.searchResult.searchTerm
@@ -132,7 +134,7 @@ const Search = () => {
         
         <div className="relative z-10 container mx-auto px-4 py-16">
           <div className="text-center mb-12">
-            {searchResult?.fromHomePage && (
+            {fromHomePage && (
               <div className="flex items-center justify-center mb-4">
                 <Button
                   variant="ghost"

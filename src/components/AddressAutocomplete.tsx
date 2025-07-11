@@ -19,7 +19,7 @@ interface AddressAutocompleteProps {
 const AddressAutocomplete = ({ 
   value, 
   onChange, 
-  placeholder = "Enter city, neighborhood, or ZIP code...", 
+  placeholder = "Enter address, neighborhood, city, or ZIP code...", 
   className,
   label,
   id 
@@ -88,13 +88,17 @@ const AddressAutocomplete = ({
         console.log('✅ Formatted locations:', formattedLocations);
         setResults(formattedLocations);
         setShowResults(true);
+      } else if (data && data.status === 'ZERO_RESULTS') {
+        console.log('🔍 No results found for:', searchTerm);
+        setError('No locations found. Try a different search term.');
+        setResults([]);
       } else if (data && data.error) {
         console.error('❌ Error from edge function:', data.error);
         setError('Location search unavailable');
         setResults([]);
       } else {
         console.error('❌ Error fetching locations:', data?.error_message || data?.status);
-        setError('No locations found');
+        setError('Search temporarily unavailable');
         setResults([]);
       }
     } catch (error) {

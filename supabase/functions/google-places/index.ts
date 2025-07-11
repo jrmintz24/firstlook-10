@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -40,9 +39,9 @@ serve(async (req) => {
 
     console.log('Making Google Places API request for input:', input);
 
-    // Call Google Places Autocomplete API with location-focused types
-    // Using (cities) postal_code sublocality to get cities, zip codes, and neighborhoods
-    const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(cities)&components=country:us&key=${apiKey}`;
+    // Call Google Places Autocomplete API with broader location types
+    // Removed restrictive types parameter to allow all location types while keeping US-only
+    const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&components=country:us&key=${apiKey}`;
     
     const response = await fetch(placesUrl);
     const data = await response.json();
@@ -58,7 +57,8 @@ serve(async (req) => {
       );
     }
 
-    console.log('Google Places API response:', data);
+    console.log('Google Places API response status:', data.status);
+    console.log('Google Places API predictions count:', data.predictions?.length || 0);
 
     return new Response(
       JSON.stringify(data),

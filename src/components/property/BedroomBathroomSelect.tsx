@@ -10,7 +10,7 @@ interface BedroomBathroomSelectProps {
 
 export const BedroomBathroomSelect = ({ type, value, onChange }: BedroomBathroomSelectProps) => {
   const handleChange = (selectedValue: string) => {
-    const numericValue = selectedValue === '' ? undefined : parseInt(selectedValue)
+    const numericValue = selectedValue === 'clear' || selectedValue === '' ? undefined : parseInt(selectedValue)
     onChange(numericValue)
   }
 
@@ -31,7 +31,7 @@ export const BedroomBathroomSelect = ({ type, value, onChange }: BedroomBathroom
         <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg z-50">
           {value && (
             <SelectItem 
-              value=""
+              value="clear"
               className="hover:bg-indigo-50 focus:bg-indigo-50 cursor-pointer text-gray-500"
             >
               Clear {placeholder}

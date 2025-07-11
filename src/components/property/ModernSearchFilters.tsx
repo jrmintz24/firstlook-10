@@ -23,7 +23,7 @@ const propertyTypes = [
 
 const priceRanges = {
   min: [
-    { value: '', label: 'Any' },
+    { value: 'any', label: 'Any' },
     { value: '100000', label: '$100K' },
     { value: '200000', label: '$200K' },
     { value: '300000', label: '$300K' },
@@ -36,7 +36,7 @@ const priceRanges = {
     { value: '1000000', label: '$1M+' },
   ],
   max: [
-    { value: '', label: 'Any' },
+    { value: 'any', label: 'Any' },
     { value: '200000', label: '$200K' },
     { value: '300000', label: '$300K' },
     { value: '400000', label: '$400K' },
@@ -75,7 +75,7 @@ export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoad
   }
 
   const handlePriceChange = (key: 'minPrice' | 'maxPrice', value: string) => {
-    const numericValue = value ? parseInt(value) : undefined
+    const numericValue = value === 'any' ? undefined : parseInt(value)
     handleFilterChange(key, numericValue)
   }
 
@@ -100,7 +100,7 @@ export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoad
         <div className="relative">
           <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Select
-            value={filters.minPrice?.toString() || ''}
+            value={filters.minPrice?.toString() || 'any'}
             onValueChange={(value) => handlePriceChange('minPrice', value)}
           >
             <SelectTrigger className="h-14 pl-12 border-gray-200 rounded-xl">
@@ -120,7 +120,7 @@ export const ModernSearchFilters = ({ filters, onFiltersChange, onSearch, isLoad
         <div className="relative">
           <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Select
-            value={filters.maxPrice?.toString() || ''}
+            value={filters.maxPrice?.toString() || 'any'}
             onValueChange={(value) => handlePriceChange('maxPrice', value)}
           >
             <SelectTrigger className="h-14 pl-12 border-gray-200 rounded-xl">

@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,11 @@ const PropertySelectionStep = ({
   // For non-authenticated users, limit to single property selection
   const canAddMoreProperties = user && formData.properties.length < 3 && formData.properties.filter(p => p.address.trim()).length < 3;
 
+  // Check if any property is from IDX (has IDX prefix in MLS ID or specific source indicator)
+  const hasIDXProperties = formData.properties.some(p => 
+    p.mlsId?.startsWith('IDX') || p.source === 'idx'
+  );
+
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
@@ -40,12 +45,23 @@ const PropertySelectionStep = ({
             <MapPin className="h-6 w-6 text-blue-600" />
           </div>
           {user ? "Select Properties for Your Tour" : "Select Property for Your Free Tour"}
+          {hasIDXProperties && (
+            <div className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              <Star className="h-3 w-3" />
+              IDX
+            </div>
+          )}
         </CardTitle>
         <CardDescription className="text-gray-600 mt-2">
           {user 
             ? "Add 1-3 homes to your tour session (save time and money with multiple properties!)"
             : "Choose the home you'd like to tour for your free showing"
           }
+          {hasIDXProperties && (
+            <div className="mt-2 text-sm text-blue-600">
+              ✨ Properties sourced from IDX - your existing showing workflow will handle the scheduling seamlessly
+            </div>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
@@ -57,12 +73,33 @@ const PropertySelectionStep = ({
               {formData.properties
                 .filter(property => property.address.trim())
                 .map((property, index) => (
-                <div key={index} className="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 group hover:shadow-md transition-all duration-200">
+                <div key={index} className={`flex items-center justify-between p-4 rounded-xl border group hover:shadow-md transition-all duration-200 ${
+                  property.mlsId?.startsWith('IDX') || property.source === 'idx'
+                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+                    : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+                }`}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-700 font-semibold text-sm">{index + 1}</span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      property.mlsId?.startsWith('IDX') || property.source === 'idx'
+                        ? 'bg-blue-100'
+                        : 'bg-green-100'
+                    }`}>
+                      <span className={`font-semibold text-sm ${
+                        property.mlsId?.startsWith('IDX') || property.source === 'idx'
+                          ? 'text-blue-700'
+                          : 'text-green-700'
+                      }`}>{index + 1}</span>
                     </div>
-                    <span className="text-sm font-medium text-green-800">{property.address}</span>
+                    <div className="flex flex-col">
+                      <span className={`text-sm font-medium ${
+                        property.mlsId?.startsWith('IDX') || property.source === 'idx'
+                          ? 'text-blue-800'
+                          : 'text-green-800'
+                      }`}>{property.address}</span>
+                      {(property.mlsId?.startsWith('IDX') || property.source === 'idx') && (
+                        <span className="text-xs text-blue-600">IDX Property</span>
+                      )}
+                    </div>
                   </div>
                   {user && (
                     <Button
@@ -110,13 +147,19 @@ const PropertySelectionStep = ({
         </div>
 
         {user && hasProperties && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
+          <div className={`p-5 rounded-xl border ${
+            hasIDXProperties 
+              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+              : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+          }`}>
             <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
               💡 Tour Session Ready
+              {hasIDXProperties && <span className="text-xs bg-blue-100 px-2 py-1 rounded">IDX Integration</span>}
             </h4>
             <p className="text-sm text-blue-700">
               You can add more properties or continue with your current selection. 
               {formData.properties.filter(p => p.address.trim()).length < 3 && " Adding more homes to one session saves money!"}
+              {hasIDXProperties && " Your IDX properties will work seamlessly with our showing system."}
             </p>
           </div>
         )}

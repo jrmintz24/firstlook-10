@@ -1,7 +1,8 @@
-
 import { useState, useEffect } from "react"
 import { EnhancedSearchFilters } from "@/components/property/EnhancedSearchFilters"
 import { PropertyCard } from "@/components/property/PropertyCard"
+import { IDXPropertyCard } from "@/components/idx/IDXPropertyCard"
+import IDXSearchWidget from "@/components/idx/IDXSearchWidget"
 import { MapView } from "@/components/property/MapView"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,9 +11,11 @@ import { Property, SearchFilters as SearchFiltersType } from "@/types/simplyrets
 import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
 import MLSComplianceFooter from "@/components/MLSComplianceFooter"
-import { Loader2, Grid, Map, AlertCircle, RefreshCw, Info, ArrowLeft } from "lucide-react"
+import { useIDXIntegration } from "@/hooks/useIDXIntegration"
+import { Loader2, Grid, Map, AlertCircle, RefreshCw, Info, ArrowLeft, Search } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { searchProperties, SearchResult } from "@/services/propertySearchService"
+import { idxPropertyService } from "@/services/idxPropertyService"
 
 const Search = () => {
   const [properties, setProperties] = useState<Property[]>([])
@@ -24,13 +27,16 @@ const Search = () => {
   const [isDemoMode, setIsDemoMode] = useState(true)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
   const [fromHomePage, setFromHomePage] = useState(false)
+  const [searchSource, setSearchSource] = useState<'demo' | 'idx'>('idx') // Default to IDX
   const [filters, setFilters] = useState<SearchFiltersType>({
     cities: undefined,
     limit: 20
   })
+  
   const { toast } = useToast()
   const location = useLocation()
   const navigate = useNavigate()
+  const { handlePropertySelect, handleScheduleTour } = useIDXIntegration()
 
   // Check for pre-loaded results from home page
   useEffect(() => {
@@ -68,23 +74,30 @@ const Search = () => {
     }
   }, [location.search, location.state, hasSearched, navigate]);
 
-  const searchPropertiesWithQuery = async (query?: string) => {
+  const searchPropertiesWithQuery = async (query?: string, source: 'demo' | 'idx' = searchSource) => {
     setIsLoading(true)
     setError(null)
     
     try {
-      console.log('Starting property search with filters:', query ? { ...filters, cities: query } : filters)
+      console.log(`Starting ${source} property search with filters:`, query ? { ...filters, cities: query } : filters)
       
       const searchFilters = query ? { ...filters, cities: query } : filters
-      const result = await searchProperties(searchFilters);
+      let result: any;
+
+      if (source === 'idx') {
+        result = await idxPropertyService.searchProperties(searchFilters);
+      } else {
+        result = await searchProperties(searchFilters);
+      }
       
       setSearchResult(result);
       setProperties(result.properties);
       setHasSearched(true);
+      setSearchSource(source);
       
       toast({
         title: "Search Complete",
-        description: `Found ${result.totalCount} properties (Demo Mode)`,
+        description: `Found ${result.totalCount} properties (${source === 'idx' ? 'IDX' : 'Demo Mode'})`,
       });
       
     } catch (error) {
@@ -105,12 +118,12 @@ const Search = () => {
     await searchPropertiesWithQuery()
   }
 
-  const handleScheduleTour = (property: Property) => {
+  const handleScheduleTourFromCard = (property: Property) => {
     setSelectedProperty(property)
     setShowTourWizard(true)
   }
 
-  const handlePropertySelect = (property: Property) => {
+  const handlePropertySelectFromCard = (property: Property) => {
     setSelectedProperty(property)
   }
 
@@ -121,6 +134,13 @@ const Search = () => {
 
   const handleBackToHome = () => {
     navigate('/')
+  }
+
+  const switchSearchSource = (source: 'demo' | 'idx') => {
+    setSearchSource(source)
+    if (hasSearched) {
+      searchPropertiesWithQuery(filters.cities, source)
+    }
   }
 
   return (
@@ -158,6 +178,28 @@ const Search = () => {
             </p>
           </div>
 
+          {/* Search Source Toggle */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-1 flex items-center gap-1">
+              <Button
+                variant={searchSource === 'idx' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => switchSearchSource('idx')}
+                className={searchSource === 'idx' ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}
+              >
+                IDX Search
+              </Button>
+              <Button
+                variant={searchSource === 'demo' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => switchSearchSource('demo')}
+                className={searchSource === 'demo' ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}
+              >
+                Demo Search
+              </Button>
+            </div>
+          </div>
+
           <EnhancedSearchFilters
             filters={filters}
             onFiltersChange={setFilters}
@@ -167,12 +209,27 @@ const Search = () => {
         </div>
       </div>
 
-      {isDemoMode && hasSearched && (
+      {/* IDX Widget Section */}
+      {searchSource === 'idx' && (
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">IDX Property Search</h2>
+            <IDXSearchWidget 
+              onPropertySelect={handlePropertySelect}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
+
+      {(isDemoMode && hasSearched) && (
         <div className="container mx-auto px-4 py-4">
-          <Alert className="bg-blue-50 border-blue-200 max-w-6xl mx-auto">
+          <Alert className={`${searchSource === 'idx' ? 'bg-blue-50 border-blue-200' : 'bg-blue-50 border-blue-200'} max-w-6xl mx-auto`}>
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Demo Mode:</strong> You're viewing sample property data. In production, this would connect to live MLS feeds.
+              <strong>{searchSource === 'idx' ? 'IDX Integration:' : 'Demo Mode:'}</strong> {searchSource === 'idx' 
+                ? 'You\'re viewing properties through iHomeFinder IDX integration. Your existing showing request system will work seamlessly.' 
+                : 'You\'re viewing sample property data. In production, this would connect to live MLS feeds.'}
             </AlertDescription>
           </Alert>
         </div>
@@ -208,7 +265,7 @@ const Search = () => {
                 </h2>
                 {properties.length > 0 && (
                   <p className="text-gray-600 text-sm mt-1">
-                    Showing active listings in your search area {isDemoMode && '(Demo Data)'}
+                    Showing {searchSource === 'idx' ? 'IDX' : 'demo'} listings in your search area
                   </p>
                 )}
               </div>
@@ -235,11 +292,20 @@ const Search = () => {
                 <TabsContent value="grid">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {properties.map((property) => (
-                      <PropertyCard
-                        key={property.mlsId}
-                        property={property}
-                        onScheduleTour={handleScheduleTour}
-                      />
+                      searchSource === 'idx' ? (
+                        <IDXPropertyCard
+                          key={property.mlsId}
+                          property={property}
+                          onScheduleTour={handleScheduleTourFromCard}
+                          isIDXSource={true}
+                        />
+                      ) : (
+                        <PropertyCard
+                          key={property.mlsId}
+                          property={property}
+                          onScheduleTour={handleScheduleTourFromCard}
+                        />
+                      )
                     ))}
                   </div>
                 </TabsContent>
@@ -250,7 +316,7 @@ const Search = () => {
                       <MapView
                         properties={properties}
                         selectedProperty={selectedProperty}
-                        onPropertySelect={handlePropertySelect}
+                        onPropertySelect={handlePropertySelectFromCard}
                         height="600px"
                       />
                     </div>
@@ -264,7 +330,7 @@ const Search = () => {
                               ? 'border-indigo-500 bg-indigo-50'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
-                          onClick={() => handlePropertySelect(property)}
+                          onClick={() => handlePropertySelectFromCard(property)}
                         >
                           <div className="flex gap-4">
                             {property.photos && property.photos[0] && (
@@ -290,7 +356,7 @@ const Search = () => {
                                 className="mt-2"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  handleScheduleTour(property)
+                                  handleScheduleTourFromCard(property)
                                 }}
                               >
                                 Schedule Tour

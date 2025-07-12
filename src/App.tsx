@@ -151,6 +151,10 @@ function App() {
                 <Route path="/listings" element={<Listings />} />
                 <Route path="/listings/:address" element={<Listings />} />
 
+                {/* New Listing Pages (singular) - IDX Integration with specific SEO */}
+                <Route path="/listing" element={<Listings />} />
+                <Route path="/listing/:address" element={<Listings />} />
+
                 {/* Informational Pages */}
                 <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
                 <Route path="/faq" element={<FAQ />} />

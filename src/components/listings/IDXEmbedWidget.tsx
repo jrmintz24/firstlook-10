@@ -10,64 +10,130 @@ interface IDXEmbedWidgetProps {
 
 const IDXEmbedWidget = ({ className = '' }: IDXEmbedWidgetProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const scriptExecutedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (message: string) => {
+    console.log(`[IDX Debug]: ${message}`);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
 
   useEffect(() => {
-    // Only execute once and when the container is available
-    if (scriptExecutedRef.current || !containerRef.current) {
-      return;
-    }
+    let pollAttempts = 0;
+    const maxPollAttempts = 30; // 15 seconds max
 
-    // Check if ihfKestrel is available
-    const checkKestrelAndRender = () => {
-      if (window.ihfKestrel && typeof window.ihfKestrel.render === 'function') {
-        try {
-          // Clear any existing content
-          containerRef.current!.innerHTML = '';
-          
-          // Create and execute the embed script exactly as specified in iHomeFinder instructions
-          const script = document.createElement('script');
-          script.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
-          
-          // Append to container and execute
-          containerRef.current!.appendChild(script);
-          scriptExecutedRef.current = true;
-          setIsLoading(false);
-          
-        } catch (error) {
-          console.error('Failed to render IDX embed widget:', error);
-          setError('Failed to load IDX widget. Please try refreshing the page.');
-          setIsLoading(false);
+    const tryRenderWidget = () => {
+      addDebugInfo('Attempting to render IDX widget...');
+      
+      if (!containerRef.current) {
+        addDebugInfo('Container ref not available');
+        return false;
+      }
+
+      // Check if ihfKestrel is available
+      if (!window.ihfKestrel) {
+        addDebugInfo('window.ihfKestrel not available');
+        return false;
+      }
+
+      if (typeof window.ihfKestrel.render !== 'function') {
+        addDebugInfo('ihfKestrel.render is not a function');
+        return false;
+      }
+
+      try {
+        addDebugInfo('All prerequisites met, rendering widget...');
+        
+        // Clear any existing content
+        containerRef.current.innerHTML = '';
+        
+        // Direct approach: call render and append result
+        const widgetElement = window.ihfKestrel.render();
+        
+        if (!widgetElement) {
+          addDebugInfo('ihfKestrel.render() returned null/undefined');
+          return false;
         }
-      } else {
-        // Check for BaseUrlMismatchError in console or global errors
-        const errorHandler = (event: ErrorEvent) => {
-          if (event.message && event.message.includes('BaseUrlMismatchError')) {
-            setError('IDX widget is configured for www.firstlookhometours.com. The widget expects to be accessed at the /idx route on the authorized domain.');
-            setIsLoading(false);
-          }
-        };
         
-        window.addEventListener('error', errorHandler);
+        addDebugInfo(`Widget element created: ${widgetElement.tagName || 'unknown'}`);
+        containerRef.current.appendChild(widgetElement);
         
-        // Retry checking for ihfKestrel after a short delay
-        setTimeout(() => {
-          if (!scriptExecutedRef.current) {
-            checkKestrelAndRender();
-          }
-        }, 1000);
+        addDebugInfo('Widget successfully rendered and appended');
+        setIsLoading(false);
+        setError(null);
+        return true;
         
-        // Cleanup event listener
-        return () => window.removeEventListener('error', errorHandler);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        addDebugInfo(`Render failed: ${errorMessage}`);
+        console.error('IDX render error:', err);
+        
+        // Try alternative approach: script injection
+        try {
+          addDebugInfo('Trying alternative script injection method...');
+          const script = document.createElement('script');
+          script.textContent = 'this.parentNode.replaceChild(ihfKestrel.render(), this);';
+          containerRef.current.appendChild(script);
+          
+          addDebugInfo('Alternative method executed');
+          setIsLoading(false);
+          setError(null);
+          return true;
+        } catch (altErr) {
+          addDebugInfo(`Alternative method also failed: ${altErr}`);
+          return false;
+        }
       }
     };
 
-    checkKestrelAndRender();
+    const pollForKestrel = () => {
+      pollAttempts++;
+      addDebugInfo(`Polling attempt ${pollAttempts}/${maxPollAttempts}`);
+      
+      if (tryRenderWidget()) {
+        return; // Success, stop polling
+      }
+      
+      if (pollAttempts >= maxPollAttempts) {
+        addDebugInfo('Max polling attempts reached');
+        setError(
+          `IDX widget failed to load after ${maxPollAttempts} attempts. ` +
+          `iHomeFinder script status: ${!!window.ihfKestrel ? 'loaded' : 'not loaded'}. ` +
+          `This may be due to network issues, domain restrictions, or configuration problems.`
+        );
+        setIsLoading(false);
+        return;
+      }
+      
+      // Continue polling
+      setTimeout(pollForKestrel, 500);
+    };
+
+    // Start polling
+    addDebugInfo('Starting IDX widget initialization...');
+    pollForKestrel();
+
+    // Cleanup function
+    return () => {
+      addDebugInfo('Component unmounting, cleaning up...');
+    };
   }, []);
 
-  // Show domain mismatch or other errors
+  // Error handler for global errors
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (event.message && event.message.includes('BaseUrlMismatchError')) {
+        addDebugInfo('BaseUrlMismatchError detected');
+        setError('IDX widget domain mismatch error detected. The widget is configured for a different domain.');
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   if (error) {
     return (
       <div className={className}>
@@ -75,15 +141,16 @@ const IDXEmbedWidget = ({ className = '' }: IDXEmbedWidgetProps) => {
           <AlertTriangle className="h-4 w-4 text-orange-600" />
           <AlertDescription className="text-orange-800">
             <div className="space-y-2">
-              <p><strong>IDX Configuration Issue:</strong></p>
+              <p><strong>IDX Loading Error:</strong></p>
               <p>{error}</p>
-              <p className="text-sm">
-                To resolve this, either:
-                <br />• Access the widget at: <code>58695556-20e3-43d8-8b39-34dee2d61caa.lovableproject.com/idx</code>
-                <br />• Deploy to www.firstlookhometours.com
-                <br />• Contact iHomeFinder support to add this development domain
-                <br />• Update your iHomeFinder Control Panel website settings
-              </p>
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm">Debug Information</summary>
+                <div className="mt-2 text-xs space-y-1 max-h-32 overflow-y-auto bg-gray-100 p-2 rounded">
+                  {debugInfo.map((info, index) => (
+                    <div key={index}>{info}</div>
+                  ))}
+                </div>
+              </details>
             </div>
           </AlertDescription>
         </Alert>
@@ -91,7 +158,6 @@ const IDXEmbedWidget = ({ className = '' }: IDXEmbedWidgetProps) => {
     );
   }
 
-  // Show loading state while iHomeFinder loads
   if (isLoading) {
     return (
       <div className={className}>
@@ -103,6 +169,14 @@ const IDXEmbedWidget = ({ className = '' }: IDXEmbedWidgetProps) => {
               <p className="text-sm text-gray-500 mt-2">
                 Connecting to iHomeFinder MLS data...
               </p>
+              <details className="mt-4">
+                <summary className="cursor-pointer text-xs text-gray-400">Debug Info</summary>
+                <div className="mt-2 text-xs space-y-1 max-h-20 overflow-y-auto">
+                  {debugInfo.slice(-5).map((info, index) => (
+                    <div key={index} className="text-gray-500">{info}</div>
+                  ))}
+                </div>
+              </details>
             </div>
           </CardContent>
         </Card>
@@ -112,7 +186,19 @@ const IDXEmbedWidget = ({ className = '' }: IDXEmbedWidgetProps) => {
 
   return (
     <div className={`idx-embed-widget ${className}`}>
-      <div ref={containerRef} className="min-h-[500px] w-full" />
+      <div ref={containerRef} className="min-h-[500px] w-full border rounded-lg" />
+      
+      {/* Debug panel for successful loads in development */}
+      {process.env.NODE_ENV === 'development' && debugInfo.length > 0 && (
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs text-gray-400">Debug Log</summary>
+          <div className="mt-1 text-xs space-y-1 max-h-20 overflow-y-auto bg-gray-50 p-2 rounded">
+            {debugInfo.map((info, index) => (
+              <div key={index} className="text-gray-600">{info}</div>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   );
 };

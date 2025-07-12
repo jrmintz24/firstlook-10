@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { Property } from '@/types/simplyrets';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -31,151 +31,24 @@ const IHomefinderWidget = ({ onPropertySelect, className = '' }: IHomefinderWidg
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [scriptLoadAttempts, setScriptLoadAttempts] = useState(0);
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  const addDebugInfo = (message: string) => {
+  const addDebugInfo = useCallback((message: string) => {
     console.log(`[iHomeFinder Debug]: ${message}`);
     setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
-  };
+  }, []);
 
-  const checkScriptLoading = () => {
-    addDebugInfo('Checking script loading status...');
-    
-    // Check if script tag exists
-    const scriptTag = document.querySelector('script[src*="ihf-kestrel.js"]');
-    addDebugInfo(`Script tag found: ${!!scriptTag}`);
-    
-    // Check current domain
-    addDebugInfo(`Current domain: ${window.location.hostname}`);
-    addDebugInfo(`Current URL: ${window.location.href}`);
-    
-    // Check if window.ihfKestrel exists at all
-    addDebugInfo(`window.ihfKestrel exists: ${!!window.ihfKestrel}`);
-    
-    if (window.ihfKestrel) {
-      addDebugInfo(`ihfKestrel config: ${JSON.stringify(window.ihfKestrel.config)}`);
-      addDebugInfo(`ihfKestrel.render function: ${typeof window.ihfKestrel.render}`);
-    }
-    
-    // Check for any network errors
-    const performanceEntries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-    const kestrelScript = performanceEntries.find(entry => entry.name.includes('ihf-kestrel.js'));
-    if (kestrelScript) {
-      addDebugInfo(`Kestrel script load time: ${kestrelScript.duration}ms`);
-      addDebugInfo(`Kestrel script status: ${kestrelScript.responseEnd > 0 ? 'loaded' : 'failed'}`);
-    } else {
-      addDebugInfo('Kestrel script not found in performance entries');
-    }
-  };
-
-  const initializeWidget = () => {
-    try {
-      addDebugInfo('Attempting to initialize widget...');
-      
-      if (!window.ihfKestrel) {
-        throw new Error('window.ihfKestrel is not available');
-      }
-      
-      if (typeof window.ihfKestrel.render !== 'function') {
-        throw new Error('ihfKestrel.render is not a function');
-      }
-      
-      if (!containerRef.current) {
-        throw new Error('Container ref is not available');
-      }
-
-      addDebugInfo('All prerequisites met, rendering widget...');
-      
-      // Clear any existing content
-      containerRef.current.innerHTML = '';
-      
-      // Set up property selection callback
-      window.ihfKestrel.onPropertySelect = (propertyData: any) => {
-        addDebugInfo(`Property selected: ${JSON.stringify(propertyData)}`);
-        if (onPropertySelect) {
-          const transformedProperty = transformIHomefinderProperty(propertyData);
-          onPropertySelect(transformedProperty);
-        }
-      };
-      
-      // Render the widget
-      const widget = window.ihfKestrel.render();
-      addDebugInfo(`Widget rendered successfully: ${!!widget}`);
-      
-      containerRef.current.appendChild(widget);
-      setIsLoaded(true);
-      setError(null);
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      addDebugInfo(`Widget initialization failed: ${errorMessage}`);
-      console.error('Failed to initialize iHomeFinder widget:', err);
-      setError(`Widget initialization failed: ${errorMessage}`);
-    }
-  };
-
-  const retryInitialization = () => {
-    addDebugInfo('Manual retry initiated...');
-    setError(null);
-    setIsLoaded(false);
-    setScriptLoadAttempts(prev => prev + 1);
-    
-    // Force a check after a brief delay
-    setTimeout(() => {
-      checkScriptLoading();
-      if (window.ihfKestrel) {
+  // Ref callback to ensure container is available
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+    if (node) {
+      addDebugInfo('Container ref is now available');
+      // Try to initialize if Kestrel is already loaded
+      if (window.ihfKestrel && typeof window.ihfKestrel.render === 'function' && !isLoaded && !isInitializing) {
         initializeWidget();
-      } else {
-        setError('iHomeFinder Kestrel still not available after retry. Please check your internet connection or contact support.');
       }
-    }, 1000);
-  };
-
-  useEffect(() => {
-    addDebugInfo('Component mounted, starting initialization process...');
-    checkScriptLoading();
-
-    // Check if Kestrel is already loaded
-    if (window.ihfKestrel && typeof window.ihfKestrel.render === 'function') {
-      addDebugInfo('Kestrel already available, initializing immediately...');
-      initializeWidget();
-    } else {
-      addDebugInfo('Kestrel not ready, waiting for it to load...');
-      
-      // Wait for Kestrel to load with more frequent checks
-      const checkInterval = setInterval(() => {
-        if (window.ihfKestrel && typeof window.ihfKestrel.render === 'function') {
-          addDebugInfo('Kestrel became available, initializing...');
-          clearInterval(checkInterval);
-          initializeWidget();
-        }
-      }, 250); // Check every 250ms
-
-      // Timeout after 15 seconds with detailed error info
-      const timeout = setTimeout(() => {
-        clearInterval(checkInterval);
-        if (!isLoaded) {
-          addDebugInfo('Timeout reached, performing final diagnostics...');
-          checkScriptLoading();
-          
-          let errorMsg = 'iHomeFinder widget failed to load within 15 seconds. ';
-          
-          if (!window.ihfKestrel) {
-            errorMsg += 'The iHomeFinder script did not load properly. This could be due to network issues, domain restrictions, or the activation token not being authorized for this domain.';
-          } else if (typeof window.ihfKestrel.render !== 'function') {
-            errorMsg += 'The iHomeFinder script loaded but the render function is not available.';
-          }
-          
-          setError(errorMsg);
-        }
-      }, 15000);
-
-      // Cleanup function
-      return () => {
-        clearInterval(checkInterval);
-        clearTimeout(timeout);
-      };
     }
-  }, [onPropertySelect, scriptLoadAttempts]);
+  }, [isLoaded, isInitializing]);
 
   const transformIHomefinderProperty = (ihfProperty: any): Property => {
     // Transform iHomeFinder property data to our standardized Property interface
@@ -224,6 +97,147 @@ const IHomefinderWidget = ({ onPropertySelect, className = '' }: IHomefinderWidg
     };
   };
 
+  const initializeWidget = useCallback(() => {
+    if (isInitializing) {
+      addDebugInfo('Already initializing, skipping...');
+      return;
+    }
+
+    setIsInitializing(true);
+    addDebugInfo('Starting widget initialization...');
+    
+    try {
+      // Check if container ref is available
+      if (!containerRef.current) {
+        throw new Error('Container ref is not available - DOM element not yet rendered');
+      }
+      
+      // Check if iHomeFinder Kestrel is available
+      if (!window.ihfKestrel) {
+        throw new Error('window.ihfKestrel is not available - script may not have loaded');
+      }
+      
+      if (typeof window.ihfKestrel.render !== 'function') {
+        throw new Error('ihfKestrel.render is not a function - API may have changed');
+      }
+
+      addDebugInfo('All prerequisites met, rendering widget...');
+      
+      // Clear any existing content
+      containerRef.current.innerHTML = '';
+      
+      // Set up property selection callback
+      window.ihfKestrel.onPropertySelect = (propertyData: any) => {
+        addDebugInfo(`Property selected: ${JSON.stringify(propertyData)}`);
+        if (onPropertySelect) {
+          const transformedProperty = transformIHomefinderProperty(propertyData);
+          onPropertySelect(transformedProperty);
+        }
+      };
+      
+      // Render the widget
+      const widget = window.ihfKestrel.render();
+      addDebugInfo(`Widget element created: ${!!widget}`);
+      
+      if (!widget) {
+        throw new Error('ihfKestrel.render() returned null or undefined');
+      }
+      
+      containerRef.current.appendChild(widget);
+      setIsLoaded(true);
+      setError(null);
+      addDebugInfo('Widget successfully initialized and rendered');
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      addDebugInfo(`Widget initialization failed: ${errorMessage}`);
+      console.error('Failed to initialize iHomeFinder widget:', err);
+      setError(`Widget initialization failed: ${errorMessage}`);
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [onPropertySelect, addDebugInfo, isInitializing]);
+
+  const retryInitialization = () => {
+    addDebugInfo('Manual retry initiated...');
+    setError(null);
+    setIsLoaded(false);
+    setScriptLoadAttempts(prev => prev + 1);
+    
+    // Force a check after a brief delay
+    setTimeout(() => {
+      if (window.ihfKestrel && containerRef.current) {
+        initializeWidget();
+      } else {
+        addDebugInfo(`Retry failed - Kestrel: ${!!window.ihfKestrel}, Container: ${!!containerRef.current}`);
+        setError('iHomeFinder Kestrel still not available after retry. Please check your internet connection or contact support.');
+      }
+    }, 1000);
+  };
+
+  // Use useLayoutEffect to ensure DOM is ready before initialization
+  useLayoutEffect(() => {
+    addDebugInfo('useLayoutEffect: Component mounted, checking initialization readiness...');
+    
+    // Check if both prerequisites are met
+    if (window.ihfKestrel && 
+        typeof window.ihfKestrel.render === 'function' && 
+        containerRef.current && 
+        !isLoaded && 
+        !isInitializing) {
+      
+      addDebugInfo('useLayoutEffect: Both Kestrel and container ready, initializing...');
+      initializeWidget();
+    } else {
+      addDebugInfo(`useLayoutEffect: Not ready - Kestrel: ${!!window.ihfKestrel}, Container: ${!!containerRef.current}, Loaded: ${isLoaded}, Initializing: ${isInitializing}`);
+    }
+  }, [initializeWidget, isLoaded, isInitializing]);
+
+  // Fallback polling for Kestrel availability
+  useEffect(() => {
+    if (isLoaded || isInitializing) return;
+
+    addDebugInfo('Starting fallback polling for Kestrel availability...');
+    
+    const pollInterval = setInterval(() => {
+      if (window.ihfKestrel && 
+          typeof window.ihfKestrel.render === 'function' && 
+          containerRef.current && 
+          !isLoaded && 
+          !isInitializing) {
+        
+        addDebugInfo('Polling: Kestrel became available, initializing...');
+        clearInterval(pollInterval);
+        initializeWidget();
+      }
+    }, 500); // Check every 500ms
+
+    // Timeout after 15 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+      if (!isLoaded && !isInitializing) {
+        addDebugInfo('Polling timeout reached, widget failed to load');
+        
+        let errorMsg = 'iHomeFinder widget failed to load within 15 seconds. ';
+        
+        if (!window.ihfKestrel) {
+          errorMsg += 'The iHomeFinder script did not load properly. This could be due to network issues, domain restrictions, or the activation token not being authorized for this domain.';
+        } else if (!containerRef.current) {
+          errorMsg += 'Container element is not available.';
+        } else if (typeof window.ihfKestrel.render !== 'function') {
+          errorMsg += 'The iHomeFinder script loaded but the render function is not available.';
+        }
+        
+        setError(errorMsg);
+      }
+    }, 15000);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
+  }, [initializeWidget, isLoaded, isInitializing]);
+
   if (error) {
     return (
       <div className={className}>
@@ -271,7 +285,9 @@ const IHomefinderWidget = ({ onPropertySelect, className = '' }: IHomefinderWidg
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
               <p className="text-gray-600">Loading iHomeFinder Property Search...</p>
-              <p className="text-sm text-gray-500 mt-2">Connecting to MLS data...</p>
+              <p className="text-sm text-gray-500 mt-2">
+                {isInitializing ? 'Initializing widget...' : 'Connecting to MLS data...'}
+              </p>
               {scriptLoadAttempts > 0 && (
                 <p className="text-xs text-gray-400 mt-1">Attempt {scriptLoadAttempts + 1}</p>
               )}
@@ -293,7 +309,7 @@ const IHomefinderWidget = ({ onPropertySelect, className = '' }: IHomefinderWidg
           </AlertDescription>
         </Alert>
         
-        <div ref={containerRef} className="min-h-[400px] bg-white rounded-lg border" />
+        <div ref={setContainerRef} className="min-h-[400px] bg-white rounded-lg border" />
         
         {/* Debug panel for development */}
         {process.env.NODE_ENV === 'development' && debugInfo.length > 0 && (

@@ -20,21 +20,21 @@ const Listings = () => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing widget...');
+          console.log('iHomeFinder available, initializing with exact embed code...');
           console.log('ihfKestrel config:', window.ihfKestrel.config);
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Call ihfKestrel.render() directly and append the result
-          const widget = window.ihfKestrel.render();
+          // Use the exact embed code provided by iHomeFinder
+          // This creates a temporary script element that gets replaced by the widget
+          const embedScript = document.createElement('script');
+          embedScript.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
           
-          if (widget && containerRef.current) {
-            containerRef.current.appendChild(widget);
-            console.log('iHomeFinder widget rendered and appended successfully');
-          } else {
-            console.error('Failed to render iHomeFinder widget - no widget returned');
-          }
+          // Append to container - the script will execute and replace itself with the widget
+          containerRef.current.appendChild(embedScript);
+          
+          console.log('iHomeFinder exact embed code executed successfully');
         } catch (error) {
           console.error('Error initializing iHomeFinder widget:', error);
         }
@@ -93,7 +93,7 @@ const Listings = () => {
             )}
           </div>
 
-          {/* iHomeFinder IDX Container */}
+          {/* iHomeFinder IDX Container - Using exact embed code */}
           <div 
             ref={containerRef} 
             className="min-h-[600px] w-full border rounded-lg bg-white"

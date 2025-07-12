@@ -21,6 +21,7 @@ const ListingHead = ({
   const location = useLocation();
   const isListingRoute = location.pathname.startsWith('/listing');
   const isListingsRoute = location.pathname.startsWith('/listings');
+  const isIdxRoute = location.pathname === '/idx';
 
   // Different SEO logic based on route
   let title: string;
@@ -34,14 +35,14 @@ const ListingHead = ({
       ? `Photos and Property Details for ${listingAddress}. Get complete property information, maps, street view, schools, walk score and more. Request additional information, schedule a showing, save to your property organizer.`
       : 'Photos and Property Details. Get complete property information, maps, street view, schools, walk score and more. Request additional information, schedule a showing, save to your property organizer.';
   } else if (isListingsRoute) {
-    // For /listings route: use "Property Search" as default per iHomeFinder requirements
-    title = listingAddress 
-      ? `${listingAddress} - Property Details & Photos`
-      : 'Property Search';
-    // Use empty description as default for /listings route
-    description = listingAddress
-      ? `Photos and Property Details for ${listingAddress}. Get complete property information, maps, street view, schools, walk score and more. Request additional information, schedule a showing, save to your property organizer.`
-      : '';
+    // For /listings route: use "Property Search" as required by iHomeFinder
+    title = 'Property Search';
+    // Use empty description as specified in iHomeFinder instructions
+    description = '';
+  } else if (isIdxRoute) {
+    // For /idx route: use "Property Search" for setup verification
+    title = 'Property Search';
+    description = '';
   } else {
     // Fallback for other routes
     title = 'Property Search';

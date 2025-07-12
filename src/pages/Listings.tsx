@@ -1,13 +1,18 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
-// Removed layout and override components for clean IDX display
+import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
+import { IDX_SCHEDULE_TOUR_EVENT, PropertyData, IDX_CUSTOM_CSS, IDX_CUSTOM_JS } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
   const [searchParams] = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
   
   // Extract listing data from URL parameters or route params
   const listingAddress = address || searchParams.get('address') || undefined;
@@ -15,6 +20,47 @@ const Listings = () => {
   const listingPhotoUrl = searchParams.get('photo') || undefined;
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
+
+  // Handle tour scheduling events from IDX
+  useEffect(() => {
+    const handleTourScheduling = (event: CustomEvent<PropertyData>) => {
+      console.log('Tour scheduling triggered:', event.detail);
+      setSelectedProperty(event.detail);
+      setIsModalOpen(true);
+    };
+
+    window.addEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
+    
+    return () => {
+      window.removeEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
+    };
+  }, []);
+
+  // Inject custom CSS and JS into IDX
+  useEffect(() => {
+    const injectCustomizations = () => {
+      // Inject CSS
+      if (!document.querySelector('#idx-custom-styles')) {
+        const styleElement = document.createElement('style');
+        styleElement.id = 'idx-custom-styles';
+        styleElement.textContent = IDX_CUSTOM_CSS;
+        document.head.appendChild(styleElement);
+      }
+
+      // Inject JavaScript
+      if (!document.querySelector('#idx-custom-script')) {
+        const scriptElement = document.createElement('script');
+        scriptElement.id = 'idx-custom-script';
+        scriptElement.textContent = IDX_CUSTOM_JS;
+        document.body.appendChild(scriptElement);
+      }
+    };
+
+    // Inject customizations after a short delay to ensure IDX is loaded
+    const timer = setTimeout(injectCustomizations, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const initializeIDX = () => {
@@ -39,6 +85,29 @@ const Listings = () => {
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
               console.log('iHomeFinder widget appended successfully');
+              
+              // Inject customizations after widget is loaded
+              setTimeout(() => {
+                const injectCustomizations = () => {
+                  // Inject CSS
+                  if (!document.querySelector('#idx-custom-styles')) {
+                    const styleElement = document.createElement('style');
+                    styleElement.id = 'idx-custom-styles';
+                    styleElement.textContent = IDX_CUSTOM_CSS;
+                    document.head.appendChild(styleElement);
+                  }
+
+                  // Inject JavaScript
+                  if (!document.querySelector('#idx-custom-script')) {
+                    const scriptElement = document.createElement('script');
+                    scriptElement.id = 'idx-custom-script';
+                    scriptElement.textContent = IDX_CUSTOM_JS;
+                    document.body.appendChild(scriptElement);
+                  }
+                };
+                injectCustomizations();
+              }, 500);
+              
             } else {
               console.error('Widget element is not a valid DOM element:', widgetElement);
               // Try to create a div and set innerHTML if it's a string
@@ -125,6 +194,18 @@ const Listings = () => {
           Loading MLS listings...
         </div>
       </div>
+      
+      <ModernTourSchedulingModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedProperty(null);
+        }}
+        onSuccess={async () => {
+          setIsModalOpen(false);
+          setSelectedProperty(null);
+        }}
+      />
     </>
   );
 };

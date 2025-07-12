@@ -4,7 +4,7 @@ import { IHomefinderProperty } from '../types/ihomefinder';
 
 export const transformIHomefinderProperty = (ihfProperty: IHomefinderProperty): Property => {
   return {
-    mlsId: `IHF${ihfProperty.mlsNumber || ihfProperty.id || Date.now()}`,
+    mlsId: `IHF${ihfProperty.mlsNumber || String(ihfProperty.id) || Date.now()}`,
     listPrice: ihfProperty.listPrice || ihfProperty.price || 0,
     listDate: ihfProperty.listDate || new Date().toISOString(),
     modificationTimestamp: ihfProperty.modificationTimestamp || new Date().toISOString(),

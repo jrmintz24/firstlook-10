@@ -85,41 +85,52 @@ export const useIDXIntegration = () => {
     const container = document.getElementById('ihf-container');
     if (!container) return;
 
-    // Find all potential tour/contact buttons
+    // Find all potential tour/contact buttons using valid CSS selectors
     const buttonSelectors = [
       'button[title*="tour" i]',
       'button[title*="schedule" i]', 
       'a[title*="tour" i]',
       'a[title*="schedule" i]',
-      'button:contains("Schedule")',
-      'button:contains("Tour")',
-      'a:contains("Schedule")',
-      'a:contains("Tour")',
+      'button',
+      'a',
       '.schedule-tour',
       '.contact-agent',
       '.tour-button'
     ];
 
     buttonSelectors.forEach(selector => {
-      const buttons = container.querySelectorAll(selector);
-      buttons.forEach(button => {
-        if (processedButtons.current.has(button)) return;
+      const elements = container.querySelectorAll(selector);
+      elements.forEach(element => {
+        if (processedButtons.current.has(element)) return;
         
-        const propertyData = extractPropertyData(button);
+        // Check if element text contains tour or schedule keywords
+        const text = element.textContent?.toLowerCase() || '';
+        const isRelevantButton = text.includes('schedule') || 
+                                text.includes('tour') || 
+                                text.includes('contact') ||
+                                element.className.includes('schedule') ||
+                                element.className.includes('tour') ||
+                                element.className.includes('contact');
+        
+        if (!isRelevantButton) return;
+
+        const propertyData = extractPropertyData(element);
         if (!propertyData) return;
 
+        console.log('Found relevant button:', text, 'for property:', propertyData.address);
+
         // Hide original button
-        (button as HTMLElement).style.display = 'none';
+        (element as HTMLElement).style.display = 'none';
         
         // Create custom button
         const customButton = document.createElement('button');
-        customButton.className = 'bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded font-medium transition-colors';
+        customButton.className = 'bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded font-medium transition-colors custom-tour-button';
         customButton.textContent = 'Schedule Tour';
         customButton.style.position = 'absolute';
         customButton.style.zIndex = '1000';
         
         // Position the custom button
-        const rect = button.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         customButton.style.left = `${rect.left - containerRect.left}px`;
         customButton.style.top = `${rect.top - containerRect.top}px`;
@@ -133,11 +144,11 @@ export const useIDXIntegration = () => {
         });
 
         // Insert the custom button
-        if (button.parentNode) {
-          button.parentNode.insertBefore(customButton, button.nextSibling);
+        if (element.parentNode) {
+          element.parentNode.insertBefore(customButton, element.nextSibling);
         }
 
-        processedButtons.current.add(button);
+        processedButtons.current.add(element);
       });
     });
   };

@@ -12,12 +12,12 @@ import { useToast } from "@/hooks/use-toast"
 import PropertyRequestWizard from "@/components/PropertyRequestWizard"
 import MLSComplianceFooter from "@/components/MLSComplianceFooter"
 import { useIDXIntegration } from "@/hooks/useIDXIntegration"
-import { Loader2, Grid, Map, AlertCircle, RefreshCw, Info, ArrowLeft, Search } from "lucide-react"
+import { Loader2, Grid, Map, AlertCircle, RefreshCw, Info, ArrowLeft, Search as SearchIcon } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { searchProperties, SearchResult } from "@/services/propertySearchService"
 import { idxPropertyService } from "@/services/idxPropertyService"
 
-const Search = () => {
+const SearchPage = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
@@ -27,7 +27,7 @@ const Search = () => {
   const [isDemoMode, setIsDemoMode] = useState(true)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
   const [fromHomePage, setFromHomePage] = useState(false)
-  const [searchSource, setSearchSource] = useState<'demo' | 'idx'>('idx') // Default to IDX
+  const [searchSource, setSearchSource] = useState<'demo' | 'idx'>('idx')
   const [filters, setFilters] = useState<SearchFiltersType>({
     cities: undefined,
     limit: 20
@@ -38,12 +38,10 @@ const Search = () => {
   const navigate = useNavigate()
   const { handlePropertySelect, handleScheduleTour } = useIDXIntegration()
 
-  // Check for pre-loaded results from home page
   useEffect(() => {
     const state = location.state as { searchResult?: SearchResult; fromHomePage?: boolean } | null;
     
     if (state?.searchResult && state?.fromHomePage) {
-      // Use pre-loaded results
       setSearchResult(state.searchResult);
       setProperties(state.searchResult.properties);
       setHasSearched(true);
@@ -53,7 +51,6 @@ const Search = () => {
         cities: state.searchResult.searchTerm
       }));
       
-      // Clear the state to prevent re-using it on subsequent renders
       navigate(location.pathname + `?q=${encodeURIComponent(state.searchResult.searchTerm)}`, { 
         replace: true, 
         state: null 
@@ -61,7 +58,6 @@ const Search = () => {
       return;
     }
 
-    // Handle URL parameters for direct access
     const urlParams = new URLSearchParams(location.search);
     const query = urlParams.get('q');
     
@@ -178,7 +174,6 @@ const Search = () => {
             </p>
           </div>
 
-          {/* Search Source Toggle */}
           <div className="flex justify-center mb-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-1 flex items-center gap-1">
               <Button
@@ -209,7 +204,6 @@ const Search = () => {
         </div>
       </div>
 
-      {/* IDX Widget Section */}
       {searchSource === 'idx' && (
         <div className="container mx-auto px-4 py-8">
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
@@ -393,10 +387,9 @@ const Search = () => {
         }}
       />
 
-      {/* MLS Compliance Footer - Only show when search results are displayed */}
       {hasSearched && properties.length > 0 && <MLSComplianceFooter />}
     </div>
   )
 }
 
-export default Search
+export default SearchPage

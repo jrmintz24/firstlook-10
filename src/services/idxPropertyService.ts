@@ -41,6 +41,12 @@ class IDXPropertyService {
         mlsId: 'IDX001',
         listPrice: 650000,
         address: {
+          streetNumber: '123',
+          streetName: 'IDX Demo St',
+          city: 'Washington',
+          state: 'DC',
+          postalCode: '20001',
+          country: 'US',
           full: '123 IDX Demo St, Washington, DC 20001'
         },
         property: {
@@ -48,13 +54,20 @@ class IDXPropertyService {
           bathsFull: 2,
           bathsHalf: 1,
           area: 1800,
-          type: 'Single Family'
+          type: 'Single Family',
+          subType: 'Detached'
         }
       },
       {
         mlsId: 'IDX002',
         listPrice: 485000,
         address: {
+          streetNumber: '456',
+          streetName: 'IDX Sample Ave',
+          city: 'Baltimore',
+          state: 'MD',
+          postalCode: '21201',
+          country: 'US',
           full: '456 IDX Sample Ave, Baltimore, MD 21201'
         },
         property: {
@@ -62,7 +75,8 @@ class IDXPropertyService {
           bathsFull: 2,
           bathsHalf: 0,
           area: 1200,
-          type: 'Condominium'
+          type: 'Condominium',
+          subType: 'High-Rise'
         }
       }
     ];
@@ -83,7 +97,7 @@ class IDXPropertyService {
         state: 'DC',
         postalCode: '20001',
         country: 'US',
-        full: partial.address?.full || '',
+        full: '',
         ...partial.address
       },
       geo: {
@@ -96,7 +110,7 @@ class IDXPropertyService {
         bathsHalf: 0,
         area: 0,
         type: 'Single Family',
-        subType: '',
+        subType: 'Detached',
         ...partial.property
       },
       listingAgent: {

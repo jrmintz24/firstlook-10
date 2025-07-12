@@ -1,16 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { PropertyRequestFormData } from "@/types/propertyRequest";
+import { PropertyRequestFormData, PropertyEntry } from "@/types/propertyRequest";
 import { usePropertyManagement } from "@/hooks/usePropertyManagement";
 import { useShowingSubmission } from "@/hooks/useShowingSubmission";
 import { usePendingShowingManagement } from "@/hooks/usePendingShowingManagement";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 
 const initialFormData: PropertyRequestFormData = {
-  properties: [{ address: "", notes: "" }],
+  properties: [{ address: "", notes: "", mlsId: "", source: "manual" }],
   preferredOptions: [{ date: "", time: "" }],
   notes: "",
   propertyAddress: '',
@@ -36,7 +35,7 @@ export const usePropertyRequest = (
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Get management hooks
+  // Get management hooks with updated property handling
   const { handleAddProperty, handleRemoveProperty } = usePropertyManagement(formData, setFormData);
   const { isSubmitting, submitShowingRequests } = useShowingSubmission(onDataRefresh);
   const { eligibility, checkEligibility } = useShowingEligibility();
@@ -68,7 +67,7 @@ export const usePropertyRequest = (
         if (tourData.propertyAddress) {
           setFormData(prev => ({
             ...prev,
-            properties: [{ address: tourData.propertyAddress || '', notes: '' }],
+            properties: [{ address: tourData.propertyAddress || '', notes: '', mlsId: tourData.mlsId || '', source: tourData.source || 'manual' }],
             propertyAddress: tourData.propertyAddress || '',
             preferredDate1: tourData.preferredDate1 || '',
             preferredTime1: tourData.preferredTime1 || '',
@@ -97,13 +96,45 @@ export const usePropertyRequest = (
       if (field === 'propertyAddress') {
         if (updated.properties[0] && !updated.properties[0].address.trim()) {
           updated.properties = [
-            { address: value, notes: updated.properties[0].notes },
+            { 
+              address: value, 
+              notes: updated.properties[0].notes,
+              mlsId: updated.properties[0].mlsId || '',
+              source: updated.properties[0].source || 'manual'
+            },
             ...updated.properties.slice(1)
           ];
         }
       }
 
       return updated;
+    });
+  };
+
+  // Function to add IDX property to the form
+  const handleAddIDXProperty = (property: any) => {
+    const newPropertyEntry: PropertyEntry = {
+      address: property.address?.full || property.address || '',
+      notes: property.remarks || '',
+      mlsId: property.mlsId || '',
+      source: 'idx'
+    };
+
+    setFormData(prev => {
+      const existingProperties = prev.properties.filter(p => p.address.trim());
+      const updatedProperties = [...existingProperties, newPropertyEntry];
+      
+      return {
+        ...prev,
+        properties: updatedProperties,
+        propertyAddress: newPropertyEntry.address,
+        selectedProperties: [...prev.selectedProperties, newPropertyEntry.address]
+      };
+    });
+
+    toast({
+      title: "IDX Property Added",
+      description: `Added ${newPropertyEntry.address} to your tour request`,
     });
   };
 
@@ -119,7 +150,6 @@ export const usePropertyRequest = (
     console.log('handleContinueToSubscriptions called');
     console.log('Current user:', user?.id);
     
-    // Use provided form data or current state
     const dataToSubmit = currentFormData || formData;
     console.log('Form data to submit:', dataToSubmit);
 
@@ -130,12 +160,10 @@ export const usePropertyRequest = (
       return;
     }
 
-    // Check eligibility before submission
     const currentEligibility = await checkEligibility();
     console.log('User eligibility:', currentEligibility);
     
     if (!currentEligibility?.eligible) {
-      // Check for monthly_limit_exceeded
       if (currentEligibility?.reason === 'monthly_limit_exceeded') {
         console.log('Monthly limit exceeded, showing limit modal');
         setModalFlow('limit');
@@ -146,26 +174,21 @@ export const usePropertyRequest = (
     try {
       console.log('Submitting showing requests for authenticated user:', user.id);
       
-      // Submit the requests and wait for completion
       await submitShowingRequests(dataToSubmit);
       
-      // Clear form and close modal after successful submission
       setFormData(initialFormData);
       setCurrentStep(1);
       setModalFlow('closed');
       
-      // Show success message
       toast({
         title: "Tour Request Submitted",
         description: "Your tour request has been submitted successfully!",
       });
       
-      // Call onClose to close the modal
       if (onClose) {
         onClose();
       }
       
-      // Navigate to dashboard for authenticated users if not skipping
       if (!skipNavigation) {
         console.log('Navigating to buyer dashboard');
         navigate('/buyer-dashboard', { replace: true });
@@ -214,6 +237,7 @@ export const usePropertyRequest = (
     handleAddProperty,
     handleRemoveProperty,
     handleCancelPendingShowing,
+    handleAddIDXProperty,
     resetForm
   };
 };

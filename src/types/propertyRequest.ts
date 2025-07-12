@@ -1,6 +1,9 @@
+
 export interface PropertyEntry {
   address: string;
   notes: string;
+  mlsId?: string;
+  source?: 'manual' | 'idx';
 }
 
 export interface PreferredOption {

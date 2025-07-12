@@ -2,8 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
-import ListingPageLayout from '@/components/listings/ListingPageLayout';
-import { IDXButtonOverride } from '@/components/IDXButtonOverride';
+// Removed layout and override components for clean IDX display
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -107,46 +106,25 @@ const Listings = () => {
     }
   }, []);
 
+  const pageTitle = listingAddress ? `${listingAddress} - Property Details` : 'Property Search';
+
   return (
     <>
-      {/* SEO Head Management */}
-      <ListingHead
+      <ListingHead 
         listingAddress={listingAddress}
         listingCity={listingCity}
         listingPhotoUrl={listingPhotoUrl}
         listingPhotoWidth={listingPhotoWidth}
         listingPhotoHeight={listingPhotoHeight}
       />
-
-      {/* Page Layout */}
-      <ListingPageLayout>
-        <div className="p-6">
-          {/* Page Title */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {listingAddress || 'Property Search'}
-            </h1>
-            {listingCity && (
-              <p className="text-gray-600 mt-2">
-                {listingCity} Real Estate
-              </p>
-            )}
-          </div>
-
-          {/* iHomeFinder IDX Container - Direct widget rendering */}
-          <div 
-            ref={containerRef} 
-            id="ihf-container"
-            className="min-h-[600px] w-full border rounded-lg bg-white"
-            style={{ minHeight: '600px' }}
-          >
-            <div className="flex items-center justify-center h-64">
-              <p className="text-gray-500">Loading iHomeFinder IDX...</p>
-            </div>
-          </div>
+      <div 
+        ref={containerRef}
+        className="w-full min-h-screen"
+      >
+        <div className="flex items-center justify-center h-32 text-gray-500">
+          Loading MLS listings...
         </div>
-      </ListingPageLayout>
-      <IDXButtonOverride />
+      </div>
     </>
   );
 };

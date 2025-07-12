@@ -1,4 +1,3 @@
-
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -36,6 +35,7 @@ import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
 import Property from './pages/Property'
+import Listings from './pages/Listings'
 
 const queryClient = new QueryClient()
 
@@ -142,6 +142,10 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* Listings Pages - IDX Integration */}
+                <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/:address" element={<Listings />} />
 
                 {/* Informational Pages */}
                 <Route path="/homebuying-guide" element={<HomebuyingGuide />} />

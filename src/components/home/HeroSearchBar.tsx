@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Search, Loader2, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGooglePlaces } from "@/hooks/useGooglePlaces";
-import { searchProperties } from "@/services/propertySearchService";
 import { useToast } from "@/hooks/use-toast";
 
 const HeroSearchBar = () => {
@@ -27,9 +26,9 @@ const HeroSearchBar = () => {
     fetchLocations,
     clearResults,
     clearError
-  } = useGooglePlaces({ debounceMs: 1200 }); // Longer debounce for hero search
+  } = useGooglePlaces({ debounceMs: 1200 });
 
-  // Handle debounced search - removed clearResults from dependencies
+  // Handle debounced search
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
       fetchLocations(debouncedSearchTerm);
@@ -63,41 +62,26 @@ const HeroSearchBar = () => {
 
   const handleSearch = async (query?: string) => {
     const searchQuery = query || searchTerm;
-    if (!searchQuery.trim()) {
-      navigate('/search');
-      return;
-    }
-
     setIsSearching(true);
+    
     try {
-      // Execute search before navigation
-      const searchResult = await searchProperties({
-        cities: searchQuery.trim(),
-        limit: 20
-      });
-
-      // Navigate with pre-loaded results
-      navigate('/search', {
-        state: {
-          searchResult,
-          fromHomePage: true
-        }
-      });
-
-      toast({
-        title: "Search Complete",
-        description: `Found ${searchResult.totalCount} properties`,
-      });
-
+      // Navigate directly to listings page with search parameters
+      if (searchQuery.trim()) {
+        navigate(`/listings?q=${encodeURIComponent(searchQuery.trim())}`);
+        toast({
+          title: "Searching Properties",
+          description: `Searching for properties in ${searchQuery}`,
+        });
+      } else {
+        navigate('/listings');
+      }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search navigation error:', error);
       toast({
-        title: "Search Error",
-        description: "Failed to search properties. Please try again.",
+        title: "Navigation Error",
+        description: "Failed to navigate to search. Please try again.",
         variant: "destructive"
       });
-      // Still navigate to search page on error
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     } finally {
       setIsSearching(false);
     }
@@ -158,7 +142,7 @@ const HeroSearchBar = () => {
           className="bg-gray-900 hover:bg-black text-white rounded-xl px-4 sm:px-6 md:px-8 py-3 h-10 sm:h-12 font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <Search className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-          {isSearching ? 'Searching...' : 'Search'}
+          {isSearching ? 'Searching...' : 'Search Properties'}
         </Button>
       </div>
 

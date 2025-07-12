@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
 import ListingPageLayout from '@/components/listings/ListingPageLayout';
+import { IDXButtonOverride } from '@/components/IDXButtonOverride';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -135,6 +136,7 @@ const Listings = () => {
           {/* iHomeFinder IDX Container - Direct widget rendering */}
           <div 
             ref={containerRef} 
+            id="ihf-container"
             className="min-h-[600px] w-full border rounded-lg bg-white"
             style={{ minHeight: '600px' }}
           >
@@ -144,6 +146,7 @@ const Listings = () => {
           </div>
         </div>
       </ListingPageLayout>
+      <IDXButtonOverride />
     </>
   );
 };

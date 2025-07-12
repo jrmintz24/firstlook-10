@@ -17,13 +17,17 @@ const ListingHead = ({
   listingPhotoWidth,
   listingPhotoHeight
 }: ListingHeadProps) => {
+  // Use "Property Search" as default title per iHomeFinder requirements
+  // Only use dynamic titles for specific property addresses
   const title = listingAddress 
     ? `${listingAddress} - Property Details & Photos`
-    : 'Property Listings - Real Estate Search';
+    : 'Property Search';
 
+  // Use empty description as default per iHomeFinder requirements
+  // Only use dynamic descriptions for specific property addresses
   const description = listingAddress
     ? `Photos and Property Details for ${listingAddress}. Get complete property information, maps, street view, schools, walk score and more. Request additional information, schedule a showing, save to your property organizer.`
-    : 'Search and browse real estate listings. View photos, property details, maps, and schedule showings with professional agents.';
+    : '';
 
   const keywords = listingAddress && listingCity
     ? `${listingAddress}, ${listingCity} Real Estate, ${listingCity} Property for Sale`

@@ -9,7 +9,7 @@ export interface IDXSearchResult {
 
 class IDXPropertyService {
   private baseUrl = 'https://api.ihomefinder.com'; // Replace with actual iHomeFinder API endpoint
-  private apiKey = process.env.IHOMEFINDER_API_KEY || 'demo'; // Use demo for now
+  private apiKey = 'demo'; // Using demo for frontend simulation
 
   async searchProperties(filters: SearchFilters): Promise<IDXSearchResult> {
     try {

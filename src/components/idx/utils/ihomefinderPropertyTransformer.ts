@@ -4,12 +4,12 @@ import { IHomefinderProperty } from '../types/ihomefinder';
 
 export const transformIHomefinderProperty = (ihfProperty: IHomefinderProperty): Property => {
   return {
-    mlsId: `IHF${ihfProperty.mlsNumber || String(ihfProperty.id) || Date.now()}`,
+    mlsId: `IHF${ihfProperty.mlsNumber || String(ihfProperty.id || Date.now())}`,
     listPrice: ihfProperty.listPrice || ihfProperty.price || 0,
     listDate: ihfProperty.listDate || new Date().toISOString(),
     modificationTimestamp: ihfProperty.modificationTimestamp || new Date().toISOString(),
     address: {
-      streetNumber: ihfProperty.streetNumber || '',
+      streetNumber: String(ihfProperty.streetNumber || ''),
       streetName: ihfProperty.streetName || '',
       city: ihfProperty.city || '',
       state: ihfProperty.state || '',
@@ -42,7 +42,7 @@ export const transformIHomefinderProperty = (ihfProperty: IHomefinderProperty): 
     status: ihfProperty.status || 'Active',
     mls: {
       status: ihfProperty.status || 'Active',
-      area: ihfProperty.area || ihfProperty.city || '',
+      area: ihfProperty.area ? String(ihfProperty.area) : ihfProperty.city || '',
       daysOnMarket: ihfProperty.daysOnMarket || 0
     }
   };

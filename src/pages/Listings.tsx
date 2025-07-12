@@ -17,32 +17,47 @@ const Listings = () => {
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
   useEffect(() => {
-    // Simple iHomeFinder integration following their exact instructions
-    const initializeIDX = () => {
-      if (containerRef.current && window.ihfKestrel) {
-        try {
-          console.log('Initializing iHomeFinder widget...');
-          const widget = window.ihfKestrel.render();
-          if (widget && containerRef.current) {
-            containerRef.current.innerHTML = '';
-            containerRef.current.appendChild(widget);
-            console.log('iHomeFinder widget loaded successfully');
-          }
-        } catch (error) {
-          console.error('Failed to load iHomeFinder widget:', error);
-        }
+    // Use the exact iHomeFinder embed code
+    if (containerRef.current && window.ihfKestrel) {
+      try {
+        console.log('Initializing iHomeFinder with exact embed code...');
+        
+        // Clear the container first
+        containerRef.current.innerHTML = '';
+        
+        // Create a script element with the exact embed code provided by iHomeFinder
+        const script = document.createElement('script');
+        script.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
+        
+        // Append the script to the container
+        containerRef.current.appendChild(script);
+        
+        console.log('iHomeFinder embed code executed successfully');
+      } catch (error) {
+        console.error('Failed to load iHomeFinder widget:', error);
       }
-    };
-
-    // Wait for iHomeFinder to be available
-    if (window.ihfKestrel) {
-      initializeIDX();
     } else {
-      // Poll for availability
+      // Poll for ihfKestrel availability
       const interval = setInterval(() => {
-        if (window.ihfKestrel) {
+        if (window.ihfKestrel && containerRef.current) {
           clearInterval(interval);
-          initializeIDX();
+          try {
+            console.log('iHomeFinder now available, initializing...');
+            
+            // Clear the container first
+            containerRef.current.innerHTML = '';
+            
+            // Create a script element with the exact embed code
+            const script = document.createElement('script');
+            script.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
+            
+            // Append the script to the container
+            containerRef.current.appendChild(script);
+            
+            console.log('iHomeFinder embed code executed successfully');
+          } catch (error) {
+            console.error('Failed to load iHomeFinder widget:', error);
+          }
         }
       }, 100);
 
@@ -77,14 +92,14 @@ const Listings = () => {
             )}
           </div>
 
-          {/* Simple IDX Container */}
+          {/* iHomeFinder IDX Container with exact embed code */}
           <div 
             ref={containerRef} 
             className="min-h-[600px] w-full border rounded-lg bg-white"
             style={{ minHeight: '600px' }}
           >
             <div className="flex items-center justify-center h-64">
-              <p className="text-gray-500">Loading property search...</p>
+              <p className="text-gray-500">Loading iHomeFinder IDX...</p>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -142,6 +143,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* IDX Route - Required by iHomeFinder setup instructions */}
+                <Route path="/idx" element={<Listings />} />
 
                 {/* Listings Pages - IDX Integration */}
                 <Route path="/listings" element={<Listings />} />

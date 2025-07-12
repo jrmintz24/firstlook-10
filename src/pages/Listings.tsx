@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
-import { IDX_SCHEDULE_TOUR_EVENT, PropertyData, IDX_CUSTOM_CSS, IDX_CUSTOM_JS } from '@/utils/idxCommunication';
+import { IDX_SCHEDULE_TOUR_EVENT, PropertyData, IDX_CUSTOM_CSS } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -36,28 +36,20 @@ const Listings = () => {
     };
   }, []);
 
-  // Inject custom CSS and JS into IDX
+  // Inject custom CSS into IDX
   useEffect(() => {
-    const injectCustomizations = () => {
-      // Inject CSS
+    const injectCustomCSS = () => {
+      // Inject CSS only
       if (!document.querySelector('#idx-custom-styles')) {
         const styleElement = document.createElement('style');
         styleElement.id = 'idx-custom-styles';
         styleElement.textContent = IDX_CUSTOM_CSS;
         document.head.appendChild(styleElement);
       }
-
-      // Inject JavaScript
-      if (!document.querySelector('#idx-custom-script')) {
-        const scriptElement = document.createElement('script');
-        scriptElement.id = 'idx-custom-script';
-        scriptElement.textContent = IDX_CUSTOM_JS;
-        document.body.appendChild(scriptElement);
-      }
     };
 
-    // Inject customizations after a short delay to ensure IDX is loaded
-    const timer = setTimeout(injectCustomizations, 1000);
+    // Inject CSS after a short delay to ensure IDX is loaded
+    const timer = setTimeout(injectCustomCSS, 1000);
     
     return () => clearTimeout(timer);
   }, []);
@@ -85,28 +77,6 @@ const Listings = () => {
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
               console.log('iHomeFinder widget appended successfully');
-              
-              // Inject customizations after widget is loaded
-              setTimeout(() => {
-                const injectCustomizations = () => {
-                  // Inject CSS
-                  if (!document.querySelector('#idx-custom-styles')) {
-                    const styleElement = document.createElement('style');
-                    styleElement.id = 'idx-custom-styles';
-                    styleElement.textContent = IDX_CUSTOM_CSS;
-                    document.head.appendChild(styleElement);
-                  }
-
-                  // Inject JavaScript
-                  if (!document.querySelector('#idx-custom-script')) {
-                    const scriptElement = document.createElement('script');
-                    scriptElement.id = 'idx-custom-script';
-                    scriptElement.textContent = IDX_CUSTOM_JS;
-                    document.body.appendChild(scriptElement);
-                  }
-                };
-                injectCustomizations();
-              }, 500);
               
             } else {
               console.error('Widget element is not a valid DOM element:', widgetElement);

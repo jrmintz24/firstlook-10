@@ -20,36 +20,72 @@ const Listings = () => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing with exact embed code...');
+          console.log('iHomeFinder available, initializing widget directly...');
           console.log('ihfKestrel config:', window.ihfKestrel.config);
+          console.log('ihfKestrel render function:', typeof window.ihfKestrel.render);
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Use the exact embed code provided by iHomeFinder
-          // This creates a temporary script element that gets replaced by the widget
-          const embedScript = document.createElement('script');
-          embedScript.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
+          // Call ihfKestrel.render() directly and handle the returned element
+          const widgetElement = window.ihfKestrel.render();
           
-          // Append to container - the script will execute and replace itself with the widget
-          containerRef.current.appendChild(embedScript);
+          console.log('Widget element returned:', widgetElement);
+          console.log('Widget element type:', typeof widgetElement);
+          console.log('Widget element tagName:', widgetElement?.tagName);
           
-          console.log('iHomeFinder exact embed code executed successfully');
+          if (widgetElement && containerRef.current) {
+            // If it's a DOM element, append it directly
+            if (widgetElement instanceof HTMLElement) {
+              containerRef.current.appendChild(widgetElement);
+              console.log('iHomeFinder widget appended successfully');
+            } else {
+              console.error('Widget element is not a valid DOM element:', widgetElement);
+              // Try to create a div and set innerHTML if it's a string
+              if (typeof widgetElement === 'string') {
+                const div = document.createElement('div');
+                div.innerHTML = widgetElement;
+                containerRef.current.appendChild(div);
+                console.log('Widget rendered as HTML string');
+              }
+            }
+          } else {
+            console.error('Failed to render iHomeFinder widget - no widget returned or container missing');
+            console.log('Container exists:', !!containerRef.current);
+            console.log('Widget returned:', !!widgetElement);
+            
+            // Show error message in container
+            if (containerRef.current) {
+              containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Failed to load IDX widget. Please check configuration.</p></div>';
+            }
+          }
         } catch (error) {
           console.error('Error initializing iHomeFinder widget:', error);
+          console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+          });
+          
+          // Show error message in container
+          if (containerRef.current) {
+            containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Error loading IDX widget. Check console for details.</p></div>';
+          }
         }
       } else {
         console.log('iHomeFinder not ready yet. ihfKestrel available:', !!window.ihfKestrel);
+        console.log('Container available:', !!containerRef.current);
       }
     };
 
     // Check if iHomeFinder is already available
     if (window.ihfKestrel) {
+      console.log('iHomeFinder already available, initializing immediately');
       initializeIDX();
     } else {
       // Poll for ihfKestrel availability with more detailed logging
       console.log('Polling for iHomeFinder availability...');
       const interval = setInterval(() => {
+        console.log('Checking for ihfKestrel...', !!window.ihfKestrel);
         if (window.ihfKestrel && containerRef.current) {
           console.log('iHomeFinder now available, clearing interval');
           clearInterval(interval);
@@ -62,6 +98,9 @@ const Listings = () => {
         clearInterval(interval);
         if (!window.ihfKestrel) {
           console.error('iHomeFinder failed to load after 10 seconds');
+          if (containerRef.current) {
+            containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-yellow-600"><p>IDX widget is taking longer than expected to load. Please refresh the page.</p></div>';
+          }
         }
       }, 10000);
     }
@@ -93,7 +132,7 @@ const Listings = () => {
             )}
           </div>
 
-          {/* iHomeFinder IDX Container - Using exact embed code */}
+          {/* iHomeFinder IDX Container - Direct widget rendering */}
           <div 
             ref={containerRef} 
             className="min-h-[600px] w-full border rounded-lg bg-white"

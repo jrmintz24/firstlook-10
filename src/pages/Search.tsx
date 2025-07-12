@@ -4,15 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, ExternalLink } from 'lucide-react';
-import IDXSearchWidget from '@/components/idx/IDXSearchWidget';
-import { useIDXIntegration } from '@/hooks/useIDXIntegration';
-import { Property } from '@/types/simplyrets';
 
 const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const { selectedProperty, handlePropertySelect } = useIDXIntegration();
 
   // Handle pre-loaded search results from home page
   useEffect(() => {
@@ -28,12 +24,6 @@ const Search = () => {
       setSearchTerm(queryTerm);
     }
   }, [location]);
-
-  const handleIDXPropertySelect = (property: Property) => {
-    handlePropertySelect(property);
-    // Navigate to property details or listings page
-    navigate(`/property/${property.mlsId}`);
-  };
 
   const handleViewListings = () => {
     navigate('/listings');
@@ -74,25 +64,25 @@ const Search = () => {
           </Button>
         </div>
 
-        {/* IDX Search Widget */}
+        {/* Search Form - Simple for now */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <IDXSearchWidget 
-            onPropertySelect={handleIDXPropertySelect}
-            className="w-full"
-          />
-        </div>
-
-        {/* Selected Property Info */}
-        {selectedProperty && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800">
-              <strong>Selected Property:</strong> {selectedProperty.address.full}
-            </p>
-            <p className="text-sm text-green-600 mt-1">
-              Click "View Full Property Listings" to see more details and schedule a showing.
-            </p>
+          <h2 className="text-xl font-semibold mb-4">Search Properties</h2>
+          <div className="flex gap-4">
+            <input
+              type="text"
+              placeholder="Enter city, address, or ZIP code"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <Button 
+              onClick={handleViewListings}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Search
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* MLS Compliance */}
         <div className="mt-8 text-center text-sm text-gray-600">

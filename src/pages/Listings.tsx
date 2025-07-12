@@ -17,52 +17,53 @@ const Listings = () => {
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
   useEffect(() => {
-    // Use the exact iHomeFinder embed code
-    if (containerRef.current && window.ihfKestrel) {
-      try {
-        console.log('Initializing iHomeFinder with exact embed code...');
-        
-        // Clear the container first
-        containerRef.current.innerHTML = '';
-        
-        // Create a script element with the exact embed code provided by iHomeFinder
-        const script = document.createElement('script');
-        script.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
-        
-        // Append the script to the container
-        containerRef.current.appendChild(script);
-        
-        console.log('iHomeFinder embed code executed successfully');
-      } catch (error) {
-        console.error('Failed to load iHomeFinder widget:', error);
+    const initializeIDX = () => {
+      if (containerRef.current && window.ihfKestrel) {
+        try {
+          console.log('iHomeFinder available, initializing widget...');
+          console.log('ihfKestrel config:', window.ihfKestrel.config);
+          
+          // Clear the container first
+          containerRef.current.innerHTML = '';
+          
+          // Call ihfKestrel.render() directly and append the result
+          const widget = window.ihfKestrel.render();
+          
+          if (widget && containerRef.current) {
+            containerRef.current.appendChild(widget);
+            console.log('iHomeFinder widget rendered and appended successfully');
+          } else {
+            console.error('Failed to render iHomeFinder widget - no widget returned');
+          }
+        } catch (error) {
+          console.error('Error initializing iHomeFinder widget:', error);
+        }
+      } else {
+        console.log('iHomeFinder not ready yet. ihfKestrel available:', !!window.ihfKestrel);
       }
+    };
+
+    // Check if iHomeFinder is already available
+    if (window.ihfKestrel) {
+      initializeIDX();
     } else {
-      // Poll for ihfKestrel availability
+      // Poll for ihfKestrel availability with more detailed logging
+      console.log('Polling for iHomeFinder availability...');
       const interval = setInterval(() => {
         if (window.ihfKestrel && containerRef.current) {
+          console.log('iHomeFinder now available, clearing interval');
           clearInterval(interval);
-          try {
-            console.log('iHomeFinder now available, initializing...');
-            
-            // Clear the container first
-            containerRef.current.innerHTML = '';
-            
-            // Create a script element with the exact embed code
-            const script = document.createElement('script');
-            script.innerHTML = 'document.currentScript.replaceWith(ihfKestrel.render());';
-            
-            // Append the script to the container
-            containerRef.current.appendChild(script);
-            
-            console.log('iHomeFinder embed code executed successfully');
-          } catch (error) {
-            console.error('Failed to load iHomeFinder widget:', error);
-          }
+          initializeIDX();
         }
       }, 100);
 
       // Cleanup after 10 seconds
-      setTimeout(() => clearInterval(interval), 10000);
+      setTimeout(() => {
+        clearInterval(interval);
+        if (!window.ihfKestrel) {
+          console.error('iHomeFinder failed to load after 10 seconds');
+        }
+      }, 10000);
     }
   }, []);
 
@@ -92,7 +93,7 @@ const Listings = () => {
             )}
           </div>
 
-          {/* iHomeFinder IDX Container with exact embed code */}
+          {/* iHomeFinder IDX Container */}
           <div 
             ref={containerRef} 
             className="min-h-[600px] w-full border rounded-lg bg-white"

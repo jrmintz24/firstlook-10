@@ -81,7 +81,13 @@ const SearchPage = () => {
       let result: any;
 
       if (source === 'idx') {
-        result = await idxPropertyService.searchProperties(searchFilters);
+        // For IDX, we rely on the widget for search results
+        // The widget will handle property selection directly
+        result = {
+          properties: [],
+          totalCount: 0,
+          searchTerm: searchFilters.cities || 'IDX Widget Search'
+        };
       } else {
         result = await searchProperties(searchFilters);
       }
@@ -91,10 +97,17 @@ const SearchPage = () => {
       setHasSearched(true);
       setSearchSource(source);
       
-      toast({
-        title: "Search Complete",
-        description: `Found ${result.totalCount} properties (${source === 'idx' ? 'IDX' : 'Demo Mode'})`,
-      });
+      if (source === 'idx') {
+        toast({
+          title: "IDX Widget Ready",
+          description: "Use the iHomeFinder widget below to search live MLS listings",
+        });
+      } else {
+        toast({
+          title: "Search Complete",
+          description: `Found ${result.totalCount} properties (Demo Mode)`,
+        });
+      }
       
     } catch (error) {
       console.error('Property search error:', error)
@@ -182,7 +195,7 @@ const SearchPage = () => {
                 onClick={() => switchSearchSource('idx')}
                 className={searchSource === 'idx' ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}
               >
-                IDX Search
+                iHomeFinder IDX
               </Button>
               <Button
                 variant={searchSource === 'demo' ? 'default' : 'ghost'}
@@ -195,21 +208,35 @@ const SearchPage = () => {
             </div>
           </div>
 
-          <EnhancedSearchFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            onSearch={searchPropertiesHandler}
-            isLoading={isLoading}
-          />
+          {searchSource === 'demo' && (
+            <EnhancedSearchFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              onSearch={searchPropertiesHandler}
+              isLoading={isLoading}
+            />
+          )}
         </div>
       </div>
 
       {searchSource === 'idx' && (
         <div className="container mx-auto px-4 py-8">
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">IDX Property Search</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Live MLS Property Search</h2>
             <IDXSearchWidget 
-              onPropertySelect={handlePropertySelect}
+              onPropertySelect={(property) => {
+                handlePropertySelect(property);
+                // Also add to the current results for display consistency
+                setProperties(prev => [property, ...prev.filter(p => p.mlsId !== property.mlsId)]);
+                if (!hasSearched) {
+                  setHasSearched(true);
+                  setSearchResult({
+                    properties: [property],
+                    totalCount: 1,
+                    searchTerm: 'Widget Selection'
+                  });
+                }
+              }}
               className="w-full"
             />
           </div>

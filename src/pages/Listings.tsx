@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -285,6 +284,7 @@ const Listings = () => {
           setIsTourModalOpen(false);
           setSelectedProperty(null);
         }}
+        initialAddress={selectedProperty?.address || ''}
       />
 
       {/* Make Offer Modal */}

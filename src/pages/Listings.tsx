@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -170,13 +171,20 @@ const Listings = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <ListingHead 
         listingAddress={listingAddress}
         listingCity={listingCity}
         listingPhotoUrl={listingPhotoUrl}
         listingPhotoWidth={listingPhotoWidth}
         listingPhotoHeight={listingPhotoHeight}
+      />
+      
+      {/* Custom Action Bar - positioned prominently */}
+      <CustomActionBar
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
       />
       
       <div 
@@ -190,13 +198,6 @@ const Listings = () => {
       
       {/* IDX Button Injector */}
       <IDXButtonInjector
-        onScheduleTour={handleScheduleTour}
-        onMakeOffer={handleMakeOffer}
-        onFavorite={handleFavorite}
-      />
-      
-      {/* Custom Action Bar */}
-      <CustomActionBar
         onScheduleTour={handleScheduleTour}
         onMakeOffer={handleMakeOffer}
         onFavorite={handleFavorite}
@@ -236,7 +237,7 @@ const Listings = () => {
         propertyAddress={selectedProperty?.address || ''}
         isSubmitting={isSubmittingFavorite}
       />
-    </>
+    </div>
   );
 };
 

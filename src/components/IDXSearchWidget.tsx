@@ -15,32 +15,16 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
     const initializeWidget = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('Initializing IDX Quick Search Widget...');
+          console.log('Initializing IDX Quick Search Widget with location-only configuration...');
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Create script element with the enhanced widget configuration for location-only search
-          const script = document.createElement('script');
-          script.innerHTML = `
-            document.currentScript.replaceWith(ihfKestrel.render({
-              "component": "quickSearchWidget",
-              "style": "horizontal",
-              "propertyType": false,
-              "searchType": "location",
-              "fields": ["location"],
-              "hideFilters": true,
-              "placeholder": "Enter city, neighborhood, or zip code",
-              "autoComplete": true,
-              "showAdvancedSearch": false
-            }));
-          `;
-          
-          containerRef.current.appendChild(script);
-          
-          // Enhanced styling to hide non-location elements and optimize for location search
-          const style = document.createElement('style');
-          style.textContent = `
+          // Create persistent style element first
+          const persistentStyle = document.createElement('style');
+          persistentStyle.id = 'idx-location-only-styles';
+          persistentStyle.textContent = `
+            /* Core widget styling */
             .ihf-quick-search-widget {
               background: white !important;
               border-radius: 1rem !important;
@@ -76,21 +60,45 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
               background: rgb(0 0 0) !important;
               transform: scale(1.02) !important;
             }
-            /* Hide any non-location search elements */
+            
+            /* Aggressively hide ALL non-location elements */
             .ihf-quick-search-widget select,
             .ihf-quick-search-widget .property-type,
             .ihf-quick-search-widget .price-range,
             .ihf-quick-search-widget .beds-baths,
             .ihf-quick-search-widget .advanced-filters,
-            .ihf-quick-search-widget .filter-dropdown {
+            .ihf-quick-search-widget .filter-dropdown,
+            .ihf-quick-search-widget .ihf-price-field,
+            .ihf-quick-search-widget .ihf-beds-field,
+            .ihf-quick-search-widget .ihf-baths-field,
+            .ihf-quick-search-widget .ihf-property-type-field,
+            .ihf-quick-search-widget .ihf-min-price,
+            .ihf-quick-search-widget .ihf-max-price,
+            .ihf-quick-search-widget .ihf-bedrooms,
+            .ihf-quick-search-widget .ihf-bathrooms,
+            .ihf-quick-search-widget [class*="price"],
+            .ihf-quick-search-widget [class*="bed"],
+            .ihf-quick-search-widget [class*="bath"],
+            .ihf-quick-search-widget [class*="type"],
+            .ihf-quick-search-widget [class*="filter"]:not([class*="location"]) {
               display: none !important;
+              visibility: hidden !important;
+              opacity: 0 !important;
+              height: 0 !important;
+              width: 0 !important;
+              overflow: hidden !important;
             }
-            /* Ensure location input takes full available space */
+            
+            /* Ensure location input takes full space */
             .ihf-quick-search-widget .location-input,
-            .ihf-quick-search-widget input[type="text"] {
+            .ihf-quick-search-widget input[type="text"],
+            .ihf-quick-search-widget .ihf-location-field,
+            .ihf-quick-search-widget [class*="location"] input {
               flex: 1 !important;
               min-width: 200px !important;
+              width: 100% !important;
             }
+            
             @media (max-width: 640px) {
               .ihf-quick-search-widget {
                 padding: 0.75rem !important;
@@ -104,9 +112,74 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
               }
             }
           `;
-          document.head.appendChild(style);
           
-          console.log('IDX Quick Search Widget initialized successfully with location-only search');
+          // Remove existing style if present and add new one
+          const existingStyle = document.getElementById('idx-location-only-styles');
+          if (existingStyle) {
+            existingStyle.remove();
+          }
+          document.head.appendChild(persistentStyle);
+          
+          // Create script element with location-only configuration
+          const script = document.createElement('script');
+          script.innerHTML = `
+            document.currentScript.replaceWith(ihfKestrel.render({
+              "component": "quickSearchWidget",
+              "style": "horizontal",
+              "propertyType": false,
+              "searchType": "location",
+              "fields": ["location"],
+              "hideFilters": true,
+              "placeholder": "Enter city, neighborhood, or zip code",
+              "autoComplete": true,
+              "showAdvancedSearch": false,
+              "enableFilters": false,
+              "showPropertyType": false,
+              "showPriceRange": false,
+              "showBedsBaths": false
+            }));
+          `;
+          
+          containerRef.current.appendChild(script);
+          
+          console.log('IDX Quick Search Widget initialized with location-only search');
+          
+          // Set up mutation observer to maintain location-only configuration
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Reapply our hiding styles when new elements are added
+                setTimeout(() => {
+                  const widget = containerRef.current?.querySelector('.ihf-quick-search-widget');
+                  if (widget) {
+                    // Hide any newly added non-location elements
+                    const elementsToHide = widget.querySelectorAll('select, .property-type, .price-range, .beds-baths, .advanced-filters, .filter-dropdown, [class*="price"], [class*="bed"], [class*="bath"], [class*="type"]:not([class*="location"])');
+                    elementsToHide.forEach(el => {
+                      (el as HTMLElement).style.display = 'none';
+                      (el as HTMLElement).style.visibility = 'hidden';
+                      (el as HTMLElement).style.opacity = '0';
+                    });
+                    
+                    // Ensure location input is visible and styled
+                    const locationInputs = widget.querySelectorAll('input[type="text"], .location-input, [class*="location"] input');
+                    locationInputs.forEach(input => {
+                      (input as HTMLElement).style.display = 'block';
+                      (input as HTMLElement).style.visibility = 'visible';
+                      (input as HTMLElement).style.opacity = '1';
+                    });
+                  }
+                }, 100);
+              }
+            });
+          });
+          
+          // Start observing the container
+          if (containerRef.current) {
+            observer.observe(containerRef.current, {
+              childList: true,
+              subtree: true
+            });
+          }
           
           // Set up search event listener
           const handleSearch = () => {
@@ -128,6 +201,11 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
             }
           }, 500);
           
+          // Cleanup function to disconnect observer
+          return () => {
+            observer.disconnect();
+          };
+          
         } catch (error) {
           console.error('Error initializing IDX Quick Search Widget:', error);
           if (containerRef.current) {
@@ -139,13 +217,15 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
 
     // Check if ihfKestrel is already available
     if (window.ihfKestrel) {
-      initializeWidget();
+      const cleanup = initializeWidget();
+      return cleanup;
     } else {
       // Poll for ihfKestrel availability
       const interval = setInterval(() => {
         if (window.ihfKestrel && containerRef.current) {
           clearInterval(interval);
-          initializeWidget();
+          const cleanup = initializeWidget();
+          return cleanup;
         }
       }, 100);
 
@@ -156,6 +236,8 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           containerRef.current.innerHTML = '<div class="flex items-center justify-center h-16 text-yellow-600 bg-yellow-50 rounded-xl border border-yellow-200"><p>Search widget is loading...</p></div>';
         }
       }, 10000);
+
+      return () => clearInterval(interval);
     }
   }, [navigate, onSearch]);
 

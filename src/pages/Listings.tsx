@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -8,7 +9,7 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_STYLING_CSS, extractPropertyData } from '@/utils/idxCommunication';
+import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -34,18 +35,17 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Inject safe styling CSS to enhance IDX appearance
+  // Inject CSS to hide iHomeFinder's default buttons
   useEffect(() => {
-    if (!document.querySelector('#idx-styling-styles')) {
+    if (!document.querySelector('#idx-button-hiding-styles')) {
       const styleElement = document.createElement('style');
-      styleElement.id = 'idx-styling-styles';
-      styleElement.textContent = IDX_STYLING_CSS;
+      styleElement.id = 'idx-button-hiding-styles';
+      styleElement.textContent = IDX_BUTTON_HIDING_CSS;
       document.head.appendChild(styleElement);
-      console.log('IDX styling CSS injected successfully');
     }
 
     return () => {
-      const styleElement = document.querySelector('#idx-styling-styles');
+      const styleElement = document.querySelector('#idx-button-hiding-styles');
       if (styleElement) {
         styleElement.remove();
       }
@@ -264,7 +264,7 @@ const Listings = () => {
               className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
             >
               <div className="flex items-center justify-center h-32 text-gray-500">
-                Loading MLS listings with enhanced styling...
+                Loading MLS listings with search results...
               </div>
             </div>
           </div>

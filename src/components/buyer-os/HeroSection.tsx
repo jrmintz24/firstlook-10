@@ -21,7 +21,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/lovable-uploads/6ba068d7-ca3c-43e0-941a-2123fc869f3d.png)'
+          backgroundImage: 'url(/lovable-uploads/57d76f8d-b9d6-45e0-b1db-18317cbcf150.png)'
         }}
       />
       

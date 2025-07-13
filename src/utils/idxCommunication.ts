@@ -8,35 +8,123 @@ export interface PropertyData {
   mlsId?: string;
 }
 
-// Simple CSS to hide iHomeFinder's default buttons
-export const IDX_BUTTON_HIDING_CSS = `
-/* Hide iHomeFinder's default buttons */
-.ihf-contact-buttons,
-.ihf-schedule-button,
-.ihf-request-info-button,
-.ihf-make-offer-button,
-.ihf-schedule-tour,
-.ihf-contact-agent,
-.ihf-request-info,
-button[title*="tour" i],
-button[title*="schedule" i],
-button[title*="contact" i],
-a[title*="tour" i],
-a[title*="schedule" i],
-a[title*="contact" i],
-input[value*="tour" i],
-input[value*="schedule" i],
-input[value*="contact" i] {
-  display: none !important;
+// URL normalization utility
+export const normalizeUrl = (url: string): string => {
+  // Remove double slashes but preserve protocol slashes (http://)
+  return url.replace(/([^:]\/)\/+/g, '$1');
+};
+
+// Enhanced CSS to fix styling and prevent navigation issues
+export const IDX_STYLING_CSS = `
+/* Enhanced IDX Styling */
+.ihf-results-container,
+.ihf-listing-container,
+.ihf-search-results {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-/* Hide common form elements that might be contact forms */
-.ihf-contact-form,
-.contact-form,
-[class*="contact-form"],
-form[action*="contact"],
-form[class*="contact"] {
-  display: none !important;
+/* Property cards styling */
+.ihf-grid-result,
+.ihf-listing-item {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
+  background: white !important;
+}
+
+.ihf-grid-result:hover,
+.ihf-listing-item:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Typography improvements */
+.ihf-grid-result-price,
+.ihf-listing-price {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+.ihf-grid-result-address,
+.ihf-listing-address {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+/* Property details styling */
+.ihf-grid-result-details,
+.ihf-listing-details {
+  display: flex !important;
+  gap: 1rem !important;
+  margin-top: 0.5rem !important;
+  font-size: 0.875rem !important;
+  color: #6b7280 !important;
+}
+
+/* Form and search styling */
+.ihf-search-form input,
+.ihf-quick-search input {
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+}
+
+.ihf-search-form select,
+.ihf-quick-search select {
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+}
+
+/* Button styling */
+.ihf-search-form button,
+.ihf-quick-search button,
+.ihf-btn {
+  background: #111827 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.ihf-search-form button:hover,
+.ihf-quick-search button:hover,
+.ihf-btn:hover {
+  background: #000000 !important;
+  transform: scale(1.02) !important;
+}
+
+/* Fix link URLs to prevent double slashes */
+.ihf-grid-result a[href*="//listings"],
+.ihf-listing-item a[href*="//listings"] {
+  pointer-events: none !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .ihf-grid-result,
+  .ihf-listing-item {
+    margin-bottom: 1rem !important;
+  }
+  
+  .ihf-search-form,
+  .ihf-quick-search {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .ihf-search-form input,
+  .ihf-search-form select,
+  .ihf-search-form button {
+    width: 100% !important;
+  }
 }
 `;
 
@@ -220,4 +308,36 @@ export const extractPropertyData = (): PropertyData => {
 
   console.log('Final extracted data:', data);
   return data;
+};
+
+// Function to fix IDX navigation links
+export const fixIdxNavigation = () => {
+  console.log('Fixing IDX navigation links...');
+  
+  // Find all links that might have double slash issues
+  const links = document.querySelectorAll('a[href*="listings"]');
+  
+  links.forEach((link) => {
+    const href = link.getAttribute('href');
+    if (href && href.includes('//listings')) {
+      const fixedHref = normalizeUrl(href);
+      console.log(`Fixed link: ${href} -> ${fixedHref}`);
+      link.setAttribute('href', fixedHref);
+    }
+  });
+  
+  // Override click handlers for problematic links
+  const problematicLinks = document.querySelectorAll('a[href*="//listings"], a[href*="/listings//"]');
+  
+  problematicLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (href) {
+        const fixedHref = normalizeUrl(href);
+        console.log(`Navigating to fixed URL: ${fixedHref}`);
+        window.location.href = fixedHref;
+      }
+    });
+  });
 };

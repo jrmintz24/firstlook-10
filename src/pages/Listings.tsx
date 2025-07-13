@@ -9,7 +9,7 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData } from '@/utils/idxCommunication';
+import { PropertyData, IDX_STYLING_CSS, extractPropertyData, fixIdxNavigation, normalizeUrl } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -35,17 +35,17 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Inject CSS to hide iHomeFinder's default buttons
+  // Inject CSS for IDX styling and URL fixes
   useEffect(() => {
-    if (!document.querySelector('#idx-button-hiding-styles')) {
+    if (!document.querySelector('#idx-styling-styles')) {
       const styleElement = document.createElement('style');
-      styleElement.id = 'idx-button-hiding-styles';
-      styleElement.textContent = IDX_BUTTON_HIDING_CSS;
+      styleElement.id = 'idx-styling-styles';
+      styleElement.textContent = IDX_STYLING_CSS;
       document.head.appendChild(styleElement);
     }
 
     return () => {
-      const styleElement = document.querySelector('#idx-button-hiding-styles');
+      const styleElement = document.querySelector('#idx-styling-styles');
       if (styleElement) {
         styleElement.remove();
       }
@@ -132,6 +132,12 @@ const Listings = () => {
               containerRef.current.appendChild(div);
               console.log('Widget rendered as HTML string with search integration');
             }
+
+            // Fix navigation after widget loads
+            setTimeout(() => {
+              fixIdxNavigation();
+              console.log('IDX navigation links fixed');
+            }, 1000);
           } else {
             console.error('Failed to render iHomeFinder widget');
             if (containerRef.current) {
@@ -168,6 +174,15 @@ const Listings = () => {
       }, 10000);
     }
   }, [searchParams]);
+
+  // Periodically fix navigation links
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fixIdxNavigation();
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Handle button clicks from both IDXButtonInjector and Header
   const handleScheduleTour = (propertyData: PropertyData) => {

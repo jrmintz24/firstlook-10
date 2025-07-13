@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
-import HeroSearchBar from "../home/HeroSearchBar";
+import IDXSearchWidget from "../IDXSearchWidget";
 
 interface HeroSectionProps {
   onStartTour: () => void;
@@ -37,8 +37,8 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             </p>
           </div>
 
-          {/* Hero Search Bar */}
-          <HeroSearchBar />
+          {/* IDX Search Widget */}
+          <IDXSearchWidget className="mb-12" />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

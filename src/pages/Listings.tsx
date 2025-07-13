@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -104,28 +105,32 @@ const Listings = () => {
     return () => observer.disconnect();
   }, [propertyData]);
 
-  // IDX initialization logic
+  // IDX initialization logic - enhanced to handle search results from homepage
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing widget...');
+          console.log('iHomeFinder available, initializing widget with search results...');
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Call ihfKestrel.render() directly
+          // Check if we have search parameters from the IDX search widget
+          const hasSearchParams = searchParams.toString();
+          console.log('Search parameters from IDX widget:', hasSearchParams);
+          
+          // Call ihfKestrel.render() directly - it will automatically handle search params
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
-              console.log('iHomeFinder widget loaded successfully');
+              console.log('iHomeFinder widget loaded successfully with search integration');
             } else if (typeof widgetElement === 'string') {
               const div = document.createElement('div');
               div.innerHTML = widgetElement;
               containerRef.current.appendChild(div);
-              console.log('Widget rendered as HTML string');
+              console.log('Widget rendered as HTML string with search integration');
             }
           } else {
             console.error('Failed to render iHomeFinder widget');
@@ -162,7 +167,7 @@ const Listings = () => {
         }
       }, 10000);
     }
-  }, []);
+  }, [searchParams]);
 
   // Handle button clicks from both IDXButtonInjector and Header
   const handleScheduleTour = (propertyData: PropertyData) => {
@@ -259,7 +264,7 @@ const Listings = () => {
               className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
             >
               <div className="flex items-center justify-center h-32 text-gray-500">
-                Loading MLS listings...
+                Loading MLS listings with search results...
               </div>
             </div>
           </div>

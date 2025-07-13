@@ -15,41 +15,113 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
 }) => {
   useEffect(() => {
     let retryCount = 0;
-    const maxRetries = 20;
+    const maxRetries = 30;
+    let injectionInterval: NodeJS.Timeout;
     
     const injectButtons = () => {
       retryCount++;
+      console.log(`IDX Button Injection Attempt #${retryCount}`);
       
-      // Look for IDX containers
+      // Check if buttons already exist
+      if (document.querySelector('#custom-idx-buttons')) {
+        console.log('Custom IDX buttons already exist, skipping injection');
+        return;
+      }
+      
+      // More comprehensive list of selectors to try
       const containerSelectors = [
+        // iHomeFinder specific selectors
         '.ihf-property-details',
         '.ihf-detail-container',
         '.ihf-listing-detail',
         '.ihf-grid-result-container',
         '.ihf-list-result-container',
-        '.ihf-container'
+        '.ihf-container',
+        '.ihf-detail-wrapper',
+        '.ihf-property-wrapper',
+        '.ihf-listing-wrapper',
+        
+        // Generic selectors that might work
+        '.property-details',
+        '.listing-details',
+        '.listing-container',
+        '.property-container',
+        '#property-details',
+        '#listing-details',
+        
+        // Fallback to common container patterns
+        '[class*="property"]',
+        '[class*="listing"]',
+        '[class*="detail"]',
+        'main',
+        '.main-content',
+        '#main-content'
       ];
       
       let container: Element | null = null;
+      let usedSelector = '';
+      
+      // Try each selector
       for (const selector of containerSelectors) {
-        container = document.querySelector(selector);
-        if (container) break;
+        const elements = document.querySelectorAll(selector);
+        console.log(`Trying selector "${selector}": found ${elements.length} elements`);
+        
+        if (elements.length > 0) {
+          // Use the first visible element
+          for (const element of elements) {
+            const rect = element.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              container = element;
+              usedSelector = selector;
+              break;
+            }
+          }
+          if (container) break;
+        }
       }
       
-      if (!container || document.querySelector('#custom-idx-buttons')) {
+      if (!container) {
+        console.log('No suitable container found. Available elements:');
+        // Log some info about what's available
+        const allDivs = document.querySelectorAll('div');
+        console.log(`Total div elements: ${allDivs.length}`);
+        
+        // Log elements with IDs or classes that might be relevant
+        const relevantElements = document.querySelectorAll('[id], [class*="property"], [class*="listing"], [class*="detail"], [class*="ihf"]');
+        console.log('Potentially relevant elements:', Array.from(relevantElements).map(el => ({
+          tag: el.tagName,
+          id: el.id,
+          className: el.className,
+          text: el.textContent?.substring(0, 50)
+        })));
+        
         if (retryCount < maxRetries) {
-          setTimeout(injectButtons, 500);
+          setTimeout(injectButtons, 1000);
+        } else {
+          console.log('Max retries reached, giving up on injection');
         }
         return;
       }
       
+      console.log(`Found container using selector "${usedSelector}":`, container);
+      
       // Extract property data
       const propertyData = extractPropertyData();
+      console.log('Extracted property data:', propertyData);
       
       // Create button container
       const buttonContainer = document.createElement('div');
       buttonContainer.id = 'custom-idx-buttons';
-      buttonContainer.className = 'flex gap-3 mt-4 p-4 border-t border-gray-200';
+      buttonContainer.className = 'flex gap-3 mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm';
+      
+      // Add a header to make it obvious
+      const header = document.createElement('div');
+      header.className = 'w-full mb-3 text-sm font-medium text-gray-700 border-b pb-2';
+      header.textContent = 'Quick Actions';
+      buttonContainer.appendChild(header);
+      
+      const buttonRow = document.createElement('div');
+      buttonRow.className = 'flex gap-3 w-full';
       
       // Schedule Tour Button
       const tourBtn = document.createElement('button');
@@ -60,7 +132,10 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
         </svg>
         Schedule Tour
       `;
-      tourBtn.onclick = () => onScheduleTour(propertyData);
+      tourBtn.onclick = () => {
+        console.log('Schedule Tour clicked with data:', propertyData);
+        onScheduleTour(propertyData);
+      };
       
       // Make Offer Button
       const offerBtn = document.createElement('button');
@@ -71,7 +146,10 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
         </svg>
         Make Offer
       `;
-      offerBtn.onclick = () => onMakeOffer(propertyData);
+      offerBtn.onclick = () => {
+        console.log('Make Offer clicked with data:', propertyData);
+        onMakeOffer(propertyData);
+      };
       
       // Favorite Button
       const favoriteBtn = document.createElement('button');
@@ -82,19 +160,44 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
         </svg>
         Favorite
       `;
-      favoriteBtn.onclick = () => onFavorite(propertyData);
+      favoriteBtn.onclick = () => {
+        console.log('Favorite clicked with data:', propertyData);
+        onFavorite(propertyData);
+      };
       
-      buttonContainer.appendChild(tourBtn);
-      buttonContainer.appendChild(offerBtn);
-      buttonContainer.appendChild(favoriteBtn);
+      buttonRow.appendChild(tourBtn);
+      buttonRow.appendChild(offerBtn);
+      buttonRow.appendChild(favoriteBtn);
+      buttonContainer.appendChild(buttonRow);
       
-      container.appendChild(buttonContainer);
+      // Try to append to the container
+      try {
+        container.appendChild(buttonContainer);
+        console.log('✅ IDX custom buttons injected successfully!');
+        console.log('Container used:', usedSelector);
+        console.log('Property data:', propertyData);
+      } catch (error) {
+        console.error('Error appending buttons to container:', error);
+        
+        // Fallback: try to insert at the end of body
+        document.body.appendChild(buttonContainer);
+        console.log('Buttons added to body as fallback');
+      }
       
-      console.log('IDX custom buttons injected successfully with property data:', propertyData);
+      // Clear the interval once successful
+      if (injectionInterval) {
+        clearInterval(injectionInterval);
+      }
     };
     
-    // Start injection process
-    const startTime = setTimeout(injectButtons, 1000);
+    // Start injection attempts
+    console.log('Starting IDX button injection process...');
+    
+    // Try immediately
+    setTimeout(injectButtons, 500);
+    
+    // Also set up periodic retries
+    injectionInterval = setInterval(injectButtons, 2000);
     
     // Watch for dynamic content changes
     const observer = new MutationObserver((mutations) => {
@@ -104,7 +207,11 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
           for (const node of mutation.addedNodes) {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
-              if (element.className && element.className.includes('ihf')) {
+              if (element.className && (
+                element.className.includes('ihf') || 
+                element.className.includes('property') || 
+                element.className.includes('listing')
+              )) {
                 shouldReinject = true;
                 break;
               }
@@ -114,7 +221,8 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
       });
       
       if (shouldReinject && !document.querySelector('#custom-idx-buttons')) {
-        setTimeout(injectButtons, 500);
+        console.log('Content change detected, re-injecting buttons...');
+        setTimeout(injectButtons, 1000);
       }
     });
     
@@ -124,12 +232,15 @@ const IDXButtonInjector: React.FC<IDXButtonInjectorProps> = ({
     });
     
     return () => {
-      clearTimeout(startTime);
+      if (injectionInterval) {
+        clearInterval(injectionInterval);
+      }
       observer.disconnect();
       const existingButtons = document.querySelector('#custom-idx-buttons');
       if (existingButtons) {
         existingButtons.remove();
       }
+      console.log('IDX button injector cleanup completed');
     };
   }, [onScheduleTour, onMakeOffer, onFavorite]);
   

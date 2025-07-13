@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -8,7 +9,7 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_STYLING_CSS, extractPropertyData, detectIdxPageContext } from '@/utils/idxCommunication';
+import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -34,90 +35,65 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Inject CSS for IDX styling
+  // Inject CSS to hide iHomeFinder's default buttons
   useEffect(() => {
-    if (!document.querySelector('#idx-styling-styles')) {
+    if (!document.querySelector('#idx-button-hiding-styles')) {
       const styleElement = document.createElement('style');
-      styleElement.id = 'idx-styling-styles';
-      styleElement.textContent = IDX_STYLING_CSS;
+      styleElement.id = 'idx-button-hiding-styles';
+      styleElement.textContent = IDX_BUTTON_HIDING_CSS;
       document.head.appendChild(styleElement);
     }
 
     return () => {
-      const styleElement = document.querySelector('#idx-styling-styles');
+      const styleElement = document.querySelector('#idx-button-hiding-styles');
       if (styleElement) {
         styleElement.remove();
       }
     };
   }, []);
 
-  // Extract property data for header - with context awareness
+  // Extract property data for header
   useEffect(() => {
     let retryCount = 0;
-    const maxRetries = 5; // Reduced from 20 to prevent infinite loops
-    let timeoutId: NodeJS.Timeout;
+    const maxRetries = 20;
     
     const extractData = () => {
       retryCount++;
       console.log(`PropertyActionHeader: Attempting to extract property data (attempt ${retryCount})`);
       
-      // Check page context first
-      const pageContext = detectIdxPageContext();
-      console.log(`Page context: ${pageContext}`);
+      const data = extractPropertyData();
       
-      if (pageContext === 'search') {
-        console.log('On search results page - not showing property action header');
-        setIsHeaderVisible(false);
-        setPropertyData(null);
+      // Check if we have meaningful property data
+      if (data.address && data.address.length > 10) {
+        setPropertyData(data);
+        setIsHeaderVisible(true);
+        console.log('PropertyActionHeader: Property data extracted successfully:', data);
         return;
-      }
-      
-      if (pageContext === 'unknown' && retryCount < maxRetries) {
-        console.log('Unknown page context - will retry');
-        timeoutId = setTimeout(extractData, 2000);
-        return;
-      }
-      
-      if (pageContext === 'property-detail') {
-        const data = extractPropertyData();
-        
-        // Check if we have meaningful property data
-        if (data.address && data.address.length > 10) {
-          setPropertyData(data);
-          setIsHeaderVisible(true);
-          console.log('PropertyActionHeader: Property data extracted successfully:', data);
-          return;
-        }
       }
       
       if (retryCount < maxRetries) {
-        timeoutId = setTimeout(extractData, 2000);
+        setTimeout(extractData, 1000);
       } else {
-        console.log('PropertyActionHeader: Max retries reached');
-        // Don't show header if we can't extract meaningful data
-        setIsHeaderVisible(false);
-        setPropertyData(null);
+        console.log('PropertyActionHeader: Max retries reached, showing basic header');
+        // Show header even without full data
+        setPropertyData({
+          address: 'Property Address',
+          price: '',
+          beds: '',
+          baths: '',
+          mlsId: ''
+        });
+        setIsHeaderVisible(true);
       }
     };
 
     // Start extraction after a short delay to let IDX load
-    timeoutId = setTimeout(extractData, 2000);
+    setTimeout(extractData, 2000);
     
-    // Also watch for DOM changes, but with context awareness
+    // Also watch for DOM changes
     const observer = new MutationObserver(() => {
-      const currentContext = detectIdxPageContext();
-      
-      // If we switched to a property detail page and don't have data yet, try extraction
-      if (currentContext === 'property-detail' && (!propertyData || !propertyData.address || propertyData.address === 'Property Address')) {
-        clearTimeout(timeoutId);
-        retryCount = 0; // Reset retry count for new page
+      if (!propertyData || !propertyData.address || propertyData.address === 'Property Address') {
         extractData();
-      }
-      
-      // If we switched to search results, hide the header
-      if (currentContext === 'search' && isHeaderVisible) {
-        setIsHeaderVisible(false);
-        setPropertyData(null);
       }
     });
     
@@ -126,34 +102,35 @@ const Listings = () => {
       subtree: true
     });
     
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, []); // Remove propertyData dependency to prevent re-runs
+    return () => observer.disconnect();
+  }, [propertyData]);
 
-  // IDX initialization logic - simplified
+  // IDX initialization logic - enhanced to handle search results from homepage
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing widget...');
+          console.log('iHomeFinder available, initializing widget with search results...');
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Let IDX handle search parameters naturally
+          // Check if we have search parameters from the IDX search widget
+          const hasSearchParams = searchParams.toString();
+          console.log('Search parameters from IDX widget:', hasSearchParams);
+          
+          // Call ihfKestrel.render() directly - it will automatically handle search params
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
-              console.log('iHomeFinder widget loaded successfully');
+              console.log('iHomeFinder widget loaded successfully with search integration');
             } else if (typeof widgetElement === 'string') {
               const div = document.createElement('div');
               div.innerHTML = widgetElement;
               containerRef.current.appendChild(div);
-              console.log('Widget rendered as HTML string');
+              console.log('Widget rendered as HTML string with search integration');
             }
           } else {
             console.error('Failed to render iHomeFinder widget');
@@ -287,7 +264,7 @@ const Listings = () => {
               className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
             >
               <div className="flex items-center justify-center h-32 text-gray-500">
-                Loading MLS listings...
+                Loading MLS listings with search results...
               </div>
             </div>
           </div>

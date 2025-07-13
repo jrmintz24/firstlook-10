@@ -1,3 +1,4 @@
+
 // Simplified IDX communication - just the essentials
 export interface PropertyData {
   address: string;
@@ -7,195 +8,41 @@ export interface PropertyData {
   mlsId?: string;
 }
 
-// Simplified CSS - only styling, no navigation interference
-export const IDX_STYLING_CSS = `
-/* IDX Styling - No Navigation Interference */
-.ihf-results-container,
-.ihf-listing-container,
-.ihf-search-results {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+// Simple CSS to hide iHomeFinder's default buttons
+export const IDX_BUTTON_HIDING_CSS = `
+/* Hide iHomeFinder's default buttons */
+.ihf-contact-buttons,
+.ihf-schedule-button,
+.ihf-request-info-button,
+.ihf-make-offer-button,
+.ihf-schedule-tour,
+.ihf-contact-agent,
+.ihf-request-info,
+button[title*="tour" i],
+button[title*="schedule" i],
+button[title*="contact" i],
+a[title*="tour" i],
+a[title*="schedule" i],
+a[title*="contact" i],
+input[value*="tour" i],
+input[value*="schedule" i],
+input[value*="contact" i] {
+  display: none !important;
 }
 
-/* Property cards styling */
-.ihf-grid-result,
-.ihf-listing-item {
-  border: 1px solid #e5e7eb !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  transition: all 0.2s ease !important;
-  background: white !important;
-}
-
-.ihf-grid-result:hover,
-.ihf-listing-item:hover {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
-  transform: translateY(-2px) !important;
-}
-
-/* Typography improvements */
-.ihf-grid-result-price,
-.ihf-listing-price {
-  font-size: 1.25rem !important;
-  font-weight: 600 !important;
-  color: #111827 !important;
-}
-
-.ihf-grid-result-address,
-.ihf-listing-address {
-  color: #6b7280 !important;
-  font-size: 0.875rem !important;
-  line-height: 1.25rem !important;
-}
-
-/* Property details styling */
-.ihf-grid-result-details,
-.ihf-listing-details {
-  display: flex !important;
-  gap: 1rem !important;
-  margin-top: 0.5rem !important;
-  font-size: 0.875rem !important;
-  color: #6b7280 !important;
-}
-
-/* Form and search styling */
-.ihf-search-form input,
-.ihf-quick-search input {
-  border: 1px solid #d1d5db !important;
-  border-radius: 8px !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 1rem !important;
-}
-
-.ihf-search-form select,
-.ihf-quick-search select {
-  border: 1px solid #d1d5db !important;
-  border-radius: 8px !important;
-  padding: 0.75rem 1rem !important;
-}
-
-/* Button styling */
-.ihf-search-form button,
-.ihf-quick-search button,
-.ihf-btn {
-  background: #111827 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 0.75rem 1.5rem !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.ihf-search-form button:hover,
-.ihf-quick-search button:hover,
-.ihf-btn:hover {
-  background: #000000 !important;
-  transform: scale(1.02) !important;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .ihf-grid-result,
-  .ihf-listing-item {
-    margin-bottom: 1rem !important;
-  }
-  
-  .ihf-search-form,
-  .ihf-quick-search {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-  
-  .ihf-search-form input,
-  .ihf-search-form select,
-  .ihf-search-form button {
-    width: 100% !important;
-  }
+/* Hide common form elements that might be contact forms */
+.ihf-contact-form,
+.contact-form,
+[class*="contact-form"],
+form[action*="contact"],
+form[class*="contact"] {
+  display: none !important;
 }
 `;
 
-// Detect what type of IDX page we're currently on
-export const detectIdxPageContext = (): 'search' | 'property-detail' | 'unknown' => {
-  console.log('Detecting IDX page context...');
-  
-  // Check URL patterns first
-  const url = window.location.href;
-  const pathname = window.location.pathname;
-  
-  // Check for common property detail URL patterns
-  if (url.includes('/property/') || url.includes('/listing/') || url.includes('/detail/')) {
-    console.log('URL indicates property detail page');
-    return 'property-detail';
-  }
-  
-  // Check page title patterns
-  const title = document.title.toLowerCase();
-  if (title.includes('property search') || title.includes('search results') || title.includes('listings')) {
-    console.log('Title indicates search results page');
-    return 'search';
-  }
-  
-  // Check for IDX-specific elements that indicate page type
-  const hasSearchResults = document.querySelector('.ihf-results-container, .ihf-search-results, .ihf-grid-results, .ihf-list-results');
-  const hasPropertyDetail = document.querySelector('.ihf-property-details, .ihf-detail-container, .ihf-listing-detail');
-  
-  if (hasPropertyDetail) {
-    console.log('DOM indicates property detail page');
-    return 'property-detail';
-  }
-  
-  if (hasSearchResults) {
-    console.log('DOM indicates search results page');
-    return 'search';
-  }
-  
-  // Check for specific property detail indicators
-  const hasDetailSelectors = document.querySelector('.ihf-detail-address, .ihf-detail-price, .ihf-detail-beds, .ihf-detail-baths');
-  if (hasDetailSelectors) {
-    console.log('Property detail selectors found');
-    return 'property-detail';
-  }
-  
-  // Default based on pathname
-  if (pathname === '/listings' || pathname === '/idx') {
-    console.log('Default to search based on pathname');
-    return 'search';
-  }
-  
-  console.log('Unable to determine page context');
-  return 'unknown';
-};
-
-// Extract property data from IDX DOM - only on property detail pages
+// Extract property data from IDX DOM
 export const extractPropertyData = (): PropertyData => {
   console.log('Starting property data extraction...');
-  
-  // First check if we should even attempt extraction
-  const pageContext = detectIdxPageContext();
-  if (pageContext === 'search') {
-    console.log('On search results page - skipping property data extraction');
-    return {
-      address: '',
-      price: '',
-      beds: '',
-      baths: '',
-      mlsId: ''
-    };
-  }
-  
-  if (pageContext === 'unknown') {
-    console.log('Unknown page context - skipping property data extraction');
-    return {
-      address: '',
-      price: '',
-      beds: '',
-      baths: '',
-      mlsId: ''
-    };
-  }
-  
-  console.log('On property detail page - proceeding with extraction');
   
   const data: PropertyData = {
     address: '',

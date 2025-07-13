@@ -5,15 +5,10 @@ import ListingHead from '@/components/listings/ListingHead';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
+import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  IDX_SCHEDULE_TOUR_EVENT, 
-  IDX_MAKE_OFFER_EVENT, 
-  IDX_FAVORITE_EVENT, 
-  PropertyData, 
-  IDX_CUSTOM_CSS 
-} from '@/utils/idxCommunication';
+import { PropertyData, IDX_BUTTON_HIDING_CSS } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -35,53 +30,21 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Handle all custom events from IDX
+  // Inject CSS to hide iHomeFinder's default buttons
   useEffect(() => {
-    const handleTourScheduling = (event: CustomEvent<PropertyData>) => {
-      console.log('Tour scheduling triggered:', event.detail);
-      setSelectedProperty(event.detail);
-      setIsTourModalOpen(true);
-    };
+    if (!document.querySelector('#idx-button-hiding-styles')) {
+      const styleElement = document.createElement('style');
+      styleElement.id = 'idx-button-hiding-styles';
+      styleElement.textContent = IDX_BUTTON_HIDING_CSS;
+      document.head.appendChild(styleElement);
+    }
 
-    const handleMakeOffer = (event: CustomEvent<PropertyData>) => {
-      console.log('Make offer triggered:', event.detail);
-      setSelectedProperty(event.detail);
-      setIsOfferModalOpen(true);
-    };
-
-    const handleFavorite = (event: CustomEvent<PropertyData>) => {
-      console.log('Favorite triggered:', event.detail);
-      setSelectedProperty(event.detail);
-      setIsFavoriteModalOpen(true);
-    };
-
-    window.addEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
-    window.addEventListener(IDX_MAKE_OFFER_EVENT, handleMakeOffer as EventListener);
-    window.addEventListener(IDX_FAVORITE_EVENT, handleFavorite as EventListener);
-    
     return () => {
-      window.removeEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
-      window.removeEventListener(IDX_MAKE_OFFER_EVENT, handleMakeOffer as EventListener);
-      window.removeEventListener(IDX_FAVORITE_EVENT, handleFavorite as EventListener);
-    };
-  }, []);
-
-  // Inject custom CSS into IDX
-  useEffect(() => {
-    const injectCustomCSS = () => {
-      // Inject CSS only
-      if (!document.querySelector('#idx-custom-styles')) {
-        const styleElement = document.createElement('style');
-        styleElement.id = 'idx-custom-styles';
-        styleElement.textContent = IDX_CUSTOM_CSS;
-        document.head.appendChild(styleElement);
+      const styleElement = document.querySelector('#idx-button-hiding-styles');
+      if (styleElement) {
+        styleElement.remove();
       }
     };
-
-    // Inject CSS after a short delay to ensure IDX is loaded
-    const timer = setTimeout(injectCustomCSS, 1000);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   // IDX initialization logic
@@ -89,75 +52,46 @@ const Listings = () => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing widget directly...');
-          console.log('ihfKestrel config:', window.ihfKestrel.config);
-          console.log('ihfKestrel render function:', typeof window.ihfKestrel.render);
+          console.log('iHomeFinder available, initializing widget...');
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Call ihfKestrel.render() directly and handle the returned element
+          // Call ihfKestrel.render() directly
           const widgetElement = window.ihfKestrel.render();
           
-          console.log('Widget element returned:', widgetElement);
-          console.log('Widget element type:', typeof widgetElement);
-          console.log('Widget element tagName:', widgetElement?.tagName);
-          
           if (widgetElement && containerRef.current) {
-            // If it's a DOM element, append it directly
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
-              console.log('iHomeFinder widget appended successfully');
-              
-            } else {
-              console.error('Widget element is not a valid DOM element:', widgetElement);
-              // Try to create a div and set innerHTML if it's a string
-              if (typeof widgetElement === 'string') {
-                const div = document.createElement('div');
-                div.innerHTML = widgetElement;
-                containerRef.current.appendChild(div);
-                console.log('Widget rendered as HTML string');
-              }
+              console.log('iHomeFinder widget loaded successfully');
+            } else if (typeof widgetElement === 'string') {
+              const div = document.createElement('div');
+              div.innerHTML = widgetElement;
+              containerRef.current.appendChild(div);
+              console.log('Widget rendered as HTML string');
             }
           } else {
-            console.error('Failed to render iHomeFinder widget - no widget returned or container missing');
-            console.log('Container exists:', !!containerRef.current);
-            console.log('Widget returned:', !!widgetElement);
-            
-            // Show error message in container
+            console.error('Failed to render iHomeFinder widget');
             if (containerRef.current) {
               containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Failed to load IDX widget. Please check configuration.</p></div>';
             }
           }
         } catch (error) {
           console.error('Error initializing iHomeFinder widget:', error);
-          console.error('Error details:', {
-            message: error.message,
-            stack: error.stack
-          });
-          
-          // Show error message in container
           if (containerRef.current) {
             containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Error loading IDX widget. Check console for details.</p></div>';
           }
         }
-      } else {
-        console.log('iHomeFinder not ready yet. ihfKestrel available:', !!window.ihfKestrel);
-        console.log('Container available:', !!containerRef.current);
       }
     };
 
     // Check if iHomeFinder is already available
     if (window.ihfKestrel) {
-      console.log('iHomeFinder already available, initializing immediately');
       initializeIDX();
     } else {
-      // Poll for ihfKestrel availability with more detailed logging
-      console.log('Polling for iHomeFinder availability...');
+      // Poll for ihfKestrel availability
       const interval = setInterval(() => {
-        console.log('Checking for ihfKestrel...', !!window.ihfKestrel);
         if (window.ihfKestrel && containerRef.current) {
-          console.log('iHomeFinder now available, clearing interval');
           clearInterval(interval);
           initializeIDX();
         }
@@ -166,15 +100,31 @@ const Listings = () => {
       // Cleanup after 10 seconds
       setTimeout(() => {
         clearInterval(interval);
-        if (!window.ihfKestrel) {
-          console.error('iHomeFinder failed to load after 10 seconds');
-          if (containerRef.current) {
-            containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-yellow-600"><p>IDX widget is taking longer than expected to load. Please refresh the page.</p></div>';
-          }
+        if (!window.ihfKestrel && containerRef.current) {
+          containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-yellow-600"><p>IDX widget is taking longer than expected to load. Please refresh the page.</p></div>';
         }
       }, 10000);
     }
   }, []);
+
+  // Handle button clicks from IDXButtonInjector
+  const handleScheduleTour = (propertyData: PropertyData) => {
+    console.log('Schedule tour clicked:', propertyData);
+    setSelectedProperty(propertyData);
+    setIsTourModalOpen(true);
+  };
+
+  const handleMakeOffer = (propertyData: PropertyData) => {
+    console.log('Make offer clicked:', propertyData);
+    setSelectedProperty(propertyData);
+    setIsOfferModalOpen(true);
+  };
+
+  const handleFavorite = (propertyData: PropertyData) => {
+    console.log('Favorite clicked:', propertyData);
+    setSelectedProperty(propertyData);
+    setIsFavoriteModalOpen(true);
+  };
 
   // Handle favorite save
   const handleSaveFavorite = async (notes?: string) => {
@@ -219,8 +169,6 @@ const Listings = () => {
     }
   };
 
-  const pageTitle = listingAddress ? `${listingAddress} - Property Details` : 'Property Search';
-
   return (
     <>
       <ListingHead 
@@ -230,6 +178,7 @@ const Listings = () => {
         listingPhotoWidth={listingPhotoWidth}
         listingPhotoHeight={listingPhotoHeight}
       />
+      
       <div 
         ref={containerRef}
         className="w-full min-h-screen"
@@ -238,6 +187,13 @@ const Listings = () => {
           Loading MLS listings...
         </div>
       </div>
+      
+      {/* IDX Button Injector */}
+      <IDXButtonInjector
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+      />
       
       {/* Tour Scheduling Modal */}
       <ModernTourSchedulingModal

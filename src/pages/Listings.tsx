@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -170,33 +171,44 @@ const Listings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <ListingHead 
-        listingAddress={listingAddress}
-        listingCity={listingCity}
-        listingPhotoUrl={listingPhotoUrl}
-        listingPhotoWidth={listingPhotoWidth}
-        listingPhotoHeight={listingPhotoHeight}
-      />
-      
-      {/* Main Content with Sidebar Layout */}
-      <div className="flex">
-        {/* IDX Content Area */}
-        <div 
-          ref={containerRef}
-          className="flex-1 lg:mr-80 min-h-screen"
-        >
-          <div className="flex items-center justify-center h-32 text-gray-500">
-            Loading MLS listings...
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto">
+          <ListingHead 
+            listingAddress={listingAddress}
+            listingCity={listingCity}
+            listingPhotoUrl={listingPhotoUrl}
+            listingPhotoWidth={listingPhotoWidth}
+            listingPhotoHeight={listingPhotoHeight}
+          />
         </div>
+      </div>
+      
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto relative">
+        <div className="flex">
+          {/* IDX Content Area - Main Content */}
+          <div className="flex-1 min-h-screen bg-white shadow-lg">
+            <div className="p-4 lg:p-8">
+              <div 
+                ref={containerRef}
+                className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
+              >
+                <div className="flex items-center justify-center h-32 text-gray-500">
+                  Loading MLS listings...
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Listing Sidebar */}
-        <ListingSidebar
-          onScheduleTour={handleScheduleTour}
-          onMakeOffer={handleMakeOffer}
-          onFavorite={handleFavorite}
-        />
+          {/* Listing Sidebar - Right Panel */}
+          <ListingSidebar
+            onScheduleTour={handleScheduleTour}
+            onMakeOffer={handleMakeOffer}
+            onFavorite={handleFavorite}
+          />
+        </div>
       </div>
       
       {/* IDX Button Injector */}

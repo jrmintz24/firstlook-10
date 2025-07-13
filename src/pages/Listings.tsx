@@ -6,10 +6,9 @@ import PropertyActionHeader from '@/components/listings/PropertyActionHeader';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
-import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData } from '@/utils/idxCommunication';
+import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData, isPropertyDetailPage } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -52,124 +51,75 @@ const Listings = () => {
     };
   }, []);
 
-  // Extract property data for header
+  // Simple IDX initialization using the provided script approach
   useEffect(() => {
-    let retryCount = 0;
-    const maxRetries = 20;
-    
-    const extractData = () => {
-      retryCount++;
-      console.log(`PropertyActionHeader: Attempting to extract property data (attempt ${retryCount})`);
-      
-      const data = extractPropertyData();
-      
-      // Check if we have meaningful property data
-      if (data.address && data.address.length > 10) {
-        setPropertyData(data);
-        setIsHeaderVisible(true);
-        console.log('PropertyActionHeader: Property data extracted successfully:', data);
-        return;
-      }
-      
-      if (retryCount < maxRetries) {
-        setTimeout(extractData, 1000);
-      } else {
-        console.log('PropertyActionHeader: Max retries reached, showing basic header');
-        // Show header even without full data
-        setPropertyData({
-          address: 'Property Address',
-          price: '',
-          beds: '',
-          baths: '',
-          mlsId: ''
-        });
-        setIsHeaderVisible(true);
-      }
-    };
-
-    // Start extraction after a short delay to let IDX load
-    setTimeout(extractData, 2000);
-    
-    // Also watch for DOM changes
-    const observer = new MutationObserver(() => {
-      if (!propertyData || !propertyData.address || propertyData.address === 'Property Address') {
-        extractData();
-      }
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    
-    return () => observer.disconnect();
-  }, [propertyData]);
-
-  // IDX initialization logic - enhanced to handle search results from homepage
-  useEffect(() => {
-    const initializeIDX = () => {
-      if (containerRef.current && window.ihfKestrel) {
-        try {
-          console.log('iHomeFinder available, initializing widget with search results...');
-          
-          // Clear the container first
-          containerRef.current.innerHTML = '';
-          
-          // Check if we have search parameters from the IDX search widget
-          const hasSearchParams = searchParams.toString();
-          console.log('Search parameters from IDX widget:', hasSearchParams);
-          
-          // Call ihfKestrel.render() directly - it will automatically handle search params
-          const widgetElement = window.ihfKestrel.render();
-          
-          if (widgetElement && containerRef.current) {
-            if (widgetElement instanceof HTMLElement) {
-              containerRef.current.appendChild(widgetElement);
-              console.log('iHomeFinder widget loaded successfully with search integration');
-            } else if (typeof widgetElement === 'string') {
-              const div = document.createElement('div');
-              div.innerHTML = widgetElement;
-              containerRef.current.appendChild(div);
-              console.log('Widget rendered as HTML string with search integration');
-            }
-          } else {
-            console.error('Failed to render iHomeFinder widget');
-            if (containerRef.current) {
-              containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Failed to load IDX widget. Please check configuration.</p></div>';
-            }
+    if (containerRef.current && window.ihfKestrel) {
+      try {
+        console.log('Initializing IDX widget...');
+        containerRef.current.innerHTML = '';
+        
+        // Use the simple approach: document.currentScript.replaceWith(ihfKestrel.render());
+        const widgetElement = window.ihfKestrel.render();
+        
+        if (widgetElement && containerRef.current) {
+          if (widgetElement instanceof HTMLElement) {
+            containerRef.current.appendChild(widgetElement);
+          } else if (typeof widgetElement === 'string') {
+            containerRef.current.innerHTML = widgetElement;
           }
-        } catch (error) {
-          console.error('Error initializing iHomeFinder widget:', error);
-          if (containerRef.current) {
-            containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Error loading IDX widget. Check console for details.</p></div>';
-          }
+          console.log('IDX widget loaded successfully');
+        }
+      } catch (error) {
+        console.error('Error initializing IDX widget:', error);
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600"><p>Error loading IDX widget.</p></div>';
         }
       }
-    };
-
-    // Check if iHomeFinder is already available
-    if (window.ihfKestrel) {
-      initializeIDX();
-    } else {
-      // Poll for ihfKestrel availability
+    } else if (!window.ihfKestrel) {
+      // Simple polling for ihfKestrel availability
       const interval = setInterval(() => {
         if (window.ihfKestrel && containerRef.current) {
           clearInterval(interval);
-          initializeIDX();
+          // Trigger re-render
+          setPropertyData(prev => ({ ...prev }));
         }
-      }, 100);
+      }, 500);
 
-      // Cleanup after 10 seconds
-      setTimeout(() => {
-        clearInterval(interval);
-        if (!window.ihfKestrel && containerRef.current) {
-          containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-yellow-600"><p>IDX widget is taking longer than expected to load. Please refresh the page.</p></div>';
-        }
-      }, 10000);
+      setTimeout(() => clearInterval(interval), 10000);
     }
-  }, [searchParams]);
+  }, []);
 
-  // Handle button clicks from both IDXButtonInjector and Header
+  // Simple property data extraction - only on detail pages
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const checkForPropertyData = () => {
+      if (isPropertyDetailPage()) {
+        const data = extractPropertyData();
+        if (data.address && data.address.length > 10) {
+          setPropertyData(data);
+          setIsHeaderVisible(true);
+          console.log('Property data extracted:', data);
+        } else {
+          // Simple retry after 2 seconds if on detail page but no data yet
+          timeoutId = setTimeout(checkForPropertyData, 2000);
+        }
+      } else {
+        // Not on detail page, hide header
+        setIsHeaderVisible(false);
+        setPropertyData(null);
+      }
+    };
+
+    // Initial check after IDX loads
+    timeoutId = setTimeout(checkForPropertyData, 3000);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Handle button clicks from Header
   const handleScheduleTour = (propertyData: PropertyData) => {
     console.log('Schedule tour clicked:', propertyData);
     setSelectedProperty(propertyData);
@@ -246,14 +196,16 @@ const Listings = () => {
         </div>
       </div>
 
-      {/* Property Action Header */}
-      <PropertyActionHeader
-        propertyData={propertyData}
-        onScheduleTour={handleScheduleTour}
-        onMakeOffer={handleMakeOffer}
-        onFavorite={handleFavorite}
-        isVisible={isHeaderVisible}
-      />
+      {/* Property Action Header - Only show on detail pages */}
+      {isHeaderVisible && (
+        <PropertyActionHeader
+          propertyData={propertyData}
+          onScheduleTour={handleScheduleTour}
+          onMakeOffer={handleMakeOffer}
+          onFavorite={handleFavorite}
+          isVisible={isHeaderVisible}
+        />
+      )}
       
       {/* Main Content Area - Full Width */}
       <div className="max-w-7xl mx-auto">
@@ -264,19 +216,12 @@ const Listings = () => {
               className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
             >
               <div className="flex items-center justify-center h-32 text-gray-500">
-                Loading MLS listings with search results...
+                Loading MLS listings...
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* IDX Button Injector */}
-      <IDXButtonInjector
-        onScheduleTour={handleScheduleTour}
-        onMakeOffer={handleMakeOffer}
-        onFavorite={handleFavorite}
-      />
       
       {/* Tour Scheduling Modal */}
       <ModernTourSchedulingModal

@@ -8,15 +8,9 @@ export interface PropertyData {
   mlsId?: string;
 }
 
-// URL normalization utility
-export const normalizeUrl = (url: string): string => {
-  // Remove double slashes but preserve protocol slashes (http://)
-  return url.replace(/([^:]\/)\/+/g, '$1');
-};
-
-// Enhanced CSS to fix styling and prevent navigation issues
+// Simplified CSS - only styling, no navigation interference
 export const IDX_STYLING_CSS = `
-/* Enhanced IDX Styling */
+/* IDX Styling - No Navigation Interference */
 .ihf-results-container,
 .ihf-listing-container,
 .ihf-search-results {
@@ -99,12 +93,6 @@ export const IDX_STYLING_CSS = `
 .ihf-btn:hover {
   background: #000000 !important;
   transform: scale(1.02) !important;
-}
-
-/* Fix link URLs to prevent double slashes */
-.ihf-grid-result a[href*="//listings"],
-.ihf-listing-item a[href*="//listings"] {
-  pointer-events: none !important;
 }
 
 /* Responsive design */
@@ -308,36 +296,4 @@ export const extractPropertyData = (): PropertyData => {
 
   console.log('Final extracted data:', data);
   return data;
-};
-
-// Function to fix IDX navigation links
-export const fixIdxNavigation = () => {
-  console.log('Fixing IDX navigation links...');
-  
-  // Find all links that might have double slash issues
-  const links = document.querySelectorAll('a[href*="listings"]');
-  
-  links.forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href && href.includes('//listings')) {
-      const fixedHref = normalizeUrl(href);
-      console.log(`Fixed link: ${href} -> ${fixedHref}`);
-      link.setAttribute('href', fixedHref);
-    }
-  });
-  
-  // Override click handlers for problematic links
-  const problematicLinks = document.querySelectorAll('a[href*="//listings"], a[href*="/listings//"]');
-  
-  problematicLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      if (href) {
-        const fixedHref = normalizeUrl(href);
-        console.log(`Navigating to fixed URL: ${fixedHref}`);
-        window.location.href = fixedHref;
-      }
-    });
-  });
 };

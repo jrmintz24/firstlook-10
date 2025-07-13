@@ -9,7 +9,7 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_STYLING_CSS, extractPropertyData, fixIdxNavigation, normalizeUrl } from '@/utils/idxCommunication';
+import { PropertyData, IDX_STYLING_CSS, extractPropertyData } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -35,7 +35,7 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Inject CSS for IDX styling and URL fixes
+  // Inject CSS for IDX styling
   useEffect(() => {
     if (!document.querySelector('#idx-styling-styles')) {
       const styleElement = document.createElement('style');
@@ -105,39 +105,29 @@ const Listings = () => {
     return () => observer.disconnect();
   }, [propertyData]);
 
-  // IDX initialization logic - enhanced to handle search results from homepage
+  // IDX initialization logic - simplified
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('iHomeFinder available, initializing widget with search results...');
+          console.log('iHomeFinder available, initializing widget...');
           
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Check if we have search parameters from the IDX search widget
-          const hasSearchParams = searchParams.toString();
-          console.log('Search parameters from IDX widget:', hasSearchParams);
-          
-          // Call ihfKestrel.render() directly - it will automatically handle search params
+          // Let IDX handle search parameters naturally
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
             if (widgetElement instanceof HTMLElement) {
               containerRef.current.appendChild(widgetElement);
-              console.log('iHomeFinder widget loaded successfully with search integration');
+              console.log('iHomeFinder widget loaded successfully');
             } else if (typeof widgetElement === 'string') {
               const div = document.createElement('div');
               div.innerHTML = widgetElement;
               containerRef.current.appendChild(div);
-              console.log('Widget rendered as HTML string with search integration');
+              console.log('Widget rendered as HTML string');
             }
-
-            // Fix navigation after widget loads
-            setTimeout(() => {
-              fixIdxNavigation();
-              console.log('IDX navigation links fixed');
-            }, 1000);
           } else {
             console.error('Failed to render iHomeFinder widget');
             if (containerRef.current) {
@@ -174,15 +164,6 @@ const Listings = () => {
       }, 10000);
     }
   }, [searchParams]);
-
-  // Periodically fix navigation links
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fixIdxNavigation();
-    }, 2000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   // Handle button clicks from both IDXButtonInjector and Header
   const handleScheduleTour = (propertyData: PropertyData) => {
@@ -279,7 +260,7 @@ const Listings = () => {
               className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
             >
               <div className="flex items-center justify-center h-32 text-gray-500">
-                Loading MLS listings with search results...
+                Loading MLS listings...
               </div>
             </div>
           </div>

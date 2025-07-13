@@ -20,19 +20,25 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Create script element with the updated widget configuration
+          // Create script element with the enhanced widget configuration for location-only search
           const script = document.createElement('script');
           script.innerHTML = `
             document.currentScript.replaceWith(ihfKestrel.render({
               "component": "quickSearchWidget",
               "style": "horizontal",
-              "propertyType": false
+              "propertyType": false,
+              "searchType": "location",
+              "fields": ["location"],
+              "hideFilters": true,
+              "placeholder": "Enter city, neighborhood, or zip code",
+              "autoComplete": true,
+              "showAdvancedSearch": false
             }));
           `;
           
           containerRef.current.appendChild(script);
           
-          // Add custom styling to match our design
+          // Enhanced styling to hide non-location elements and optimize for location search
           const style = document.createElement('style');
           style.textContent = `
             .ihf-quick-search-widget {
@@ -70,6 +76,21 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
               background: rgb(0 0 0) !important;
               transform: scale(1.02) !important;
             }
+            /* Hide any non-location search elements */
+            .ihf-quick-search-widget select,
+            .ihf-quick-search-widget .property-type,
+            .ihf-quick-search-widget .price-range,
+            .ihf-quick-search-widget .beds-baths,
+            .ihf-quick-search-widget .advanced-filters,
+            .ihf-quick-search-widget .filter-dropdown {
+              display: none !important;
+            }
+            /* Ensure location input takes full available space */
+            .ihf-quick-search-widget .location-input,
+            .ihf-quick-search-widget input[type="text"] {
+              flex: 1 !important;
+              min-width: 200px !important;
+            }
             @media (max-width: 640px) {
               .ihf-quick-search-widget {
                 padding: 0.75rem !important;
@@ -85,11 +106,11 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           `;
           document.head.appendChild(style);
           
-          console.log('IDX Quick Search Widget initialized successfully with horizontal style');
+          console.log('IDX Quick Search Widget initialized successfully with location-only search');
           
           // Set up search event listener
           const handleSearch = () => {
-            console.log('IDX search initiated, navigating to listings...');
+            console.log('IDX location search initiated, navigating to listings...');
             navigate('/listings');
             onSearch?.();
           };
@@ -145,7 +166,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
         className="min-h-[60px] flex items-center justify-center"
       >
         <div className="flex items-center justify-center h-16 text-gray-500">
-          Loading search widget...
+          Loading location search...
         </div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -9,7 +8,7 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import IDXButtonInjector from '@/components/IDXButtonInjector';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_STYLING_CSS, extractPropertyData } from '@/utils/idxCommunication';
+import { PropertyData, IDX_STYLING_CSS, extractPropertyData, detectIdxPageContext } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -52,48 +51,73 @@ const Listings = () => {
     };
   }, []);
 
-  // Extract property data for header
+  // Extract property data for header - with context awareness
   useEffect(() => {
     let retryCount = 0;
-    const maxRetries = 20;
+    const maxRetries = 5; // Reduced from 20 to prevent infinite loops
+    let timeoutId: NodeJS.Timeout;
     
     const extractData = () => {
       retryCount++;
       console.log(`PropertyActionHeader: Attempting to extract property data (attempt ${retryCount})`);
       
-      const data = extractPropertyData();
+      // Check page context first
+      const pageContext = detectIdxPageContext();
+      console.log(`Page context: ${pageContext}`);
       
-      // Check if we have meaningful property data
-      if (data.address && data.address.length > 10) {
-        setPropertyData(data);
-        setIsHeaderVisible(true);
-        console.log('PropertyActionHeader: Property data extracted successfully:', data);
+      if (pageContext === 'search') {
+        console.log('On search results page - not showing property action header');
+        setIsHeaderVisible(false);
+        setPropertyData(null);
         return;
       }
       
+      if (pageContext === 'unknown' && retryCount < maxRetries) {
+        console.log('Unknown page context - will retry');
+        timeoutId = setTimeout(extractData, 2000);
+        return;
+      }
+      
+      if (pageContext === 'property-detail') {
+        const data = extractPropertyData();
+        
+        // Check if we have meaningful property data
+        if (data.address && data.address.length > 10) {
+          setPropertyData(data);
+          setIsHeaderVisible(true);
+          console.log('PropertyActionHeader: Property data extracted successfully:', data);
+          return;
+        }
+      }
+      
       if (retryCount < maxRetries) {
-        setTimeout(extractData, 1000);
+        timeoutId = setTimeout(extractData, 2000);
       } else {
-        console.log('PropertyActionHeader: Max retries reached, showing basic header');
-        // Show header even without full data
-        setPropertyData({
-          address: 'Property Address',
-          price: '',
-          beds: '',
-          baths: '',
-          mlsId: ''
-        });
-        setIsHeaderVisible(true);
+        console.log('PropertyActionHeader: Max retries reached');
+        // Don't show header if we can't extract meaningful data
+        setIsHeaderVisible(false);
+        setPropertyData(null);
       }
     };
 
     // Start extraction after a short delay to let IDX load
-    setTimeout(extractData, 2000);
+    timeoutId = setTimeout(extractData, 2000);
     
-    // Also watch for DOM changes
+    // Also watch for DOM changes, but with context awareness
     const observer = new MutationObserver(() => {
-      if (!propertyData || !propertyData.address || propertyData.address === 'Property Address') {
+      const currentContext = detectIdxPageContext();
+      
+      // If we switched to a property detail page and don't have data yet, try extraction
+      if (currentContext === 'property-detail' && (!propertyData || !propertyData.address || propertyData.address === 'Property Address')) {
+        clearTimeout(timeoutId);
+        retryCount = 0; // Reset retry count for new page
         extractData();
+      }
+      
+      // If we switched to search results, hide the header
+      if (currentContext === 'search' && isHeaderVisible) {
+        setIsHeaderVisible(false);
+        setPropertyData(null);
       }
     });
     
@@ -102,8 +126,11 @@ const Listings = () => {
       subtree: true
     });
     
-    return () => observer.disconnect();
-  }, [propertyData]);
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, []); // Remove propertyData dependency to prevent re-runs
 
   // IDX initialization logic - simplified
   useEffect(() => {

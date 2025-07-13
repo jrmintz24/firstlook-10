@@ -1,4 +1,3 @@
-
 // Simplified IDX communication - just the essentials
 export interface PropertyData {
   address: string;
@@ -116,9 +115,87 @@ export const IDX_STYLING_CSS = `
 }
 `;
 
-// Extract property data from IDX DOM
+// Detect what type of IDX page we're currently on
+export const detectIdxPageContext = (): 'search' | 'property-detail' | 'unknown' => {
+  console.log('Detecting IDX page context...');
+  
+  // Check URL patterns first
+  const url = window.location.href;
+  const pathname = window.location.pathname;
+  
+  // Check for common property detail URL patterns
+  if (url.includes('/property/') || url.includes('/listing/') || url.includes('/detail/')) {
+    console.log('URL indicates property detail page');
+    return 'property-detail';
+  }
+  
+  // Check page title patterns
+  const title = document.title.toLowerCase();
+  if (title.includes('property search') || title.includes('search results') || title.includes('listings')) {
+    console.log('Title indicates search results page');
+    return 'search';
+  }
+  
+  // Check for IDX-specific elements that indicate page type
+  const hasSearchResults = document.querySelector('.ihf-results-container, .ihf-search-results, .ihf-grid-results, .ihf-list-results');
+  const hasPropertyDetail = document.querySelector('.ihf-property-details, .ihf-detail-container, .ihf-listing-detail');
+  
+  if (hasPropertyDetail) {
+    console.log('DOM indicates property detail page');
+    return 'property-detail';
+  }
+  
+  if (hasSearchResults) {
+    console.log('DOM indicates search results page');
+    return 'search';
+  }
+  
+  // Check for specific property detail indicators
+  const hasDetailSelectors = document.querySelector('.ihf-detail-address, .ihf-detail-price, .ihf-detail-beds, .ihf-detail-baths');
+  if (hasDetailSelectors) {
+    console.log('Property detail selectors found');
+    return 'property-detail';
+  }
+  
+  // Default based on pathname
+  if (pathname === '/listings' || pathname === '/idx') {
+    console.log('Default to search based on pathname');
+    return 'search';
+  }
+  
+  console.log('Unable to determine page context');
+  return 'unknown';
+};
+
+// Extract property data from IDX DOM - only on property detail pages
 export const extractPropertyData = (): PropertyData => {
   console.log('Starting property data extraction...');
+  
+  // First check if we should even attempt extraction
+  const pageContext = detectIdxPageContext();
+  if (pageContext === 'search') {
+    console.log('On search results page - skipping property data extraction');
+    return {
+      address: '',
+      price: '',
+      beds: '',
+      baths: '',
+      mlsId: ''
+    };
+  }
+  
+  if (pageContext === 'unknown') {
+    console.log('Unknown page context - skipping property data extraction');
+    return {
+      address: '',
+      price: '',
+      beds: '',
+      baths: '',
+      mlsId: ''
+    };
+  }
+  
+  console.log('On property detail page - proceeding with extraction');
   
   const data: PropertyData = {
     address: '',

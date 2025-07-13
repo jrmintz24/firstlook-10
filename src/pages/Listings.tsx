@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -6,7 +5,7 @@ import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
 import IDXButtonInjector from '@/components/IDXButtonInjector';
-import CustomActionBar from '@/components/listings/CustomActionBar';
+import ListingSidebar from '@/components/listings/ListingSidebar';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyData, IDX_BUTTON_HIDING_CSS } from '@/utils/idxCommunication';
@@ -108,7 +107,7 @@ const Listings = () => {
     }
   }, []);
 
-  // Handle button clicks from both IDXButtonInjector and CustomActionBar
+  // Handle button clicks from both IDXButtonInjector and Sidebar
   const handleScheduleTour = (propertyData: PropertyData) => {
     console.log('Schedule tour clicked:', propertyData);
     setSelectedProperty(propertyData);
@@ -180,20 +179,24 @@ const Listings = () => {
         listingPhotoHeight={listingPhotoHeight}
       />
       
-      {/* Custom Action Bar - positioned prominently */}
-      <CustomActionBar
-        onScheduleTour={handleScheduleTour}
-        onMakeOffer={handleMakeOffer}
-        onFavorite={handleFavorite}
-      />
-      
-      <div 
-        ref={containerRef}
-        className="w-full min-h-screen"
-      >
-        <div className="flex items-center justify-center h-32 text-gray-500">
-          Loading MLS listings...
+      {/* Main Content with Sidebar Layout */}
+      <div className="flex">
+        {/* IDX Content Area */}
+        <div 
+          ref={containerRef}
+          className="flex-1 lg:mr-80 min-h-screen"
+        >
+          <div className="flex items-center justify-center h-32 text-gray-500">
+            Loading MLS listings...
+          </div>
         </div>
+
+        {/* Listing Sidebar */}
+        <ListingSidebar
+          onScheduleTour={handleScheduleTour}
+          onMakeOffer={handleMakeOffer}
+          onFavorite={handleFavorite}
+        />
       </div>
       
       {/* IDX Button Injector */}

@@ -2,14 +2,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
+import PropertyActionHeader from '@/components/listings/PropertyActionHeader';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
 import IDXButtonInjector from '@/components/IDXButtonInjector';
-import ListingSidebar from '@/components/listings/ListingSidebar';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PropertyData, IDX_BUTTON_HIDING_CSS } from '@/utils/idxCommunication';
+import { PropertyData, IDX_BUTTON_HIDING_CSS, extractPropertyData } from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
@@ -23,6 +23,10 @@ const Listings = () => {
   const [isFavoriteModalOpen, setIsFavoriteModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
   const [isSubmittingFavorite, setIsSubmittingFavorite] = useState(false);
+  
+  // Property data state for header
+  const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   
   // Extract listing data from URL parameters or route params
   const listingAddress = address || searchParams.get('address') || undefined;
@@ -47,6 +51,59 @@ const Listings = () => {
       }
     };
   }, []);
+
+  // Extract property data for header
+  useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 20;
+    
+    const extractData = () => {
+      retryCount++;
+      console.log(`PropertyActionHeader: Attempting to extract property data (attempt ${retryCount})`);
+      
+      const data = extractPropertyData();
+      
+      // Check if we have meaningful property data
+      if (data.address && data.address.length > 10) {
+        setPropertyData(data);
+        setIsHeaderVisible(true);
+        console.log('PropertyActionHeader: Property data extracted successfully:', data);
+        return;
+      }
+      
+      if (retryCount < maxRetries) {
+        setTimeout(extractData, 1000);
+      } else {
+        console.log('PropertyActionHeader: Max retries reached, showing basic header');
+        // Show header even without full data
+        setPropertyData({
+          address: 'Property Address',
+          price: '',
+          beds: '',
+          baths: '',
+          mlsId: ''
+        });
+        setIsHeaderVisible(true);
+      }
+    };
+
+    // Start extraction after a short delay to let IDX load
+    setTimeout(extractData, 2000);
+    
+    // Also watch for DOM changes
+    const observer = new MutationObserver(() => {
+      if (!propertyData || !propertyData.address || propertyData.address === 'Property Address') {
+        extractData();
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    return () => observer.disconnect();
+  }, [propertyData]);
 
   // IDX initialization logic
   useEffect(() => {
@@ -108,7 +165,7 @@ const Listings = () => {
     }
   }, []);
 
-  // Handle button clicks from both IDXButtonInjector and Sidebar
+  // Handle button clicks from both IDXButtonInjector and Header
   const handleScheduleTour = (propertyData: PropertyData) => {
     console.log('Schedule tour clicked:', propertyData);
     setSelectedProperty(propertyData);
@@ -184,30 +241,29 @@ const Listings = () => {
           />
         </div>
       </div>
+
+      {/* Property Action Header */}
+      <PropertyActionHeader
+        propertyData={propertyData}
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+        isVisible={isHeaderVisible}
+      />
       
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto relative">
-        <div className="flex">
-          {/* IDX Content Area - Main Content */}
-          <div className="flex-1 min-h-screen bg-white shadow-lg">
-            <div className="p-4 lg:p-8">
-              <div 
-                ref={containerRef}
-                className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
-              >
-                <div className="flex items-center justify-center h-32 text-gray-500">
-                  Loading MLS listings...
-                </div>
+      {/* Main Content Area - Full Width */}
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white shadow-lg">
+          <div className="p-4 lg:p-8">
+            <div 
+              ref={containerRef}
+              className="w-full min-h-[800px] bg-white rounded-xl border border-gray-200 shadow-sm"
+            >
+              <div className="flex items-center justify-center h-32 text-gray-500">
+                Loading MLS listings...
               </div>
             </div>
           </div>
-
-          {/* Listing Sidebar - Right Panel */}
-          <ListingSidebar
-            onScheduleTour={handleScheduleTour}
-            onMakeOffer={handleMakeOffer}
-            onFavorite={handleFavorite}
-          />
         </div>
       </div>
       

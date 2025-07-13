@@ -16,12 +16,12 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
   };
 
   return (
-    <div className="py-12 sm:py-16 relative overflow-hidden">
+    <div className="py-12 sm:py-20 pb-16 sm:pb-24 relative overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/lovable-uploads/2ccd2aad-e0cd-4ff7-9987-c83b2e582eaf.png)'
+          backgroundImage: 'url(/lovable-uploads/6ba068d7-ca3c-43e0-941a-2123fc869f3d.png)'
         }}
       />
       

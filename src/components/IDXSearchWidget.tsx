@@ -25,7 +25,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           script.innerHTML = `
             document.currentScript.replaceWith(ihfKestrel.render({
               "component": "quickSearchWidget",
-              "style": "horizontal",
+              "style": "universal",
               "propertyType": false
             }));
           `;

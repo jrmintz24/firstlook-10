@@ -57,7 +57,7 @@ const PropertyActionHeader: React.FC<PropertyActionHeaderProps> = ({
   }
 
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+    <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

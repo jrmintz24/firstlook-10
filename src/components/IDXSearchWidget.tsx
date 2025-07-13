@@ -25,8 +25,8 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           script.innerHTML = `
             document.currentScript.replaceWith(ihfKestrel.render({
               "component": "quickSearchWidget",
-              "style": "twoline",
-              "propertyType": true
+              "style": "horizontal",
+              "propertyType": false
             }));
           `;
           
@@ -56,13 +56,6 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
             .ihf-quick-search-widget input::placeholder {
               color: rgb(107 114 128) !important;
             }
-            .ihf-quick-search-widget select {
-              border: none !important;
-              outline: none !important;
-              font-size: 1rem !important;
-              padding: 0.75rem 1rem !important;
-              background: transparent !important;
-            }
             .ihf-quick-search-widget button {
               background: rgb(17 24 39) !important;
               color: white !important;
@@ -81,8 +74,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
               .ihf-quick-search-widget {
                 padding: 0.75rem !important;
               }
-              .ihf-quick-search-widget input,
-              .ihf-quick-search-widget select {
+              .ihf-quick-search-widget input {
                 width: 100% !important;
                 margin-bottom: 0.5rem !important;
               }
@@ -93,7 +85,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           `;
           document.head.appendChild(style);
           
-          console.log('IDX Quick Search Widget initialized successfully with twoline style');
+          console.log('IDX Quick Search Widget initialized successfully with horizontal style');
           
           // Set up search event listener
           const handleSearch = () => {

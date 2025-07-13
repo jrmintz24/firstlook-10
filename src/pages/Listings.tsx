@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
@@ -6,6 +5,7 @@ import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
 import IDXButtonInjector from '@/components/IDXButtonInjector';
+import CustomActionBar from '@/components/listings/CustomActionBar';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PropertyData, IDX_BUTTON_HIDING_CSS } from '@/utils/idxCommunication';
@@ -107,7 +107,7 @@ const Listings = () => {
     }
   }, []);
 
-  // Handle button clicks from IDXButtonInjector
+  // Handle button clicks from both IDXButtonInjector and CustomActionBar
   const handleScheduleTour = (propertyData: PropertyData) => {
     console.log('Schedule tour clicked:', propertyData);
     setSelectedProperty(propertyData);
@@ -190,6 +190,13 @@ const Listings = () => {
       
       {/* IDX Button Injector */}
       <IDXButtonInjector
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+      />
+      
+      {/* Custom Action Bar */}
+      <CustomActionBar
         onScheduleTour={handleScheduleTour}
         onMakeOffer={handleMakeOffer}
         onFavorite={handleFavorite}

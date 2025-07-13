@@ -198,7 +198,7 @@ export const extractPropertyData = (): PropertyData => {
       const text = element.textContent?.trim() || element.getAttribute('data-mls') || '';
       console.log(`  - Text: "${text}"`);
       
-      the mlsMatch = text.match(/(\d{6,})/);
+      const mlsMatch = text.match(/(\d{6,})/);
       if (mlsMatch) {
         data.mlsId = mlsMatch[1];
         console.log(`✅ Found MLS ID: "${mlsMatch[1]}"`);

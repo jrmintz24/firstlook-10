@@ -3,16 +3,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import ListingHead from '@/components/listings/ListingHead';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
-import { IDX_SCHEDULE_TOUR_EVENT, PropertyData, IDX_CUSTOM_CSS } from '@/utils/idxCommunication';
+import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
+import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  IDX_SCHEDULE_TOUR_EVENT, 
+  IDX_MAKE_OFFER_EVENT, 
+  IDX_FAVORITE_EVENT, 
+  PropertyData, 
+  IDX_CUSTOM_CSS 
+} from '@/utils/idxCommunication';
 
 const Listings = () => {
   const { address } = useParams<{ address?: string }>();
   const [searchParams] = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal states
+  const [isTourModalOpen, setIsTourModalOpen] = useState(false);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isFavoriteModalOpen, setIsFavoriteModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
+  const [isSubmittingFavorite, setIsSubmittingFavorite] = useState(false);
   
   // Extract listing data from URL parameters or route params
   const listingAddress = address || searchParams.get('address') || undefined;
@@ -21,18 +35,34 @@ const Listings = () => {
   const listingPhotoWidth = searchParams.get('photoWidth') || '1200';
   const listingPhotoHeight = searchParams.get('photoHeight') || '800';
 
-  // Handle tour scheduling events from IDX
+  // Handle all custom events from IDX
   useEffect(() => {
     const handleTourScheduling = (event: CustomEvent<PropertyData>) => {
       console.log('Tour scheduling triggered:', event.detail);
       setSelectedProperty(event.detail);
-      setIsModalOpen(true);
+      setIsTourModalOpen(true);
+    };
+
+    const handleMakeOffer = (event: CustomEvent<PropertyData>) => {
+      console.log('Make offer triggered:', event.detail);
+      setSelectedProperty(event.detail);
+      setIsOfferModalOpen(true);
+    };
+
+    const handleFavorite = (event: CustomEvent<PropertyData>) => {
+      console.log('Favorite triggered:', event.detail);
+      setSelectedProperty(event.detail);
+      setIsFavoriteModalOpen(true);
     };
 
     window.addEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
+    window.addEventListener(IDX_MAKE_OFFER_EVENT, handleMakeOffer as EventListener);
+    window.addEventListener(IDX_FAVORITE_EVENT, handleFavorite as EventListener);
     
     return () => {
       window.removeEventListener(IDX_SCHEDULE_TOUR_EVENT, handleTourScheduling as EventListener);
+      window.removeEventListener(IDX_MAKE_OFFER_EVENT, handleMakeOffer as EventListener);
+      window.removeEventListener(IDX_FAVORITE_EVENT, handleFavorite as EventListener);
     };
   }, []);
 
@@ -54,6 +84,7 @@ const Listings = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // IDX initialization logic
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
@@ -145,6 +176,49 @@ const Listings = () => {
     }
   }, []);
 
+  // Handle favorite save
+  const handleSaveFavorite = async (notes?: string) => {
+    if (!selectedProperty) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save favorites",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmittingFavorite(true);
+    try {
+      const { error } = await supabase
+        .from('property_favorites')
+        .insert({
+          buyer_id: user.id,
+          property_address: selectedProperty.address,
+          notes: notes
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Added to favorites",
+        description: "Property saved to your favorites"
+      });
+    } catch (error) {
+      console.error('Error saving favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save favorite. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmittingFavorite(false);
+    }
+  };
+
   const pageTitle = listingAddress ? `${listingAddress} - Property Details` : 'Property Search';
 
   return (
@@ -165,16 +239,39 @@ const Listings = () => {
         </div>
       </div>
       
+      {/* Tour Scheduling Modal */}
       <ModernTourSchedulingModal
-        isOpen={isModalOpen}
+        isOpen={isTourModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
+          setIsTourModalOpen(false);
           setSelectedProperty(null);
         }}
         onSuccess={async () => {
-          setIsModalOpen(false);
+          setIsTourModalOpen(false);
           setSelectedProperty(null);
         }}
+      />
+
+      {/* Make Offer Modal */}
+      <MakeOfferModal
+        isOpen={isOfferModalOpen}
+        onClose={() => {
+          setIsOfferModalOpen(false);
+          setSelectedProperty(null);
+        }}
+        propertyAddress={selectedProperty?.address || ''}
+      />
+
+      {/* Favorite Property Modal */}
+      <FavoritePropertyModal
+        isOpen={isFavoriteModalOpen}
+        onClose={() => {
+          setIsFavoriteModalOpen(false);
+          setSelectedProperty(null);
+        }}
+        onSave={handleSaveFavorite}
+        propertyAddress={selectedProperty?.address || ''}
+        isSubmitting={isSubmittingFavorite}
       />
     </>
   );

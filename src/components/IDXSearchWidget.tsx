@@ -20,13 +20,13 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           // Clear the container first
           containerRef.current.innerHTML = '';
           
-          // Create script element with the widget configuration
+          // Create script element with the updated widget configuration
           const script = document.createElement('script');
           script.innerHTML = `
             document.currentScript.replaceWith(ihfKestrel.render({
               "component": "quickSearchWidget",
-              "style": "universal",
-              "propertyType": false
+              "style": "twoline",
+              "propertyType": true
             }));
           `;
           
@@ -40,7 +40,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
               border-radius: 1rem !important;
               box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
               border: 1px solid rgb(229 231 235) !important;
-              padding: 0.5rem !important;
+              padding: 1rem !important;
               transition: all 0.3s ease !important;
             }
             .ihf-quick-search-widget:hover {
@@ -55,6 +55,13 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
             }
             .ihf-quick-search-widget input::placeholder {
               color: rgb(107 114 128) !important;
+            }
+            .ihf-quick-search-widget select {
+              border: none !important;
+              outline: none !important;
+              font-size: 1rem !important;
+              padding: 0.75rem 1rem !important;
+              background: transparent !important;
             }
             .ihf-quick-search-widget button {
               background: rgb(17 24 39) !important;
@@ -72,11 +79,12 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
             }
             @media (max-width: 640px) {
               .ihf-quick-search-widget {
-                flex-direction: column !important;
-                gap: 0.5rem !important;
+                padding: 0.75rem !important;
               }
-              .ihf-quick-search-widget input {
+              .ihf-quick-search-widget input,
+              .ihf-quick-search-widget select {
                 width: 100% !important;
+                margin-bottom: 0.5rem !important;
               }
               .ihf-quick-search-widget button {
                 width: 100% !important;
@@ -85,7 +93,7 @@ const IDXSearchWidget = ({ onSearch, className = "" }: IDXSearchWidgetProps) => 
           `;
           document.head.appendChild(style);
           
-          console.log('IDX Quick Search Widget initialized successfully');
+          console.log('IDX Quick Search Widget initialized successfully with twoline style');
           
           // Set up search event listener
           const handleSearch = () => {

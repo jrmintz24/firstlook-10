@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
-import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 import { PropertyData } from '../utils/propertyDataUtils';
 import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
@@ -19,7 +18,6 @@ const ListingDetails = () => {
     isOpen: false,
     actionType: null
   });
-  const [isFavorited, setIsFavorited] = useState(false);
 
   // Set document head with dynamic title
   useDocumentHead({
@@ -31,9 +29,6 @@ const ListingDetails = () => {
     const currentProperty = propertyData || property;
     if (currentProperty) {
       setProperty(currentProperty);
-      if (actionType === 'favorite') {
-        setIsFavorited(!isFavorited);
-      }
       setModalState({
         isOpen: true,
         actionType
@@ -177,15 +172,6 @@ const ListingDetails = () => {
         onScheduleTour={() => handlePropertyAction('tour')}
         onMakeOffer={() => handlePropertyAction('offer')}
         onFavorite={() => handlePropertyAction('favorite')}
-      />
-
-      {/* Property Tab Navigation */}
-      <PropertyTabNavigation
-        property={property}
-        onScheduleTour={() => handlePropertyAction('tour')}
-        onMakeOffer={() => handlePropertyAction('offer')}
-        onFavorite={() => handlePropertyAction('favorite')}
-        isFavorited={isFavorited}
       />
       
       {/* IDX Content */}

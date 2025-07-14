@@ -70,80 +70,29 @@ const ListingDetails = () => {
         // Create a script element with the embed code
         const script = document.createElement('script');
         
-        // Configure for inline detail view to prevent modals
+        // If we have a listing ID, try to render the specific listing
         if (listingId) {
-          // Force inline detail view configuration
+          // Try to configure IDX to show specific listing if possible
           script.textContent = `
             try {
-              // Configure iHomeFinder to use inline views
-              if (window.ihfKestrel.config) {
-                window.ihfKestrel.config.modalMode = false;
-                window.ihfKestrel.config.popupMode = false;
-                window.ihfKestrel.config.inlineMode = true;
-              }
-              
               const element = ihfKestrel.render({
                 listingId: '${listingId}',
-                view: 'detail',
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true,
-                container: 'inline'
+                view: 'detail'
               });
-              
               if (element) {
-                element.style.position = 'static';
-                element.style.zIndex = 'auto';
                 document.currentScript.replaceWith(element);
               } else {
-                // Fallback to standard render with inline config
-                const fallbackElement = ihfKestrel.render({
-                  modalMode: false,
-                  popupMode: false,
-                  inlineMode: true
-                });
-                if (fallbackElement) {
-                  fallbackElement.style.position = 'static';
-                  fallbackElement.style.zIndex = 'auto';
-                }
-                document.currentScript.replaceWith(fallbackElement);
+                // Fallback to standard render
+                document.currentScript.replaceWith(ihfKestrel.render());
               }
             } catch (e) {
               // Fallback to standard render if specific listing render fails
-              const fallbackElement = ihfKestrel.render();
-              if (fallbackElement) {
-                fallbackElement.style.position = 'static';
-                fallbackElement.style.zIndex = 'auto';
-              }
-              document.currentScript.replaceWith(fallbackElement);
-            }
-          `;
-        } else {
-          // Standard render with inline configuration
-          script.textContent = `
-            try {
-              if (window.ihfKestrel.config) {
-                window.ihfKestrel.config.modalMode = false;
-                window.ihfKestrel.config.popupMode = false;
-                window.ihfKestrel.config.inlineMode = true;
-              }
-              
-              const element = ihfKestrel.render({
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true
-              });
-              
-              if (element) {
-                element.style.position = 'static';
-                element.style.zIndex = 'auto';
-              }
-              
-              document.currentScript.replaceWith(element);
-            } catch (e) {
               document.currentScript.replaceWith(ihfKestrel.render());
             }
           `;
+        } else {
+          // Standard render without specific listing
+          script.textContent = 'document.currentScript.replaceWith(ihfKestrel.render());';
         }
         
         // Append the script to the container
@@ -182,11 +131,10 @@ const ListingDetails = () => {
         onScheduleTour={() => handlePropertyAction('tour')}
         onMakeOffer={() => handlePropertyAction('offer')}
         onFavorite={() => handlePropertyAction('favorite')}
-        className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"
       />
       
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full h-full pt-20">
+      <div ref={containerRef} className="w-full h-full">
         {/* IDX listing content will be rendered here */}
       </div>
 

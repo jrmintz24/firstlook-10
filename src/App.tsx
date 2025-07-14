@@ -35,6 +35,7 @@ import MyOffers from './pages/MyOffers'
 import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
+import Idx from './pages/Idx'
 
 const queryClient = new QueryClient()
 
@@ -59,6 +60,9 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+
+                {/* IDX Page - Public Route */}
+                <Route path="/idx" element={<Idx />} />
 
                 {/* Authentication Pages */}
                 <Route path="/buyer-auth" element={<BuyerAuth />} />

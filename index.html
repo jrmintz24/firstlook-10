@@ -6,6 +6,14 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Finder Platform</title>
+    <script src="https://kestrel.idxhome.com/ihf-kestrel.js"></script>
+    <script>
+      window.ihfKestrel = window.ihfKestrel || {};
+      ihfKestrel.config = {
+        platform: "custom",
+        activationToken: "b7cf776f-76ba-410d-a863-c813fce85ee6",
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

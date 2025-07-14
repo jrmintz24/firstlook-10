@@ -23,16 +23,8 @@ const Listings = () => {
         // Clear any existing content
         container.innerHTML = '';
         
-        // Create render options - include search term if available
-        const renderOptions: any = {};
-        if (searchTerm) {
-          renderOptions.searchCriteria = {
-            searchText: searchTerm
-          };
-        }
-        
         // Create and execute the embed script
-        const renderedElement = window.ihfKestrel.render(renderOptions);
+        const renderedElement = window.ihfKestrel.render();
         container.appendChild(renderedElement);
 
         // Add click event listener to intercept IDX links

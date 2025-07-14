@@ -1,11 +1,13 @@
 
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 
 const Listings = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
+  const searchTerm = searchParams.get('search');
 
   // Set document head with static title as specified
   useDocumentHead({
@@ -20,8 +22,17 @@ const Listings = () => {
       if (container) {
         // Clear any existing content
         container.innerHTML = '';
+        
+        // Create render options - include search term if available
+        const renderOptions: any = {};
+        if (searchTerm) {
+          renderOptions.searchCriteria = {
+            searchText: searchTerm
+          };
+        }
+        
         // Create and execute the embed script
-        const renderedElement = window.ihfKestrel.render();
+        const renderedElement = window.ihfKestrel.render(renderOptions);
         container.appendChild(renderedElement);
 
         // Add click event listener to intercept IDX links
@@ -91,7 +102,7 @@ const Listings = () => {
         };
       }
     }
-  }, [navigate]);
+  }, [navigate, searchTerm]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -103,8 +114,10 @@ const Listings = () => {
               Find Your Perfect Home
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Search through thousands of properties with advanced filtering options 
-              and detailed listings to find the home that's right for you.
+              {searchTerm 
+                ? `Searching for properties: "${searchTerm}"`
+                : 'Search through thousands of properties with advanced filtering options and detailed listings to find the home that\'s right for you.'
+              }
             </p>
           </div>
         </div>

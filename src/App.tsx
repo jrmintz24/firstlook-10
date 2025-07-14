@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -35,6 +36,7 @@ import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
 import Idx from './pages/Idx'
+import Listing from './pages/Listing'
 import ListingDetails from './pages/ListingDetails'
 import Listings from './pages/Listings'
 

@@ -35,7 +35,6 @@ import MyOffers from './pages/MyOffers'
 import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
-import Listings from './pages/Listings'
 
 const queryClient = new QueryClient()
 
@@ -142,15 +141,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
-                {/* IDX Route - Required by iHomeFinder setup instructions */}
-                <Route path="/idx" element={<Listings />} />
-
-                {/* Listings Pages - IDX Integration */}
-                <Route path="/listings" element={<Listings />} />
-
-                {/* Listing Detail Page - iHomeFinder uses /listing?id={id} format */}
-                <Route path="/listing" element={<Listings />} />
 
                 {/* Informational Pages */}
                 <Route path="/homebuying-guide" element={<HomebuyingGuide />} />

@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
-import IDXSearchWidget from "../IDXSearchWidget";
+import PlaceholderSearchWidget from "../PlaceholderSearchWidget";
 
 interface HeroSectionProps {
   onStartTour: () => void;
@@ -48,8 +48,8 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             </p>
           </div>
 
-          {/* IDX Search Widget - now clean and simple */}
-          <IDXSearchWidget className="mb-12" />
+          {/* Placeholder Search Widget */}
+          <PlaceholderSearchWidget className="mb-12" />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

@@ -32,7 +32,7 @@ const PropertyActionButtons: React.FC<PropertyActionButtonsProps> = ({
     <div className={`${containerClass} ${className}`}>
       <Button 
         size={size}
-        className={`${buttonClass} bg-blue-600 hover:bg-blue-700`}
+        className={`${buttonClass} bg-black hover:bg-gray-800 text-white border-0 rounded-lg font-medium transition-all duration-200`}
         onClick={() => onScheduleTour(property)}
       >
         <Calendar className="h-4 w-4 mr-1" />
@@ -42,7 +42,7 @@ const PropertyActionButtons: React.FC<PropertyActionButtonsProps> = ({
       <Button 
         size={size}
         variant="outline"
-        className={buttonClass}
+        className={`${buttonClass} border-black text-black hover:bg-black hover:text-white rounded-lg font-medium transition-all duration-200`}
         onClick={() => onMakeOffer(property)}
       >
         <DollarSign className="h-4 w-4 mr-1" />
@@ -52,7 +52,10 @@ const PropertyActionButtons: React.FC<PropertyActionButtonsProps> = ({
       <Button 
         size={size}
         variant="outline"
-        className={`${buttonClass} ${isFavorited ? 'bg-red-50 border-red-200 text-red-700' : ''}`}
+        className={`${buttonClass} ${isFavorited 
+          ? 'bg-black text-white border-black hover:bg-gray-800' 
+          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+        } rounded-lg font-medium transition-all duration-200`}
         onClick={() => onFavorite(property)}
       >
         <Heart className={`h-4 w-4 mr-1 ${isFavorited ? 'fill-current' : ''}`} />
@@ -62,4 +65,5 @@ const PropertyActionButtons: React.FC<PropertyActionButtonsProps> = ({
   );
 };
 
+export { PropertyActionButtons };
 export default PropertyActionButtons;

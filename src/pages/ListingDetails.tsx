@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
+import PropertyActionHeader from '../components/property/PropertyActionHeader';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,10 @@ const ListingDetails = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Sticky Property Action Header */}
+      <PropertyActionHeader />
+      
+      {/* IDX Content */}
       <div ref={containerRef} className="w-full h-full">
         {/* IDX listing content will be rendered here */}
       </div>

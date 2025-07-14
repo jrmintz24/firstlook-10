@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
@@ -18,9 +19,33 @@ const Listings = () => {
   useEffect(() => {
     // Execute the IDX embed code when component mounts
     if (window.ihfKestrel) {
-      // Create and execute the embed script exactly as instructed
+      // Configure iHomeFinder for inline rendering
+      if (window.ihfKestrel.config) {
+        window.ihfKestrel.config.modalMode = false;
+        window.ihfKestrel.config.popupMode = false;
+        window.ihfKestrel.config.inlineMode = true;
+      }
+
+      // Create and execute the embed script with inline configuration
       const script = document.createElement('script');
-      script.textContent = 'document.currentScript.replaceWith(ihfKestrel.render());';
+      script.textContent = `
+        try {
+          const element = ihfKestrel.render({
+            modalMode: false,
+            popupMode: false,
+            inlineMode: true
+          });
+          
+          if (element) {
+            element.style.position = 'static';
+            element.style.zIndex = 'auto';
+          }
+          
+          document.currentScript.replaceWith(element);
+        } catch (e) {
+          document.currentScript.replaceWith(ihfKestrel.render());
+        }
+      `;
       document.body.appendChild(script);
     }
   }, []);

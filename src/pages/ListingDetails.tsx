@@ -70,29 +70,80 @@ const ListingDetails = () => {
         // Create a script element with the embed code
         const script = document.createElement('script');
         
-        // If we have a listing ID, try to render the specific listing
+        // Configure for inline detail view to prevent modals
         if (listingId) {
-          // Try to configure IDX to show specific listing if possible
+          // Force inline detail view configuration
           script.textContent = `
             try {
+              // Configure iHomeFinder to use inline views
+              if (window.ihfKestrel.config) {
+                window.ihfKestrel.config.modalMode = false;
+                window.ihfKestrel.config.popupMode = false;
+                window.ihfKestrel.config.inlineMode = true;
+              }
+              
               const element = ihfKestrel.render({
                 listingId: '${listingId}',
-                view: 'detail'
+                view: 'detail',
+                modalMode: false,
+                popupMode: false,
+                inlineMode: true,
+                container: 'inline'
               });
+              
               if (element) {
+                element.style.position = 'static';
+                element.style.zIndex = 'auto';
                 document.currentScript.replaceWith(element);
               } else {
-                // Fallback to standard render
-                document.currentScript.replaceWith(ihfKestrel.render());
+                // Fallback to standard render with inline config
+                const fallbackElement = ihfKestrel.render({
+                  modalMode: false,
+                  popupMode: false,
+                  inlineMode: true
+                });
+                if (fallbackElement) {
+                  fallbackElement.style.position = 'static';
+                  fallbackElement.style.zIndex = 'auto';
+                }
+                document.currentScript.replaceWith(fallbackElement);
               }
             } catch (e) {
               // Fallback to standard render if specific listing render fails
-              document.currentScript.replaceWith(ihfKestrel.render());
+              const fallbackElement = ihfKestrel.render();
+              if (fallbackElement) {
+                fallbackElement.style.position = 'static';
+                fallbackElement.style.zIndex = 'auto';
+              }
+              document.currentScript.replaceWith(fallbackElement);
             }
           `;
         } else {
-          // Standard render without specific listing
-          script.textContent = 'document.currentScript.replaceWith(ihfKestrel.render());';
+          // Standard render with inline configuration
+          script.textContent = `
+            try {
+              if (window.ihfKestrel.config) {
+                window.ihfKestrel.config.modalMode = false;
+                window.ihfKestrel.config.popupMode = false;
+                window.ihfKestrel.config.inlineMode = true;
+              }
+              
+              const element = ihfKestrel.render({
+                modalMode: false,
+                popupMode: false,
+                inlineMode: true
+              });
+              
+              if (element) {
+                element.style.position = 'static';
+                element.style.zIndex = 'auto';
+              }
+              
+              document.currentScript.replaceWith(element);
+            } catch (e) {
+              document.currentScript.replaceWith(ihfKestrel.render());
+            }
+          `;
         }
         
         // Append the script to the container

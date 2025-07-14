@@ -150,6 +150,7 @@ const ListingDetails = () => {
         // Additional cleanup after a longer delay to catch late-loading forms
         setTimeout(() => {
           removeIDXFormsFromContainer();
+          scanForButtons();
         }, 5000);
         
       } catch (error) {
@@ -196,7 +197,7 @@ const ListingDetails = () => {
       {/* Debug info (remove in production) */}
       {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
         <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-3 py-1 rounded text-sm">
-          Enhanced {interceptedCount} IDX buttons
+          Enhanced {interceptedCount} IDX elements
         </div>
       )}
 

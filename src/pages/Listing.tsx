@@ -42,13 +42,6 @@ const Listing = () => {
   useEffect(() => {
     // Execute the IDX embed code when component mounts
     if (window.ihfKestrel) {
-      // Configure iHomeFinder for inline rendering
-      if (window.ihfKestrel.config) {
-        window.ihfKestrel.config.modalMode = false;
-        window.ihfKestrel.config.popupMode = false;
-        window.ihfKestrel.config.inlineMode = true;
-      }
-
       // Create and execute the embed script with inline configuration
       const script = document.createElement('script');
       script.textContent = `

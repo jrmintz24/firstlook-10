@@ -1,9 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
+import { PropertyActionHeader } from '../components/property/PropertyActionHeader';
+import { PropertyActionManager } from '../components/property/PropertyActionManager';
+import { extractPropertyDataFromPage, PropertyData } from '../utils/propertyDataUtils';
 
 const Listing = () => {
   const [listingAddress, setListingAddress] = useState('Property Listing');
+  const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<'tour' | 'offer' | 'favorite' | null>(null);
 
   // Set document head with dynamic title
   useDocumentHead({
@@ -14,24 +20,11 @@ const Listing = () => {
   const extractListingAddress = () => {
     // Try to extract property address from IDX content after it loads
     const checkForAddress = () => {
-      const addressSelectors = [
-        '[data-address]',
-        '.address',
-        '.property-address',
-        '.listing-address',
-        'h1',
-        '.property-title'
-      ];
-      
-      for (const selector of addressSelectors) {
-        const element = document.querySelector(selector);
-        if (element && element.textContent?.trim()) {
-          const address = element.textContent.trim();
-          if (address && address !== 'Property Listing') {
-            setListingAddress(address);
-            return true;
-          }
-        }
+      const data = extractPropertyDataFromPage();
+      if (data.address && data.address !== 'Property Listing') {
+        setListingAddress(data.address);
+        setPropertyData(data);
+        return true;
       }
       return false;
     };
@@ -59,9 +52,55 @@ const Listing = () => {
     }
   }, []);
 
+  const handleScheduleTour = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('tour');
+    setIsModalOpen(true);
+  };
+
+  const handleMakeOffer = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('offer');
+    setIsModalOpen(true);
+  };
+
+  const handleFavorite = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('favorite');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalAction(null);
+  };
+
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen relative">
+      {/* Custom Property Action Header */}
+      <PropertyActionHeader
+        property={propertyData}
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+        className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"
+      />
+
       {/* IDX content will be rendered here by the embed script */}
+      <div className="pt-20">
+        {/* Content space for the header */}
+      </div>
+
+      {/* Property Action Manager for modals */}
+      <PropertyActionManager
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        actionType={modalAction}
+        property={propertyData}
+      />
     </div>
   );
 };

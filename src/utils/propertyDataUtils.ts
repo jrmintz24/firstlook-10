@@ -1,62 +1,85 @@
 
-import { Property } from "@/types/simplyrets";
-
-// Standalone PropertyData interface (no longer dependent on IDX)
 export interface PropertyData {
   address: string;
   price?: string;
   beds?: string;
   baths?: string;
   mlsId?: string;
-  photos?: string[];
   sqft?: string;
-  propertyType?: string;
 }
 
-export interface NormalizedPropertyData {
-  address: string;
-  price?: string;
-  beds?: string;
-  baths?: string;
-  mlsId?: string;
-  photos?: string[];
-  sqft?: string;
-  propertyType?: string;
-}
+export const extractPropertyDataFromPage = (): PropertyData => {
+  // Try to extract property data from various selectors commonly used by iHomeFinder
+  const addressSelectors = [
+    '[data-address]',
+    '.property-address',
+    '.listing-address',
+    '.address',
+    '.street-address',
+    'h1',
+    '.property-title',
+    '.listing-title'
+  ];
 
-export const normalizeIdxProperty = (property: PropertyData): NormalizedPropertyData => {
-  return {
-    address: property.address || '',
-    price: property.price || '',
-    beds: property.beds || '',
-    baths: property.baths || '',
-    mlsId: property.mlsId || '',
-    photos: [],
-    sqft: '',
-    propertyType: ''
+  const priceSelectors = [
+    '[data-price]',
+    '.property-price',
+    '.listing-price',
+    '.price',
+    '.cost'
+  ];
+
+  const bedsSelectors = [
+    '[data-beds]',
+    '.beds',
+    '.bedrooms',
+    '.bed-count'
+  ];
+
+  const bathsSelectors = [
+    '[data-baths]',
+    '.baths',
+    '.bathrooms',
+    '.bath-count'
+  ];
+
+  const mlsSelectors = [
+    '[data-mls]',
+    '.mls-id',
+    '.mls-number',
+    '.listing-id'
+  ];
+
+  const sqftSelectors = [
+    '[data-sqft]',
+    '.sqft',
+    '.square-feet',
+    '.sq-ft'
+  ];
+
+  const extractFromSelectors = (selectors: string[]): string => {
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (element && element.textContent?.trim()) {
+        return element.textContent.trim();
+      }
+    }
+    return '';
   };
-};
 
-export const normalizeApiProperty = (property: Property): NormalizedPropertyData => {
+  const address = extractFromSelectors(addressSelectors) || 'Property Details';
+  const price = extractFromSelectors(priceSelectors);
+  const beds = extractFromSelectors(bedsSelectors);
+  const baths = extractFromSelectors(bathsSelectors);
+  const mlsId = extractFromSelectors(mlsSelectors);
+  const sqft = extractFromSelectors(sqftSelectors);
+
   return {
-    address: property.address.full,
-    price: property.listPrice.toString(),
-    beds: property.property.bedrooms.toString(),
-    baths: (property.property.bathsFull + (property.property.bathsHalf * 0.5)).toString(),
-    mlsId: property.mlsId,
-    photos: property.photos || [],
-    sqft: property.property.area?.toString() || '',
-    propertyType: property.property.type || ''
+    address,
+    price: price || undefined,
+    beds: beds || undefined,
+    baths: baths || undefined,
+    mlsId: mlsId || undefined,
+    sqft: sqft || undefined
   };
-};
-
-export const formatPrice = (price: string | number): string => {
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  if (isNaN(numPrice)) return price.toString();
-  
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(numPrice);
 };

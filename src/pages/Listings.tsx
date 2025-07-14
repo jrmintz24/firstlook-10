@@ -1,8 +1,15 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
+import { PropertyActionHeader } from '../components/property/PropertyActionHeader';
+import { PropertyActionManager } from '../components/property/PropertyActionManager';
+import { extractPropertyDataFromPage, PropertyData } from '../utils/propertyDataUtils';
 
 const Listings = () => {
+  const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<'tour' | 'offer' | 'favorite' | null>(null);
+
   // Set document head with static title as specified
   useDocumentHead({
     title: 'Property Search',
@@ -19,9 +26,55 @@ const Listings = () => {
     }
   }, []);
 
+  const handleScheduleTour = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('tour');
+    setIsModalOpen(true);
+  };
+
+  const handleMakeOffer = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('offer');
+    setIsModalOpen(true);
+  };
+
+  const handleFavorite = () => {
+    const data = extractPropertyDataFromPage();
+    setPropertyData(data);
+    setModalAction('favorite');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalAction(null);
+  };
+
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen relative">
+      {/* Custom Property Action Header */}
+      <PropertyActionHeader
+        property={propertyData}
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+        className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"
+      />
+
       {/* IDX content will be rendered here by the embed script */}
+      <div className="pt-20">
+        {/* Content space for the header */}
+      </div>
+
+      {/* Property Action Manager for modals */}
+      <PropertyActionManager
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        actionType={modalAction}
+        property={propertyData}
+      />
     </div>
   );
 };

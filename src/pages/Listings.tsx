@@ -1,8 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
-import { PropertyActionHeader } from '../components/property/PropertyActionHeader';
-import { PropertyActionManager } from '../components/property/PropertyActionManager';
+import PropertyActionHeader from '../components/property/PropertyActionHeader';
+import PropertyActionManager from '../components/property/PropertyActionManager';
 import { extractPropertyDataFromPage, PropertyData } from '../utils/propertyDataUtils';
 
 const Listings = () => {

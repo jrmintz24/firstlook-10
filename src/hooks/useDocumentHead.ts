@@ -1,62 +1,23 @@
 
 import { useEffect } from 'react';
 
-interface DocumentHeadOptions {
-  title?: string;
+interface UseDocumentHeadProps {
+  title: string;
   description?: string;
-  keywords?: string;
-  ogImage?: string;
-  ogImageWidth?: string;
-  ogImageHeight?: string;
 }
 
-export const useDocumentHead = (options: DocumentHeadOptions) => {
+export const useDocumentHead = ({ title, description }: UseDocumentHeadProps) => {
   useEffect(() => {
-    // Update document title
-    if (options.title) {
-      document.title = options.title;
-    }
-
-    // Helper function to update or create meta tags
-    const updateMetaTag = (name: string, content: string, property?: boolean) => {
-      const attribute = property ? 'property' : 'name';
-      let meta = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement;
-      
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute(attribute, name);
-        document.head.appendChild(meta);
+    document.title = title;
+    
+    if (description) {
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.getElementsByTagName('head')[0].appendChild(metaDescription);
       }
-      
-      meta.content = content;
-    };
-
-    // Update meta tags
-    if (options.description) {
-      updateMetaTag('description', options.description);
+      metaDescription.setAttribute('content', description);
     }
-
-    if (options.keywords) {
-      updateMetaTag('keywords', options.keywords);
-    }
-
-    if (options.ogImage) {
-      updateMetaTag('og:image', options.ogImage, true);
-    }
-
-    if (options.ogImageWidth) {
-      updateMetaTag('og:image:width', options.ogImageWidth, true);
-    }
-
-    if (options.ogImageHeight) {
-      updateMetaTag('og:image:height', options.ogImageHeight, true);
-    }
-
-    // Cleanup function to restore default values when component unmounts
-    return () => {
-      document.title = 'Home Finder Platform';
-      const defaultDescription = 'Find and tour homes with professional real estate agents';
-      updateMetaTag('description', defaultDescription);
-    };
-  }, [options.title, options.description, options.keywords, options.ogImage, options.ogImageWidth, options.ogImageHeight]);
+  }, [title, description]);
 };

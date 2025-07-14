@@ -1,79 +1,54 @@
 
-import React, { useState } from 'react';
-import { PropertyActionButtons } from './PropertyActionButtons';
-import { PropertyData } from '@/utils/propertyDataUtils';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Heart, Share2, Calendar } from 'lucide-react';
+import type { IdxProperty } from '../../hooks/useIdxIntegration';
 
 interface PropertyActionHeaderProps {
-  property?: PropertyData;
-  className?: string;
+  property?: IdxProperty | null;
 }
 
-const PropertyActionHeader: React.FC<PropertyActionHeaderProps> = ({ 
-  property,
-  className = ""
-}) => {
-  const [isFavorited, setIsFavorited] = useState(false);
-
-  const handleScheduleTour = (property: PropertyData | any) => {
-    console.log('Schedule tour for:', property);
-    // TODO: Implement tour scheduling logic
-  };
-
-  const handleMakeOffer = (property: PropertyData | any) => {
-    console.log('Make offer for:', property);
-    // TODO: Implement offer making logic
-  };
-
-  const handleFavorite = (property: PropertyData | any) => {
-    setIsFavorited(!isFavorited);
-    console.log('Favorite toggled for:', property);
-    // TODO: Implement favorite logic
-  };
-
-  // Default property data if none provided (for demo purposes)
-  const defaultProperty = {
-    address: 'Property Details',
-    price: '',
-    beds: '',
-    baths: '',
-    mlsId: ''
-  };
-
-  const currentProperty = property || defaultProperty;
+const PropertyActionHeader = ({ property }: PropertyActionHeaderProps) => {
+  if (!property) return null;
 
   return (
-    <div className={`sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm ${className}`}>
+    <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Property info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-semibold text-gray-900 truncate">
-              {currentProperty.address}
-            </h2>
-            {currentProperty.price && (
-              <p className="text-sm text-gray-600">
-                {currentProperty.price}
-                {currentProperty.beds && currentProperty.baths && (
-                  <span className="ml-2">
-                    • {currentProperty.beds} bed • {currentProperty.baths} bath
-                  </span>
-                )}
-              </p>
-            )}
+            <h1 className="text-lg font-semibold text-gray-900 truncate">
+              {property.address}
+            </h1>
+            <div className="flex items-center space-x-4 mt-1">
+              <span className="text-xl font-bold text-green-600">
+                {property.price}
+              </span>
+              {property.beds && (
+                <span className="text-sm text-gray-600">
+                  {property.beds} beds
+                </span>
+              )}
+              {property.baths && (
+                <span className="text-sm text-gray-600">
+                  {property.baths} baths
+                </span>
+              )}
+            </div>
           </div>
-
-          {/* Action buttons */}
-          <div className="ml-4 flex-shrink-0">
-            <PropertyActionButtons
-              property={currentProperty}
-              onScheduleTour={handleScheduleTour}
-              onMakeOffer={handleMakeOffer}
-              onFavorite={handleFavorite}
-              isFavorited={isFavorited}
-              size="sm"
-              layout="horizontal"
-              className="gap-2"
-            />
+          
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm">
+              <Heart className="h-4 w-4 mr-1" />
+              Save
+            </Button>
+            <Button variant="outline" size="sm">
+              <Share2 className="h-4 w-4 mr-1" />
+              Share
+            </Button>
+            <Button size="sm">
+              <Calendar className="h-4 w-4 mr-1" />
+              Schedule Tour
+            </Button>
           </div>
         </div>
       </div>

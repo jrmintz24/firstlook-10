@@ -30,7 +30,7 @@ const MobileNavigation = ({
             No Agent Buyer Guide
           </Button>
         </Link>
-        <Link to="/listings" onClick={onMenuItemClick}>
+        <Link to="/search" onClick={onMenuItemClick}>
           <Button 
             variant="ghost" 
             className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 font-medium px-4 py-3 transition-colors justify-start w-full text-left"

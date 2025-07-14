@@ -15,7 +15,6 @@ interface ModernTourSchedulingModalProps {
   onClose: () => void;
   onSuccess?: () => Promise<void>;
   skipNavigation?: boolean;
-  initialAddress?: string;
 }
 
 interface TimeSlot {
@@ -97,8 +96,7 @@ const ModernTourSchedulingModal = ({
   isOpen, 
   onClose, 
   onSuccess, 
-  skipNavigation = false,
-  initialAddress = ""
+  skipNavigation = false 
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
@@ -130,17 +128,17 @@ const ModernTourSchedulingModal = ({
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
-  // Reset form state when modal opens fresh or initialAddress changes
+  // Reset form state when modal opens fresh
   useEffect(() => {
     if (isOpen && modalFlow === 'scheduling') {
-      console.log('Resetting form state for fresh modal open with initialAddress:', initialAddress);
-      setPropertyAddress(initialAddress || "");
+      console.log('Resetting form state for fresh modal open');
+      setPropertyAddress("");
       setSelectedDate("");
       setSelectedTime("");
       setNotes("");
       setShowAllTimes(false);
     }
-  }, [isOpen, modalFlow, initialAddress]);
+  }, [isOpen, modalFlow]);
 
   // Determine user capabilities
   const isGuest = !user;

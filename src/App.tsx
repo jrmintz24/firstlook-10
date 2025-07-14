@@ -1,3 +1,4 @@
+
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -34,8 +35,7 @@ import MyOffers from './pages/MyOffers'
 import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
-import Idx from './pages/Idx'
-import ListingDetails from './pages/ListingDetails'
+import Property from './pages/Property'
 import Listings from './pages/Listings'
 
 const queryClient = new QueryClient()
@@ -61,11 +61,6 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
-
-                {/* IDX Pages - Public Routes */}
-                <Route path="/idx" element={<Idx />} />
-                <Route path="/listings" element={<Listings />} />
-                <Route path="/listing/:listingId" element={<ListingDetails />} />
 
                 {/* Authentication Pages */}
                 <Route path="/buyer-auth" element={<BuyerAuth />} />
@@ -149,6 +144,17 @@ function App() {
                   }
                 />
 
+                {/* IDX Route - Required by iHomeFinder setup instructions */}
+                <Route path="/idx" element={<Listings />} />
+
+                {/* Listings Pages - IDX Integration */}
+                <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/:address" element={<Listings />} />
+
+                {/* New Listing Pages (singular) - IDX Integration with specific SEO */}
+                <Route path="/listing" element={<Listings />} />
+                <Route path="/listing/:address" element={<Listings />} />
+
                 {/* Informational Pages */}
                 <Route path="/homebuying-guide" element={<HomebuyingGuide />} />
                 <Route path="/faq" element={<FAQ />} />
@@ -171,6 +177,7 @@ function App() {
 
                 {/* Property Search Pages */}
                 <Route path="/search" element={<Search />} />
+                <Route path="/property/:mlsId" element={<Property />} />
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />

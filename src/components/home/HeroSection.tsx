@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
-import PlaceholderSearchWidget from "../PlaceholderSearchWidget";
+import HeroSearchBar from "./HeroSearchBar";
 
 interface HeroSectionProps {
   onRequestShowing: () => void;
@@ -33,8 +33,8 @@ const HeroSection = ({ onRequestShowing }: HeroSectionProps) => {
             Just honest tools, clear pricing, and real savings.
           </p>
 
-          {/* Placeholder Search Widget */}
-          <PlaceholderSearchWidget className="mb-16" />
+          {/* Hero Search Bar */}
+          <HeroSearchBar />
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Button 

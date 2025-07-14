@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { PropertyGallery } from "@/components/property/PropertyGallery"
@@ -30,8 +31,6 @@ import {
   Star,
   DollarSign
 } from "lucide-react"
-import PropertyActionButtons from "@/components/property/PropertyActionButtons"
-import { normalizeApiProperty } from "@/utils/propertyDataUtils"
 
 // Fake property data for demo mode
 const getFakeProperty = (mlsId: string): PropertyType => ({
@@ -241,18 +240,23 @@ const Property = () => {
               Back to Search
             </Button>
             
-            {/* Add Property Action Buttons to Header */}
-            {property && (
-              <PropertyActionButtons
-                property={normalizeApiProperty(property)}
-                onScheduleTour={handleScheduleTour}
-                onMakeOffer={handleMakeOffer}
-                onFavorite={handleToggleFavorite}
-                isFavorited={isFavorited}
-                size="sm"
-                layout="horizontal"
-              />
-            )}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                onClick={handleToggleFavorite}
+                className={`rounded-xl p-3 transition-all ${isFavorited ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500'}`}
+              >
+                <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
+              </Button>
+              
+              <Button 
+                onClick={handleScheduleTour}
+                className="bg-gray-900 hover:bg-black text-white rounded-xl px-6 py-3 font-medium flex items-center gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                Schedule Tour
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -316,24 +320,44 @@ const Property = () => {
                   )}
                 </div>
 
-                {/* Action Buttons Card */}
+                {/* Tour CTA Section */}
                 <Card className="border-gray-200 bg-gray-50/50">
                   <CardContent className="p-6">
                     <div className="text-center space-y-4">
                       <div className="space-y-2">
-                        <h3 className="text-lg font-medium text-gray-900">Interested in this property?</h3>
-                        <p className="text-gray-600 font-light">Take action on this listing</p>
+                        <h3 className="text-lg font-medium text-gray-900">Ready to see this home?</h3>
+                        <p className="text-gray-600 font-light">Book a tour and experience this property in person</p>
                       </div>
                       
-                      <PropertyActionButtons
-                        property={normalizeApiProperty(property)}
-                        onScheduleTour={handleScheduleTour}
-                        onMakeOffer={handleMakeOffer}
-                        onFavorite={handleToggleFavorite}
-                        isFavorited={isFavorited}
-                        layout="vertical"
-                        className="max-w-sm mx-auto"
-                      />
+                      <div className="space-y-3">
+                        <Button 
+                          onClick={handleScheduleTour}
+                          className="w-full bg-gray-900 hover:bg-black text-white rounded-xl py-4 font-medium text-base"
+                          size="lg"
+                        >
+                          <Calendar className="h-5 w-5 mr-2" />
+                          Schedule Your Tour
+                        </Button>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button 
+                            variant="outline"
+                            onClick={handleMakeOffer}
+                            className="rounded-xl border-gray-300 font-light"
+                          >
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Make Offer
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={handleToggleFavorite}
+                            className={`rounded-xl border-gray-300 font-light ${isFavorited ? 'bg-red-50 border-red-200 text-red-700' : ''}`}
+                          >
+                            <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+                            {isFavorited ? 'Favorited' : 'Favorite'}
+                          </Button>
+                        </div>
+                      </div>
                       
                       <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                         <CheckCircle className="h-4 w-4 text-green-600" />
@@ -485,19 +509,18 @@ const Property = () => {
             <CardContent className="p-8 text-center">
               <div className="max-w-md mx-auto space-y-6">
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-light text-gray-900">Ready to take action?</h3>
-                  <p className="text-gray-600 font-light">Schedule a tour, make an offer, or save to favorites</p>
+                  <h3 className="text-2xl font-light text-gray-900">Love what you see?</h3>
+                  <p className="text-gray-600 font-light">Schedule a tour and make this house your home</p>
                 </div>
                 
-                <PropertyActionButtons
-                  property={normalizeApiProperty(property)}
-                  onScheduleTour={handleScheduleTour}
-                  onMakeOffer={handleMakeOffer}
-                  onFavorite={handleToggleFavorite}
-                  isFavorited={isFavorited}
-                  layout="horizontal"
+                <Button 
+                  onClick={handleScheduleTour}
+                  className="bg-gray-900 hover:bg-black text-white rounded-xl px-8 py-4 font-medium text-lg"
                   size="lg"
-                />
+                >
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Book Your Free Tour
+                </Button>
                 
                 <p className="text-sm text-gray-500 font-light">No pressure. Expert guidance. Your timeline.</p>
               </div>

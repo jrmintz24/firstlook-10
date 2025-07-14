@@ -15,11 +15,20 @@ const Listings = () => {
         try {
           console.log('Initializing IDX widget...');
           console.log('Current URL:', window.location.href);
+          console.log('Location pathname:', location.pathname);
+          console.log('Location search:', location.search);
           console.log('Is detail page:', isDetailPage);
           
+          // Clear previous content
           containerRef.current.innerHTML = '';
           
-          // Use the simplest possible approach - let IDX handle URL routing
+          // Ensure IDX has the correct base URL context
+          if (window.ihfKestrel.config) {
+            window.ihfKestrel.config.baseUrl = window.location.origin;
+            console.log('IDX baseUrl set to:', window.location.origin);
+          }
+          
+          // Let IDX handle URL routing with proper base URL
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
@@ -29,6 +38,14 @@ const Listings = () => {
               containerRef.current.innerHTML = widgetElement;
             }
             console.log('IDX widget initialized successfully');
+            
+            // Add URL debugging after render
+            setTimeout(() => {
+              const links = containerRef.current?.querySelectorAll('a[href]');
+              if (links) {
+                console.log('IDX generated links sample:', Array.from(links).slice(0, 3).map(link => link.getAttribute('href')));
+              }
+            }, 2000);
           }
         } catch (error) {
           console.error('Error initializing IDX widget:', error);
@@ -36,13 +53,16 @@ const Listings = () => {
       }
     };
 
-    // Simple initialization - try immediately, then once more after a short delay
+    // Initialize immediately if available
     if (window.ihfKestrel) {
       initializeIDX();
     } else {
+      // Fallback with timeout
       setTimeout(() => {
         if (window.ihfKestrel) {
           initializeIDX();
+        } else {
+          console.warn('IDX widget failed to load after timeout');
         }
       }, 1000);
     }
@@ -50,7 +70,7 @@ const Listings = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Minimal container - let IDX handle everything */}
+      {/* IDX Container */}
       <div 
         ref={containerRef}
         className="w-full min-h-screen"

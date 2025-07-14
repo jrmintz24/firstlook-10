@@ -14,7 +14,25 @@
       ihfKestrel.config = {
         platform: "custom",
         activationToken: "b7cf776f-76ba-410d-a863-c813fce85ee6",
+        // Explicit base URL configuration to prevent double slashes
+        baseUrl: window.location.origin,
+        // Ensure URLs are constructed correctly
+        urlRewriteRules: {
+          // Force single slash construction
+          cleanUrls: true
+        }
       };
+      
+      // Add URL normalization function
+      ihfKestrel.normalizeUrl = function(url) {
+        if (!url) return url;
+        // Remove double slashes except after protocol
+        return url.replace(/([^:]\/)\/+/g, '$1');
+      };
+      
+      // Debug logging for URL construction
+      console.log('IDX Base URL:', window.location.origin);
+      console.log('Current URL:', window.location.href);
     </script>
   </head>
   <body>

@@ -1,8 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 
 const Listings = () => {
+  const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Set document head with static title as specified
   useDocumentHead({
     title: 'Property Search - Home Finder Platform',
@@ -19,9 +23,75 @@ const Listings = () => {
         // Create and execute the embed script
         const renderedElement = window.ihfKestrel.render();
         container.appendChild(renderedElement);
+
+        // Add click event listener to intercept IDX links
+        const handleLinkClick = (event: Event) => {
+          const target = event.target as HTMLElement;
+          const link = target.closest('a');
+          
+          if (link && link.href) {
+            // Check if this is an IDX property detail link
+            const url = new URL(link.href);
+            const pathname = url.pathname;
+            
+            // Common IDX URL patterns for property details
+            const isPropertyLink = 
+              pathname.includes('/listing/') ||
+              pathname.includes('/property/') ||
+              pathname.includes('/details/') ||
+              url.searchParams.has('listingId') ||
+              url.searchParams.has('propertyId') ||
+              url.searchParams.has('mlsId');
+
+            if (isPropertyLink) {
+              event.preventDefault();
+              event.stopPropagation();
+              
+              // Extract property ID from various possible URL formats
+              let propertyId = '';
+              
+              // Try to extract from pathname
+              const pathParts = pathname.split('/');
+              const listingIndex = pathParts.findIndex(part => 
+                part === 'listing' || part === 'property' || part === 'details'
+              );
+              
+              if (listingIndex !== -1 && pathParts[listingIndex + 1]) {
+                propertyId = pathParts[listingIndex + 1];
+              }
+              
+              // Try to extract from search params if not found in path
+              if (!propertyId) {
+                propertyId = url.searchParams.get('listingId') ||
+                           url.searchParams.get('propertyId') ||
+                           url.searchParams.get('mlsId') ||
+                           '';
+              }
+              
+              // Navigate to our listing detail page
+              if (propertyId) {
+                navigate(`/listing/${propertyId}`);
+              } else {
+                // Fallback: extract any numeric ID from the URL
+                const numericMatch = link.href.match(/\d+/);
+                if (numericMatch) {
+                  navigate(`/listing/${numericMatch[0]}`);
+                }
+              }
+            }
+          }
+        };
+
+        // Add event listener to the container using event delegation
+        container.addEventListener('click', handleLinkClick, true);
+
+        // Cleanup function
+        return () => {
+          container.removeEventListener('click', handleLinkClick, true);
+        };
       }
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -45,6 +115,7 @@ const Listings = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div 
             id="idx-container"
+            ref={containerRef}
             className="w-full min-h-96"
           >
             {/* IDX content will be rendered here */}

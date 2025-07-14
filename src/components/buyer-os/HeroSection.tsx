@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
-import HeroSearchBar from "../home/HeroSearchBar";
+import PlaceholderSearchWidget from "../PlaceholderSearchWidget";
 
 interface HeroSectionProps {
   onStartTour: () => void;
@@ -16,7 +16,18 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
   };
 
   return (
-    <div className="py-12 sm:py-16 relative overflow-hidden bg-white">
+    <div className="py-12 sm:py-20 pb-16 sm:pb-24 relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/lovable-uploads/57d76f8d-b9d6-45e0-b1db-18317cbcf150.png)'
+        }}
+      />
+      
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-white/80" />
+      
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-6 tracking-tight leading-none">
@@ -37,8 +48,8 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             </p>
           </div>
 
-          {/* Hero Search Bar */}
-          <HeroSearchBar />
+          {/* Placeholder Search Widget */}
+          <PlaceholderSearchWidget className="mb-12" />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -59,13 +70,6 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
               See How It Works
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Background Elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 blur-3xl">
-          <div className="aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-blue-50 to-gray-50 opacity-40" />
         </div>
       </div>
     </div>

@@ -109,6 +109,58 @@ export const useIDXButtonInterception = ({
     };
   };
 
+  const removeIDXForms = () => {
+    // Comprehensive list of selectors to remove IDX forms
+    const formSelectors = [
+      '.ihf-contact-form',
+      '.ihf-request-info',
+      '.ihf-lead-form',
+      '.contact-form',
+      '.request-info-form',
+      '.lead-capture-form',
+      '.ihf-sidebar-form',
+      '.sidebar-contact',
+      '.property-contact-form',
+      '.widget-contact',
+      '.widget-request-info',
+      '[class*="contact-form"]',
+      '[class*="request-info"]',
+      '[class*="lead-form"]',
+      '[class*="sidebar-form"]',
+      '[class*="sidebar-contact"]',
+      '[id*="contact-form"]',
+      '[id*="request-info"]',
+      '[id*="lead-form"]'
+    ];
+
+    formSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        console.log('Removing IDX form element:', selector, element);
+        element.remove();
+      });
+    });
+
+    // Remove forms with specific actions
+    const actionForms = document.querySelectorAll('form[action*="contact"], form[action*="request"], form[action*="lead"]');
+    actionForms.forEach(form => {
+      console.log('Removing IDX action form:', form);
+      form.remove();
+    });
+
+    // Remove forms that contain typical lead capture fields
+    const allForms = document.querySelectorAll('form');
+    allForms.forEach(form => {
+      const hasEmail = form.querySelector('input[name*="email"], input[placeholder*="email"], input[placeholder*="Email"]');
+      const hasPhone = form.querySelector('input[name*="phone"], input[placeholder*="phone"], input[placeholder*="Phone"]');
+      
+      if (hasEmail && hasPhone) {
+        console.log('Removing lead capture form:', form);
+        form.remove();
+      }
+    });
+  };
+
   const interceptButton = (button: Element) => {
     if (interceptedButtonsRef.current.has(button)) {
       return; // Already intercepted
@@ -195,6 +247,9 @@ export const useIDXButtonInterception = ({
         }
       });
     });
+
+    // Remove IDX forms after scanning for buttons
+    removeIDXForms();
   };
 
   useEffect(() => {
@@ -203,7 +258,7 @@ export const useIDXButtonInterception = ({
       scanForButtons();
     }, 1000);
 
-    // Set up mutation observer to watch for new buttons
+    // Set up mutation observer to watch for new buttons and forms
     observerRef.current = new MutationObserver((mutations) => {
       let shouldScan = false;
       
@@ -219,7 +274,9 @@ export const useIDXButtonInterception = ({
 
       if (shouldScan) {
         // Debounce scanning
-        setTimeout(scanForButtons, 500);
+        setTimeout(() => {
+          scanForButtons();
+        }, 500);
       }
     });
 

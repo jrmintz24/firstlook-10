@@ -158,3 +158,45 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out;
 }
+
+/* IDX Form Hiding Rules */
+/* Hide common IDX contact forms and request info panels */
+.ihf-contact-form,
+.ihf-request-info,
+.ihf-lead-form,
+.contact-form,
+.request-info-form,
+.lead-capture-form,
+[class*="contact-form"],
+[class*="request-info"],
+[class*="lead-form"],
+[id*="contact-form"],
+[id*="request-info"],
+[id*="lead-form"] {
+  display: none !important;
+}
+
+/* Hide IDX sidebar forms */
+.ihf-sidebar-form,
+.sidebar-contact,
+.property-contact-form,
+[class*="sidebar-form"],
+[class*="sidebar-contact"] {
+  display: none !important;
+}
+
+/* Hide specific IDX form containers */
+form[action*="contact"],
+form[action*="request"],
+form[action*="lead"],
+.form-container:has(input[name*="email"]):has(input[name*="phone"]),
+.widget-contact,
+.widget-request-info {
+  display: none !important;
+}
+
+/* Hide any form that contains typical lead capture fields */
+form:has(input[placeholder*="email"]):has(input[placeholder*="phone"]),
+form:has(input[placeholder*="Email"]):has(input[placeholder*="Phone"]) {
+  display: none !important;
+}

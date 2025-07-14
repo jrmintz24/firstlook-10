@@ -69,6 +69,30 @@ const ListingDetails = () => {
     };
   };
 
+  const removeIDXFormsFromContainer = () => {
+    if (!containerRef.current) return;
+    
+    // Additional cleanup specifically for the container
+    const formsToRemove = containerRef.current.querySelectorAll(`
+      .ihf-contact-form,
+      .ihf-request-info,
+      .ihf-lead-form,
+      .contact-form,
+      .request-info-form,
+      .lead-capture-form,
+      .sidebar-contact,
+      .property-contact-form,
+      form[action*="contact"],
+      form[action*="request"],
+      form[action*="lead"]
+    `);
+    
+    formsToRemove.forEach(form => {
+      console.log('Removing IDX form from container:', form);
+      form.remove();
+    });
+  };
+
   useEffect(() => {
     // Ensure the IDX script is loaded before rendering
     if (window.ihfKestrel && containerRef.current) {
@@ -113,9 +137,15 @@ const ListingDetails = () => {
           if (propertyData) {
             setProperty(propertyData);
           }
-          // Trigger button scan after IDX content is loaded
+          // Trigger button scan and form removal after IDX content is loaded
           scanForButtons();
+          removeIDXFormsFromContainer();
         }, 2000);
+        
+        // Additional cleanup after a longer delay to catch late-loading forms
+        setTimeout(() => {
+          removeIDXFormsFromContainer();
+        }, 5000);
         
       } catch (error) {
         console.error('Error rendering IDX content:', error);

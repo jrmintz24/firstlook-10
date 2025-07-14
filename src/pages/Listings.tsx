@@ -41,7 +41,7 @@ const Listings = () => {
     setSelectedProperty(null);
   };
 
-  // Set up IDX button interception
+  // Set up IDX button and link interception with navigation
   const { scanForButtons, interceptedCount } = useIDXButtonInterception({
     onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
     onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
@@ -80,12 +80,17 @@ const Listings = () => {
           // Append the script to the container
           containerRef.current.appendChild(script);
           
-          // Set loading to false and scan for buttons after content renders
+          // Set loading to false and scan for buttons/links after content renders
           setTimeout(() => {
             setIsLoading(false);
-            // Scan for IDX buttons to intercept
+            // Scan for IDX buttons and property links to intercept
             scanForButtons();
           }, 2000);
+
+          // Additional scan after longer delay to catch dynamically loaded content
+          setTimeout(() => {
+            scanForButtons();
+          }, 5000);
         } else {
           // If IDX is not available, show error after a delay
           setTimeout(() => {
@@ -136,7 +141,7 @@ const Listings = () => {
       {/* Debug info (remove in production) */}
       {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
         <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm">
-          Enhanced {interceptedCount} IDX buttons
+          Enhanced {interceptedCount} IDX elements (buttons + links)
         </div>
       )}
 

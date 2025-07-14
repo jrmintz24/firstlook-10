@@ -1,5 +1,5 @@
-
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PropertyData } from '@/utils/propertyDataUtils';
 
 interface IDXButtonInterceptionProps {
@@ -15,11 +15,12 @@ export const useIDXButtonInterception = ({
   onFavorite,
   onRequestInfo
 }: IDXButtonInterceptionProps) => {
+  const navigate = useNavigate();
   const observerRef = useRef<MutationObserver | null>(null);
   const interceptedButtonsRef = useRef<Set<Element>>(new Set());
+  const interceptedLinksRef = useRef<Set<Element>>(new Set());
 
   const extractPropertyData = (): PropertyData => {
-    // Try to extract property data from the current page
     const addressSelectors = [
       '[data-address]',
       '.address',
@@ -57,7 +58,6 @@ export const useIDXButtonInterception = ({
     let beds = '';
     let baths = '';
 
-    // Extract address
     for (const selector of addressSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
@@ -66,7 +66,6 @@ export const useIDXButtonInterception = ({
       }
     }
 
-    // Extract price
     for (const selector of priceSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
@@ -75,7 +74,6 @@ export const useIDXButtonInterception = ({
       }
     }
 
-    // Extract beds
     for (const selector of bedsSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
@@ -84,7 +82,6 @@ export const useIDXButtonInterception = ({
       }
     }
 
-    // Extract baths
     for (const selector of bathsSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
@@ -93,7 +90,6 @@ export const useIDXButtonInterception = ({
       }
     }
 
-    // Fallback to URL or generic data if extraction fails
     if (!address) {
       address = window.location.pathname.includes('/listing/') 
         ? `Property ${window.location.pathname.split('/').pop()}` 
@@ -110,7 +106,6 @@ export const useIDXButtonInterception = ({
   };
 
   const removeIDXForms = () => {
-    // Comprehensive list of selectors to remove IDX forms
     const formSelectors = [
       '.ihf-contact-form',
       '.ihf-request-info',
@@ -141,14 +136,12 @@ export const useIDXButtonInterception = ({
       });
     });
 
-    // Remove forms with specific actions
     const actionForms = document.querySelectorAll('form[action*="contact"], form[action*="request"], form[action*="lead"]');
     actionForms.forEach(form => {
       console.log('Removing IDX action form:', form);
       form.remove();
     });
 
-    // Remove forms that contain typical lead capture fields
     const allForms = document.querySelectorAll('form');
     allForms.forEach(form => {
       const hasEmail = form.querySelector('input[name*="email"], input[placeholder*="email"], input[placeholder*="Email"]');
@@ -161,6 +154,66 @@ export const useIDXButtonInterception = ({
     });
   };
 
+  const extractPropertyIdFromUrl = (url: string): string | null => {
+    const patterns = [
+      /\/listing\/([^\/\?]+)/i,
+      /\/property\/([^\/\?]+)/i,
+      /\/details\/([^\/\?]+)/i,
+      /mls[_-]?id[=:]([^&\?]+)/i,
+      /id[=:]([^&\?]+)/i,
+      /\/([0-9]+)(?:[\/\?]|$)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
+  };
+
+  const interceptPropertyLink = (link: Element) => {
+    if (interceptedLinksRef.current.has(link)) {
+      return; // Already intercepted
+    }
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+
+    const isPropertyLink = /\/(listing|property|details)\/|mls[_-]?id/i.test(href) ||
+                          link.closest('.property-item, .listing-item, .property-card, .listing-card, [class*="property"], [class*="listing"]');
+
+    if (isPropertyLink) {
+      const handleClick = (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        console.log('IDX property link intercepted:', href);
+        
+        const propertyId = extractPropertyIdFromUrl(href);
+        
+        if (propertyId) {
+          navigate(`/listing/${propertyId}`);
+        } else {
+          const linkText = link.textContent?.trim();
+          const dataId = link.getAttribute('data-id') || link.getAttribute('data-mls-id');
+          const fallbackId = dataId || linkText || 'unknown';
+          navigate(`/listing/${fallbackId}`);
+        }
+      };
+
+      link.removeAttribute('target');
+      
+      link.addEventListener('click', handleClick, true);
+      interceptedLinksRef.current.add(link);
+      
+      link.setAttribute('data-enhanced-link', 'true');
+      console.log(`Enhanced IDX property link: ${href}`);
+    }
+  };
+
   const interceptButton = (button: Element) => {
     if (interceptedButtonsRef.current.has(button)) {
       return; // Already intercepted
@@ -169,7 +222,6 @@ export const useIDXButtonInterception = ({
     const buttonText = button.textContent?.toLowerCase() || '';
     const buttonType = button.getAttribute('data-action') || '';
     
-    // Determine action based on button text or attributes
     let action: 'tour' | 'offer' | 'favorite' | 'info' | null = null;
     
     if (buttonText.includes('tour') || buttonText.includes('showing') || buttonType.includes('tour')) {
@@ -209,14 +261,12 @@ export const useIDXButtonInterception = ({
       button.addEventListener('click', handleClick, true);
       interceptedButtonsRef.current.add(button);
       
-      // Add visual indicator that button is enhanced
       button.setAttribute('data-enhanced', 'true');
       console.log(`Enhanced IDX button: ${buttonText} -> ${action}`);
     }
   };
 
-  const scanForButtons = () => {
-    // Common IDX button selectors
+  const scanForButtonsAndLinks = () => {
     const buttonSelectors = [
       'button',
       'input[type="button"]',
@@ -248,17 +298,36 @@ export const useIDXButtonInterception = ({
       });
     });
 
-    // Remove IDX forms after scanning for buttons
+    const linkSelectors = [
+      'a[href*="/listing/"]',
+      'a[href*="/property/"]',
+      'a[href*="/details/"]',
+      'a[href*="mls"]',
+      '.property-item a',
+      '.listing-item a',
+      '.property-card a',
+      '.listing-card a',
+      '[class*="property"] a',
+      '[class*="listing"] a'
+    ];
+
+    linkSelectors.forEach(selector => {
+      const links = document.querySelectorAll(selector);
+      links.forEach(link => {
+        if (!interceptedLinksRef.current.has(link)) {
+          interceptPropertyLink(link);
+        }
+      });
+    });
+
     removeIDXForms();
   };
 
   useEffect(() => {
-    // Initial scan
     const initialScanTimer = setTimeout(() => {
-      scanForButtons();
+      scanForButtonsAndLinks();
     }, 1000);
 
-    // Set up mutation observer to watch for new buttons and forms
     observerRef.current = new MutationObserver((mutations) => {
       let shouldScan = false;
       
@@ -273,14 +342,12 @@ export const useIDXButtonInterception = ({
       });
 
       if (shouldScan) {
-        // Debounce scanning
         setTimeout(() => {
-          scanForButtons();
+          scanForButtonsAndLinks();
         }, 500);
       }
     });
 
-    // Start observing
     observerRef.current.observe(document.body, {
       childList: true,
       subtree: true
@@ -291,16 +358,19 @@ export const useIDXButtonInterception = ({
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
-      // Clean up event listeners
       interceptedButtonsRef.current.forEach(button => {
         button.removeAttribute('data-enhanced');
       });
+      interceptedLinksRef.current.forEach(link => {
+        link.removeAttribute('data-enhanced-link');
+      });
       interceptedButtonsRef.current.clear();
+      interceptedLinksRef.current.clear();
     };
-  }, [onScheduleTour, onMakeOffer, onFavorite, onRequestInfo]);
+  }, [onScheduleTour, onMakeOffer, onFavorite, onRequestInfo, navigate]);
 
   return {
-    scanForButtons,
-    interceptedCount: interceptedButtonsRef.current.size
+    scanForButtons: scanForButtonsAndLinks,
+    interceptedCount: interceptedButtonsRef.current.size + interceptedLinksRef.current.size
   };
 };

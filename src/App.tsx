@@ -1,4 +1,3 @@
-
 import { Toaster } from './components/ui/toaster'
 import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -36,6 +35,7 @@ import Profile from './pages/Profile'
 import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
 import Idx from './pages/Idx'
+import ListingDetails from './pages/ListingDetails'
 
 const queryClient = new QueryClient()
 
@@ -61,8 +61,9 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
-                {/* IDX Page - Public Route */}
+                {/* IDX Pages - Public Routes */}
                 <Route path="/idx" element={<Idx />} />
+                <Route path="/listing/:listingId" element={<ListingDetails />} />
 
                 {/* Authentication Pages */}
                 <Route path="/buyer-auth" element={<BuyerAuth />} />

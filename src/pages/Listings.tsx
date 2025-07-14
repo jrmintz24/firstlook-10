@@ -20,186 +20,65 @@ const Listings = () => {
     if (window.ihfKestrel) {
       const container = document.getElementById('idx-container');
       if (container) {
-        // Clear any existing content
-        container.innerHTML = '';
-        
-        // Create and execute the embed script
-        const renderedElement = window.ihfKestrel.render();
-        container.appendChild(renderedElement);
-
-        // Enhanced click event listener to intercept ALL IDX interactions
-        const handleAllClicks = (event: Event) => {
-          const target = event.target as HTMLElement;
+        try {
+          // Clear any existing content
+          container.innerHTML = '';
           
-          // Check for direct links
-          const link = target.closest('a');
-          if (link && link.href) {
-            if (shouldInterceptLink(link.href)) {
-              event.preventDefault();
-              event.stopPropagation();
-              navigateToListing(link.href);
-              return;
-            }
+          // Create and execute the embed script
+          const renderedElement = window.ihfKestrel.render();
+          if (renderedElement) {
+            container.appendChild(renderedElement);
           }
-          
-          // Check for clickable elements that might trigger popups (divs, buttons, etc.)
-          const clickableElement = target.closest('[data-listing-id], [onclick*="listing"], [onclick*="popup"], [onclick*="modal"]');
-          if (clickableElement) {
-            const listingId = extractListingIdFromElement(clickableElement);
-            if (listingId) {
-              event.preventDefault();
-              event.stopPropagation();
-              navigate(`/listing/${listingId}`);
-              return;
-            }
-          }
-          
-          // Check for elements with specific IDX classes that might be clickable
-          const idxElement = target.closest('.ihf-listing-card, .ihf-property-card, .listing-item, .property-item');
-          if (idxElement) {
-            const listingId = extractListingIdFromElement(idxElement);
-            if (listingId) {
-              event.preventDefault();
-              event.stopPropagation();
-              navigate(`/listing/${listingId}`);
-              return;
-            }
-          }
-        };
 
-        // Helper function to check if we should intercept this link
-        const shouldInterceptLink = (href: string): boolean => {
-          try {
-            const url = new URL(href);
-            const pathname = url.pathname;
+          // Simple click event listener for link interception
+          const handleClick = (event: Event) => {
+            const target = event.target as HTMLElement;
+            const link = target.closest('a');
             
-            return pathname.includes('/listing/') ||
-                   pathname.includes('/property/') ||
-                   pathname.includes('/details/') ||
-                   url.searchParams.has('listingId') ||
-                   url.searchParams.has('propertyId') ||
-                   url.searchParams.has('mlsId') ||
-                   url.searchParams.has('id');
-          } catch {
-            return false;
-          }
-        };
-
-        // Helper function to navigate to listing page
-        const navigateToListing = (href: string) => {
-          try {
-            const url = new URL(href);
-            const pathname = url.pathname;
-            let propertyId = '';
-            
-            // Try to extract from pathname
-            const pathParts = pathname.split('/');
-            const listingIndex = pathParts.findIndex(part => 
-              part === 'listing' || part === 'property' || part === 'details'
-            );
-            
-            if (listingIndex !== -1 && pathParts[listingIndex + 1]) {
-              propertyId = pathParts[listingIndex + 1];
-            }
-            
-            // Try to extract from search params if not found in path
-            if (!propertyId) {
-              propertyId = url.searchParams.get('listingId') ||
-                         url.searchParams.get('propertyId') ||
-                         url.searchParams.get('mlsId') ||
-                         url.searchParams.get('id') ||
-                         '';
-            }
-            
-            // Navigate to our listing detail page
-            if (propertyId) {
-              navigate(`/listing/${propertyId}`);
-            } else {
-              // Fallback: extract any numeric ID from the URL
-              const numericMatch = href.match(/\d+/);
-              if (numericMatch) {
-                navigate(`/listing/${numericMatch[0]}`);
+            if (link && link.href) {
+              const url = new URL(link.href);
+              
+              // Check if this looks like a property detail link
+              if (url.pathname.includes('/listing/') || 
+                  url.pathname.includes('/property/') || 
+                  url.searchParams.has('listingId') ||
+                  url.searchParams.has('propertyId')) {
+                
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Extract property ID
+                let propertyId = '';
+                const pathParts = url.pathname.split('/');
+                const listingIndex = pathParts.findIndex(part => 
+                  part === 'listing' || part === 'property'
+                );
+                
+                if (listingIndex !== -1 && pathParts[listingIndex + 1]) {
+                  propertyId = pathParts[listingIndex + 1];
+                } else {
+                  propertyId = url.searchParams.get('listingId') ||
+                             url.searchParams.get('propertyId') ||
+                             url.searchParams.get('id') || '';
+                }
+                
+                if (propertyId) {
+                  navigate(`/listing?id=${propertyId}`);
+                }
               }
             }
-          } catch (error) {
-            console.error('Error navigating to listing:', error);
-          }
-        };
+          };
 
-        // Helper function to extract listing ID from various element attributes
-        const extractListingIdFromElement = (element: Element): string => {
-          // Check common data attributes
-          const dataAttrs = ['data-listing-id', 'data-property-id', 'data-mls-id', 'data-id'];
-          for (const attr of dataAttrs) {
-            const value = element.getAttribute(attr);
-            if (value) return value;
-          }
+          // Add click listener
+          container.addEventListener('click', handleClick, true);
           
-          // Check onclick attribute for IDs
-          const onclick = element.getAttribute('onclick');
-          if (onclick) {
-            const match = onclick.match(/\d+/);
-            if (match) return match[0];
-          }
-          
-          // Check href if it's a link
-          if (element.tagName === 'A') {
-            const href = (element as HTMLAnchorElement).href;
-            if (href && shouldInterceptLink(href)) {
-              const url = new URL(href);
-              return url.searchParams.get('listingId') || 
-                     url.searchParams.get('propertyId') || 
-                     url.searchParams.get('mlsId') || 
-                     url.searchParams.get('id') || 
-                     '';
-            }
-          }
-          
-          return '';
-        };
-
-        // Add comprehensive event listeners
-        container.addEventListener('click', handleAllClicks, true);
-        container.addEventListener('mousedown', handleAllClicks, true);
-        
-        // Override any window.open calls that might be triggered by IDX
-        const originalWindowOpen = window.open;
-        window.open = function(url, name, specs) {
-          if (url && typeof url === 'string' && shouldInterceptLink(url)) {
-            navigateToListing(url);
-            return null;
-          }
-          return originalWindowOpen.call(window, url, name, specs);
-        };
-
-        // Set up MutationObserver to handle dynamically added content
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node as Element;
-                // Re-attach event listeners to new content
-                const links = element.querySelectorAll('a[href*="listing"], a[href*="property"], a[href*="details"]');
-                links.forEach(link => {
-                  link.addEventListener('click', handleAllClicks, true);
-                });
-              }
-            });
-          });
-        });
-
-        observer.observe(container, {
-          childList: true,
-          subtree: true
-        });
-
-        // Cleanup function
-        return () => {
-          container.removeEventListener('click', handleAllClicks, true);
-          container.removeEventListener('mousedown', handleAllClicks, true);
-          window.open = originalWindowOpen;
-          observer.disconnect();
-        };
+          // Cleanup function
+          return () => {
+            container.removeEventListener('click', handleClick, true);
+          };
+        } catch (error) {
+          console.error('Error setting up IDX widget:', error);
+        }
       }
     }
   }, [navigate, searchTerm]);

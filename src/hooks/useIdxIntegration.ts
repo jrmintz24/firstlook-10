@@ -10,7 +10,7 @@ export interface IdxProperty {
   mlsId: string;
 }
 
-export const useIdxIntegration = (listingId?: string) => {
+export const useIdxIntegration = (listingId?: string | null) => {
   const [property, setProperty] = useState<IdxProperty | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,17 +28,21 @@ export const useIdxIntegration = (listingId?: string) => {
 
         // Try to extract property data from IDX widget if available
         if (window.ihfKestrel && (window as any).ihfKestrel.getProperty) {
-          const propertyData = await (window as any).ihfKestrel.getProperty(listingId);
-          if (propertyData) {
-            setProperty({
-              id: listingId,
-              address: propertyData.address || `Property ${listingId}`,
-              price: propertyData.price || 'Price Available Upon Request',
-              beds: propertyData.beds || '',
-              baths: propertyData.baths || '',
-              mlsId: propertyData.mlsId || listingId
-            });
-            return;
+          try {
+            const propertyData = await (window as any).ihfKestrel.getProperty(listingId);
+            if (propertyData) {
+              setProperty({
+                id: listingId,
+                address: propertyData.address || `Property ${listingId}`,
+                price: propertyData.price || 'Price Available Upon Request',
+                beds: propertyData.beds || '',
+                baths: propertyData.baths || '',
+                mlsId: propertyData.mlsId || listingId
+              });
+              return;
+            }
+          } catch (idxError) {
+            console.log('IDX property data not available:', idxError);
           }
         }
 

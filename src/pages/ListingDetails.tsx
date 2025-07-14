@@ -1,13 +1,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { useIdxIntegration } from '../hooks/useIdxIntegration';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { listingId } = useParams<{ listingId: string }>();
+  const [searchParams] = useSearchParams();
+  const listingId = searchParams.get('id');
   const [useIframe, setUseIframe] = useState(false);
   const [idxError, setIdxError] = useState(false);
   
@@ -22,7 +23,7 @@ const ListingDetails = () => {
   useEffect(() => {
     if (!listingId) return;
 
-    // Try IDX widget first, fallback to iframe if needed
+    // Try IDX widget first
     if (window.ihfKestrel && containerRef.current && !useIframe) {
       try {
         // Clear any existing content
@@ -35,21 +36,17 @@ const ListingDetails = () => {
           
           // Try to navigate to the specific listing within the widget
           setTimeout(() => {
-            const navigateToListing = () => {
-              // Look for navigation methods in the IDX widget
-              if ((window as any).ihfKestrel?.navigate) {
-                (window as any).ihfKestrel.navigate(`/listing/${listingId}`);
-              } else if ((window as any).ihf?.showListing) {
-                (window as any).ihf.showListing(listingId);
-              } else {
-                // If no navigation method available, try iframe approach
-                setUseIframe(true);
-              }
-            };
-            
-            navigateToListing();
+            if ((window as any).ihfKestrel?.navigate) {
+              (window as any).ihfKestrel.navigate(`/listing/${listingId}`);
+            } else if ((window as any).ihf?.showListing) {
+              (window as any).ihf.showListing(listingId);
+            } else {
+              console.log('IDX navigation methods not available, using iframe fallback');
+              setUseIframe(true);
+            }
           }, 1000);
         } else {
+          console.log('IDX widget render failed, using iframe fallback');
           setUseIframe(true);
         }
       } catch (error) {
@@ -59,6 +56,22 @@ const ListingDetails = () => {
       }
     }
   }, [listingId, useIframe]);
+
+  if (!listingId) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg mb-2 text-red-600">No property ID provided</p>
+          <button 
+            onClick={() => window.history.back()}
+            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (useIframe && listingId) {
     // Iframe fallback approach
@@ -70,7 +83,7 @@ const ListingDetails = () => {
         {/* Iframe Container */}
         <div className="w-full" style={{ height: 'calc(100vh - 80px)' }}>
           <iframe
-            src={`https://your-idx-domain.com/listing/${listingId}`}
+            src={`https://kestrel.idxhome.com/listing/${listingId}`}
             className="w-full h-full border-0"
             title={`Property Listing ${listingId}`}
             onError={() => setIdxError(true)}

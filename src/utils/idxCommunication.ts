@@ -8,9 +8,9 @@ export interface PropertyData {
   mlsId?: string;
 }
 
-// Simple CSS to hide iHomeFinder's default buttons
+// Essential CSS to hide IDX's default buttons without interfering with navigation
 export const IDX_BUTTON_HIDING_CSS = `
-/* Hide iHomeFinder's default buttons */
+/* Hide iHomeFinder's default contact/tour buttons */
 .ihf-contact-buttons,
 .ihf-schedule-button,
 .ihf-request-info-button,
@@ -23,38 +23,33 @@ button[title*="schedule" i],
 button[title*="contact" i],
 a[title*="tour" i],
 a[title*="schedule" i],
-a[title*="contact" i],
-input[value*="tour" i],
-input[value*="schedule" i],
-input[value*="contact" i] {
+a[title*="contact" i] {
   display: none !important;
 }
 
-/* Hide common form elements that might be contact forms */
+/* Hide contact forms */
 .ihf-contact-form,
 .contact-form,
-[class*="contact-form"],
-form[action*="contact"],
-form[class*="contact"] {
+[class*="contact-form"] {
   display: none !important;
 }
 `;
 
-// Simple function to detect if we're on a property detail page vs search results
+// Simple detection for property detail pages
 export const isPropertyDetailPage = (): boolean => {
-  // Check for property-specific elements that only appear on detail pages
-  const detailIndicators = [
+  // Check for specific property detail indicators
+  const detailSelectors = [
     '.ihf-detail-address',
-    '.ihf-listing-address', 
+    '.ihf-listing-address',
     '.ihf-detail-price',
-    '.property-details',
-    '[class*="detail"]'
+    '.ihf-property-details',
+    '[class*="detail-"]'
   ];
   
-  return detailIndicators.some(selector => document.querySelector(selector) !== null);
+  return detailSelectors.some(selector => document.querySelector(selector) !== null);
 };
 
-// Simplified property data extraction - only runs on detail pages
+// Simple property data extraction
 export const extractPropertyData = (): PropertyData => {
   const data: PropertyData = {
     address: '',
@@ -64,89 +59,53 @@ export const extractPropertyData = (): PropertyData => {
     mlsId: ''
   };
 
-  // Only extract if we're on a detail page
+  // Only extract if on detail page
   if (!isPropertyDetailPage()) {
     return data;
   }
 
-  // Address extraction - try the most common selectors
-  const addressSelectors = [
-    '.ihf-listing-address',
-    '.ihf-detail-address',
-    '.property-address',
-    'h1', 
-    'h2'
-  ];
-  
+  // Extract address
+  const addressSelectors = ['.ihf-listing-address', '.ihf-detail-address', 'h1', 'h2'];
   for (const selector of addressSelectors) {
     const element = document.querySelector(selector);
-    if (element) {
-      const text = element.textContent?.trim() || '';
-      if (text && text.length > 10 && (text.includes(',') || /\d+/.test(text))) {
+    if (element?.textContent?.trim()) {
+      const text = element.textContent.trim();
+      if (text.length > 10 && (text.includes(',') || /\d+/.test(text))) {
         data.address = text;
         break;
       }
     }
   }
 
-  // Price extraction
+  // Extract price
   const priceSelectors = ['.ihf-listing-price', '.ihf-detail-price', '.price'];
   for (const selector of priceSelectors) {
     const element = document.querySelector(selector);
-    if (element) {
-      const text = element.textContent?.trim() || '';
-      if (text && (text.includes('$') || text.match(/[\d,]+/))) {
+    if (element?.textContent?.trim()) {
+      const text = element.textContent.trim();
+      if (text.includes('$')) {
         data.price = text;
         break;
       }
     }
   }
 
-  // Beds extraction
-  const bedsSelectors = ['.ihf-detail-beds', '.beds', '.bed'];
-  for (const selector of bedsSelectors) {
-    const element = document.querySelector(selector);
-    if (element) {
-      const bedMatch = element.textContent?.match(/(\d+)/);
-      if (bedMatch) {
-        data.beds = bedMatch[1];
-        break;
-      }
-    }
+  // Extract beds and baths
+  const bedsElement = document.querySelector('.ihf-detail-beds, .beds');
+  if (bedsElement) {
+    const bedMatch = bedsElement.textContent?.match(/(\d+)/);
+    if (bedMatch) data.beds = bedMatch[1];
   }
 
-  // Baths extraction
-  const bathsSelectors = ['.ihf-detail-baths', '.baths', '.bath'];
-  for (const selector of bathsSelectors) {
-    const element = document.querySelector(selector);
-    if (element) {
-      const bathMatch = element.textContent?.match(/(\d+(?:\.\d+)?)/);
-      if (bathMatch) {
-        data.baths = bathMatch[1];
-        break;
-      }
-    }
+  const bathsElement = document.querySelector('.ihf-detail-baths, .baths');
+  if (bathsElement) {
+    const bathMatch = bathsElement.textContent?.match(/(\d+(?:\.\d+)?)/);
+    if (bathMatch) data.baths = bathMatch[1];
   }
 
-  // MLS ID extraction
-  const mlsSelectors = ['.ihf-detail-mls-number', '.mls-number', '.mls-id'];
-  for (const selector of mlsSelectors) {
-    const element = document.querySelector(selector);
-    if (element) {
-      const mlsMatch = element.textContent?.match(/(\d{6,})/);
-      if (mlsMatch) {
-        data.mlsId = mlsMatch[1];
-        break;
-      }
-    }
-  }
-
-  // Fallback: try to extract from page title
-  if (!data.address) {
-    const title = document.title;
-    if (title && title.length > 10 && title.includes(',')) {
-      data.address = title.split('|')[0].trim();
-    }
+  // Fallback to page title for address
+  if (!data.address && document.title.includes(',')) {
+    data.address = document.title.split('|')[0].trim();
   }
 
   return data;

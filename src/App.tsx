@@ -148,11 +148,9 @@ function App() {
 
                 {/* Listings Pages - IDX Integration */}
                 <Route path="/listings" element={<Listings />} />
-                <Route path="/listings/:address" element={<Listings />} />
 
-                {/* New Listing Pages (singular) - IDX Integration with specific SEO */}
+                {/* Listing Detail Page - iHomeFinder uses /listing?id={id} format */}
                 <Route path="/listing" element={<Listings />} />
-                <Route path="/listing/:address" element={<Listings />} />
 
                 {/* Informational Pages */}
                 <Route path="/homebuying-guide" element={<HomebuyingGuide />} />

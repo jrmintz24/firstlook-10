@@ -1,18 +1,25 @@
 
 import React, { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
-  // Ultra-minimal IDX initialization - no complexity, no polling, no interference
+  // Determine if this is a property detail page based on query parameters
+  const isDetailPage = location.pathname === '/listing' && location.search.includes('id=');
+
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
           console.log('Initializing IDX widget...');
+          console.log('Current URL:', window.location.href);
+          console.log('Is detail page:', isDetailPage);
+          
           containerRef.current.innerHTML = '';
           
-          // Use the simplest possible approach
+          // Use the simplest possible approach - let IDX handle URL routing
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
@@ -39,7 +46,7 @@ const Listings = () => {
         }
       }, 1000);
     }
-  }, []);
+  }, [location.pathname, location.search, isDetailPage]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -49,7 +56,7 @@ const Listings = () => {
         className="w-full min-h-screen"
       >
         <div className="flex items-center justify-center h-64 text-gray-500">
-          Loading MLS listings...
+          {isDetailPage ? 'Loading property details...' : 'Loading MLS listings...'}
         </div>
       </div>
     </div>

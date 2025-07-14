@@ -6,35 +6,32 @@ const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // Determine if this is a property detail page based on query parameters
-  const isDetailPage = location.pathname === '/listing' && location.search.includes('id=');
-
   useEffect(() => {
     const initializeIDX = () => {
       if (containerRef.current && window.ihfKestrel) {
         try {
-          console.log('Initializing IDX widget...');
+          console.log('Initializing IDX with script-based rendering...');
           console.log('Current URL:', window.location.href);
           console.log('Location pathname:', location.pathname);
           console.log('Location search:', location.search);
-          console.log('Is detail page:', isDetailPage);
           
           // Clear previous content
           containerRef.current.innerHTML = '';
           
-          // Let IDX handle URL routing naturally without custom interference
-          const widgetElement = window.ihfKestrel.render();
+          // Use script-based rendering pattern - same as IDXSearchWidget
+          const script = document.createElement('script');
+          script.innerHTML = `
+            document.currentScript.replaceWith(ihfKestrel.render());
+          `;
           
-          if (widgetElement && containerRef.current) {
-            if (widgetElement instanceof HTMLElement) {
-              containerRef.current.appendChild(widgetElement);
-            } else if (typeof widgetElement === 'string') {
-              containerRef.current.innerHTML = widgetElement;
-            }
-            console.log('IDX widget initialized successfully');
-          }
+          containerRef.current.appendChild(script);
+          
+          console.log('IDX script-based widget initialized successfully');
         } catch (error) {
           console.error('Error initializing IDX widget:', error);
+          if (containerRef.current) {
+            containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-red-600 bg-red-50 rounded-xl border border-red-200"><p>IDX widget failed to load</p></div>';
+          }
         }
       }
     };
@@ -43,26 +40,34 @@ const Listings = () => {
     if (window.ihfKestrel) {
       initializeIDX();
     } else {
-      // Fallback with timeout
-      setTimeout(() => {
-        if (window.ihfKestrel) {
+      // Poll for ihfKestrel availability
+      const interval = setInterval(() => {
+        if (window.ihfKestrel && containerRef.current) {
+          clearInterval(interval);
           initializeIDX();
-        } else {
-          console.warn('IDX widget failed to load after timeout');
         }
-      }, 1000);
+      }, 100);
+
+      // Cleanup after 10 seconds
+      setTimeout(() => {
+        clearInterval(interval);
+        if (!window.ihfKestrel && containerRef.current) {
+          containerRef.current.innerHTML = '<div class="flex items-center justify-center h-64 text-yellow-600 bg-yellow-50 rounded-xl border border-yellow-200"><p>IDX widget is loading...</p></div>';
+        }
+      }, 10000);
+      
+      return () => clearInterval(interval);
     }
-  }, [location.pathname, location.search, isDetailPage]);
+  }, [location.pathname, location.search]);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* IDX Container */}
       <div 
         ref={containerRef}
         className="w-full min-h-screen"
       >
         <div className="flex items-center justify-center h-64 text-gray-500">
-          {isDetailPage ? 'Loading property details...' : 'Loading MLS listings...'}
+          Loading MLS listings...
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { useIdxIntegration } from '../hooks/useIdxIntegration';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
+import PropertyActionManager from '../components/property/PropertyActionManager';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -11,6 +12,7 @@ const ListingDetails = () => {
   const listingId = searchParams.get('id');
   const [useIframe, setUseIframe] = useState(false);
   const [idxError, setIdxError] = useState(false);
+  const [showActionManager, setShowActionManager] = useState(false);
   
   const { property, loading, error } = useIdxIntegration(listingId);
 
@@ -19,6 +21,33 @@ const ListingDetails = () => {
     title: property?.address ? `${property.address} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
     description: 'View detailed information about this property listing including photos, amenities, and neighborhood details.',
   });
+
+  const handleScheduleTour = () => {
+    setShowActionManager(true);
+    // Trigger tour action
+    setTimeout(() => {
+      const tourBtn = document.querySelector('[data-action="tour"]') as HTMLElement;
+      tourBtn?.click();
+    }, 100);
+  };
+
+  const handleMakeOffer = () => {
+    setShowActionManager(true);
+    // Trigger offer action  
+    setTimeout(() => {
+      const offerBtn = document.querySelector('[data-action="offer"]') as HTMLElement;
+      offerBtn?.click();
+    }, 100);
+  };
+
+  const handleFavorite = () => {
+    setShowActionManager(true);
+    // Trigger favorite action
+    setTimeout(() => {
+      const favoriteBtn = document.querySelector('[data-action="favorite"]') as HTMLElement;
+      favoriteBtn?.click();
+    }, 100);
+  };
 
   useEffect(() => {
     if (!listingId) return;
@@ -77,8 +106,13 @@ const ListingDetails = () => {
     // Iframe fallback approach
     return (
       <div className="min-h-screen bg-white">
-        {/* Sticky Property Action Header */}
-        <PropertyActionHeader property={property} />
+        {/* Enhanced Property Action Header */}
+        <PropertyActionHeader 
+          property={property} 
+          onScheduleTour={handleScheduleTour}
+          onMakeOffer={handleMakeOffer}
+          onFavorite={handleFavorite}
+        />
         
         {/* Iframe Container */}
         <div className="w-full" style={{ height: 'calc(100vh - 80px)' }}>
@@ -104,14 +138,28 @@ const ListingDetails = () => {
             </div>
           )}
         </div>
+
+        {/* Property Action Manager */}
+        {showActionManager && property && (
+          <PropertyActionManager
+            property={property}
+            agentName="Your Agent" // Replace with actual agent name
+            onClose={() => setShowActionManager(false)}
+          />
+        )}
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Sticky Property Action Header */}
-      <PropertyActionHeader property={property} />
+      {/* Enhanced Property Action Header */}
+      <PropertyActionHeader 
+        property={property} 
+        onScheduleTour={handleScheduleTour}
+        onMakeOffer={handleMakeOffer}
+        onFavorite={handleFavorite}
+      />
       
       {/* IDX Content Container */}
       <div 
@@ -152,6 +200,15 @@ const ListingDetails = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Property Action Manager */}
+      {showActionManager && property && (
+        <PropertyActionManager
+          property={property}
+          agentName="Your Agent" // Replace with actual agent name
+          onClose={() => setShowActionManager(false)}
+        />
       )}
     </div>
   );

@@ -22,9 +22,10 @@ const Listings = () => {
           // Clear previous content
           containerRef.current.innerHTML = '';
           
-          // Ensure IDX has the correct base URL context
+          // Safely set base URL if config exists
           if (window.ihfKestrel.config) {
-            window.ihfKestrel.config.baseUrl = window.location.origin;
+            // Use type assertion to access baseUrl property
+            (window.ihfKestrel.config as any).baseUrl = window.location.origin;
             console.log('IDX baseUrl set to:', window.location.origin);
           }
           

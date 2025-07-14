@@ -131,10 +131,11 @@ const ListingDetails = () => {
         onScheduleTour={() => handlePropertyAction('tour')}
         onMakeOffer={() => handlePropertyAction('offer')}
         onFavorite={() => handlePropertyAction('favorite')}
+        className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"
       />
       
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full h-full">
+      <div ref={containerRef} className="w-full h-full pt-20">
         {/* IDX listing content will be rendered here */}
       </div>
 

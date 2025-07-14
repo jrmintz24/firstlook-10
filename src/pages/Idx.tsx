@@ -1,15 +1,29 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const Idx = () => {
+  useEffect(() => {
+    // Execute the IDX embed code when component mounts
+    if (window.ihfKestrel) {
+      const container = document.getElementById('idx-container');
+      if (container) {
+        // Clear any existing content
+        container.innerHTML = '';
+        // Create and execute the embed script
+        const renderedElement = window.ihfKestrel.render();
+        container.appendChild(renderedElement);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <div 
+        id="idx-container"
         className="w-full h-full"
-        dangerouslySetInnerHTML={{
-          __html: `<script>document.currentScript.replaceWith(ihfKestrel.render());</script>`
-        }}
-      />
+      >
+        {/* IDX content will be rendered here */}
+      </div>
     </div>
   );
 };

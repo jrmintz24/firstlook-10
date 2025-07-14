@@ -36,6 +36,7 @@ import Onboarding from './pages/Onboarding'
 import Search from './pages/Search'
 import Idx from './pages/Idx'
 import ListingDetails from './pages/ListingDetails'
+import Listings from './pages/Listings'
 
 const queryClient = new QueryClient()
 
@@ -63,6 +64,7 @@ function App() {
 
                 {/* IDX Pages - Public Routes */}
                 <Route path="/idx" element={<Idx />} />
+                <Route path="/listings" element={<Listings />} />
                 <Route path="/listing/:listingId" element={<ListingDetails />} />
 
                 {/* Authentication Pages */}

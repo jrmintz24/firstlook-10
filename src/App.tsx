@@ -64,6 +64,7 @@ function App() {
 
                 {/* IDX Pages - Public Routes */}
                 <Route path="/idx" element={<Idx />} />
+                <Route path="/listing" element={<Listing />} />
                 <Route path="/listings" element={<Listings />} />
                 <Route path="/listing/:listingId" element={<ListingDetails />} />
 

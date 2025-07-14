@@ -21,7 +21,7 @@ const App = () => (
               <Route key={to} path={to} element={page} />
             ))}
             {/* Add the listing route with query parameter */}
-            <Route path="/listing" element={navItems.find(item => item.to === "/listing/:listingId")?.page} />
+            <Route path="/listing" element={navItems.find(item => item.to === "/listing")?.page} />
           </Routes>
         </Layout>
       </BrowserRouter>

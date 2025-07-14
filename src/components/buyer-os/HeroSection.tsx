@@ -48,7 +48,7 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             </p>
           </div>
 
-          {/* IDX Search Widget */}
+          {/* IDX Search Widget - now clean and simple */}
           <IDXSearchWidget className="mb-12" />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

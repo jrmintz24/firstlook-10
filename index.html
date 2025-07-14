@@ -7,32 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Finder Platform</title>
     
-    <!-- iHomeFinder IDX Scripts - Required for IDX Integration -->
+    <!-- iHomeFinder IDX Scripts - Clean Configuration -->
     <script src="https://kestrel.idxhome.com/ihf-kestrel.js"></script>
     <script>
       window.ihfKestrel = window.ihfKestrel || {};
       ihfKestrel.config = {
         platform: "custom",
-        activationToken: "b7cf776f-76ba-410d-a863-c813fce85ee6",
-        // Explicit base URL configuration to prevent double slashes
-        baseUrl: window.location.origin,
-        // Ensure URLs are constructed correctly
-        urlRewriteRules: {
-          // Force single slash construction
-          cleanUrls: true
-        }
+        activationToken: "b7cf776f-76ba-410d-a863-c813fce85ee6"
       };
       
-      // Add URL normalization function
-      ihfKestrel.normalizeUrl = function(url) {
-        if (!url) return url;
-        // Remove double slashes except after protocol
-        return url.replace(/([^:]\/)\/+/g, '$1');
-      };
-      
-      // Debug logging for URL construction
-      console.log('IDX Base URL:', window.location.origin);
-      console.log('Current URL:', window.location.href);
+      // Debug logging for IDX initialization
+      console.log('IDX Configuration initialized');
     </script>
   </head>
   <body>

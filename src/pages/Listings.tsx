@@ -22,14 +22,7 @@ const Listings = () => {
           // Clear previous content
           containerRef.current.innerHTML = '';
           
-          // Safely set base URL if config exists
-          if (window.ihfKestrel.config) {
-            // Use type assertion to access baseUrl property
-            (window.ihfKestrel.config as any).baseUrl = window.location.origin;
-            console.log('IDX baseUrl set to:', window.location.origin);
-          }
-          
-          // Let IDX handle URL routing with proper base URL
+          // Let IDX handle URL routing naturally without custom interference
           const widgetElement = window.ihfKestrel.render();
           
           if (widgetElement && containerRef.current) {
@@ -39,14 +32,6 @@ const Listings = () => {
               containerRef.current.innerHTML = widgetElement;
             }
             console.log('IDX widget initialized successfully');
-            
-            // Add URL debugging after render
-            setTimeout(() => {
-              const links = containerRef.current?.querySelectorAll('a[href]');
-              if (links) {
-                console.log('IDX generated links sample:', Array.from(links).slice(0, 3).map(link => link.getAttribute('href')));
-              }
-            }, 2000);
           }
         } catch (error) {
           console.error('Error initializing IDX widget:', error);

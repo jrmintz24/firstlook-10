@@ -50,10 +50,14 @@ const Listings = () => {
   });
 
   useEffect(() => {
+    console.log('[Listings] Starting IDX load process');
+
     const loadIDX = async () => {
       try {
         // Ensure the IDX script is loaded
         if (window.ihfKestrel && containerRef.current) {
+          console.log('[Listings] IDX Kestrel found, rendering...');
+          
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
@@ -61,18 +65,21 @@ const Listings = () => {
           const script = document.createElement('script');
           script.textContent = `
             try {
+              console.log('[IDX] Attempting to render IDX content');
               const element = ihfKestrel.render({
                 modalMode: false,
                 popupMode: false,
                 inlineMode: true
               });
               if (element) {
+                console.log('[IDX] IDX element created successfully');
                 document.currentScript.replaceWith(element);
               } else {
+                console.log('[IDX] Fallback to standard render');
                 document.currentScript.replaceWith(ihfKestrel.render());
               }
             } catch (e) {
-              console.error('IDX render error:', e);
+              console.error('[IDX] Render error:', e);
               document.currentScript.replaceWith(ihfKestrel.render());
             }
           `;
@@ -80,18 +87,28 @@ const Listings = () => {
           // Append the script to the container
           containerRef.current.appendChild(script);
           
+          console.log('[Listings] IDX script appended, scheduling scans...');
+          
           // Set loading to false and scan for buttons/links after content renders
           setTimeout(() => {
+            console.log('[Listings] Initial IDX load timeout reached');
             setIsLoading(false);
-            // Scan for IDX buttons and property links to intercept
             scanForButtons();
           }, 2000);
 
-          // Additional scan after longer delay to catch dynamically loaded content
+          // Additional scans to catch dynamically loaded content
           setTimeout(() => {
+            console.log('[Listings] Additional scan for dynamic content');
             scanForButtons();
           }, 5000);
+
+          setTimeout(() => {
+            console.log('[Listings] Final scan for late-loading content');
+            scanForButtons();
+          }, 10000);
+          
         } else {
+          console.log('[Listings] IDX Kestrel not available, showing error');
           // If IDX is not available, show error after a delay
           setTimeout(() => {
             setIsLoading(false);
@@ -99,7 +116,7 @@ const Listings = () => {
           }, 2000);
         }
       } catch (error) {
-        console.error('Error loading IDX content:', error);
+        console.error('[Listings] Error loading IDX content:', error);
         setIsLoading(false);
         setHasError(true);
       }
@@ -107,6 +124,13 @@ const Listings = () => {
 
     loadIDX();
   }, [scanForButtons]);
+
+  // Debug information
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Listings] Debug - intercepted count:', interceptedCount);
+    }
+  }, [interceptedCount]);
 
   if (hasError) {
     return (
@@ -138,10 +162,10 @@ const Listings = () => {
         className={`w-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
       />
 
-      {/* Debug info (remove in production) */}
+      {/* Debug info */}
       {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
-        <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm">
-          Enhanced {interceptedCount} IDX elements (buttons + links)
+        <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm z-50">
+          Enhanced {interceptedCount} IDX elements
         </div>
       )}
 

@@ -1,0 +1,81 @@
+
+import React, { useState } from 'react';
+import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
+import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
+import { useEnhancedPostShowingActions } from '@/hooks/useEnhancedPostShowingActions';
+import { PropertyData } from '@/utils/propertyDataUtils';
+
+interface PropertyActionManagerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  actionType: 'tour' | 'offer' | 'favorite' | null;
+  property: PropertyData | null;
+  buyerId?: string;
+}
+
+const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
+  isOpen,
+  onClose,
+  actionType,
+  property,
+  buyerId = 'temp-buyer-id' // TODO: Replace with actual buyer ID from auth
+}) => {
+  const { isSubmitting, favoriteProperty } = useEnhancedPostShowingActions();
+
+  const handleTourSchedule = () => {
+    console.log('Schedule tour for:', property);
+    // TODO: Implement tour scheduling modal
+    onClose();
+  };
+
+  const handleMakeOffer = () => {
+    // The MakeOfferModal will handle its own submission
+    // onClose will be called by the modal itself
+  };
+
+  const handleFavorite = async (notes?: string) => {
+    if (!property) return;
+    
+    await favoriteProperty({
+      showingId: 'temp-showing-id', // TODO: Replace with actual showing ID
+      buyerId,
+      propertyAddress: property.address,
+    }, notes);
+    
+    onClose();
+  };
+
+  if (!isOpen || !property) return null;
+
+  switch (actionType) {
+    case 'tour':
+      // TODO: Implement tour scheduling modal
+      handleTourSchedule();
+      return null;
+      
+    case 'offer':
+      return (
+        <MakeOfferModal
+          isOpen={isOpen}
+          onClose={onClose}
+          propertyAddress={property.address}
+        />
+      );
+      
+    case 'favorite':
+      return (
+        <FavoritePropertyModal
+          isOpen={isOpen}
+          onClose={onClose}
+          onSave={handleFavorite}
+          propertyAddress={property.address}
+          isSubmitting={isSubmitting}
+        />
+      );
+      
+    default:
+      return null;
+  }
+};
+
+export default PropertyActionManager;

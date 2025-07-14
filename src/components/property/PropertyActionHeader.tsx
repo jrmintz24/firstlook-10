@@ -6,28 +6,43 @@ import { PropertyData } from '@/utils/propertyDataUtils';
 interface PropertyActionHeaderProps {
   property?: PropertyData;
   className?: string;
+  onScheduleTour?: () => void;
+  onMakeOffer?: () => void;
+  onFavorite?: () => void;
 }
 
 const PropertyActionHeader: React.FC<PropertyActionHeaderProps> = ({ 
   property,
-  className = ""
+  className = "",
+  onScheduleTour,
+  onMakeOffer,
+  onFavorite
 }) => {
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const handleScheduleTour = (property: PropertyData | any) => {
-    console.log('Schedule tour for:', property);
-    // TODO: Implement tour scheduling logic
+  const handleScheduleTour = () => {
+    if (onScheduleTour) {
+      onScheduleTour();
+    } else {
+      console.log('Schedule tour for:', property);
+    }
   };
 
-  const handleMakeOffer = (property: PropertyData | any) => {
-    console.log('Make offer for:', property);
-    // TODO: Implement offer making logic
+  const handleMakeOffer = () => {
+    if (onMakeOffer) {
+      onMakeOffer();
+    } else {
+      console.log('Make offer for:', property);
+    }
   };
 
-  const handleFavorite = (property: PropertyData | any) => {
-    setIsFavorited(!isFavorited);
-    console.log('Favorite toggled for:', property);
-    // TODO: Implement favorite logic
+  const handleFavorite = () => {
+    if (onFavorite) {
+      onFavorite();
+    } else {
+      setIsFavorited(!isFavorited);
+      console.log('Favorite toggled for:', property);
+    }
   };
 
   // Default property data if none provided (for demo purposes)

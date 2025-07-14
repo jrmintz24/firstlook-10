@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Calendar, DollarSign, Heart } from "lucide-react";
-import { PropertyData } from "@/utils/idxCommunication";
+import { PropertyData } from "@/utils/propertyDataUtils";
 
 interface PropertyActionButtonsProps {
   property: PropertyData | any;

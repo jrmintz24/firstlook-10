@@ -1,6 +1,17 @@
 
-import { PropertyData } from "@/utils/idxCommunication";
 import { Property } from "@/types/simplyrets";
+
+// Standalone PropertyData interface (no longer dependent on IDX)
+export interface PropertyData {
+  address: string;
+  price?: string;
+  beds?: string;
+  baths?: string;
+  mlsId?: string;
+  photos?: string[];
+  sqft?: string;
+  propertyType?: string;
+}
 
 export interface NormalizedPropertyData {
   address: string;

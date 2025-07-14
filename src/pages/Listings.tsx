@@ -2,16 +2,51 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
+import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
+import { PropertyData } from '../utils/propertyDataUtils';
+import PropertyActionManager from '../components/property/PropertyActionManager';
 
 const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
+  }>({
+    isOpen: false,
+    actionType: null
+  });
+  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
 
   // Set document head with static title as specified
   useDocumentHead({
     title: 'Property Search',
     description: 'Search and browse available properties with advanced filtering options and detailed listings.',
+  });
+
+  const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData: PropertyData) => {
+    setSelectedProperty(propertyData);
+    setModalState({
+      isOpen: true,
+      actionType
+    });
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      actionType: null
+    });
+    setSelectedProperty(null);
+  };
+
+  // Set up IDX button interception
+  const { scanForButtons, interceptedCount } = useIDXButtonInterception({
+    onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
+    onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
+    onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
+    onRequestInfo: (propertyData) => handlePropertyAction('info', propertyData)
   });
 
   useEffect(() => {
@@ -45,10 +80,12 @@ const Listings = () => {
           // Append the script to the container
           containerRef.current.appendChild(script);
           
-          // Set loading to false after a short delay to allow content to render
+          // Set loading to false and scan for buttons after content renders
           setTimeout(() => {
             setIsLoading(false);
-          }, 1000);
+            // Scan for IDX buttons to intercept
+            scanForButtons();
+          }, 2000);
         } else {
           // If IDX is not available, show error after a delay
           setTimeout(() => {
@@ -64,7 +101,7 @@ const Listings = () => {
     };
 
     loadIDX();
-  }, []);
+  }, [scanForButtons]);
 
   if (hasError) {
     return (
@@ -94,6 +131,21 @@ const Listings = () => {
       <div 
         ref={containerRef} 
         className={`w-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+      />
+
+      {/* Debug info (remove in production) */}
+      {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
+        <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm">
+          Enhanced {interceptedCount} IDX buttons
+        </div>
+      )}
+
+      {/* Property Action Manager for Modals */}
+      <PropertyActionManager
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        actionType={modalState.actionType}
+        property={selectedProperty}
       />
     </div>
   );

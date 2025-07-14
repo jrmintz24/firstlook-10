@@ -8,7 +8,7 @@ import { PropertyData } from '@/utils/propertyDataUtils';
 interface PropertyActionManagerProps {
   isOpen: boolean;
   onClose: () => void;
-  actionType: 'tour' | 'offer' | 'favorite' | null;
+  actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
   property: PropertyData | null;
   buyerId?: string;
 }
@@ -45,6 +45,12 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
     onClose();
   };
 
+  const handleRequestInfo = () => {
+    console.log('Request info for:', property);
+    // For now, use the make offer modal as a general contact form
+    // TODO: Create a dedicated info request modal
+  };
+
   if (!isOpen || !property) return null;
 
   switch (actionType) {
@@ -70,6 +76,16 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
           onSave={handleFavorite}
           propertyAddress={property.address}
           isSubmitting={isSubmitting}
+        />
+      );
+
+    case 'info':
+      // For now, use the make offer modal as a general contact form
+      return (
+        <MakeOfferModal
+          isOpen={isOpen}
+          onClose={onClose}
+          propertyAddress={property.address}
         />
       );
       

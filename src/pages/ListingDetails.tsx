@@ -5,6 +5,7 @@ import { useDocumentHead } from '../hooks/useDocumentHead';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 import { PropertyData } from '../utils/propertyDataUtils';
+import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,7 +13,7 @@ const ListingDetails = () => {
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
-    actionType: 'tour' | 'offer' | 'favorite' | null;
+    actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
   }>({
     isOpen: false,
     actionType: null
@@ -22,6 +23,32 @@ const ListingDetails = () => {
   useDocumentHead({
     title: listingId ? `Listing ${listingId} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
     description: 'View detailed information about this property listing including photos, amenities, and neighborhood details.',
+  });
+
+  const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData?: PropertyData) => {
+    const currentProperty = propertyData || property;
+    if (currentProperty) {
+      setProperty(currentProperty);
+      setModalState({
+        isOpen: true,
+        actionType
+      });
+    }
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      actionType: null
+    });
+  };
+
+  // Set up IDX button interception
+  const { scanForButtons, interceptedCount } = useIDXButtonInterception({
+    onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
+    onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
+    onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
+    onRequestInfo: (propertyData) => handlePropertyAction('info', propertyData)
   });
 
   const extractPropertyFromIDX = () => {
@@ -40,24 +67,6 @@ const ListingDetails = () => {
       baths: bathsElement?.textContent?.trim() || '',
       mlsId: listingId || ''
     };
-  };
-
-  const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite') => {
-    const propertyData = extractPropertyFromIDX();
-    if (propertyData) {
-      setProperty(propertyData);
-      setModalState({
-        isOpen: true,
-        actionType
-      });
-    }
-  };
-
-  const closeModal = () => {
-    setModalState({
-      isOpen: false,
-      actionType: null
-    });
   };
 
   useEffect(() => {
@@ -98,13 +107,15 @@ const ListingDetails = () => {
         // Append the script to the container
         containerRef.current.appendChild(script);
         
-        // Extract property data after a short delay
+        // Extract property data after IDX loads and scan for buttons
         setTimeout(() => {
           const propertyData = extractPropertyFromIDX();
           if (propertyData) {
             setProperty(propertyData);
           }
-        }, 1000);
+          // Trigger button scan after IDX content is loaded
+          scanForButtons();
+        }, 2000);
         
       } catch (error) {
         console.error('Error rendering IDX content:', error);
@@ -121,7 +132,7 @@ const ListingDetails = () => {
         }
       }
     }
-  }, [listingId]);
+  }, [listingId, scanForButtons]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -137,6 +148,13 @@ const ListingDetails = () => {
       <div ref={containerRef} className="w-full h-full">
         {/* IDX listing content will be rendered here */}
       </div>
+
+      {/* Debug info (remove in production) */}
+      {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
+        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-3 py-1 rounded text-sm">
+          Enhanced {interceptedCount} IDX buttons
+        </div>
+      )}
 
       {/* Property Action Manager for Modals */}
       <PropertyActionManager

@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
 import { ListingsPageSkeleton } from '../components/listings/ListingsPageSkeleton';
@@ -10,6 +11,7 @@ const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [searchParams] = useSearchParams();
 
   // Set document head with static title as specified
   useDocumentHead({
@@ -29,11 +31,34 @@ const Listings = () => {
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
-          // Create and execute the embed script using the working pattern from Idx.tsx
+          // Get search parameters from URL
+          const searchTerm = searchParams.get('search');
+          console.log('[Listings] Search term from URL:', searchTerm);
+          
+          // Create and execute the embed script
           const renderedElement = window.ihfKestrel.render();
+          
+          // If we have a search term, try to trigger search after render
+          if (searchTerm) {
+            console.log('[Listings] Will attempt to trigger search for:', searchTerm);
+            setTimeout(() => {
+              // Try to trigger search in the rendered IDX widget
+              try {
+                const searchInput = containerRef.current?.querySelector('input[type="text"], input[placeholder*="search"], input[name*="search"]') as HTMLInputElement;
+                if (searchInput) {
+                  searchInput.value = searchTerm;
+                  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('[Listings] Search term applied to IDX widget');
+                }
+              } catch (error) {
+                console.log('[Listings] Could not auto-populate search:', error);
+              }
+            }, 500);
+          }
           if (renderedElement) {
             containerRef.current.appendChild(renderedElement);
-            console.log('[Listings] IDX content successfully rendered');
+            console.log('[Listings] IDX content successfully rendered with search:', searchTerm);
           } else {
             console.error('[Listings] IDX render returned null/undefined');
             setHasError(true);
@@ -61,7 +86,7 @@ const Listings = () => {
     };
 
     loadIDX();
-  }, []);
+  }, [searchParams]);
 
   if (hasError) {
     return (

@@ -41,7 +41,7 @@ const Listings = () => {
     setSelectedProperty(null);
   };
 
-  // Set up IDX button and link interception with simplified approach
+  // Set up IDX button and link interception with navigation
   const { scanForButtons, interceptedCount } = useIDXButtonInterception({
     onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
     onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
@@ -56,23 +56,23 @@ const Listings = () => {
       try {
         // Ensure the IDX script is loaded
         if (window.ihfKestrel && containerRef.current) {
-          console.log('[Listings] IDX Kestrel found, rendering search...');
+          console.log('[Listings] IDX Kestrel found, rendering...');
           
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
-          // Create a script element with the embed code for search/listings
+          // Create a script element with the embed code
           const script = document.createElement('script');
           script.textContent = `
             try {
-              console.log('[IDX] Attempting to render IDX search content');
+              console.log('[IDX] Attempting to render IDX content');
               const element = ihfKestrel.render({
                 modalMode: false,
                 popupMode: false,
                 inlineMode: true
               });
               if (element) {
-                console.log('[IDX] IDX search element created successfully');
+                console.log('[IDX] IDX element created successfully');
                 document.currentScript.replaceWith(element);
               } else {
                 console.log('[IDX] Fallback to standard render');

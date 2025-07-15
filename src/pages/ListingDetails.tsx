@@ -6,7 +6,7 @@ import PropertyActionHeader from '../components/property/PropertyActionHeader';
 import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 import { PropertyData } from '../utils/propertyDataUtils';
-import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
+import { useSimplifiedIDXInterception } from '../hooks/useSimplifiedIDXInterception';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,8 +48,8 @@ const ListingDetails = () => {
     });
   };
 
-  // Set up IDX button interception
-  const { scanForButtons, interceptedCount } = useIDXButtonInterception({
+  // Set up simplified IDX interception
+  const { scanForElements, interceptedCount } = useSimplifiedIDXInterception({
     onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
     onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
     onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
@@ -105,102 +105,62 @@ const ListingDetails = () => {
     });
   };
 
+  // Function to render specific listing using IDX
+  const renderListing = (propertyId: string) => {
+    if (window.ihfKestrel && containerRef.current) {
+      console.log('[ListingDetails] Rendering listing:', propertyId);
+      
+      try {
+        // Create a script element with the embed code for specific listing
+        const script = document.createElement('script');
+        script.textContent = `
+          try {
+            console.log('[IDX Detail] Rendering listing: ${propertyId}');
+            const element = ihfKestrel.render({
+              listingId: '${propertyId}',
+              view: 'detail',
+              modalMode: false,
+              popupMode: false,
+              inlineMode: true
+            });
+            if (element) {
+              document.currentScript.replaceWith(element);
+            } else {
+              document.currentScript.replaceWith(ihfKestrel.render());
+            }
+          } catch (e) {
+            console.error('[IDX Detail] Render error:', e);
+            document.currentScript.replaceWith(ihfKestrel.render());
+          }
+        `;
+        containerRef.current.appendChild(script);
+      } catch (error) {
+        console.error('[ListingDetails] Error rendering listing:', error);
+      }
+
+      // Extract property data and scan for elements after render
+      setTimeout(() => {
+        const propertyData = extractPropertyFromIDX();
+        if (propertyData) {
+          setProperty(propertyData);
+        }
+        scanForElements();
+        removeIDXFormsFromContainer();
+      }, 2000);
+    }
+  };
+
   useEffect(() => {
     console.log('[ListingDetails] Starting IDX render for listing:', listingId);
 
-    // Ensure the IDX script is loaded before rendering
-    if (window.ihfKestrel && containerRef.current) {
-      // Clear any existing content
-      containerRef.current.innerHTML = '';
+    if (listingId && containerRef.current) {
+      // Clear existing content
+      containerRef.current.innerHTML = '<div id="ihf-kestrel-container"></div>';
       
-      try {
-        // Create a script element with the embed code
-        const script = document.createElement('script');
-        
-        // If we have a listing ID, try to render the specific listing
-        if (listingId) {
-          console.log('[ListingDetails] Attempting to render specific listing:', listingId);
-          // Try to configure IDX to show specific listing if possible
-          script.textContent = `
-            try {
-              console.log('[IDX Detail] Attempting to render listing: ${listingId}');
-              const element = ihfKestrel.render({
-                listingId: '${listingId}',
-                view: 'detail',
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true
-              });
-              if (element) {
-                console.log('[IDX Detail] Specific listing element created');
-                document.currentScript.replaceWith(element);
-              } else {
-                console.log('[IDX Detail] Fallback to standard render');
-                document.currentScript.replaceWith(ihfKestrel.render());
-              }
-            } catch (e) {
-              console.error('[IDX Detail] Render error:', e);
-              document.currentScript.replaceWith(ihfKestrel.render());
-            }
-          `;
-        } else {
-          // Standard render without specific listing
-          script.textContent = `
-            console.log('[IDX Detail] Standard render');
-            document.currentScript.replaceWith(ihfKestrel.render());
-          `;
-        }
-        
-        // Append the script to the container
-        containerRef.current.appendChild(script);
-        
-        console.log('[ListingDetails] IDX script appended, scheduling property extraction...');
-        
-        // Extract property data after IDX loads and scan for buttons
-        setTimeout(() => {
-          console.log('[ListingDetails] Initial extraction timeout');
-          const propertyData = extractPropertyFromIDX();
-          if (propertyData) {
-            setProperty(propertyData);
-          }
-          // Trigger button scan and form removal after IDX content is loaded
-          scanForButtons();
-          removeIDXFormsFromContainer();
-        }, 2000);
-        
-        // Additional cleanup after a longer delay to catch late-loading forms
-        setTimeout(() => {
-          console.log('[ListingDetails] Secondary cleanup and scan');
-          removeIDXFormsFromContainer();
-          scanForButtons();
-          
-          // Try to extract property data again if we didn't get it the first time
-          if (!property) {
-            const propertyData = extractPropertyFromIDX();
-            if (propertyData) {
-              setProperty(propertyData);
-            }
-          }
-        }, 5000);
-        
-      } catch (error) {
-        console.error('[ListingDetails] Error rendering IDX content:', error);
-        // Fallback: show a message if IDX fails to load
-        if (containerRef.current) {
-          containerRef.current.innerHTML = `
-            <div class="flex items-center justify-center h-96 text-gray-500">
-              <div class="text-center">
-                <p class="text-lg mb-2">Loading property details...</p>
-                <p class="text-sm">If this takes too long, please try refreshing the page.</p>
-              </div>
-            </div>
-          `;
-        }
-      }
-    } else {
-      console.log('[ListingDetails] IDX Kestrel not available');
+      // Render the specific listing
+      renderListing(listingId);
     }
-  }, [listingId, scanForButtons, property]);
+  }, [listingId, scanForElements]);
 
   // Debug logging
   useEffect(() => {

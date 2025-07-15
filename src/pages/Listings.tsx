@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
-import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
+import { useSimplifiedIDXInterception } from '../hooks/useSimplifiedIDXInterception';
 import { PropertyData } from '../utils/propertyDataUtils';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 
@@ -41,8 +41,8 @@ const Listings = () => {
     setSelectedProperty(null);
   };
 
-  // Set up IDX button and link interception with navigation
-  const { scanForButtons, interceptedCount } = useIDXButtonInterception({
+  // Set up simplified IDX interception with navigation
+  const { scanForElements, interceptedCount } = useSimplifiedIDXInterception({
     onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
     onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
     onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
@@ -89,22 +89,22 @@ const Listings = () => {
           
           console.log('[Listings] IDX script appended, scheduling scans...');
           
-          // Set loading to false and scan for buttons/links after content renders
+          // Set loading to false and scan for elements after content renders
           setTimeout(() => {
             console.log('[Listings] Initial IDX load timeout reached');
             setIsLoading(false);
-            scanForButtons();
+            scanForElements();
           }, 2000);
 
           // Additional scans to catch dynamically loaded content
           setTimeout(() => {
             console.log('[Listings] Additional scan for dynamic content');
-            scanForButtons();
+            scanForElements();
           }, 5000);
 
           setTimeout(() => {
             console.log('[Listings] Final scan for late-loading content');
-            scanForButtons();
+            scanForElements();
           }, 10000);
           
         } else {
@@ -123,7 +123,7 @@ const Listings = () => {
     };
 
     loadIDX();
-  }, [scanForButtons]);
+  }, [scanForElements]);
 
   // Debug information
   useEffect(() => {

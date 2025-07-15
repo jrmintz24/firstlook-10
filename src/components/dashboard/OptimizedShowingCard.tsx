@@ -384,7 +384,7 @@ const OptimizedShowingCard = ({
                 )}
 
                 {/* Action Buttons in Expanded Section - Only for Non-Completed Tours */}
-                {showActions && !isCompletedTour && !isConfirmedTour && (
+                {showActions && !isCompletedTour && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {/* Message Specialist */}
                     {onSendMessage && showing.assigned_agent_id && (

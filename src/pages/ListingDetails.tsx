@@ -54,8 +54,15 @@ const ListingDetails = () => {
     console.log('[ListingDetails] Extracting property data from IDX content');
     console.log('[ListingDetails] Container HTML:', containerRef.current.innerHTML.substring(0, 500));
     
-    // Enhanced selectors to find address in various IDX formats
+    // Enhanced selectors to find address in various IDX formats - prioritizing specific ones first
     const addressSelectors = [
+      // Specific selectors for the identified IDX format
+      '.listing-address-1',
+      'p.listing-address-1',
+      '.ui-typography.listing-address-1',
+      'p[class*="listing-address"]',
+      '[class*="listing-address"]',
+      // General IDX selectors
       '[data-address]',
       '.address',
       '.property-address', 

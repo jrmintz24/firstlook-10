@@ -8,6 +8,13 @@ import PropertyActionManager from '../components/property/PropertyActionManager'
 import { PropertyData } from '../utils/propertyDataUtils';
 import { useIDXButtonInterception } from '../hooks/useIDXButtonInterception';
 
+// Global function to render listing in-frame
+declare global {
+  interface Window {
+    renderListing: (listingId: string) => void;
+  }
+}
+
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { listingId } = useParams<{ listingId: string }>();
@@ -56,12 +63,11 @@ const ListingDetails = () => {
     onRequestInfo: (propertyData) => handlePropertyAction('info', propertyData)
   });
 
-  const extractPropertyFromIDX = () => {
+  const extractPropertyFromIDX = useCallback(() => {
     if (!containerRef.current) return null;
     
     console.log('[ListingDetails] Extracting property data from IDX content');
     
-    // Try to extract property data from the IDX content
     const addressElement = containerRef.current.querySelector('[data-address], .address, .property-address, h1, .listing-address, .ihf-detail-address');
     const priceElement = containerRef.current.querySelector('[data-price], .price, .property-price, .listing-price, .ihf-detail-price');
     const bedsElement = containerRef.current.querySelector('[data-beds], .beds, .bedroom, .bedrooms, .ihf-detail-beds');
@@ -77,130 +83,85 @@ const ListingDetails = () => {
 
     console.log('[ListingDetails] Extracted property data:', propertyData);
     return propertyData;
-  };
+  }, [listingId]);
 
-  const removeIDXFormsFromContainer = () => {
-    if (!containerRef.current) return;
+  // In-frame listing renderer function as specified in the instructions
+  const renderListing = useCallback((listingId: string) => {
+    console.log('[ListingDetails] Rendering listing in-frame:', listingId);
     
-    console.log('[ListingDetails] Removing IDX forms from container');
-    
-    // Additional cleanup specifically for the container
-    const formsToRemove = containerRef.current.querySelectorAll(`
-      .ihf-contact-form,
-      .ihf-request-info,
-      .ihf-lead-form,
-      .contact-form,
-      .request-info-form,
-      .lead-capture-form,
-      .sidebar-contact,
-      .property-contact-form,
-      form[action*="contact"],
-      form[action*="request"],
-      form[action*="lead"]
-    `);
-    
-    formsToRemove.forEach(form => {
-      console.log('[ListingDetails] Removing IDX form from container:', form);
-      form.remove();
-    });
-  };
-
-  useEffect(() => {
-    console.log('[ListingDetails] Starting IDX render for listing:', listingId);
-
-    // Ensure the IDX script is loaded before rendering
     if (window.ihfKestrel && containerRef.current) {
-      // Clear any existing content
-      containerRef.current.innerHTML = '';
-      
       try {
-        // Create a script element with the embed code
-        const script = document.createElement('script');
+        // Clear existing content
+        containerRef.current.innerHTML = '';
         
-        // If we have a listing ID, try to render the specific listing
-        if (listingId) {
-          console.log('[ListingDetails] Attempting to render specific listing:', listingId);
-          // Try to configure IDX to show specific listing if possible
-          script.textContent = `
-            try {
-              console.log('[IDX Detail] Attempting to render listing: ${listingId}');
-              const element = ihfKestrel.render({
-                listingId: '${listingId}',
-                view: 'detail',
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true
-              });
-              if (element) {
-                console.log('[IDX Detail] Specific listing element created');
-                document.currentScript.replaceWith(element);
-              } else {
-                console.log('[IDX Detail] Fallback to standard render');
-                document.currentScript.replaceWith(ihfKestrel.render());
-              }
-            } catch (e) {
-              console.error('[IDX Detail] Render error:', e);
-              document.currentScript.replaceWith(ihfKestrel.render());
-            }
-          `;
-        } else {
-          // Standard render without specific listing
-          script.textContent = `
-            console.log('[IDX Detail] Standard render');
-            document.currentScript.replaceWith(ihfKestrel.render());
-          `;
-        }
+        // Use ihfKestrel.render with container and route as specified
+        const element = window.ihfKestrel.render({
+          container: containerRef.current,
+          route: `listing/${listingId}`,
+          modalMode: false,
+          popupMode: false,
+          inlineMode: true
+        });
+
+        console.log('[ListingDetails] IDX listing rendered in-frame');
         
-        // Append the script to the container
-        containerRef.current.appendChild(script);
-        
-        console.log('[ListingDetails] IDX script appended, scheduling property extraction...');
-        
-        // Extract property data after IDX loads and scan for buttons
+        // Extract property data after rendering
         setTimeout(() => {
-          console.log('[ListingDetails] Initial extraction timeout');
           const propertyData = extractPropertyFromIDX();
           if (propertyData) {
             setProperty(propertyData);
           }
-          // Trigger button scan and form removal after IDX content is loaded
           scanForButtons();
-          removeIDXFormsFromContainer();
-        }, 2000);
-        
-        // Additional cleanup after a longer delay to catch late-loading forms
-        setTimeout(() => {
-          console.log('[ListingDetails] Secondary cleanup and scan');
-          removeIDXFormsFromContainer();
-          scanForButtons();
-          
-          // Try to extract property data again if we didn't get it the first time
-          if (!property) {
-            const propertyData = extractPropertyFromIDX();
-            if (propertyData) {
-              setProperty(propertyData);
-            }
-          }
-        }, 5000);
+        }, 1000);
         
       } catch (error) {
-        console.error('[ListingDetails] Error rendering IDX content:', error);
-        // Fallback: show a message if IDX fails to load
+        console.error('[ListingDetails] Error rendering IDX listing:', error);
+        // Fallback rendering
         if (containerRef.current) {
           containerRef.current.innerHTML = `
             <div class="flex items-center justify-center h-96 text-gray-500">
               <div class="text-center">
                 <p class="text-lg mb-2">Loading property details...</p>
-                <p class="text-sm">If this takes too long, please try refreshing the page.</p>
+                <p class="text-sm">Listing ID: ${listingId}</p>
               </div>
             </div>
           `;
         }
       }
-    } else {
-      console.log('[ListingDetails] IDX Kestrel not available');
     }
-  }, [listingId, scanForButtons, property]);
+  }, [extractPropertyFromIDX, scanForButtons]);
+
+  // Make renderListing available globally as specified
+  useEffect(() => {
+    window.renderListing = renderListing;
+    
+    return () => {
+      delete window.renderListing;
+    };
+  }, [renderListing]);
+
+  // Handle initial page load and render listing
+  useEffect(() => {
+    console.log('[ListingDetails] Component mounted with listingId:', listingId);
+    
+    if (listingId) {
+      // Check if IDX is available
+      if (window.ihfKestrel) {
+        renderListing(listingId);
+      } else {
+        // Wait for IDX to load
+        const checkIDX = setInterval(() => {
+          if (window.ihfKestrel) {
+            clearInterval(checkIDX);
+            renderListing(listingId);
+          }
+        }, 100);
+        
+        // Clear interval after 10 seconds if IDX doesn't load
+        setTimeout(() => clearInterval(checkIDX), 10000);
+      }
+    }
+  }, [listingId, renderListing]);
 
   // Debug logging
   useEffect(() => {
@@ -220,7 +181,7 @@ const ListingDetails = () => {
         onFavorite={() => handlePropertyAction('favorite')}
       />
 
-      {/* Property Tab Navigation - This is the key component we want to see */}
+      {/* Property Tab Navigation - Positioned above IDX content */}
       <PropertyTabNavigation
         property={property}
         onScheduleTour={() => handlePropertyAction('tour')}
@@ -229,9 +190,21 @@ const ListingDetails = () => {
         isFavorited={isFavorited}
       />
       
-      {/* IDX Content */}
-      <div ref={containerRef} className="w-full h-full">
-        {/* IDX listing content will be rendered here */}
+      {/* IDX Kestrel Container - In-frame rendering */}
+      <div 
+        id="ihf-kestrel-container"
+        ref={containerRef} 
+        className="w-full h-full"
+      >
+        {/* IDX listing content will be rendered here in-frame */}
+        {!listingId && (
+          <div className="flex items-center justify-center h-96 text-gray-500">
+            <div className="text-center">
+              <p className="text-lg mb-2">No listing ID provided</p>
+              <p className="text-sm">Please navigate to a specific listing</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Debug info */}

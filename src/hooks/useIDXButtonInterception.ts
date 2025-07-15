@@ -18,10 +18,7 @@ export const useIDXButtonInterception = ({
 }: IDXButtonInterceptionProps) => {
   const navigate = useNavigate();
   const observerRef = useRef<MutationObserver | null>(null);
-  const interceptedButtonsRef = useRef<Set<Element>>(new Set());
-  const interceptedLinksRef = useRef<Set<Element>>(new Set());
-  const isInterceptingRef = useRef<boolean>(false);
-  const scanCountRef = useRef<number>(0);
+  const interceptedCountRef = useRef<number>(0);
 
   // Enhanced debugging function
   const debugLog = useCallback((message: string, data?: any) => {
@@ -51,22 +48,6 @@ export const useIDXButtonInterception = ({
       '.ihf-detail-price'
     ];
 
-    const bedsSelectors = [
-      '[data-beds]',
-      '.beds',
-      '.bedroom',
-      '.bedrooms',
-      '.ihf-grid-result-basic-info-item'
-    ];
-
-    const bathsSelectors = [
-      '[data-baths]',
-      '.baths',
-      '.bathroom',
-      '.bathrooms',
-      '.ihf-grid-result-basic-info-item'
-    ];
-
     let address = '';
     let price = '';
     let beds = '';
@@ -76,7 +57,6 @@ export const useIDXButtonInterception = ({
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
         address = element.textContent.trim();
-        debugLog('Found address via selector', { selector, address });
         break;
       }
     }
@@ -85,32 +65,7 @@ export const useIDXButtonInterception = ({
       const element = document.querySelector(selector);
       if (element && element.textContent?.trim()) {
         price = element.textContent.trim();
-        debugLog('Found price via selector', { selector, price });
         break;
-      }
-    }
-
-    for (const selector of bedsSelectors) {
-      const element = document.querySelector(selector);
-      if (element && element.textContent?.trim()) {
-        const text = element.textContent.trim();
-        if (text.includes('bed') || text.includes('BR')) {
-          beds = text;
-          debugLog('Found beds via selector', { selector, beds });
-          break;
-        }
-      }
-    }
-
-    for (const selector of bathsSelectors) {
-      const element = document.querySelector(selector);
-      if (element && element.textContent?.trim()) {
-        const text = element.textContent.trim();
-        if (text.includes('bath') || text.includes('BA')) {
-          baths = text;
-          debugLog('Found baths via selector', { selector, baths });
-          break;
-        }
       }
     }
 
@@ -120,74 +75,14 @@ export const useIDXButtonInterception = ({
         : 'Selected Property';
     }
 
-    const result = {
+    return {
       address,
       price,
       beds,
       baths,
       mlsId: window.location.pathname.split('/').pop() || ''
     };
-
-    debugLog('Extracted property data', result);
-    return result;
-  }, [debugLog]);
-
-  const removeIDXForms = useCallback(() => {
-    const formSelectors = [
-      '.ihf-contact-form',
-      '.ihf-request-info',
-      '.ihf-lead-form',
-      '.contact-form',
-      '.request-info-form',
-      '.lead-capture-form',
-      '.ihf-sidebar-form',
-      '.sidebar-contact',
-      '.property-contact-form',
-      '.widget-contact',
-      '.widget-request-info',
-      '[class*="contact-form"]',
-      '[class*="request-info"]',
-      '[class*="lead-form"]',
-      '[class*="sidebar-form"]',
-      '[class*="sidebar-contact"]',
-      '[id*="contact-form"]',
-      '[id*="request-info"]',
-      '[id*="lead-form"]'
-    ];
-
-    let removedCount = 0;
-    formSelectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(element => {
-        debugLog('Removing IDX form element', { selector, element: element.tagName });
-        element.remove();
-        removedCount++;
-      });
-    });
-
-    const actionForms = document.querySelectorAll('form[action*="contact"], form[action*="request"], form[action*="lead"]');
-    actionForms.forEach(form => {
-      debugLog('Removing IDX action form', form);
-      form.remove();
-      removedCount++;
-    });
-
-    const allForms = document.querySelectorAll('form');
-    allForms.forEach(form => {
-      const hasEmail = form.querySelector('input[name*="email"], input[placeholder*="email"], input[placeholder*="Email"]');
-      const hasPhone = form.querySelector('input[name*="phone"], input[placeholder*="phone"], input[placeholder*="Phone"]');
-      
-      if (hasEmail && hasPhone) {
-        debugLog('Removing lead capture form', form);
-        form.remove();
-        removedCount++;
-      }
-    });
-
-    if (removedCount > 0) {
-      debugLog(`Removed ${removedCount} IDX forms`);
-    }
-  }, [debugLog]);
+  }, []);
 
   const extractPropertyIdFromUrl = useCallback((url: string): string | null => {
     const patterns = [
@@ -203,222 +98,131 @@ export const useIDXButtonInterception = ({
       /\/([0-9]{5,})/
     ];
 
-    debugLog('Extracting property ID from URL', url);
-
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        debugLog('Property ID extracted', { pattern: pattern.source, id: match[1] });
         return match[1];
       }
     }
 
-    debugLog('No property ID found in URL');
     return null;
-  }, [debugLog]);
+  }, []);
 
-  const blockPopupNavigation = useCallback(() => {
-    const originalWindowOpen = window.open;
-    window.open = function(...args) {
-      if (isInterceptingRef.current) {
-        debugLog('Blocking window.open during property navigation', args);
-        return null;
-      }
-      return originalWindowOpen.apply(window, args);
-    };
+  const removeIDXForms = useCallback(() => {
+    const formSelectors = [
+      '.ihf-contact-form',
+      '.ihf-request-info',
+      '.ihf-lead-form',
+      '.contact-form',
+      '.request-info-form',
+      '.lead-capture-form',
+      '.ihf-sidebar-form',
+      '.sidebar-contact',
+      '.property-contact-form',
+      '.widget-contact',
+      '.widget-request-info'
+    ];
 
-    // Block other popup methods
-    const originalShowModal = HTMLDialogElement.prototype.showModal;
-    HTMLDialogElement.prototype.showModal = function() {
-      if (isInterceptingRef.current) {
-        debugLog('Blocking dialog.showModal during property navigation');
-        return;
-      }
-      return originalShowModal.apply(this);
-    };
-  }, [debugLog]);
-
-  const interceptPropertyLink = useCallback((link: Element) => {
-    if (interceptedLinksRef.current.has(link)) {
-      return;
-    }
-
-    const href = link.getAttribute('href');
-    const onclick = link.getAttribute('onclick');
-    const parentContainer = link.closest('.property-item, .listing-item, .property-card, .listing-card, [class*="property"], [class*="listing"], .ihf-grid-result-container, .ihf-grid-result, .ihf-result-item');
-    
-    debugLog('Checking link for interception', { 
-      href, 
-      onclick: !!onclick, 
-      hasParentContainer: !!parentContainer,
-      tagName: link.tagName,
-      className: link.className 
+    let removedCount = 0;
+    formSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        element.remove();
+        removedCount++;
+      });
     });
 
-    if (!href && !onclick && !parentContainer) return;
-
-    const isPropertyLink = href && (
-      /\/(listing|property|details|detail)\/|mls[_-]?id|listing[_-]?id|property[_-]?id/i.test(href) ||
-      parentContainer
-    ) || onclick && /property|listing|detail/i.test(onclick) || parentContainer;
-
-    if (isPropertyLink) {
-      debugLog('Property link detected, intercepting', { href, element: link.tagName });
-
-      const handleClick = (event: Event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        
-        isInterceptingRef.current = true;
-        
-        debugLog('Property link clicked and intercepted', { href, onclick });
-        
-        let propertyId = null;
-        
-        if (href) {
-          propertyId = extractPropertyIdFromUrl(href);
-        }
-        
-        // Try to extract from data attributes
-        if (!propertyId) {
-          const dataId = link.getAttribute('data-id') || 
-                       link.getAttribute('data-mls-id') || 
-                       link.getAttribute('data-listing-id') ||
-                       link.getAttribute('data-property-id');
-          if (dataId) {
-            propertyId = dataId;
-            debugLog('Property ID from data attributes', propertyId);
-          }
-        }
-        
-        // Try to extract from parent elements
-        if (!propertyId && parentContainer) {
-          const parentId = parentContainer.getAttribute('data-id') || 
-                          parentContainer.getAttribute('data-mls-id') || 
-                          parentContainer.getAttribute('data-listing-id') ||
-                          parentContainer.getAttribute('data-property-id');
-          if (parentId) {
-            propertyId = parentId;
-            debugLog('Property ID from parent container', propertyId);
-          }
-        }
-        
-        // Fallback to extracting from link text or nearby elements
-        if (!propertyId) {
-          const linkText = link.textContent?.trim();
-          const numbersMatch = linkText?.match(/[A-Z0-9]{6,}|[0-9]{5,}/);
-          if (numbersMatch) {
-            propertyId = numbersMatch[0];
-            debugLog('Property ID from link text', propertyId);
-          } else {
-            propertyId = 'unknown-' + Date.now();
-            debugLog('Using fallback property ID', propertyId);
-          }
-        }
-        
-        debugLog('Navigating to property page', { propertyId, path: `/listing/${propertyId}` });
-        navigate(`/listing/${propertyId}`);
-        
-        setTimeout(() => {
-          isInterceptingRef.current = false;
-        }, 1000);
-      };
-
-      // Remove problematic attributes that might cause external navigation
-      link.removeAttribute('target');
-      link.removeAttribute('onclick');
-      if (link.tagName === 'A') {
-        (link as HTMLAnchorElement).target = '_self';
-      }
-      
-      // Add multiple event listeners to ensure capture
-      link.addEventListener('click', handleClick, true);
-      link.addEventListener('mousedown', handleClick, true);
-      link.addEventListener('touchstart', handleClick, true);
-      
-      interceptedLinksRef.current.add(link);
-      link.setAttribute('data-enhanced-link', 'true');
-      
-      debugLog('Enhanced property link', { href, propertyId: href ? extractPropertyIdFromUrl(href) : 'unknown' });
+    if (removedCount > 0) {
+      debugLog(`Removed ${removedCount} IDX forms`);
     }
+  }, [debugLog]);
+
+  const interceptPropertyLinks = useCallback(() => {
+    // Target property cards with various selectors
+    const propertySelectors = [
+      '[data-listing-id]',
+      '[data-mls-id]',
+      '[data-property-id]',
+      '.property-item',
+      '.listing-item',
+      '.property-card',
+      '.listing-card',
+      '.ihf-grid-result-container',
+      '.ihf-grid-result',
+      '.ihf-result-item',
+      'a[href*="/listing/"]',
+      'a[href*="/property/"]',
+      'a[href*="/details/"]',
+      'a[href*="mls"]'
+    ];
+
+    let interceptedCount = 0;
+
+    propertySelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((el) => {
+        // Skip if already intercepted
+        if (el.hasAttribute('data-intercepted')) return;
+
+        el.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          debugLog('Property click intercepted', { element: el, selector });
+
+          // Try to get listing ID from various attributes
+          let listingId = el.getAttribute('data-listing-id') || 
+                         el.getAttribute('data-mls-id') || 
+                         el.getAttribute('data-property-id');
+
+          // If no data attribute, try to extract from href
+          if (!listingId) {
+            const href = el.getAttribute('href');
+            if (href) {
+              listingId = extractPropertyIdFromUrl(href);
+            }
+          }
+
+          // If still no ID, try to extract from element text or nearby elements
+          if (!listingId) {
+            const linkText = el.textContent?.trim();
+            const numbersMatch = linkText?.match(/[A-Z0-9]{6,}|[0-9]{5,}/);
+            if (numbersMatch) {
+              listingId = numbersMatch[0];
+            } else {
+              listingId = 'unknown-' + Date.now();
+            }
+          }
+
+          if (listingId) {
+            debugLog('Navigating to listing', { listingId, path: `/listing/${listingId}` });
+            
+            // Use React Router navigation
+            navigate(`/listing/${listingId}`);
+          }
+        };
+
+        // Mark as intercepted
+        el.setAttribute('data-intercepted', 'true');
+        interceptedCount++;
+      });
+    });
+
+    debugLog(`Intercepted ${interceptedCount} property links`);
+    interceptedCountRef.current += interceptedCount;
   }, [debugLog, extractPropertyIdFromUrl, navigate]);
 
-  const interceptButton = useCallback((button: Element) => {
-    if (interceptedButtonsRef.current.has(button)) {
-      return;
-    }
-
-    const buttonText = button.textContent?.toLowerCase() || '';
-    const buttonType = button.getAttribute('data-action') || '';
-    
-    let action: 'tour' | 'offer' | 'favorite' | 'info' | null = null;
-    
-    if (buttonText.includes('tour') || buttonText.includes('showing') || buttonType.includes('tour')) {
-      action = 'tour';
-    } else if (buttonText.includes('offer') || buttonText.includes('bid') || buttonType.includes('offer')) {
-      action = 'offer';
-    } else if (buttonText.includes('favorite') || buttonText.includes('save') || buttonText.includes('heart') || buttonType.includes('favorite')) {
-      action = 'favorite';
-    } else if (buttonText.includes('info') || buttonText.includes('contact') || buttonText.includes('agent') || buttonType.includes('contact')) {
-      action = 'info';
-    }
-
-    if (action) {
-      debugLog('Action button detected', { text: buttonText, action });
-
-      const handleClick = (event: Event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        
-        const propertyData = extractPropertyData();
-        debugLog('Action button clicked', { action, propertyData });
-        
-        switch (action) {
-          case 'tour':
-            onScheduleTour(propertyData);
-            break;
-          case 'offer':
-            onMakeOffer(propertyData);
-            break;
-          case 'favorite':
-            onFavorite(propertyData);
-            break;
-          case 'info':
-            onRequestInfo(propertyData);
-            break;
-        }
-      };
-
-      button.addEventListener('click', handleClick, true);
-      button.addEventListener('mousedown', handleClick, true);
-      interceptedButtonsRef.current.add(button);
-      
-      button.setAttribute('data-enhanced', 'true');
-      debugLog('Enhanced action button', { text: buttonText, action });
-    }
-  }, [debugLog, extractPropertyData, onScheduleTour, onMakeOffer, onFavorite, onRequestInfo]);
-
-  const scanForButtonsAndLinks = useCallback(() => {
-    scanCountRef.current++;
-    debugLog(`Starting scan #${scanCountRef.current}`);
-
-    // Enhanced button selectors
+  const interceptActionButtons = useCallback(() => {
     const buttonSelectors = [
       'button',
       'input[type="button"]',
       'input[type="submit"]',
-      'a[href*="contact"]',
-      'a[href*="tour"]',
-      'a[href*="info"]',
       '.btn',
       '.button',
       '[role="button"]',
       '.ihf-btn',
-      '.ihf-button',
-      '.property-actions button',
-      '.listing-actions button'
+      '.ihf-button'
     ];
 
     const relevantKeywords = [
@@ -432,175 +236,111 @@ export const useIDXButtonInterception = ({
     buttonSelectors.forEach(selector => {
       const buttons = document.querySelectorAll(selector);
       buttons.forEach(button => {
+        if (button.hasAttribute('data-enhanced')) return;
+
         const text = button.textContent?.toLowerCase() || '';
         const hasRelevantText = relevantKeywords.some(keyword => text.includes(keyword));
         
-        if (hasRelevantText && !interceptedButtonsRef.current.has(button)) {
-          interceptButton(button);
-          buttonCount++;
+        if (hasRelevantText) {
+          let action: 'tour' | 'offer' | 'favorite' | 'info' | null = null;
+          
+          if (text.includes('tour') || text.includes('showing')) {
+            action = 'tour';
+          } else if (text.includes('offer') || text.includes('bid')) {
+            action = 'offer';
+          } else if (text.includes('favorite') || text.includes('save') || text.includes('heart')) {
+            action = 'favorite';
+          } else if (text.includes('info') || text.includes('contact') || text.includes('agent')) {
+            action = 'info';
+          }
+
+          if (action) {
+            const handleClick = (event: Event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              
+              const propertyData = extractPropertyData();
+              
+              switch (action) {
+                case 'tour':
+                  onScheduleTour(propertyData);
+                  break;
+                case 'offer':
+                  onMakeOffer(propertyData);
+                  break;
+                case 'favorite':
+                  onFavorite(propertyData);
+                  break;
+                case 'info':
+                  onRequestInfo(propertyData);
+                  break;
+              }
+            };
+
+            button.addEventListener('click', handleClick, true);
+            button.setAttribute('data-enhanced', 'true');
+            buttonCount++;
+          }
         }
       });
     });
 
-    // Enhanced link selectors with more comprehensive coverage
-    const linkSelectors = [
-      'a[href*="/listing/"]',
-      'a[href*="/property/"]',
-      'a[href*="/details/"]',
-      'a[href*="/detail/"]',
-      'a[href*="mls"]',
-      'a[href*="listing"]',
-      '.property-item a',
-      '.listing-item a',
-      '.property-card a',
-      '.listing-card a',
-      '[class*="property"] a',
-      '[class*="listing"] a',
-      '.ihf-grid-result-container a',
-      '.ihf-grid-result a',
-      '.ihf-grid-result-title a',
-      '.ihf-grid-result-photo a',
-      '.ihf-grid-result-basic-info a',
-      '.ihf-result-item a',
-      '.ihf-detail-gallery a',
-      // Clickable containers that might not be links
-      '.property-item[onclick]',
-      '.listing-item[onclick]',
-      '.property-card[onclick]',
-      '.listing-card[onclick]',
-      '.ihf-grid-result-container[onclick]',
-      '.ihf-grid-result[onclick]',
-      '.ihf-result-item[onclick]'
-    ];
+    debugLog(`Enhanced ${buttonCount} action buttons`);
+  }, [extractPropertyData, onScheduleTour, onMakeOffer, onFavorite, onRequestInfo, debugLog]);
 
-    let linkCount = 0;
-    linkSelectors.forEach(selector => {
-      const links = document.querySelectorAll(selector);
-      links.forEach(link => {
-        if (!interceptedLinksRef.current.has(link)) {
-          interceptPropertyLink(link);
-          linkCount++;
-        }
-      });
-    });
-
-    // Global click interceptor as fallback
-    const allClickableElements = document.querySelectorAll('a, button, [onclick], [role="button"], .clickable');
-    let fallbackCount = 0;
-    allClickableElements.forEach(element => {
-      if (!interceptedLinksRef.current.has(element) && !interceptedButtonsRef.current.has(element)) {
-        const href = element.getAttribute('href');
-        const onclick = element.getAttribute('onclick');
-        const text = element.textContent?.toLowerCase() || '';
-        
-        if ((href && /property|listing|detail/i.test(href)) || 
-            (onclick && /property|listing|detail/i.test(onclick)) ||
-            (text && /(view|see) (property|listing|detail)/i.test(text))) {
-          interceptPropertyLink(element);
-          fallbackCount++;
-        }
-      }
-    });
-
+  const scanForElements = useCallback(() => {
+    interceptPropertyLinks();
+    interceptActionButtons();
     removeIDXForms();
-
-    debugLog(`Scan #${scanCountRef.current} complete`, {
-      newButtons: buttonCount,
-      newLinks: linkCount,
-      fallbackInterceptions: fallbackCount,
-      totalIntercepted: interceptedButtonsRef.current.size + interceptedLinksRef.current.size
-    });
-  }, [debugLog, interceptButton, interceptPropertyLink, removeIDXForms]);
+  }, [interceptPropertyLinks, interceptActionButtons, removeIDXForms]);
 
   useEffect(() => {
-    debugLog('Initializing IDX button interception');
-    blockPopupNavigation();
+    debugLog('Initializing IDX property link interception');
 
-    // Multiple scan attempts with increasing delays to catch all IDX content
-    const scanTimers = [
-      setTimeout(() => scanForButtonsAndLinks(), 100),
-      setTimeout(() => scanForButtonsAndLinks(), 500),
-      setTimeout(() => scanForButtonsAndLinks(), 1000),
-      setTimeout(() => scanForButtonsAndLinks(), 2000),
-      setTimeout(() => scanForButtonsAndLinks(), 3000),
-      setTimeout(() => scanForButtonsAndLinks(), 5000),
-      setTimeout(() => scanForButtonsAndLinks(), 8000),
-      setTimeout(() => scanForButtonsAndLinks(), 12000)
-    ];
-
-    // Enhanced mutation observer with more specific targeting
-    observerRef.current = new MutationObserver((mutations) => {
-      let shouldScan = false;
-      
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              const element = node as Element;
-              // Check if this is IDX content or contains property-related elements
-              if (element.matches && (
-                element.matches('.ihf-container, .ihf-grid, .ihf-results, .ihf-result, [class*="ihf-"], .property-item, .listing-item, .property-card, .listing-card, [class*="property"], [class*="listing"]') ||
-                element.querySelector('.ihf-container, .ihf-grid, .ihf-results, .ihf-result, [class*="ihf-"], .property-item, .listing-item, .property-card, .listing-card, [class*="property"], [class*="listing"]')
-              )) {
-                debugLog('IDX content detected via mutation observer', element.className);
-                shouldScan = true;
-              }
-            }
-          });
-        }
-      });
-
-      if (shouldScan) {
-        debugLog('Scheduling scan due to DOM mutations');
-        setTimeout(() => {
-          scanForButtonsAndLinks();
-        }, 300);
-      }
-    });
-
-    observerRef.current.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    // Global click event listener as absolute fallback
-    const globalClickHandler = (event: Event) => {
-      const target = event.target as Element;
-      if (target && !interceptedLinksRef.current.has(target) && !interceptedButtonsRef.current.has(target)) {
-        const href = target.getAttribute('href');
-        if (href && /property|listing|detail/i.test(href)) {
-          debugLog('Global click handler intercepted untracked property link', href);
-          event.preventDefault();
-          event.stopPropagation();
-          const propertyId = extractPropertyIdFromUrl(href) || 'unknown';
-          navigate(`/listing/${propertyId}`);
-        }
-      }
+    // Initial scan on DOM ready
+    const initialScan = () => {
+      scanForElements();
     };
 
-    document.addEventListener('click', globalClickHandler, true);
+    // Set up MutationObserver as specified in the instructions
+    observerRef.current = new MutationObserver(() => {
+      scanForElements();
+    });
+
+    // Start observing
+    observerRef.current.observe(document.body, { 
+      childList: true, 
+      subtree: true 
+    });
+
+    // Multiple scan attempts to catch all IDX content
+    const scanTimers = [
+      setTimeout(initialScan, 100),
+      setTimeout(scanForElements, 500),
+      setTimeout(scanForElements, 1000),
+      setTimeout(scanForElements, 2000),
+      setTimeout(scanForElements, 5000)
+    ];
 
     return () => {
-      debugLog('Cleaning up IDX button interception');
-      scanTimers.forEach(timer => clearTimeout(timer));
+      debugLog('Cleaning up IDX interception');
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
-      document.removeEventListener('click', globalClickHandler, true);
+      scanTimers.forEach(timer => clearTimeout(timer));
       
-      interceptedButtonsRef.current.forEach(button => {
-        button.removeAttribute('data-enhanced');
+      // Clean up intercepted elements
+      document.querySelectorAll('[data-intercepted]').forEach(el => {
+        el.removeAttribute('data-intercepted');
       });
-      interceptedLinksRef.current.forEach(link => {
-        link.removeAttribute('data-enhanced-link');
+      document.querySelectorAll('[data-enhanced]').forEach(el => {
+        el.removeAttribute('data-enhanced');
       });
-      interceptedButtonsRef.current.clear();
-      interceptedLinksRef.current.clear();
     };
-  }, [debugLog, blockPopupNavigation, scanForButtonsAndLinks, extractPropertyIdFromUrl, navigate]);
+  }, [debugLog, scanForElements]);
 
   return {
-    scanForButtons: scanForButtonsAndLinks,
-    interceptedCount: interceptedButtonsRef.current.size + interceptedLinksRef.current.size
+    scanForButtons: scanForElements,
+    interceptedCount: interceptedCountRef.current
   };
 };

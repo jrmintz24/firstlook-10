@@ -47,27 +47,90 @@ const ListingDetails = () => {
     });
   };
 
-  // Simple property data extraction from IDX content
+  // Enhanced property data extraction from IDX content
   const extractPropertyFromIDX = () => {
     if (!containerRef.current) return null;
     
     console.log('[ListingDetails] Extracting property data from IDX content');
+    console.log('[ListingDetails] Container HTML:', containerRef.current.innerHTML.substring(0, 500));
     
-    // Try to extract property data from the IDX content
-    const addressElement = containerRef.current.querySelector('[data-address], .address, .property-address, h1, .listing-address, .ihf-detail-address');
-    const priceElement = containerRef.current.querySelector('[data-price], .price, .property-price, .listing-price, .ihf-detail-price');
-    const bedsElement = containerRef.current.querySelector('[data-beds], .beds, .bedroom, .bedrooms, .ihf-detail-beds');
-    const bathsElement = containerRef.current.querySelector('[data-baths], .baths, .bathroom, .bathrooms, .ihf-detail-baths');
+    // Enhanced selectors to find address in various IDX formats
+    const addressSelectors = [
+      '[data-address]',
+      '.address',
+      '.property-address', 
+      '.listing-address',
+      '.ihf-detail-address',
+      '.ihf-property-address',
+      '.ihf-address',
+      'h1',
+      'h2',
+      '[class*="address"]',
+      '[class*="Address"]',
+      '[id*="address"]',
+      '.detail-address',
+      '.property-title',
+      '.listing-title'
+    ];
+    
+    // Try each selector until we find a valid address
+    let addressElement = null;
+    let foundAddress = '';
+    
+    for (const selector of addressSelectors) {
+      const elements = containerRef.current.querySelectorAll(selector);
+      console.log(`[ListingDetails] Checking selector "${selector}", found ${elements.length} elements`);
+      
+      for (const element of elements) {
+        const text = element.textContent?.trim() || '';
+        console.log(`[ListingDetails] Element text: "${text}"`);
+        
+        // Check if this looks like an address (contains numbers and common address words)
+        if (text && (
+          /\d+\s+\w+/.test(text) || // Number followed by street name
+          /\w+\s+(St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Ln|Lane|Blvd|Boulevard|Ct|Court|Pl|Place|Way|Circle|Cir)/i.test(text) ||
+          /\d+.*,.*\w{2}\s+\d{5}/.test(text) // Address with state and zip
+        )) {
+          foundAddress = text;
+          addressElement = element;
+          console.log(`[ListingDetails] Found valid address: "${foundAddress}"`);
+          break;
+        }
+      }
+      
+      if (foundAddress) break;
+    }
+    
+    // Enhanced selectors for other property data
+    const priceSelectors = ['[data-price]', '.price', '.property-price', '.listing-price', '.ihf-detail-price', '.ihf-price', '[class*="price"]', '[class*="Price"]'];
+    const bedsSelectors = ['[data-beds]', '.beds', '.bedroom', '.bedrooms', '.ihf-detail-beds', '.ihf-beds', '[class*="bed"]', '[class*="Bed"]'];
+    const bathsSelectors = ['[data-baths]', '.baths', '.bathroom', '.bathrooms', '.ihf-detail-baths', '.ihf-baths', '[class*="bath"]', '[class*="Bath"]'];
+    
+    const findElementBySelectors = (selectors: string[]) => {
+      for (const selector of selectors) {
+        const element = containerRef.current?.querySelector(selector);
+        if (element?.textContent?.trim()) {
+          return element;
+        }
+      }
+      return null;
+    };
+    
+    const priceElement = findElementBySelectors(priceSelectors);
+    const bedsElement = findElementBySelectors(bedsSelectors);
+    const bathsElement = findElementBySelectors(bathsSelectors);
     
     const propertyData = {
-      address: addressElement?.textContent?.trim() || `Property ${listingId}`,
+      address: foundAddress || `Property ${listingId}`,
       price: priceElement?.textContent?.trim() || '',
       beds: bedsElement?.textContent?.trim() || '',
       baths: bathsElement?.textContent?.trim() || '',
       mlsId: listingId || ''
     };
 
-    console.log('[ListingDetails] Extracted property data:', propertyData);
+    console.log('[ListingDetails] Final extracted property data:', propertyData);
+    console.log('[ListingDetails] All elements in container:', Array.from(containerRef.current?.querySelectorAll('*') || []).map(el => ({ tag: el.tagName, class: el.className, text: el.textContent?.substring(0, 50) })));
+    
     return propertyData;
   };
 

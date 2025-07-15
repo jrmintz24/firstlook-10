@@ -2,6 +2,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
+import { ListingsPageSkeleton } from '../components/listings/ListingsPageSkeleton';
+import { Search, MapPin, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,34 +65,73 @@ const Listings = () => {
 
   if (hasError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-lg text-gray-600 mb-4">Unable to load property search</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen bg-background pt-16">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-md mx-auto text-center space-y-6">
+            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <Search className="w-8 h-8 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-foreground">Unable to Load Property Search</h2>
+              <p className="text-muted-foreground">
+                We're having trouble connecting to the property database. Please try again.
+              </p>
+            </div>
+            <Button 
+              onClick={() => window.location.reload()}
+              className="w-full sm:w-auto"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <LoadingSpinner size="lg" text="Loading property search..." />
+    <div className="min-h-screen bg-background pt-16">
+      {/* Page Header */}
+      <div className="bg-card border-b border-border">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Search className="w-4 h-4 text-primary" />
+            </div>
+            <h1 className="text-2xl font-semibold text-foreground">Property Search</h1>
+          </div>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            Search and browse available properties with live MLS data
+          </p>
         </div>
-      )}
-      
-      {/* IDX content will be rendered here */}
-      <div 
-        ref={containerRef} 
-        className={`w-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-      />
+      </div>
 
+      {/* Main Content Area */}
+      <div className="container mx-auto px-4 py-8">
+        {isLoading && (
+          <div className="space-y-8">
+            {/* Quick loading message */}
+            <div className="text-center py-8">
+              <LoadingSpinner size="lg" text="Loading property search..." />
+            </div>
+            
+            {/* Skeleton placeholder */}
+            <ListingsPageSkeleton />
+          </div>
+        )}
+        
+        {/* IDX Content Container */}
+        <div 
+          ref={containerRef} 
+          className={`
+            ${isLoading ? 'opacity-0 absolute -z-10' : 'opacity-100'} 
+            transition-opacity duration-500
+            bg-card rounded-lg border border-border overflow-hidden
+            shadow-sm
+          `}
+        />
+      </div>
     </div>
   );
 };

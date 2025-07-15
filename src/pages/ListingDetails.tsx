@@ -29,10 +29,10 @@ const ListingDetails = () => {
   const [isFavorited, setIsFavorited] = useState(false);
 
   // Set document head with dynamic title
-  useDocumentHead(
-    listingId ? `Listing ${listingId} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
-    'View detailed information about this property listing including photos, amenities, and neighborhood details.'
-  );
+  useDocumentHead({
+    title: listingId ? `Listing ${listingId} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
+    description: 'View detailed information about this property listing including photos, amenities, and neighborhood details.'
+  });
 
   const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData?: PropertyData) => {
     const currentProperty = propertyData || property;

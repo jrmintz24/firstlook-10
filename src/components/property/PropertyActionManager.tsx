@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import MakeOfferModal from '@/components/dashboard/MakeOfferModal';
 import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyModal';
+import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import { useEnhancedPostShowingActions } from '@/hooks/useEnhancedPostShowingActions';
 import { PropertyData } from '@/utils/propertyDataUtils';
 
@@ -22,11 +23,6 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
 }) => {
   const { isSubmitting, favoriteProperty } = useEnhancedPostShowingActions();
 
-  const handleTourSchedule = () => {
-    console.log('Schedule tour for:', property);
-    // TODO: Implement tour scheduling modal
-    onClose();
-  };
 
   const handleMakeOffer = () => {
     // The MakeOfferModal will handle its own submission
@@ -55,9 +51,14 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
 
   switch (actionType) {
     case 'tour':
-      // TODO: Implement tour scheduling modal
-      handleTourSchedule();
-      return null;
+      return (
+        <ModernTourSchedulingModal
+          isOpen={isOpen}
+          onClose={onClose}
+          onSuccess={async () => onClose()}
+          initialAddress={property.address}
+        />
+      );
       
     case 'offer':
       return (

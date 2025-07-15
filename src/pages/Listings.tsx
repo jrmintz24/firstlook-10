@@ -26,16 +26,21 @@ const Listings = () => {
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
-          // Let IDX render naturally since pop-outs are disabled at dashboard level
-          const script = document.createElement('script');
-          script.textContent = `ihfKestrel.render();`;
-          containerRef.current.appendChild(script);
+          // Create and execute the embed script using the working pattern from Idx.tsx
+          const renderedElement = window.ihfKestrel.render();
+          if (renderedElement) {
+            containerRef.current.appendChild(renderedElement);
+            console.log('[Listings] IDX content successfully rendered');
+          } else {
+            console.error('[Listings] IDX render returned null/undefined');
+            setHasError(true);
+          }
           
           // Set loading to false after content renders
           setTimeout(() => {
             console.log('[Listings] IDX load complete');
             setIsLoading(false);
-          }, 2000);
+          }, 1000);
           
         } else {
           console.log('[Listings] IDX Kestrel not available, showing error');

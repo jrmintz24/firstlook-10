@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
-import PropertyActionHeader from '../components/property/PropertyActionHeader';
 import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 import { PropertyData } from '../utils/propertyDataUtils';
@@ -204,27 +203,30 @@ const ListingDetails = () => {
   }, [property]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Sticky Property Action Header */}
-      <PropertyActionHeader 
-        property={property}
-        onScheduleTour={() => handlePropertyAction('tour')}
-        onMakeOffer={() => handlePropertyAction('offer')}
-        onFavorite={() => handlePropertyAction('favorite')}
-      />
-
-      {/* Property Tab Navigation - This is the key component we want to see */}
+    <div className="min-h-screen bg-background">
+      {/* Property Tab Navigation */}
       <PropertyTabNavigation
         property={property}
         onScheduleTour={() => handlePropertyAction('tour')}
         onMakeOffer={() => handlePropertyAction('offer')}
         onFavorite={() => handlePropertyAction('favorite')}
         isFavorited={isFavorited}
+        isLoading={!property}
       />
       
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full h-full">
-        {/* IDX listing content will be rendered here */}
+      <div className="w-full">
+        {!property ? (
+          <div className="animate-pulse p-6 space-y-4">
+            <div className="h-64 bg-muted rounded-lg"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </div>
+        ) : (
+          <div ref={containerRef} className="w-full min-h-[400px] bg-card">
+            {/* IDX listing content will be rendered here */}
+          </div>
+        )}
       </div>
 
       {/* Debug info */}

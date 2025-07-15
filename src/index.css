@@ -162,15 +162,22 @@
 /* IDX Form Hiding Rules */
 /* Hide common IDX contact forms and request info panels */
 .ihf-contact-form,
+.ihf-request-form,
+.ihf-tour-request-form,
 .ihf-request-info,
 .ihf-lead-form,
 .contact-form,
 .request-info-form,
+.tour-request-form,
 .lead-capture-form,
 [class*="contact-form"],
+[class*="request-form"],
+[class*="tour-request"],
 [class*="request-info"],
 [class*="lead-form"],
 [id*="contact-form"],
+[id*="request-form"],
+[id*="tour-request"],
 [id*="request-info"],
 [id*="lead-form"] {
   display: none !important;
@@ -198,5 +205,36 @@ form[action*="lead"],
 /* Hide any form that contains typical lead capture fields */
 form:has(input[placeholder*="email"]):has(input[placeholder*="phone"]),
 form:has(input[placeholder*="Email"]):has(input[placeholder*="Phone"]) {
+  display: none !important;
+}
+
+/* Hide IDX action buttons and CTA elements */
+.ihf-action-button,
+.ihf-cta-button,
+.ihf-schedule-tour,
+.ihf-request-info-button,
+[class*="schedule-tour"],
+[class*="request-info-btn"],
+[class*="contact-agent"],
+[class*="tour-button"],
+[id*="schedule-tour"],
+[id*="contact-agent"],
+button[class*="ihf-"],
+input[type="submit"][value*="Contact"],
+input[type="submit"][value*="Schedule"],
+input[type="submit"][value*="Request"],
+input[type="button"][value*="Contact"],
+input[type="button"][value*="Schedule"],
+input[type="button"][value*="Request"] {
+  display: none !important;
+}
+
+/* Hide IDX modal triggers and popup elements */
+[data-toggle*="modal"][class*="contact"],
+[data-toggle*="modal"][class*="request"],
+[data-target*="contact"],
+[data-target*="request"],
+.modal-trigger[class*="contact"],
+.popup-trigger[class*="request"] {
   display: none !important;
 }

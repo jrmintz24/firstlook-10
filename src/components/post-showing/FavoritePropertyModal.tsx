@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,9 @@ const FavoritePropertyModal = ({
             <Heart className="h-5 w-5 text-red-500" />
             Save to Favorites
           </DialogTitle>
+          <DialogDescription>
+            Save this property to your favorites list for easy access later. You can add optional notes about what you liked or any concerns.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

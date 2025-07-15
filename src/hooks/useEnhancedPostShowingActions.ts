@@ -103,13 +103,28 @@ export const useEnhancedPostShowingActions = () => {
   };
 
   const favoriteProperty = async (data: {
-    showingId: string;
+    showingId: string | null;
     buyerId: string;
     propertyAddress: string;
     agentName?: string;
   }, notes?: string) => {
     setIsSubmitting(true);
     try {
+      console.log('[useEnhancedPostShowingActions] Attempting to favorite property:', {
+        buyer_id: data.buyerId,
+        showing_request_id: data.showingId,
+        property_address: data.propertyAddress,
+        notes: notes
+      });
+
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[useEnhancedPostShowingActions] Current session:', session?.user?.id);
+      
+      if (!session?.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
       const { error } = await supabase
         .from('property_favorites')
         .insert({
@@ -119,19 +134,33 @@ export const useEnhancedPostShowingActions = () => {
           notes: notes || null
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useEnhancedPostShowingActions] Database error:', error);
+        throw error;
+      }
 
       toast({
         title: "Property Favorited",
         description: "This property has been added to your favorites.",
       });
-    } catch (error) {
-      console.error('Error favoriting property:', error);
+    } catch (error: any) {
+      console.error('[useEnhancedPostShowingActions] Error favoriting property:', error);
+      
+      let errorMessage = "Failed to favorite property. Please try again.";
+      
+      if (error.message === 'User not authenticated') {
+        errorMessage = "Please log in to favorite properties.";
+      } else if (error.code === 'PGRST301') {
+        errorMessage = "Authentication required. Please log in and try again.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to favorite property. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      throw error; // Re-throw so calling component can handle it
     } finally {
       setIsSubmitting(false);
     }

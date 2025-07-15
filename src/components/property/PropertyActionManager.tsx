@@ -5,13 +5,14 @@ import FavoritePropertyModal from '@/components/post-showing/FavoritePropertyMod
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import { useEnhancedPostShowingActions } from '@/hooks/useEnhancedPostShowingActions';
 import { PropertyData } from '@/utils/propertyDataUtils';
+import { useBuyerAuth } from '@/hooks/useBuyerAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface PropertyActionManagerProps {
   isOpen: boolean;
   onClose: () => void;
   actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
   property: PropertyData | null;
-  buyerId?: string;
 }
 
 const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
@@ -19,9 +20,10 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
   onClose,
   actionType,
   property,
-  buyerId = 'temp-buyer-id' // TODO: Replace with actual buyer ID from auth
 }) => {
   const { isSubmitting, favoriteProperty } = useEnhancedPostShowingActions();
+  const { currentUser, loading: authLoading } = useBuyerAuth();
+  const { toast } = useToast();
 
 
   const handleMakeOffer = () => {
@@ -32,13 +34,31 @@ const PropertyActionManager: React.FC<PropertyActionManagerProps> = ({
   const handleFavorite = async (notes?: string) => {
     if (!property) return;
     
-    await favoriteProperty({
-      showingId: 'temp-showing-id', // TODO: Replace with actual showing ID
-      buyerId,
-      propertyAddress: property.address,
-    }, notes);
+    // Check if user is authenticated
+    if (!currentUser?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to favorite properties.",
+        variant: "destructive",
+      });
+      onClose();
+      return;
+    }
+
+    console.log('[PropertyActionManager] Favoriting property for user:', currentUser.id);
     
-    onClose();
+    try {
+      await favoriteProperty({
+        showingId: null, // No showing required for direct property favoriting
+        buyerId: currentUser.id,
+        propertyAddress: property.address,
+      }, notes);
+      
+      onClose();
+    } catch (error) {
+      console.error('[PropertyActionManager] Error in handleFavorite:', error);
+      // Error handling is already done in the favoriteProperty hook
+    }
   };
 
   const handleRequestInfo = () => {

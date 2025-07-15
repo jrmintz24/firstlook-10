@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
-import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 
 interface PropertyData {
@@ -28,7 +27,7 @@ const Listing = () => {
     isOpen: false,
     actionType: null,
   });
-  const [isFavorited, setIsFavorited] = useState(false);
+  
 
   // Extract listing ID from query parameter
   const searchParams = new URLSearchParams(location.search);
@@ -224,14 +223,6 @@ const Listing = () => {
         className="bg-white shadow-sm"
       />
       
-      {/* Sticky Property Tab Navigation */}
-      <PropertyTabNavigation
-        property={property}
-        onScheduleTour={() => handlePropertyAction('tour', property)}
-        onMakeOffer={() => handlePropertyAction('offer', property)}
-        onFavorite={() => handlePropertyAction('favorite', property)}
-        isFavorited={isFavorited}
-      />
       
       {/* IDX content container with proper spacing */}
       <div className="relative">

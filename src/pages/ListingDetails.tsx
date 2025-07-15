@@ -74,23 +74,54 @@ const ListingDetails = () => {
   useEffect(() => {
     console.log('[ListingDetails] Starting IDX render for listing:', listingId);
 
-    if (listingId && containerRef.current) {
-      // Clear existing content and render IDX
-      containerRef.current.innerHTML = '<div id="ihf-kestrel-container"></div>';
+    if (listingId && containerRef.current && window.ihfKestrel) {
+      // Clear existing content
+      containerRef.current.innerHTML = '';
       
-      // Let IDX render naturally since pop-outs are disabled at dashboard level
-      if (window.ihfKestrel) {
-        const script = document.createElement('script');
-        script.textContent = `ihfKestrel.render();`;
-        containerRef.current.appendChild(script);
+      // Create and execute the embed script using the working pattern from Listings.tsx
+      const renderedElement = window.ihfKestrel.render();
+      if (renderedElement) {
+        containerRef.current.appendChild(renderedElement);
+        console.log('[ListingDetails] IDX content successfully rendered');
         
-        // Extract property data after render
-        setTimeout(() => {
+        // Extract property data after render with multiple attempts
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        const extractData = () => {
+          attempts++;
           const propertyData = extractPropertyFromIDX();
-          if (propertyData) {
+          if (propertyData && propertyData.address !== `Property ${listingId}`) {
+            console.log('[ListingDetails] Property data extracted successfully:', propertyData);
             setProperty(propertyData);
+          } else if (attempts < maxAttempts) {
+            console.log(`[ListingDetails] Property data extraction attempt ${attempts}/${maxAttempts}, retrying...`);
+            setTimeout(extractData, 1000);
+          } else {
+            console.log('[ListingDetails] Max extraction attempts reached, using fallback data');
+            setProperty({
+              address: `Property ${listingId}`,
+              price: '',
+              beds: '',
+              baths: '',
+              mlsId: listingId || ''
+            });
           }
-        }, 2000);
+        };
+        
+        // Start extraction after a short delay
+        setTimeout(extractData, 500);
+        
+      } else {
+        console.error('[ListingDetails] IDX render returned null/undefined');
+        // Set fallback property data
+        setProperty({
+          address: `Property ${listingId}`,
+          price: '',
+          beds: '',
+          baths: '',
+          mlsId: listingId || ''
+        });
       }
     }
   }, [listingId]);

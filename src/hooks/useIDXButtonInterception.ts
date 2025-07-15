@@ -160,25 +160,28 @@ export const useIDXButtonInterception = ({
 
     propertySelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
-      elements.forEach((el) => {
+      elements.forEach((element) => {
         // Skip if already intercepted
-        if (el.hasAttribute('data-intercepted')) return;
+        if (element.hasAttribute('data-intercepted')) return;
 
-        el.onclick = function (e) {
+        // Cast to HTMLElement to access onclick property
+        const htmlElement = element as HTMLElement;
+        
+        htmlElement.onclick = function (e) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
 
-          debugLog('Property click intercepted', { element: el, selector });
+          debugLog('Property click intercepted', { element: htmlElement, selector });
 
           // Try to get listing ID from various attributes
-          let listingId = el.getAttribute('data-listing-id') || 
-                         el.getAttribute('data-mls-id') || 
-                         el.getAttribute('data-property-id');
+          let listingId = element.getAttribute('data-listing-id') || 
+                         element.getAttribute('data-mls-id') || 
+                         element.getAttribute('data-property-id');
 
           // If no data attribute, try to extract from href
           if (!listingId) {
-            const href = el.getAttribute('href');
+            const href = element.getAttribute('href');
             if (href) {
               listingId = extractPropertyIdFromUrl(href);
             }
@@ -186,7 +189,7 @@ export const useIDXButtonInterception = ({
 
           // If still no ID, try to extract from element text or nearby elements
           if (!listingId) {
-            const linkText = el.textContent?.trim();
+            const linkText = element.textContent?.trim();
             const numbersMatch = linkText?.match(/[A-Z0-9]{6,}|[0-9]{5,}/);
             if (numbersMatch) {
               listingId = numbersMatch[0];
@@ -204,7 +207,7 @@ export const useIDXButtonInterception = ({
         };
 
         // Mark as intercepted
-        el.setAttribute('data-intercepted', 'true');
+        element.setAttribute('data-intercepted', 'true');
         interceptedCount++;
       });
     });

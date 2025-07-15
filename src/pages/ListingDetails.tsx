@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import PropertyActionHeader from '../components/property/PropertyActionHeader';
@@ -29,10 +29,10 @@ const ListingDetails = () => {
   const [isFavorited, setIsFavorited] = useState(false);
 
   // Set document head with dynamic title
-  useDocumentHead({
-    title: listingId ? `Listing ${listingId} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
-    description: 'View detailed information about this property listing including photos, amenities, and neighborhood details.',
-  });
+  useDocumentHead(
+    listingId ? `Listing ${listingId} - Home Finder Platform` : 'Property Listing - Home Finder Platform',
+    'View detailed information about this property listing including photos, amenities, and neighborhood details.'
+  );
 
   const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData?: PropertyData) => {
     const currentProperty = propertyData || property;

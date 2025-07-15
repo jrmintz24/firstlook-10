@@ -2,51 +2,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
-import { useSimplifiedIDXInterception } from '../hooks/useSimplifiedIDXInterception';
-import { PropertyData } from '../utils/propertyDataUtils';
-import PropertyActionManager from '../components/property/PropertyActionManager';
 
 const Listings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
-  }>({
-    isOpen: false,
-    actionType: null
-  });
-  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
 
   // Set document head with static title as specified
   useDocumentHead({
     title: 'Property Search',
     description: 'Search and browse available properties with advanced filtering options and detailed listings.',
-  });
-
-  const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData: PropertyData) => {
-    setSelectedProperty(propertyData);
-    setModalState({
-      isOpen: true,
-      actionType
-    });
-  };
-
-  const closeModal = () => {
-    setModalState({
-      isOpen: false,
-      actionType: null
-    });
-    setSelectedProperty(null);
-  };
-
-  // Set up simplified IDX interception with navigation
-  const { scanForElements, interceptedCount } = useSimplifiedIDXInterception({
-    onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
-    onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
-    onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
-    onRequestInfo: (propertyData) => handlePropertyAction('info', propertyData)
   });
 
   useEffect(() => {
@@ -61,51 +26,16 @@ const Listings = () => {
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
-          // Create a script element with the embed code
+          // Let IDX render naturally since pop-outs are disabled at dashboard level
           const script = document.createElement('script');
-          script.textContent = `
-            try {
-              console.log('[IDX] Attempting to render IDX content');
-              const element = ihfKestrel.render({
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true
-              });
-              if (element) {
-                console.log('[IDX] IDX element created successfully');
-                document.currentScript.replaceWith(element);
-              } else {
-                console.log('[IDX] Fallback to standard render');
-                document.currentScript.replaceWith(ihfKestrel.render());
-              }
-            } catch (e) {
-              console.error('[IDX] Render error:', e);
-              document.currentScript.replaceWith(ihfKestrel.render());
-            }
-          `;
-          
-          // Append the script to the container
+          script.textContent = `ihfKestrel.render();`;
           containerRef.current.appendChild(script);
           
-          console.log('[Listings] IDX script appended, scheduling scans...');
-          
-          // Set loading to false and scan for elements after content renders
+          // Set loading to false after content renders
           setTimeout(() => {
-            console.log('[Listings] Initial IDX load timeout reached');
+            console.log('[Listings] IDX load complete');
             setIsLoading(false);
-            scanForElements();
           }, 2000);
-
-          // Additional scans to catch dynamically loaded content
-          setTimeout(() => {
-            console.log('[Listings] Additional scan for dynamic content');
-            scanForElements();
-          }, 5000);
-
-          setTimeout(() => {
-            console.log('[Listings] Final scan for late-loading content');
-            scanForElements();
-          }, 10000);
           
         } else {
           console.log('[Listings] IDX Kestrel not available, showing error');
@@ -123,14 +53,7 @@ const Listings = () => {
     };
 
     loadIDX();
-  }, [scanForElements]);
-
-  // Debug information
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Listings] Debug - intercepted count:', interceptedCount);
-    }
-  }, [interceptedCount]);
+  }, []);
 
   if (hasError) {
     return (
@@ -162,20 +85,6 @@ const Listings = () => {
         className={`w-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
       />
 
-      {/* Debug info */}
-      {process.env.NODE_ENV === 'development' && interceptedCount > 0 && (
-        <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-sm z-50">
-          Enhanced {interceptedCount} IDX elements
-        </div>
-      )}
-
-      {/* Property Action Manager for Modals */}
-      <PropertyActionManager
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        actionType={modalState.actionType}
-        property={selectedProperty}
-      />
     </div>
   );
 };

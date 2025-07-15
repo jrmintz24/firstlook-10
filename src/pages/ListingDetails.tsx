@@ -6,7 +6,6 @@ import PropertyActionHeader from '../components/property/PropertyActionHeader';
 import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
 import PropertyActionManager from '../components/property/PropertyActionManager';
 import { PropertyData } from '../utils/propertyDataUtils';
-import { useSimplifiedIDXInterception } from '../hooks/useSimplifiedIDXInterception';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,14 +47,7 @@ const ListingDetails = () => {
     });
   };
 
-  // Set up simplified IDX interception
-  const { scanForElements, interceptedCount } = useSimplifiedIDXInterception({
-    onScheduleTour: (propertyData) => handlePropertyAction('tour', propertyData),
-    onMakeOffer: (propertyData) => handlePropertyAction('offer', propertyData),
-    onFavorite: (propertyData) => handlePropertyAction('favorite', propertyData),
-    onRequestInfo: (propertyData) => handlePropertyAction('info', propertyData)
-  });
-
+  // Simple property data extraction from IDX content
   const extractPropertyFromIDX = () => {
     if (!containerRef.current) return null;
     
@@ -79,96 +71,36 @@ const ListingDetails = () => {
     return propertyData;
   };
 
-  const removeIDXFormsFromContainer = () => {
-    if (!containerRef.current) return;
-    
-    console.log('[ListingDetails] Removing IDX forms from container');
-    
-    // Additional cleanup specifically for the container
-    const formsToRemove = containerRef.current.querySelectorAll(`
-      .ihf-contact-form,
-      .ihf-request-info,
-      .ihf-lead-form,
-      .contact-form,
-      .request-info-form,
-      .lead-capture-form,
-      .sidebar-contact,
-      .property-contact-form,
-      form[action*="contact"],
-      form[action*="request"],
-      form[action*="lead"]
-    `);
-    
-    formsToRemove.forEach(form => {
-      console.log('[ListingDetails] Removing IDX form from container:', form);
-      form.remove();
-    });
-  };
-
-  // Function to render specific listing using IDX
-  const renderListing = (propertyId: string) => {
-    if (window.ihfKestrel && containerRef.current) {
-      console.log('[ListingDetails] Rendering listing:', propertyId);
-      
-      try {
-        // Create a script element with the embed code for specific listing
-        const script = document.createElement('script');
-        script.textContent = `
-          try {
-            console.log('[IDX Detail] Rendering listing: ${propertyId}');
-            const element = ihfKestrel.render({
-              listingId: '${propertyId}',
-              view: 'detail',
-              modalMode: false,
-              popupMode: false,
-              inlineMode: true
-            });
-            if (element) {
-              document.currentScript.replaceWith(element);
-            } else {
-              document.currentScript.replaceWith(ihfKestrel.render());
-            }
-          } catch (e) {
-            console.error('[IDX Detail] Render error:', e);
-            document.currentScript.replaceWith(ihfKestrel.render());
-          }
-        `;
-        containerRef.current.appendChild(script);
-      } catch (error) {
-        console.error('[ListingDetails] Error rendering listing:', error);
-      }
-
-      // Extract property data and scan for elements after render
-      setTimeout(() => {
-        const propertyData = extractPropertyFromIDX();
-        if (propertyData) {
-          setProperty(propertyData);
-        }
-        scanForElements();
-        removeIDXFormsFromContainer();
-      }, 2000);
-    }
-  };
-
   useEffect(() => {
     console.log('[ListingDetails] Starting IDX render for listing:', listingId);
 
     if (listingId && containerRef.current) {
-      // Clear existing content
+      // Clear existing content and render IDX
       containerRef.current.innerHTML = '<div id="ihf-kestrel-container"></div>';
       
-      // Render the specific listing
-      renderListing(listingId);
+      // Let IDX render naturally since pop-outs are disabled at dashboard level
+      if (window.ihfKestrel) {
+        const script = document.createElement('script');
+        script.textContent = `ihfKestrel.render();`;
+        containerRef.current.appendChild(script);
+        
+        // Extract property data after render
+        setTimeout(() => {
+          const propertyData = extractPropertyFromIDX();
+          if (propertyData) {
+            setProperty(propertyData);
+          }
+        }, 2000);
+      }
     }
-  }, [listingId, scanForElements]);
+  }, [listingId]);
 
   // Debug logging
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('[ListingDetails] Property state updated:', property);
-      console.log('[ListingDetails] Intercepted count:', interceptedCount);
     }
-  }, [property, interceptedCount]);
+  }, [property]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -197,7 +129,7 @@ const ListingDetails = () => {
       {/* Debug info */}
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-3 py-1 rounded text-sm z-50">
-          Property: {property?.address || 'Loading...'} | Enhanced: {interceptedCount}
+          Property: {property?.address || 'Loading...'}
         </div>
       )}
 

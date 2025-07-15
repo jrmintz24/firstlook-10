@@ -1,109 +1,195 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
+import PropertyActionHeader from '../components/property/PropertyActionHeader';
+import PropertyTabNavigation from '../components/property/PropertyTabNavigation';
+import PropertyActionManager from '../components/property/PropertyActionManager';
+
+interface PropertyData {
+  address: string;
+  price: string;
+  beds: string;
+  baths: string;
+  mlsId: string;
+}
 
 const Listing = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [listingAddress, setListingAddress] = useState('Property Listing');
+  const location = useLocation();
+  const [property, setProperty] = useState<PropertyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    actionType: 'tour' | 'offer' | 'favorite' | 'info' | null;
+  }>({
+    isOpen: false,
+    actionType: null,
+  });
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  // Extract listing ID from query parameter
+  const searchParams = new URLSearchParams(location.search);
+  const listingId = searchParams.get('id');
 
   // Set document head with dynamic title
   useDocumentHead({
-    title: listingAddress,
+    title: property?.address || 'Property Listing',
     description: 'View detailed information about this property listing including photos, amenities, and neighborhood details.',
   });
 
-  const extractListingAddress = () => {
-    if (!containerRef.current) return;
+  const extractPropertyFromIDX = (): PropertyData | null => {
+    if (!containerRef.current) return null;
     
-    // Try to extract property address from IDX content after it loads
-    const checkForAddress = () => {
+    try {
+      // Enhanced selectors for property data extraction
       const addressSelectors = [
         '[data-address]',
         '.address',
         '.property-address',
         '.listing-address',
         'h1',
-        '.property-title'
+        '.property-title',
+        '.listing-title'
       ];
       
-      for (const selector of addressSelectors) {
-        const element = containerRef.current?.querySelector(selector);
-        if (element && element.textContent?.trim()) {
-          const address = element.textContent.trim();
-          if (address && address !== 'Property Listing') {
-            setListingAddress(address);
-            return true;
+      const priceSelectors = [
+        '[data-price]',
+        '.price',
+        '.property-price',
+        '.listing-price'
+      ];
+      
+      const bedsSelectors = [
+        '[data-beds]',
+        '.beds',
+        '.bedrooms'
+      ];
+      
+      const bathsSelectors = [
+        '[data-baths]',
+        '.baths',
+        '.bathrooms'
+      ];
+      
+      const mlsSelectors = [
+        '[data-mls]',
+        '.mls',
+        '.mls-id'
+      ];
+
+      const findText = (selectors: string[]) => {
+        for (const selector of selectors) {
+          const element = containerRef.current?.querySelector(selector);
+          if (element && element.textContent?.trim()) {
+            return element.textContent.trim();
           }
         }
-      }
-      return false;
-    };
+        return '';
+      };
 
-    // Try immediately and then with delays
-    if (!checkForAddress()) {
-      setTimeout(() => {
-        if (!checkForAddress()) {
-          setTimeout(checkForAddress, 2000);
-        }
-      }, 1000);
+      const address = findText(addressSelectors);
+      const price = findText(priceSelectors);
+      const beds = findText(bedsSelectors);
+      const baths = findText(bathsSelectors);
+      const mlsId = findText(mlsSelectors) || listingId || '';
+
+      if (address) {
+        return {
+          address,
+          price,
+          beds,
+          baths,
+          mlsId
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error extracting property data:', error);
+      return null;
     }
   };
 
+  const handlePropertyAction = (actionType: 'tour' | 'offer' | 'favorite' | 'info', propertyData?: PropertyData) => {
+    console.log('Property action:', actionType, propertyData);
+    setModalState({
+      isOpen: true,
+      actionType,
+    });
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      actionType: null,
+    });
+  };
+
   useEffect(() => {
-    const loadIDX = async () => {
-      try {
-        // Ensure the IDX script is loaded
-        if (window.ihfKestrel && containerRef.current) {
-          // Clear any existing content
-          containerRef.current.innerHTML = '';
-          
-          // Create a script element with the embed code
-          const script = document.createElement('script');
-          script.textContent = `
-            try {
-              const element = ihfKestrel.render({
-                modalMode: false,
-                popupMode: false,
-                inlineMode: true
-              });
-              if (element) {
-                document.currentScript.replaceWith(element);
-              } else {
-                document.currentScript.replaceWith(ihfKestrel.render());
-              }
-            } catch (e) {
-              console.error('IDX render error:', e);
-              document.currentScript.replaceWith(ihfKestrel.render());
-            }
-          `;
-          
-          // Append the script to the container
-          containerRef.current.appendChild(script);
-          
-          // Extract address for title after IDX loads
-          setTimeout(() => {
-            extractListingAddress();
+    console.log('[Listing] Starting IDX render for listing:', listingId);
+
+    if (listingId && containerRef.current && window.ihfKestrel) {
+      // Clear existing content
+      containerRef.current.innerHTML = '';
+      
+      // Create and execute the embed script using the working pattern from Listings.tsx
+      const renderedElement = window.ihfKestrel.render();
+      if (renderedElement) {
+        containerRef.current.appendChild(renderedElement);
+        console.log('[Listing] IDX content successfully rendered');
+        
+        // Extract property data after render with multiple attempts
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        const extractData = () => {
+          attempts++;
+          const propertyData = extractPropertyFromIDX();
+          if (propertyData && propertyData.address !== `Property ${listingId}`) {
+            console.log('[Listing] Property data extracted successfully:', propertyData);
+            setProperty(propertyData);
             setIsLoading(false);
-          }, 1000);
-        } else {
-          // If IDX is not available, show error after a delay
-          setTimeout(() => {
+          } else if (attempts < maxAttempts) {
+            console.log(`[Listing] Property data extraction attempt ${attempts}/${maxAttempts}, retrying...`);
+            setTimeout(extractData, 1000);
+          } else {
+            console.log('[Listing] Max extraction attempts reached, using fallback data');
+            setProperty({
+              address: `Property ${listingId}`,
+              price: '',
+              beds: '',
+              baths: '',
+              mlsId: listingId || ''
+            });
             setIsLoading(false);
-            setHasError(true);
-          }, 2000);
-        }
-      } catch (error) {
-        console.error('Error loading IDX content:', error);
+          }
+        };
+        
+        // Start extraction after a short delay
+        setTimeout(extractData, 500);
+        
+      } else {
+        console.error('[Listing] IDX render returned null/undefined');
+        // Set fallback property data
+        setProperty({
+          address: `Property ${listingId}`,
+          price: '',
+          beds: '',
+          baths: '',
+          mlsId: listingId || ''
+        });
+        setIsLoading(false);
+      }
+    } else {
+      setTimeout(() => {
         setIsLoading(false);
         setHasError(true);
-      }
-    };
-
-    loadIDX();
-  }, []);
+      }, 2000);
+    }
+  }, [listingId]);
 
   if (hasError) {
     return (
@@ -122,17 +208,46 @@ const Listing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <LoadingSpinner size="lg" text="Loading property listing..." />
         </div>
       )}
       
-      {/* IDX content will be rendered here */}
-      <div 
-        ref={containerRef} 
-        className={`w-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+      {/* Property Action Header */}
+      <PropertyActionHeader
+        property={property}
+        onScheduleTour={() => handlePropertyAction('tour', property)}
+        onMakeOffer={() => handlePropertyAction('offer', property)}
+        onFavorite={() => handlePropertyAction('favorite', property)}
+        className="bg-white shadow-sm"
+      />
+      
+      {/* Sticky Property Tab Navigation */}
+      <PropertyTabNavigation
+        property={property}
+        onScheduleTour={() => handlePropertyAction('tour', property)}
+        onMakeOffer={() => handlePropertyAction('offer', property)}
+        onFavorite={() => handlePropertyAction('favorite', property)}
+        isFavorited={isFavorited}
+      />
+      
+      {/* IDX content container with proper spacing */}
+      <div className="relative">
+        <div 
+          ref={containerRef} 
+          className={`w-full px-4 py-6 ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+          style={{ minHeight: '60vh' }}
+        />
+      </div>
+      
+      {/* Property Action Manager for modals */}
+      <PropertyActionManager
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        actionType={modalState.actionType}
+        property={property}
       />
     </div>
   );

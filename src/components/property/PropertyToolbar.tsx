@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Heart } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Button } from '../ui/button';
 import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
@@ -16,15 +16,21 @@ interface PropertyToolbarProps {
 export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = '' }) => {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isFavoriteOpen, setIsFavoriteOpen] = useState(false);
-  const { propertyData, isLoading } = useIDXPropertyExtractor();
+  const { propertyData, isLoading, error } = useIDXPropertyExtractor();
   const { favoriteProperty, isSubmitting } = useEnhancedPostShowingActions();
   const { user } = useAuth();
   const location = useLocation();
+  const { listingId } = useParams<{ listingId: string }>();
 
-  // Only show toolbar on individual property detail pages, not on listings/search pages
-  const isPropertyDetailPage = location.pathname.includes('/listing/') && !location.pathname.includes('/listings');
+  // Check if we're on an individual property detail page using useParams
+  const isPropertyDetailPage = !!listingId;
   
-  console.log('[PropertyToolbar] Current path:', location.pathname, 'Is property detail page:', isPropertyDetailPage);
+  console.log('[PropertyToolbar] Current path:', location.pathname);
+  console.log('[PropertyToolbar] Listing ID from params:', listingId);
+  console.log('[PropertyToolbar] Is property detail page:', isPropertyDetailPage);
+  console.log('[PropertyToolbar] Property data:', propertyData);
+  console.log('[PropertyToolbar] Is loading:', isLoading);
+  console.log('[PropertyToolbar] Error:', error);
 
   const handleScheduleTour = () => {
     console.log('[PropertyToolbar] Schedule tour with property ID:', propertyData?.mlsId, 'and address:', propertyData?.address);
@@ -53,8 +59,8 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
     }, notes);
   };
 
-  // Don't show toolbar if not on a property detail page or while loading
-  if (!isPropertyDetailPage || isLoading) {
+  // Don't show toolbar if not on a property detail page
+  if (!isPropertyDetailPage) {
     return null;
   }
 
@@ -64,26 +70,37 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Property Info */}
-            {propertyData && (
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-semibold text-foreground truncate">
-                  {propertyData.address}
-                </h2>
-                {propertyData.price && (
-                  <div className="flex items-center gap-4 mt-1">
-                    <span className="text-xl font-bold text-primary">
-                      {propertyData.price}
-                    </span>
-                    {propertyData.beds && propertyData.baths && (
-                      <span className="text-sm text-muted-foreground">
-                        {propertyData.beds} bed • {propertyData.baths} bath
-                        {propertyData.sqft && ` • ${propertyData.sqft} sqft`}
+            <div className="flex-1 min-w-0">
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-6 bg-muted rounded w-64 mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-48"></div>
+                </div>
+              ) : propertyData ? (
+                <>
+                  <h2 className="text-lg font-semibold text-foreground truncate">
+                    {propertyData.address}
+                  </h2>
+                  {propertyData.price && (
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-xl font-bold text-primary">
+                        {propertyData.price}
                       </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                      {propertyData.beds && propertyData.baths && (
+                        <span className="text-sm text-muted-foreground">
+                          {propertyData.beds} bed • {propertyData.baths} bath
+                          {propertyData.sqft && ` • ${propertyData.sqft} sqft`}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  Property details loading...
+                </div>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
@@ -92,7 +109,7 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
                 variant="outline"
                 size="sm"
                 className="hidden sm:flex hover:bg-accent"
-                disabled={!propertyData?.address}
+                disabled={isLoading}
               >
                 <Heart className="h-4 w-4 mr-2" />
                 Save
@@ -102,7 +119,7 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
                 onClick={handleScheduleTour}
                 size="sm"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                disabled={!propertyData?.address}
+                disabled={isLoading}
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule Tour

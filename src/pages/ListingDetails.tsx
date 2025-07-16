@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
+import { PropertyToolbar } from '../components/property/PropertyToolbar';
 
 const ListingDetails = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,9 +35,12 @@ const ListingDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full min-h-screen">
+      <div ref={containerRef} className="w-full min-h-screen pb-20">
         {/* IDX listing content will be rendered here */}
       </div>
+      
+      {/* Property Toolbar */}
+      <PropertyToolbar />
     </div>
   );
 };

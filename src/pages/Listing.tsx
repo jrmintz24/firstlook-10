@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
+import { PropertyToolbar } from '../components/property/PropertyToolbar';
 
 const Listing = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,9 +73,12 @@ const Listing = () => {
       )}
       
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full min-h-screen">
+      <div ref={containerRef} className="w-full min-h-screen pb-20">
         {/* IDX listing content will be rendered here */}
       </div>
+      
+      {/* Property Toolbar */}
+      {!isLoading && <PropertyToolbar />}
     </div>
   );
 };

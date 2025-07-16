@@ -4,6 +4,10 @@ export interface PropertyEntry {
   notes: string;
   mlsId?: string;
   source?: 'manual' | 'idx';
+  price?: string;
+  beds?: string;
+  baths?: string;
+  sqft?: string;
 }
 
 export interface PreferredOption {

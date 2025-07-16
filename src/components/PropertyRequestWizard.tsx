@@ -7,19 +7,22 @@ import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
+import { PropertyEntry } from "@/types/propertyRequest";
 
 interface PropertyRequestWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => Promise<void>;
   skipNavigation?: boolean;
+  initialProperties?: PropertyEntry[];
 }
 
 const PropertyRequestWizard = ({ 
   isOpen, 
   onClose, 
   onSuccess, 
-  skipNavigation = true 
+  skipNavigation = true,
+  initialProperties = []
 }: PropertyRequestWizardProps) => {
   const {
     currentStep,

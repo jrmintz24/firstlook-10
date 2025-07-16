@@ -304,38 +304,64 @@ export const useIDXButtonInterception = ({
           }
         }
         
-        // Fallback to extracting from link text or nearby elements
+        // Enhanced fallback: try to extract from any nearby text content
         if (!propertyId) {
           const linkText = link.textContent?.trim();
-          const numbersMatch = linkText?.match(/[A-Z0-9]{6,}|[0-9]{5,}/);
+          const siblingText = link.parentElement?.textContent?.trim();
+          
+          // Look for MLS-style IDs in link text
+          const textToSearch = `${linkText} ${siblingText}`;
+          const numbersMatch = textToSearch.match(/[A-Z]{2,}[0-9]{4,}|[0-9]{6,}|[A-Z0-9]{6,}/);
           if (numbersMatch) {
             propertyId = numbersMatch[0];
-            debugLog('Property ID from link text', propertyId);
+            debugLog('Property ID from text content', propertyId);
           } else {
-            propertyId = 'unknown-' + Date.now();
-            debugLog('Using fallback property ID', propertyId);
+            // If still no ID, generate one from current URL if it looks like a property page
+            const currentUrl = window.location.href;
+            const urlMatch = extractPropertyIdFromUrl(currentUrl);
+            if (urlMatch) {
+              propertyId = urlMatch;
+              debugLog('Property ID from current URL', propertyId);
+            } else {
+              propertyId = 'property-' + Date.now();
+              debugLog('Using timestamped fallback property ID', propertyId);
+            }
           }
         }
         
         debugLog('Navigating to property page', { propertyId, path: `/listing/${propertyId}` });
-        navigate(`/listing/${propertyId}`);
+        
+        // Use window.location.href for reliable navigation, avoiding React Router issues
+        try {
+          window.location.href = `/listing/${propertyId}`;
+        } catch (navigationError) {
+          debugLog('Direct navigation failed, trying React Router', navigationError);
+          navigate(`/listing/${propertyId}`);
+        }
         
         setTimeout(() => {
           isInterceptingRef.current = false;
         }, 1000);
       };
 
-      // Remove problematic attributes that might cause external navigation
+      // Remove problematic attributes that might cause external navigation or IDX conflicts
       link.removeAttribute('target');
       link.removeAttribute('onclick');
+      link.removeAttribute('data-ihf-click');
       if (link.tagName === 'A') {
         (link as HTMLAnchorElement).target = '_self';
+        // Clear any IDX-specific href patterns that might cause domain errors
+        const originalHref = link.getAttribute('href');
+        if (originalHref && originalHref.includes('ihf') && !originalHref.startsWith('/')) {
+          link.setAttribute('data-original-href', originalHref);
+          link.setAttribute('href', '#');
+        }
       }
       
-      // Add multiple event listeners to ensure capture
-      link.addEventListener('click', handleClick, true);
-      link.addEventListener('mousedown', handleClick, true);
-      link.addEventListener('touchstart', handleClick, true);
+      // Add multiple event listeners with high priority to ensure capture before IDX
+      link.addEventListener('click', handleClick, { capture: true, passive: false });
+      link.addEventListener('mousedown', handleClick, { capture: true, passive: false });
+      link.addEventListener('touchstart', handleClick, { capture: true, passive: false });
       
       interceptedLinksRef.current.add(link);
       link.setAttribute('data-enhanced-link', 'true');

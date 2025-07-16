@@ -35,33 +35,51 @@ const Listings = () => {
           const searchTerm = searchParams.get('search');
           console.log('[Listings] Search term from URL:', searchTerm);
           
-          // Create and execute the embed script
-          const renderedElement = window.ihfKestrel.render();
-          
-          // If we have a search term, try to trigger search after render
-          if (searchTerm) {
-            console.log('[Listings] Will attempt to trigger search for:', searchTerm);
-            setTimeout(() => {
-              // Try to trigger search in the rendered IDX widget
-              try {
-                const searchInput = containerRef.current?.querySelector('input[type="text"], input[placeholder*="search"], input[name*="search"]') as HTMLInputElement;
-                if (searchInput) {
-                  searchInput.value = searchTerm;
-                  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  searchInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('[Listings] Search term applied to IDX widget');
+          // Create and execute the embed script with error handling
+          try {
+            const renderedElement = window.ihfKestrel.render();
+            
+            if (renderedElement) {
+              containerRef.current.appendChild(renderedElement);
+              console.log('[Listings] IDX content successfully rendered with search:', searchTerm);
+              
+              // Enhanced click interception for property links
+              setTimeout(() => {
+                interceptPropertyClicks();
+                
+                // If we have a search term, try to trigger search after render
+                if (searchTerm) {
+                  console.log('[Listings] Will attempt to trigger search for:', searchTerm);
+                  try {
+                    const searchInput = containerRef.current?.querySelector('input[type="text"], input[placeholder*="search"], input[name*="search"]') as HTMLInputElement;
+                    if (searchInput) {
+                      searchInput.value = searchTerm;
+                      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                      searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+                      console.log('[Listings] Search term applied to IDX widget');
+                    }
+                  } catch (error) {
+                    console.log('[Listings] Could not auto-populate search:', error);
+                  }
                 }
-              } catch (error) {
-                console.log('[Listings] Could not auto-populate search:', error);
-              }
-            }, 500);
-          }
-          if (renderedElement) {
-            containerRef.current.appendChild(renderedElement);
-            console.log('[Listings] IDX content successfully rendered with search:', searchTerm);
-          } else {
-            console.error('[Listings] IDX render returned null/undefined');
-            setHasError(true);
+              }, 500);
+              
+            } else {
+              console.error('[Listings] IDX render returned null/undefined');
+              setHasError(true);
+            }
+          } catch (idxError: any) {
+            console.error('[Listings] IDX render error:', idxError);
+            
+            // Handle BaseUrlMismatchError and other IDX domain errors
+            if (idxError?.message?.includes('BaseUrlMismatchError') || 
+                idxError?.message?.includes('domain') || 
+                idxError?.message?.includes('unauthorized')) {
+              console.warn('[Listings] IDX domain configuration error detected, implementing fallback');
+              setHasError(true);
+            } else {
+              throw idxError;
+            }
           }
           
           // Set loading to false after content renders
@@ -83,6 +101,89 @@ const Listings = () => {
         setIsLoading(false);
         setHasError(true);
       }
+    };
+
+    // Function to intercept property clicks and handle navigation manually
+    const interceptPropertyClicks = () => {
+      const observer = new MutationObserver(() => {
+        const propertyLinks = document.querySelectorAll(
+          'a[href*="/listing/"], a[href*="/property/"], a[href*="/details/"], ' +
+          '.ihf-grid-result a, .property-item a, .listing-item a, ' +
+          '[class*="property"] a, [class*="listing"] a'
+        );
+
+        propertyLinks.forEach((link) => {
+          if (!link.getAttribute('data-intercepted')) {
+            link.setAttribute('data-intercepted', 'true');
+            
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              const href = link.getAttribute('href');
+              console.log('[Listings] Property link clicked:', href);
+              
+              // Extract property ID from href or data attributes
+              let propertyId = extractPropertyId(href, link);
+              
+              if (propertyId) {
+                console.log('[Listings] Navigating to property:', propertyId);
+                window.location.href = `/listing/${propertyId}`;
+              } else {
+                console.warn('[Listings] Could not extract property ID from link');
+              }
+            });
+          }
+        });
+      });
+
+      observer.observe(document.body, { 
+        childList: true, 
+        subtree: true,
+        attributes: true 
+      });
+
+      // Cleanup observer after 30 seconds
+      setTimeout(() => observer.disconnect(), 30000);
+    };
+
+    // Function to extract property ID from various sources
+    const extractPropertyId = (href: string | null, element: Element): string | null => {
+      // Try href first
+      if (href) {
+        const patterns = [
+          /\/listing\/([^\/\?#]+)/i,
+          /\/property\/([^\/\?#]+)/i,
+          /\/details\/([^\/\?#]+)/i,
+          /mls[_-]?id[=:]([^&\?#]+)/i,
+          /id[=:]([^&\?#]+)/i,
+          /\/([A-Z0-9]{6,})/i
+        ];
+
+        for (const pattern of patterns) {
+          const match = href.match(pattern);
+          if (match && match[1]) {
+            return match[1];
+          }
+        }
+      }
+
+      // Try data attributes
+      const dataId = element.getAttribute('data-id') || 
+                   element.getAttribute('data-mls-id') || 
+                   element.getAttribute('data-listing-id') ||
+                   element.getAttribute('data-property-id');
+      if (dataId) return dataId;
+
+      // Try parent container data attributes
+      const parent = element.closest('[data-id], [data-mls-id], [data-listing-id]');
+      if (parent) {
+        return parent.getAttribute('data-id') || 
+               parent.getAttribute('data-mls-id') || 
+               parent.getAttribute('data-listing-id') || null;
+      }
+
+      return null;
     };
 
     loadIDX();

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, Home, X, ChevronRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
@@ -107,9 +107,12 @@ const ModernTourSchedulingModal = ({
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
   const location = useLocation();
+  const { listingId } = useParams<{ listingId: string }>();
+  const [searchParams] = useSearchParams();
+  const queryId = searchParams.get('id');
 
-  // Check if user is on the correct page for scheduling
-  const isPropertyDetailPage = location.pathname.includes('/listing/') && !location.pathname.includes('/listings');
+  // Check if user is on the correct page for scheduling - same logic as PropertyToolbar
+  const isPropertyDetailPage = !!listingId || !!queryId;
 
   // Use the IDX property extractor hook to get property data from current page
   const { propertyData: extractedData, isLoading: isExtractingData } = useIDXPropertyExtractor();

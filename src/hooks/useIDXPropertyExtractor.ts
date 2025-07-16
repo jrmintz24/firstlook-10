@@ -78,6 +78,8 @@ export const useIDXPropertyExtractor = () => {
     const extractPropertyData = (): IDXPropertyData | null => {
       try {
         console.log('[useIDXPropertyExtractor] Starting DOM extraction fallback...');
+        console.log('[useIDXPropertyExtractor] Current URL:', window.location.href);
+        console.log('[useIDXPropertyExtractor] Available global data:', window.ihfPropertyData);
         
         // Check if user is on property detail page
         const urlParams = new URLSearchParams(window.location.search);

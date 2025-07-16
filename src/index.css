@@ -239,25 +239,25 @@ input[type="button"][value*="Request"] {
   display: none !important;
 }
 
-/* Hide IDX Share and Save buttons */
-.ihf-share-button,
-.ihf-save-button,
-.ihf-favorite-button,
-[class*="share-button"],
-[class*="save-button"],
-[class*="favorite-button"],
-[class*="social-share"],
-button[title*="Share"],
-button[title*="Save"],
-button[aria-label*="Share"],
-button[aria-label*="Save"],
-a[title*="Share"],
-a[title*="Save"],
-.share-property,
-.save-property,
-.favorite-property,
-[data-action*="share"],
-[data-action*="save"],
-[data-action*="favorite"] {
+/* Hide IDX Share and Save buttons - be more specific to avoid our custom components */
+.ihf-container .ihf-share-button,
+.ihf-container .ihf-save-button,
+.ihf-container .ihf-favorite-button,
+.ihf-wrapper [class*="share-button"],
+.ihf-wrapper [class*="save-button"],
+.ihf-wrapper [class*="favorite-button"],
+.ihf-listing [class*="social-share"],
+.ihf-property button[title*="Share"],
+.ihf-property button[title*="Save"],
+.ihf-details button[aria-label*="Share"],
+.ihf-details button[aria-label*="Save"],
+.ihf-listing a[title*="Share"],
+.ihf-listing a[title*="Save"],
+.ihf-container .share-property,
+.ihf-container .save-property,
+.ihf-container .favorite-property,
+.ihf-wrapper [data-action*="share"],
+.ihf-wrapper [data-action*="save"],
+.ihf-wrapper [data-action*="favorite"] {
   display: none !important;
 }

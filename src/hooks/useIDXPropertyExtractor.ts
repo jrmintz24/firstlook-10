@@ -9,6 +9,7 @@ export interface IDXPropertyData extends PropertyData {
   yearBuilt?: string;
   propertyType?: string;
   description?: string;
+  mlsId?: string;
 }
 
 export const useIDXPropertyExtractor = () => {
@@ -21,10 +22,85 @@ export const useIDXPropertyExtractor = () => {
       try {
         console.log('[useIDXPropertyExtractor] Starting property data extraction...');
         
-        // Extract property ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
-        console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
+        // Detect page type
+        const isSearchResultsPage = window.location.pathname.includes('/listings') || 
+                                   document.querySelector('.search-results, .listing-results, .ifkrq');
+        
+        console.log('[useIDXPropertyExtractor] Page type:', isSearchResultsPage ? 'Search Results' : 'Property Detail');
+        
+        if (isSearchResultsPage) {
+          return extractFromSearchResults();
+        } else {
+          return extractFromPropertyDetail();
+        }
+      } catch (err) {
+        console.error('Error extracting property data:', err);
+        return null;
+      }
+    };
+
+    const extractFromSearchResults = (): IDXPropertyData | null => {
+      console.log('[useIDXPropertyExtractor] Extracting from search results...');
+      
+      // Look for property cards - prioritize hovered/focused ones
+      const propertyCards = document.querySelectorAll('a[title*=","], .property-card, .listing-card, .ifkrq');
+      
+      if (propertyCards.length === 0) {
+        console.log('[useIDXPropertyExtractor] No property cards found');
+        return null;
+      }
+
+      // Try to find a focused/hovered card first
+      let targetCard = document.querySelector('a[title*=","]:hover, a[title*=","]:focus') || 
+                       propertyCards[0]; // Fallback to first card
+
+      if (!targetCard) {
+        console.log('[useIDXPropertyExtractor] No target card found');
+        return null;
+      }
+
+      const titleAttr = targetCard.getAttribute('title') || targetCard.getAttribute('aria-label') || '';
+      console.log('[useIDXPropertyExtractor] Title attribute:', titleAttr);
+
+      if (!titleAttr) {
+        console.log('[useIDXPropertyExtractor] No title attribute found');
+        return null;
+      }
+
+      // Extract address from title (format: "6413 Cheltenham Way Citrus Heights, CA 95621, Citrus Heights, CA 95621")
+      const addressMatch = titleAttr.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|$)/);
+      const address = addressMatch ? addressMatch[1].trim() : '';
+
+      // Extract price from title or aria-label
+      const priceMatch = titleAttr.match(/List Price\s*\$?([\d,]+)/i) || 
+                        titleAttr.match(/\$([0-9,]+)/);
+      const price = priceMatch ? `$${priceMatch[1]}` : '';
+
+      // Extract MLS ID from href
+      const href = targetCard.getAttribute('href') || '';
+      const mlsMatch = href.match(/id=([^&]+)/);
+      const mlsId = mlsMatch ? mlsMatch[1] : '';
+
+      console.log('[useIDXPropertyExtractor] Extracted from search results:', { address, price, mlsId });
+
+      if (address) {
+        return {
+          address,
+          price: price || undefined,
+          mlsId: mlsId || undefined
+        };
+      }
+
+      return null;
+    };
+
+    const extractFromPropertyDetail = (): IDXPropertyData | null => {
+      console.log('[useIDXPropertyExtractor] Extracting from property detail...');
+      
+      // Extract property ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
+      console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
         // Enhanced IDX selectors for property data - prioritize most specific first
         const addressSelectors = [
@@ -301,10 +377,6 @@ export const useIDXPropertyExtractor = () => {
 
         console.log('[useIDXPropertyExtractor] Final extracted data:', result);
         return result;
-      } catch (err) {
-        console.error('Error extracting property data:', err);
-        return null;
-      }
     };
 
     const attemptExtraction = () => {

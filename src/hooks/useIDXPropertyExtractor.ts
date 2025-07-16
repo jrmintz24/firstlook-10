@@ -370,15 +370,44 @@ export const useIDXPropertyExtractor = () => {
 
     const attemptExtraction = () => {
       console.log('[useIDXPropertyExtractor] Attempting property data extraction...');
+      console.log('[useIDXPropertyExtractor] Current URL:', window.location.href);
+      console.log('[useIDXPropertyExtractor] DOM ready state:', document.readyState);
+      console.log('[useIDXPropertyExtractor] Body innerHTML length:', document.body.innerHTML.length);
+      
+      // Debug available elements on the page
+      console.log('[useIDXPropertyExtractor] Available h1 elements:', 
+        Array.from(document.querySelectorAll('h1')).map(el => ({
+          text: el.textContent?.trim(),
+          class: el.className,
+          id: el.id
+        })));
+      
+      console.log('[useIDXPropertyExtractor] Elements with "address" in class:', 
+        Array.from(document.querySelectorAll('[class*="address"]')).map(el => ({
+          text: el.textContent?.trim(),
+          class: el.className,
+          id: el.id,
+          tagName: el.tagName
+        })));
+      
+      console.log('[useIDXPropertyExtractor] All script tags with JSON-LD:', 
+        Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(script => {
+          try {
+            return JSON.parse(script.textContent || '{}');
+          } catch {
+            return 'Invalid JSON';
+          }
+        }));
+
       const data = extractPropertyData();
       if (data) {
-        console.log('[useIDXPropertyExtractor] Successfully extracted property data');
+        console.log('[useIDXPropertyExtractor] Successfully extracted property data:', data);
         setPropertyData(data);
         setIsLoading(false);
         setError(null);
       } else {
-        console.log('[useIDXPropertyExtractor] Failed to extract property data');
-        setError('Unable to extract property information');
+        console.log('[useIDXPropertyExtractor] Failed to extract property data - will retry');
+        setError('Unable to extract property information from page');
         setIsLoading(false);
       }
     };

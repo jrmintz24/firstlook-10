@@ -152,9 +152,16 @@ const ModernTourSchedulingModal = ({
   useEffect(() => {
     if (isOpen && modalFlow === 'scheduling') {
       console.log('[ModernTourSchedulingModal] Initializing modal');
+      console.log('[ModernTourSchedulingModal] extractedData:', extractedData);
+      console.log('[ModernTourSchedulingModal] isExtractingData:', isExtractingData);
+      console.log('[ModernTourSchedulingModal] initialAddress:', initialAddress);
       
       // Set address based on priority: extracted data > initial address > propertyId fallback
-      const addressToUse = extractedData?.address || initialAddress || "";
+      // Handle case where extractedData.address might be "Address not found"
+      const extractedAddress = extractedData?.address && extractedData.address !== "Address not found" 
+        ? extractedData.address 
+        : "";
+      const addressToUse = extractedAddress || initialAddress || "";
       console.log('[ModernTourSchedulingModal] Using address:', addressToUse);
       
       setPropertyAddress(addressToUse);
@@ -163,7 +170,7 @@ const ModernTourSchedulingModal = ({
       setNotes("");
       setShowAllTimes(false);
     }
-  }, [isOpen, modalFlow, extractedData, initialAddress]);
+  }, [isOpen, modalFlow, extractedData, initialAddress, isExtractingData]);
 
   // Determine user capabilities
   const isGuest = !user;
@@ -408,11 +415,24 @@ const ModernTourSchedulingModal = ({
                     {hasAddress && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
                   
+                  {/* Debug Info */}
+                  {isExtractingData && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                      <p className="text-blue-800">🔍 Extracting property data from page...</p>
+                    </div>
+                  )}
+                  
+                  {propertyData && propertyData.address === "Address not found" && (
+                    <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                      <p className="text-yellow-800">⚠️ Could not auto-detect address. Please enter manually.</p>
+                    </div>
+                  )}
+                  
                   <HybridAddressInput
                     value={propertyAddress}
                     onChange={setPropertyAddress}
                     propertyId={propertyId}
-                    isAutoDetected={!!propertyData}
+                    isAutoDetected={!!(propertyData && propertyData.address && propertyData.address !== "Address not found")}
                     placeholder="Enter property address..."
                     className="h-12 border-gray-300 focus:border-black focus:ring-0"
                     propertyData={propertyData}

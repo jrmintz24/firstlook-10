@@ -28,20 +28,30 @@ export const useIDXPropertyExtractor = () => {
 
         // Enhanced IDX selectors for property data
         const addressSelectors = [
-          'h1', 
-          'h1.address',
-          'h1.property-address',
-          '.ihf-address', 
-          '.property-address',
-          '.listing-address',
-          '.property-title',
-          '.listing-title',
+          // Common IDX providers
+          '.ihf-address', '.ihf-listing-address',
+          '.idx-address', '.idx-property-address',
+          '.flexmls-address', '.trestle-address',
+          '.rets-address', '.listing-street-address',
+          
+          // Generic selectors
+          'h1', 'h1.address', 'h1.property-address',
+          '.property-address', '.listing-address',
+          '.property-title', '.listing-title',
+          '.address', '.full-address', '.street-address',
+          '.property-street-address', '.address-line',
+          
+          // Data attributes
           '[data-testid="property-address"]',
           '[data-property="address"]',
-          '.address-line',
-          '.property-street-address',
-          '.street-address',
-          '.full-address'
+          '[data-field="address"]',
+          '[data-address]',
+          
+          // Schema.org structured data
+          '[itemtype*="schema.org/SingleFamilyResidence"] [itemprop="address"]',
+          '[itemtype*="schema.org/Residence"] [itemprop="address"]',
+          '.property-details .address',
+          '.listing-info .address'
         ];
 
         const priceSelectors = [
@@ -95,11 +105,104 @@ export const useIDXPropertyExtractor = () => {
           return '';
         };
 
-        const address = extractFromSelectors(addressSelectors, 'address');
-        const price = extractFromSelectors(priceSelectors, 'price');
-        const beds = extractFromSelectors(bedsSelectors, 'beds');
-        const baths = extractFromSelectors(bathsSelectors, 'baths');
-        const sqft = extractFromSelectors(sqftSelectors, 'sqft');
+        // Try to extract from JSON-LD structured data
+        const extractFromJSONLD = (property: string): string => {
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+          for (const script of scripts) {
+            try {
+              const data = JSON.parse(script.textContent || '');
+              const value = data?.address?.streetAddress || data?.address || data?.[property];
+              if (value && typeof value === 'string') {
+                console.log(`[useIDXPropertyExtractor] Found ${property} in JSON-LD:`, value);
+                return value;
+              }
+            } catch (e) {
+              // Ignore JSON parsing errors
+            }
+          }
+          return '';
+        };
+
+        // Try to extract from meta tags
+        const extractFromMeta = (property: string): string => {
+          const metaSelectors = [
+            `meta[name="property:${property}"]`,
+            `meta[property="property:${property}"]`,
+            `meta[name="${property}"]`,
+            `meta[property="${property}"]`
+          ];
+          
+          for (const selector of metaSelectors) {
+            const meta = document.querySelector(selector);
+            const content = meta?.getAttribute('content');
+            if (content?.trim()) {
+              console.log(`[useIDXPropertyExtractor] Found ${property} in meta:`, content);
+              return content.trim();
+            }
+          }
+          return '';
+        };
+
+        // Try to extract from window globals (common in IDX systems)
+        const extractFromGlobals = (property: string): string => {
+          try {
+            const win = window as any;
+            const sources = [
+              win.ihfKestrel?.property,
+              win.IDX?.property,
+              win.listing,
+              win.propertyData,
+              win.listingData
+            ];
+            
+            for (const source of sources) {
+              if (source && source[property]) {
+                console.log(`[useIDXPropertyExtractor] Found ${property} in globals:`, source[property]);
+                return String(source[property]);
+              }
+            }
+          } catch (e) {
+            // Ignore errors accessing globals
+          }
+          return '';
+        };
+
+        // Try multiple extraction methods for address
+        let address = extractFromSelectors(addressSelectors, 'address') ||
+                     extractFromJSONLD('address') ||
+                     extractFromMeta('address') ||
+                     extractFromGlobals('address');
+
+        // If still no address, try text pattern matching
+        if (!address) {
+          const bodyText = document.body.textContent || '';
+          const addressPattern = /\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir)[^,\n]*/i;
+          const match = bodyText.match(addressPattern);
+          if (match) {
+            address = match[0].trim();
+            console.log('[useIDXPropertyExtractor] Found address via pattern matching:', address);
+          }
+        }
+
+        const price = extractFromSelectors(priceSelectors, 'price') ||
+                     extractFromJSONLD('price') ||
+                     extractFromMeta('price') ||
+                     extractFromGlobals('price');
+        
+        const beds = extractFromSelectors(bedsSelectors, 'beds') ||
+                    extractFromJSONLD('numberOfRooms') ||
+                    extractFromMeta('beds') ||
+                    extractFromGlobals('beds');
+        
+        const baths = extractFromSelectors(bathsSelectors, 'baths') ||
+                     extractFromJSONLD('numberOfBathroomsTotal') ||
+                     extractFromMeta('baths') ||
+                     extractFromGlobals('baths');
+        
+        const sqft = extractFromSelectors(sqftSelectors, 'sqft') ||
+                    extractFromJSONLD('floorSize') ||
+                    extractFromMeta('sqft') ||
+                    extractFromGlobals('sqft');
 
         // Debug all found elements
         console.log('[useIDXPropertyExtractor] Extracted data:', {

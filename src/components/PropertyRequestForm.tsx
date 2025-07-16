@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,16 @@ interface PropertyRequestFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => Promise<void>;
+  initialPropertyAddress?: string;
 }
 
-const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestFormProps) => {
+const PropertyRequestForm = ({ isOpen, onClose, onSuccess, initialPropertyAddress }: PropertyRequestFormProps) => {
   const [formData, setFormData] = useState<PropertyRequestFormData>({
-    properties: [{ address: "", notes: "" }],
+    properties: [{ address: initialPropertyAddress || "", notes: "" }],
     preferredOptions: [{ date: "", time: "" }],
     notes: "",
     // Include all required legacy fields
-    propertyAddress: "",
+    propertyAddress: initialPropertyAddress || "",
     preferredDate1: "",
     preferredTime1: "",
     preferredDate2: "",
@@ -35,6 +36,17 @@ const PropertyRequestForm = ({ isOpen, onClose, onSuccess }: PropertyRequestForm
     preferredTime3: "",
     selectedProperties: []
   });
+
+  // Update form when initialPropertyAddress changes
+  useEffect(() => {
+    if (initialPropertyAddress && formData.properties[0].address !== initialPropertyAddress) {
+      setFormData(prev => ({
+        ...prev,
+        properties: [{ address: initialPropertyAddress, notes: "" }, ...prev.properties.slice(1)],
+        propertyAddress: initialPropertyAddress
+      }));
+    }
+  }, [initialPropertyAddress]);
 
   const { eligibility } = useShowingEligibility();
   const { isSubmitting, submitShowingRequests } = useShowingSubmission(onSuccess);

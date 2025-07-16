@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Heart } from 'lucide-react';
 import { Button } from '../ui/button';
-import PropertyRequestWizard from '../PropertyRequestWizard';
+import PropertyRequestForm from '../PropertyRequestForm';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
 import { useIDXPropertyExtractor } from '../../hooks/useIDXPropertyExtractor';
 import { useEnhancedPostShowingActions } from '../../hooks/useEnhancedPostShowingActions';
@@ -103,21 +103,12 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         </div>
       </div>
 
-      {/* Property Request Wizard */}
-      <PropertyRequestWizard
+      {/* Property Request Form */}
+      <PropertyRequestForm
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
         onSuccess={handleScheduleSuccess}
-        initialProperties={propertyData?.address ? [{ 
-          address: propertyData.address, 
-          mlsId: propertyData.mlsId || '', 
-          notes: '',
-          source: 'idx' as const,
-          price: propertyData.price,
-          beds: propertyData.beds,
-          baths: propertyData.baths,
-          sqft: propertyData.sqft
-        }] : []}
+        initialPropertyAddress={propertyData?.address}
       />
 
       {/* Favorite Property Modal */}

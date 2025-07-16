@@ -23,11 +23,17 @@ export const useIDXPropertyExtractor = () => {
       try {
         console.log('[useIDXPropertyExtractor] Starting property data extraction...');
         
-        // Only extract data from property detail pages (individual listing pages)
-        const isPropertyDetailPage = window.location.pathname.includes('/listing/') && 
-                                   !window.location.pathname.includes('/listings');
+        // Check if user is on property detail page - support both URL patterns
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryId = urlParams.get('id');
+        const pathSegments = window.location.pathname.split('/');
+        const listingIndex = pathSegments.findIndex(segment => segment === 'listing');
+        const listingId = listingIndex !== -1 ? pathSegments[listingIndex + 1] : null;
+        const isPropertyDetailPage = !!listingId || !!queryId;
         
         console.log('[useIDXPropertyExtractor] Current path:', window.location.pathname);
+        console.log('[useIDXPropertyExtractor] Query ID:', queryId);
+        console.log('[useIDXPropertyExtractor] Listing ID:', listingId);
         console.log('[useIDXPropertyExtractor] Is property detail page:', isPropertyDetailPage);
         
         if (!isPropertyDetailPage) {

@@ -26,32 +26,39 @@ export const useIDXPropertyExtractor = () => {
         const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
         console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
-        // Enhanced IDX selectors for property data
+        // Enhanced IDX selectors for property data - prioritize most specific first
         const addressSelectors = [
-          // Common IDX providers
-          '.ihf-address', '.ihf-listing-address',
-          '.idx-address', '.idx-property-address',
-          '.flexmls-address', '.trestle-address',
-          '.rets-address', '.listing-street-address',
+          // iHomeFinder specific
+          '.ihf-address', '.ihf-listing-address', '.ihf-property-address',
+          '.ihf-detail-address', '.ihf-listing-street-address',
           
-          // Generic selectors
-          'h1', 'h1.address', 'h1.property-address',
-          '.property-address', '.listing-address',
-          '.property-title', '.listing-title',
+          // Common IDX providers
+          '.idx-address', '.idx-property-address', '.idx-listing-address',
+          '.flexmls-address', '.trestle-address', '.rets-address',
+          '.listing-street-address', '.mls-address',
+          
+          // Page title and headers (often contain address)
+          'h1:contains("Street")', 'h1:contains("Ave")', 'h1:contains("Rd")',
+          'h1', 'h2', '.page-title', '.listing-title',
+          
+          // Property detail containers
+          '.property-address', '.listing-address', '.property-title',
           '.address', '.full-address', '.street-address',
-          '.property-street-address', '.address-line',
+          '.property-street-address', '.address-line', '.address-display',
           
           // Data attributes
-          '[data-testid="property-address"]',
-          '[data-property="address"]',
-          '[data-field="address"]',
-          '[data-address]',
+          '[data-testid="property-address"]', '[data-testid="address"]',
+          '[data-property="address"]', '[data-field="address"]',
+          '[data-address]', '[data-street-address]',
           
           // Schema.org structured data
           '[itemtype*="schema.org/SingleFamilyResidence"] [itemprop="address"]',
           '[itemtype*="schema.org/Residence"] [itemprop="address"]',
-          '.property-details .address',
-          '.listing-info .address'
+          '[itemtype*="RealEstate"] [itemprop="address"]',
+          
+          // Generic containers
+          '.property-details .address', '.listing-info .address',
+          '.property-summary .address', '.listing-header .address'
         ];
 
         const priceSelectors = [
@@ -149,10 +156,15 @@ export const useIDXPropertyExtractor = () => {
             const win = window as any;
             const sources = [
               win.ihfKestrel?.property,
+              win.ihfKestrel?.listing,
               win.IDX?.property,
+              win.IDX?.listing,
               win.listing,
               win.propertyData,
-              win.listingData
+              win.listingData,
+              win.property,
+              win._ihf_listing_data,
+              win.IHF_LISTING_DATA
             ];
             
             for (const source of sources) {
@@ -167,22 +179,81 @@ export const useIDXPropertyExtractor = () => {
           return '';
         };
 
-        // Try multiple extraction methods for address
-        let address = extractFromSelectors(addressSelectors, 'address') ||
-                     extractFromJSONLD('address') ||
-                     extractFromMeta('address') ||
-                     extractFromGlobals('address');
-
-        // If still no address, try text pattern matching
-        if (!address) {
-          const bodyText = document.body.textContent || '';
-          const addressPattern = /\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir)[^,\n]*/i;
-          const match = bodyText.match(addressPattern);
+        // Extract from page title (many IDX systems include address)
+        const extractAddressFromTitle = (): string => {
+          const title = document.title;
+          console.log('[useIDXPropertyExtractor] Page title:', title);
+          
+          // Look for address pattern in title
+          const addressPattern = /\d+\s+[A-Za-z\s,.-]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir|Parkway|Pkwy)/i;
+          const match = title.match(addressPattern);
           if (match) {
-            address = match[0].trim();
-            console.log('[useIDXPropertyExtractor] Found address via pattern matching:', address);
+            const address = match[0].trim();
+            console.log('[useIDXPropertyExtractor] Found address in title:', address);
+            return address;
+          }
+          return '';
+        };
+
+        // Extract from URL patterns (some IDX systems encode property info in URL)
+        const extractAddressFromURL = (): string => {
+          const url = window.location.href;
+          const pathname = window.location.pathname;
+          console.log('[useIDXPropertyExtractor] Current URL:', url);
+          
+          // Decode URL components that might contain address
+          try {
+            const decodedPath = decodeURIComponent(pathname);
+            const addressPattern = /\d+[-\s]+[A-Za-z\s,-]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir)/i;
+            const match = decodedPath.match(addressPattern);
+            if (match) {
+              const address = match[0].replace(/-/g, ' ').trim();
+              console.log('[useIDXPropertyExtractor] Found address in URL:', address);
+              return address;
+            }
+          } catch (e) {
+            console.log('[useIDXPropertyExtractor] Error parsing URL:', e);
+          }
+          return '';
+        };
+
+        // Try multiple extraction methods for address in order of preference
+        let address = extractFromSelectors(addressSelectors, 'address') ||
+                     extractFromGlobals('address') ||
+                     extractAddressFromTitle() ||
+                     extractAddressFromURL() ||
+                     extractFromJSONLD('address') ||
+                     extractFromMeta('address');
+
+        // If still no address, try comprehensive text pattern matching
+        if (!address) {
+          console.log('[useIDXPropertyExtractor] Trying text pattern matching as fallback...');
+          const bodyText = document.body.textContent || '';
+          
+          // More comprehensive address patterns
+          const patterns = [
+            /\d+\s+[A-Za-z\s,.-]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir|Parkway|Pkwy)\b[^,\n]*/gi,
+            /\d+\s+[A-Za-z\s,.-]+(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Boulevard|Blvd|Way|Circle|Cir|Parkway|Pkwy)/gi
+          ];
+          
+          for (const pattern of patterns) {
+            const matches = bodyText.match(pattern);
+            if (matches && matches.length > 0) {
+              // Take the first reasonable match
+              address = matches[0].trim();
+              console.log('[useIDXPropertyExtractor] Found address via pattern matching:', address);
+              break;
+            }
           }
         }
+
+        // Debug: Log all available elements with text content for debugging
+        console.log('[useIDXPropertyExtractor] Debug - All h1 elements:', 
+          Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()));
+        console.log('[useIDXPropertyExtractor] Debug - Elements with "address" class:', 
+          Array.from(document.querySelectorAll('[class*="address"]')).map(el => el.textContent?.trim()));
+        console.log('[useIDXPropertyExtractor] Debug - Elements with data attributes:', 
+          Array.from(document.querySelectorAll('[data-address], [data-property], [data-testid*="address"]')).map(el => el.textContent?.trim()));
 
         const price = extractFromSelectors(priceSelectors, 'price') ||
                      extractFromJSONLD('price') ||

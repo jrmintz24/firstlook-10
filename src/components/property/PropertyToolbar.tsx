@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Heart } from 'lucide-react';
 import { Button } from '../ui/button';
-import PropertyRequestForm from '../PropertyRequestForm';
+import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
 import { useIDXPropertyExtractor } from '../../hooks/useIDXPropertyExtractor';
 import { useEnhancedPostShowingActions } from '../../hooks/useEnhancedPostShowingActions';
@@ -103,12 +103,12 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         </div>
       </div>
 
-      {/* Property Request Form */}
-      <PropertyRequestForm
+      {/* Modern Tour Scheduling Modal */}
+      <ModernTourSchedulingModal
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
         onSuccess={handleScheduleSuccess}
-        initialPropertyAddress={propertyData?.address}
+        initialAddress={propertyData?.address}
       />
 
       {/* Favorite Property Modal */}

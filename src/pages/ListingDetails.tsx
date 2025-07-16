@@ -54,8 +54,8 @@ const ListingDetails = () => {
     console.log('[ListingDetails] Container HTML:', containerRef.current.innerHTML.substring(0, 500));
     
     // First, try to get the complete address by combining listing-address-1 and listing-address-2
-    const address1Element = containerRef.current.querySelector('.listing-address-1, p.listing-address-1, .ui-typography.listing-address-1');
-    const address2Element = containerRef.current.querySelector('.listing-address-2, p.listing-address-2, .ui-typography.listing-address-2');
+    const address1Element = containerRef.current.querySelector('[class*="listing-address-1"]');
+    const address2Element = containerRef.current.querySelector('[class*="listing-address-2"]');
     
     let foundAddress = '';
     

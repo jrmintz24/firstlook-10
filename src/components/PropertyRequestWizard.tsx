@@ -43,6 +43,17 @@ const PropertyRequestWizard = ({
     resetForm
   } = usePropertyRequest(onClose, onSuccess, skipNavigation);
 
+  // Initialize form with initial properties when modal opens
+  React.useEffect(() => {
+    if (isOpen && initialProperties.length > 0) {
+      console.log('[PropertyRequestWizard] Setting initial properties:', initialProperties);
+      // Set the first property as the main address for backward compatibility
+      if (initialProperties[0]?.address) {
+        handleInputChange('propertyAddress', initialProperties[0].address);
+      }
+    }
+  }, [isOpen, initialProperties]);
+
   const handleClose = () => {
     resetForm();
     onClose();

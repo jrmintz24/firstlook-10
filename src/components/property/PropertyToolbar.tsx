@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Calendar, Heart, MessageSquare } from 'lucide-react';
+import { Calendar, Heart } from 'lucide-react';
 import { Button } from '../ui/button';
 import PropertyRequestWizard from '../PropertyRequestWizard';
+import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
 import { useIDXPropertyExtractor } from '../../hooks/useIDXPropertyExtractor';
+import { useEnhancedPostShowingActions } from '../../hooks/useEnhancedPostShowingActions';
+import { useAuth } from '../../contexts/AuthContext';
 import { PropertyEntry } from '../../types/propertyRequest';
 
 interface PropertyToolbarProps {
@@ -11,7 +14,10 @@ interface PropertyToolbarProps {
 
 export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = '' }) => {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isFavoriteOpen, setIsFavoriteOpen] = useState(false);
   const { propertyData, isLoading } = useIDXPropertyExtractor();
+  const { favoriteProperty, isSubmitting } = useEnhancedPostShowingActions();
+  const { user } = useAuth();
 
   const handleScheduleTour = () => {
     setIsScheduleOpen(true);
@@ -19,7 +25,24 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
 
   const handleScheduleSuccess = async () => {
     setIsScheduleOpen(false);
-    // Could add toast notification here
+  };
+
+  const handleSaveProperty = () => {
+    if (!user) {
+      // Could trigger auth modal here
+      return;
+    }
+    setIsFavoriteOpen(true);
+  };
+
+  const handleFavoriteProperty = async (notes?: string) => {
+    if (!user || !propertyData?.address) return;
+    
+    await favoriteProperty({
+      showingId: null,
+      buyerId: user.id,
+      propertyAddress: propertyData.address,
+    }, notes);
   };
 
   if (isLoading) {
@@ -28,52 +51,49 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
 
   return (
     <>
-      <div className={`fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-lg ${className}`}>
-        <div className="max-w-4xl mx-auto px-4 py-3">
+      <div className={`fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm ${className}`}>
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Property Info */}
             {propertyData && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
+                <h2 className="text-lg font-semibold text-foreground truncate">
                   {propertyData.address}
-                </p>
+                </h2>
                 {propertyData.price && (
-                  <p className="text-sm text-muted-foreground">
-                    {propertyData.price}
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-xl font-bold text-primary">
+                      {propertyData.price}
+                    </span>
                     {propertyData.beds && propertyData.baths && (
-                      <span className="ml-2">
+                      <span className="text-sm text-muted-foreground">
                         {propertyData.beds} bed • {propertyData.baths} bath
+                        {propertyData.sqft && ` • ${propertyData.sqft} sqft`}
                       </span>
                     )}
-                  </p>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
+                onClick={handleSaveProperty}
                 variant="outline"
                 size="sm"
-                className="hidden sm:flex"
+                className="hidden sm:flex hover:bg-accent"
+                disabled={!propertyData?.address}
               >
                 <Heart className="h-4 w-4 mr-2" />
                 Save
               </Button>
               
               <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contact
-              </Button>
-              
-              <Button
                 onClick={handleScheduleTour}
                 size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                disabled={!propertyData?.address}
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule Tour
@@ -88,6 +108,25 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
         onSuccess={handleScheduleSuccess}
+        initialProperties={propertyData?.address ? [{ 
+          address: propertyData.address, 
+          mlsId: propertyData.mlsId || '', 
+          notes: '',
+          source: 'idx' as const,
+          price: propertyData.price,
+          beds: propertyData.beds,
+          baths: propertyData.baths,
+          sqft: propertyData.sqft
+        }] : []}
+      />
+
+      {/* Favorite Property Modal */}
+      <FavoritePropertyModal
+        isOpen={isFavoriteOpen}
+        onClose={() => setIsFavoriteOpen(false)}
+        onSave={handleFavoriteProperty}
+        propertyAddress={propertyData?.address || ''}
+        isSubmitting={isSubmitting}
       />
     </>
   );

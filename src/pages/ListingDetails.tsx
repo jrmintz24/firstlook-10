@@ -34,13 +34,13 @@ const ListingDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* IDX Content */}
-      <div ref={containerRef} className="w-full min-h-screen pb-20">
-        {/* IDX listing content will be rendered here */}
-      </div>
-      
       {/* Property Toolbar */}
       <PropertyToolbar />
+      
+      {/* IDX Content */}
+      <div ref={containerRef} className="w-full min-h-screen pt-32">
+        {/* IDX listing content will be rendered here */}
+      </div>
     </div>
   );
 };

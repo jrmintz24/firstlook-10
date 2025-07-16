@@ -19,69 +19,104 @@ export const useIDXPropertyExtractor = () => {
   useEffect(() => {
     const extractPropertyData = (): IDXPropertyData | null => {
       try {
+        console.log('[useIDXPropertyExtractor] Starting property data extraction...');
+        
         // Extract property ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
+        console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
-        // Common IDX selectors for property data
+        // Enhanced IDX selectors for property data
         const addressSelectors = [
           'h1', 
+          'h1.address',
+          'h1.property-address',
           '.ihf-address', 
           '.property-address',
+          '.listing-address',
+          '.property-title',
+          '.listing-title',
           '[data-testid="property-address"]',
-          '.listing-address'
+          '[data-property="address"]',
+          '.address-line',
+          '.property-street-address',
+          '.street-address',
+          '.full-address'
         ];
 
         const priceSelectors = [
           '.ihf-price',
           '.property-price', 
           '.listing-price',
-          '[data-testid="property-price"]'
+          '.price',
+          '.price-display',
+          '[data-testid="property-price"]',
+          '[data-property="price"]'
         ];
 
         const bedsSelectors = [
           '.ihf-beds',
           '.beds',
           '.bedrooms',
-          '[data-testid="beds"]'
+          '.bed-count',
+          '[data-testid="beds"]',
+          '[data-property="beds"]'
         ];
 
         const bathsSelectors = [
           '.ihf-baths', 
           '.baths',
           '.bathrooms',
-          '[data-testid="baths"]'
+          '.bath-count',
+          '[data-testid="baths"]',
+          '[data-property="baths"]'
         ];
 
         const sqftSelectors = [
           '.ihf-sqft',
           '.square-feet',
           '.sqft',
-          '[data-testid="sqft"]'
+          '.sq-ft',
+          '.living-area',
+          '[data-testid="sqft"]',
+          '[data-property="sqft"]'
         ];
 
         // Helper function to try multiple selectors
-        const extractFromSelectors = (selectors: string[]): string => {
+        const extractFromSelectors = (selectors: string[], fieldName: string): string => {
           for (const selector of selectors) {
             const element = document.querySelector(selector);
             if (element?.textContent?.trim()) {
+              console.log(`[useIDXPropertyExtractor] Found ${fieldName} using selector "${selector}":`, element.textContent.trim());
               return element.textContent.trim();
             }
           }
+          console.log(`[useIDXPropertyExtractor] No ${fieldName} found using selectors:`, selectors);
           return '';
         };
 
-        const address = extractFromSelectors(addressSelectors);
-        const price = extractFromSelectors(priceSelectors);
-        const beds = extractFromSelectors(bedsSelectors);
-        const baths = extractFromSelectors(bathsSelectors);
-        const sqft = extractFromSelectors(sqftSelectors);
+        const address = extractFromSelectors(addressSelectors, 'address');
+        const price = extractFromSelectors(priceSelectors, 'price');
+        const beds = extractFromSelectors(bedsSelectors, 'beds');
+        const baths = extractFromSelectors(bathsSelectors, 'baths');
+        const sqft = extractFromSelectors(sqftSelectors, 'sqft');
+
+        // Debug all found elements
+        console.log('[useIDXPropertyExtractor] Extracted data:', {
+          address,
+          price,
+          beds,
+          baths,
+          sqft,
+          mlsId
+        });
 
         if (!address && !mlsId) {
+          console.log('[useIDXPropertyExtractor] No property data found - no address or MLS ID');
           throw new Error('No property data found on page');
         }
 
-        return {
+        const result = {
           address: address || 'Address not found',
           mlsId,
           price,
@@ -89,6 +124,9 @@ export const useIDXPropertyExtractor = () => {
           baths,
           sqft
         };
+
+        console.log('[useIDXPropertyExtractor] Final extracted data:', result);
+        return result;
       } catch (err) {
         console.error('Error extracting property data:', err);
         return null;
@@ -96,12 +134,15 @@ export const useIDXPropertyExtractor = () => {
     };
 
     const attemptExtraction = () => {
+      console.log('[useIDXPropertyExtractor] Attempting property data extraction...');
       const data = extractPropertyData();
       if (data) {
+        console.log('[useIDXPropertyExtractor] Successfully extracted property data');
         setPropertyData(data);
         setIsLoading(false);
         setError(null);
       } else {
+        console.log('[useIDXPropertyExtractor] Failed to extract property data');
         setError('Unable to extract property information');
         setIsLoading(false);
       }

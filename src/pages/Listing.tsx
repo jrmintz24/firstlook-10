@@ -66,6 +66,9 @@ const Listing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Property Toolbar */}
+      {!isLoading && <PropertyToolbar />}
+      
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <LoadingSpinner size="lg" text="Loading property listing..." />
@@ -73,12 +76,9 @@ const Listing = () => {
       )}
       
       {/* IDX Content */}
-      <div ref={containerRef} className="w-full min-h-screen pb-20">
+      <div ref={containerRef} className={`w-full min-h-screen ${!isLoading ? 'pt-32' : ''}`}>
         {/* IDX listing content will be rendered here */}
       </div>
-      
-      {/* Property Toolbar */}
-      {!isLoading && <PropertyToolbar />}
     </div>
   );
 };

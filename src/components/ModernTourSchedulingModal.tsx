@@ -16,6 +16,7 @@ interface ModernTourSchedulingModalProps {
   onSuccess?: () => Promise<void>;
   skipNavigation?: boolean;
   initialAddress?: string;
+  propertyId?: string;
 }
 
 interface TimeSlot {
@@ -98,7 +99,8 @@ const ModernTourSchedulingModal = ({
   onClose, 
   onSuccess, 
   skipNavigation = false,
-  initialAddress = ""
+  initialAddress = "",
+  propertyId = ""
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
@@ -130,25 +132,17 @@ const ModernTourSchedulingModal = ({
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
-  // Reset form state when modal opens fresh or initialAddress changes
+  // Reset form state when modal opens fresh or initialAddress/propertyId changes
   useEffect(() => {
-    console.log('[ModernTourSchedulingModal] Effect triggered:', {
-      isOpen,
-      modalFlow,
-      initialAddress,
-      currentPropertyAddress: propertyAddress
-    });
-    
     if (isOpen && modalFlow === 'scheduling') {
-      console.log('[ModernTourSchedulingModal] Resetting form state for fresh modal open');
-      console.log('[ModernTourSchedulingModal] Setting propertyAddress from initialAddress:', initialAddress);
+      console.log('[ModernTourSchedulingModal] Initializing with address:', initialAddress, 'and propertyId:', propertyId);
       setPropertyAddress(initialAddress || "");
       setSelectedDate("");
       setSelectedTime("");
       setNotes("");
       setShowAllTimes(false);
     }
-  }, [isOpen, modalFlow, initialAddress]);
+  }, [isOpen, modalFlow, initialAddress, propertyId]);
 
   // Determine user capabilities
   const isGuest = !user;
@@ -236,6 +230,7 @@ const ModernTourSchedulingModal = ({
       preferredOptions: [{ date: selectedDate, time: selectedTime }],
       notes: notes,
       propertyAddress: propertyAddress.trim(),
+      propertyId: propertyId || undefined,
       preferredDate1: selectedDate,
       preferredTime1: selectedTime,
       preferredDate2: '',

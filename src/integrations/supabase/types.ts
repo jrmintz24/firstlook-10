@@ -1258,6 +1258,7 @@ export type Database = {
           preferred_date: string | null
           preferred_time: string | null
           property_address: string
+          property_id: string | null
           requested_agent_email: string | null
           requested_agent_id: string | null
           requested_agent_name: string | null
@@ -1281,6 +1282,7 @@ export type Database = {
           preferred_date?: string | null
           preferred_time?: string | null
           property_address: string
+          property_id?: string | null
           requested_agent_email?: string | null
           requested_agent_id?: string | null
           requested_agent_name?: string | null
@@ -1304,6 +1306,7 @@ export type Database = {
           preferred_date?: string | null
           preferred_time?: string | null
           property_address?: string
+          property_id?: string | null
           requested_agent_email?: string | null
           requested_agent_id?: string | null
           requested_agent_name?: string | null

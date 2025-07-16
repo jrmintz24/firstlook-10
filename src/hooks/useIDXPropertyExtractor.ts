@@ -17,10 +17,6 @@ export const useIDXPropertyExtractor = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug logging when propertyData changes
-  useEffect(() => {
-    console.log('[useIDXPropertyExtractor] PropertyData state updated:', propertyData);
-  }, [propertyData]);
 
   useEffect(() => {
     const extractPropertyData = (): IDXPropertyData | null => {

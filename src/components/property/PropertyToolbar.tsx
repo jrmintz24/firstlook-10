@@ -19,13 +19,8 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
   const { favoriteProperty, isSubmitting } = useEnhancedPostShowingActions();
   const { user } = useAuth();
 
-  console.log('[PropertyToolbar] Current propertyData:', propertyData);
-  console.log('[PropertyToolbar] isLoading:', isLoading);
-
   const handleScheduleTour = () => {
-    console.log('[PropertyToolbar] handleScheduleTour called');
-    console.log('[PropertyToolbar] propertyData.address being passed as initialAddress:', propertyData?.address);
-    console.log('[PropertyToolbar] Full propertyData object:', propertyData);
+    console.log('[PropertyToolbar] Schedule tour with property ID:', propertyData?.mlsId, 'and address:', propertyData?.address);
     setIsScheduleOpen(true);
   };
 
@@ -112,12 +107,10 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
       {/* Modern Tour Scheduling Modal */}
       <ModernTourSchedulingModal
         isOpen={isScheduleOpen}
-        onClose={() => {
-          console.log('[PropertyToolbar] Modal onClose called');
-          setIsScheduleOpen(false);
-        }}
+        onClose={() => setIsScheduleOpen(false)}
         onSuccess={handleScheduleSuccess}
         initialAddress={propertyData?.address}
+        propertyId={propertyData?.mlsId}
       />
 
       {/* Favorite Property Modal */}

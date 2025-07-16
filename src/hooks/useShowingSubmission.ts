@@ -42,6 +42,7 @@ export const useShowingSubmission = (
             showingRequests.push({
               user_id: user.id, // Ensure user_id is always set
               property_address: property.address.trim(),
+              property_id: formData.propertyId || null,
               message: property.notes || formData.notes || null,
               preferred_date: formData.preferredDate1 || null,
               preferred_time: formData.preferredTime1 || null,
@@ -51,17 +52,18 @@ export const useShowingSubmission = (
         }
       }
 
-      // Handle single property from direct form fields
-      if (formData.propertyAddress && formData.propertyAddress.trim()) {
-        console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
-        const request = {
-          user_id: user.id, // Ensure user_id is always set
-          property_address: formData.propertyAddress.trim(),
-          message: formData.notes || null,
-          preferred_date: formData.preferredDate1 || null,
-          preferred_time: formData.preferredTime1 || null,
-          status: 'pending'
-        };
+        // Handle single property from direct form fields
+        if (formData.propertyAddress && formData.propertyAddress.trim()) {
+          console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
+          const request = {
+            user_id: user.id, // Ensure user_id is always set
+            property_address: formData.propertyAddress.trim(),
+            property_id: formData.propertyId || null,
+            message: formData.notes || null,
+            preferred_date: formData.preferredDate1 || null,
+            preferred_time: formData.preferredTime1 || null,
+            status: 'pending'
+          };
 
         // Avoid duplicates
         const isDuplicate = showingRequests.some(req => 

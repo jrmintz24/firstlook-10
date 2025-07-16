@@ -132,8 +132,16 @@ const ModernTourSchedulingModal = ({
 
   // Reset form state when modal opens fresh or initialAddress changes
   useEffect(() => {
+    console.log('[ModernTourSchedulingModal] Effect triggered:', {
+      isOpen,
+      modalFlow,
+      initialAddress,
+      currentPropertyAddress: propertyAddress
+    });
+    
     if (isOpen && modalFlow === 'scheduling') {
-      console.log('Resetting form state for fresh modal open with initialAddress:', initialAddress);
+      console.log('[ModernTourSchedulingModal] Resetting form state for fresh modal open');
+      console.log('[ModernTourSchedulingModal] Setting propertyAddress from initialAddress:', initialAddress);
       setPropertyAddress(initialAddress || "");
       setSelectedDate("");
       setSelectedTime("");

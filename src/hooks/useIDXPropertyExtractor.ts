@@ -102,6 +102,20 @@ export const useIDXPropertyExtractor = () => {
       const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
       console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
+        // Helper function to find elements by text content
+        const findElementsByText = (selectors: string[], searchTerms: string[]): Element | null => {
+          for (const selector of selectors) {
+            const elements = document.querySelectorAll(selector);
+            for (const element of elements) {
+              const text = element.textContent || '';
+              if (searchTerms.some(term => text.includes(term))) {
+                return element;
+              }
+            }
+          }
+          return null;
+        };
+
         // Enhanced IDX selectors for property data - prioritize most specific first
         const addressSelectors = [
           // iHomeFinder specific
@@ -114,7 +128,6 @@ export const useIDXPropertyExtractor = () => {
           '.listing-street-address', '.mls-address',
           
           // Page title and headers (often contain address)
-          'h1:contains("Street")', 'h1:contains("Ave")', 'h1:contains("Rd")',
           'h1', 'h2', '.page-title', '.listing-title',
           
           // Property detail containers
@@ -295,6 +308,7 @@ export const useIDXPropertyExtractor = () => {
 
         // Try multiple extraction methods for address in order of preference
         let address = extractFromSelectors(addressSelectors, 'address') ||
+                     findElementsByText(['h1', 'h2'], ['Street', 'Ave', 'Avenue', 'Road', 'Drive', 'Lane', 'Way', 'Court', 'Place', 'Boulevard'])?.textContent?.trim() ||
                      extractFromGlobals('address') ||
                      extractAddressFromTitle() ||
                      extractAddressFromURL() ||

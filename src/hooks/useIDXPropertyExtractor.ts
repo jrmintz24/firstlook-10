@@ -23,146 +23,42 @@ export const useIDXPropertyExtractor = () => {
       try {
         console.log('[useIDXPropertyExtractor] Starting property data extraction...');
         
-        // Detect page type
-        const isSearchResultsPage = window.location.pathname.includes('/listings') || 
-                                   document.querySelector('.search-results, .listing-results, .ifkrq');
+        // Only extract data from property detail pages (individual listing pages)
+        const isPropertyDetailPage = window.location.pathname.includes('/listing/') && 
+                                   !window.location.pathname.includes('/listings');
         
-        console.log('[useIDXPropertyExtractor] Page type:', isSearchResultsPage ? 'Search Results' : 'Property Detail');
+        console.log('[useIDXPropertyExtractor] Current path:', window.location.pathname);
+        console.log('[useIDXPropertyExtractor] Is property detail page:', isPropertyDetailPage);
         
-        if (isSearchResultsPage) {
-          return extractFromSearchResults();
-        } else {
-          return extractFromPropertyDetail();
+        if (!isPropertyDetailPage) {
+          console.log('[useIDXPropertyExtractor] Not on property detail page, skipping extraction');
+          return null;
         }
+        
+        return extractFromPropertyDetail();
       } catch (err) {
         console.error('Error extracting property data:', err);
         return null;
       }
     };
 
-    const extractFromSearchResults = (): IDXPropertyData | null => {
-      console.log('[useIDXPropertyExtractor] Extracting from search results...');
-      
-      // Get the current URL to find the property ID
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlPropertyId = urlParams.get('id');
-      
-      console.log('[useIDXPropertyExtractor] Looking for property ID:', urlPropertyId);
-      
-      // Look for property cards with various selectors
-      const propertyCardSelectors = [
-        'a[title*=","]',
-        '.property-card',
-        '.listing-card', 
-        '.ifkrq',
-        '[data-property-id]',
-        '[href*="id="]',
-        '.listing-result',
-        '.property-result'
-      ];
-      
-      let allCards: Element[] = [];
-      propertyCardSelectors.forEach(selector => {
-        allCards.push(...Array.from(document.querySelectorAll(selector)));
-      });
-      
-      console.log('[useIDXPropertyExtractor] Found', allCards.length, 'potential property cards');
-      
-      if (allCards.length === 0) {
-        console.log('[useIDXPropertyExtractor] No property cards found');
-        return null;
-      }
-
-      // If we have a property ID from URL, try to find the matching card
-      let targetCard: Element | null = null;
-      
-      if (urlPropertyId) {
-        for (const card of allCards) {
-          const href = card.getAttribute('href') || '';
-          const dataId = card.getAttribute('data-property-id') || '';
-          
-          if (href.includes(`id=${urlPropertyId}`) || dataId === urlPropertyId) {
-            targetCard = card;
-            console.log('[useIDXPropertyExtractor] Found matching card for property ID:', urlPropertyId);
-            break;
-          }
-        }
-      }
-      
-      // If no specific card found, use the first one
-      if (!targetCard && allCards.length > 0) {
-        targetCard = allCards[0];
-        console.log('[useIDXPropertyExtractor] Using first available card as fallback');
-      }
-
-      if (!targetCard) {
-        console.log('[useIDXPropertyExtractor] No target card found');
-        return null;
-      }
-
-      const titleAttr = targetCard.getAttribute('title') || targetCard.getAttribute('aria-label') || '';
-      console.log('[useIDXPropertyExtractor] Target card:', targetCard);
-      console.log('[useIDXPropertyExtractor] Title attribute:', titleAttr);
-
-      // Handle duplicated address format (e.g., "6413 Cheltenham Way Citrus Heights, CA 95621, Citrus Heights, CA 95621")
-      // Extract the first complete address before any duplication
-      let address = '';
-      
-      // Try multiple extraction methods
-      // Method 1: Extract from title attribute (handle duplicated addresses)
-      const duplicateMatch = titleAttr.match(/^([^,]+,[^,]+,[^,]+)(?:,\s*\1)?/);
-      if (duplicateMatch) {
-        address = duplicateMatch[1].trim();
-      } else {
-        // Method 2: Standard address extraction
-        const addressMatch = titleAttr.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|$)/);
-        address = addressMatch ? addressMatch[1].trim() : '';
-      }
-      
-      // Method 3: Try aria-label if title didn't work
-      if (!address) {
-        const ariaLabel = targetCard.getAttribute('aria-label') || '';
-        console.log('[useIDXPropertyExtractor] Trying aria-label:', ariaLabel);
-        const ariaAddressMatch = ariaLabel.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|\$|$)/);
-        address = ariaAddressMatch ? ariaAddressMatch[1].trim() : '';
-      }
-
-      // Extract price from title or aria-label
-      const priceMatch = titleAttr.match(/List Price\s*\$?([\d,]+)/i) || 
-                        titleAttr.match(/\$([0-9,]+)/) ||
-                        (targetCard.getAttribute('aria-label') || '').match(/\$([0-9,]+)/);
-      const price = priceMatch ? `$${priceMatch[1]}` : '';
-
-      // Extract MLS ID from href
-      const href = targetCard.getAttribute('href') || '';
-      const mlsMatch = href.match(/id=([^&]+)/) || href.match(/\/(\d+)$/);
-      const mlsId = mlsMatch ? mlsMatch[1] : '';
-
-      console.log('[useIDXPropertyExtractor] Extracted from search results:', { 
-        address, 
-        price, 
-        mlsId, 
-        titleAttr: titleAttr.substring(0, 100) + '...',
-        ariaLabel: (targetCard.getAttribute('aria-label') || '').substring(0, 100) + '...'
-      });
-
-      if (address) {
-        return {
-          address,
-          price: price || undefined,
-          mlsId: mlsId || undefined
-        };
-      }
-
-      return null;
-    };
 
     const extractFromPropertyDetail = (): IDXPropertyData | null => {
       console.log('[useIDXPropertyExtractor] Extracting from property detail...');
       
-      // Extract property ID from URL
+      // Extract property ID from URL - prioritize URL parameter, then path segment
       const urlParams = new URLSearchParams(window.location.search);
-      const mlsId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
+      let mlsId = urlParams.get('id') || '';
+      
+      // If no URL parameter, extract from path (e.g., /listing/123456)
+      if (!mlsId) {
+        const pathSegments = window.location.pathname.split('/');
+        const listingIndex = pathSegments.findIndex(segment => segment === 'listing');
+        if (listingIndex !== -1 && pathSegments[listingIndex + 1]) {
+          mlsId = pathSegments[listingIndex + 1];
+        }
+      }
+      
       console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
         // Helper function to find elements by text content
@@ -437,6 +333,16 @@ export const useIDXPropertyExtractor = () => {
           sqft,
           mlsId
         });
+
+        // If no address found, show helpful error message
+        if (!address) {
+          console.warn('[useIDXPropertyExtractor] No address found on property detail page. Property data extraction failed.');
+          console.log('[useIDXPropertyExtractor] Available elements for debugging:');
+          console.log('- Page title:', document.title);
+          console.log('- URL:', window.location.href);
+          console.log('- H1 elements:', Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()));
+          console.log('- Elements with "address" in class:', Array.from(document.querySelectorAll('[class*="address"]')).map(el => el.textContent?.trim()));
+        }
 
         if (!address && !mlsId) {
           console.log('[useIDXPropertyExtractor] No property data found - no address or MLS ID');

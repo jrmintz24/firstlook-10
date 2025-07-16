@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Heart } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
@@ -18,6 +19,12 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
   const { propertyData, isLoading } = useIDXPropertyExtractor();
   const { favoriteProperty, isSubmitting } = useEnhancedPostShowingActions();
   const { user } = useAuth();
+  const location = useLocation();
+
+  // Only show toolbar on individual property detail pages, not on listings/search pages
+  const isPropertyDetailPage = location.pathname.includes('/listing/') && !location.pathname.includes('/listings');
+  
+  console.log('[PropertyToolbar] Current path:', location.pathname, 'Is property detail page:', isPropertyDetailPage);
 
   const handleScheduleTour = () => {
     console.log('[PropertyToolbar] Schedule tour with property ID:', propertyData?.mlsId, 'and address:', propertyData?.address);
@@ -46,8 +53,9 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
     }, notes);
   };
 
-  if (isLoading) {
-    return null; // Don't show toolbar while loading
+  // Don't show toolbar if not on a property detail page or while loading
+  if (!isPropertyDetailPage || isLoading) {
+    return null;
   }
 
   return (

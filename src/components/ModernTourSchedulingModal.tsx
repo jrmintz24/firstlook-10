@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, Home, X, ChevronRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
@@ -105,6 +106,10 @@ const ModernTourSchedulingModal = ({
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
+  const location = useLocation();
+
+  // Check if user is on the correct page for scheduling
+  const isPropertyDetailPage = location.pathname.includes('/listing/') && !location.pathname.includes('/listings');
 
   // Use the IDX property extractor hook to get property data from current page
   const { propertyData: extractedData, isLoading: isExtractingData } = useIDXPropertyExtractor();
@@ -334,6 +339,21 @@ const ModernTourSchedulingModal = ({
 
             {/* Scrollable content */}
             <div className="px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
+              {/* Wrong Page Notice */}
+              {!isPropertyDetailPage && (
+                <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-red-800">Cannot Schedule From This Page</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        Please click on a specific property from the search results to schedule a tour.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
@@ -538,11 +558,11 @@ const ModernTourSchedulingModal = ({
                 </div>
                 <Button
                   onClick={handleSubmit}
-                  disabled={!canSubmit || isSubmitting}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium"
+                  disabled={!canSubmit || isSubmitting || !isPropertyDetailPage}
+                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? "Scheduling..." : "Schedule Tour"}
-                  <ChevronRight className="h-4 w-4 ml-2" />
+                  {!isPropertyDetailPage ? 'Select a Property First' : isSubmitting ? "Scheduling..." : "Schedule Tour"}
+                  {isPropertyDetailPage && <ChevronRight className="h-4 w-4 ml-2" />}
                 </Button>
               </div>
             </div>

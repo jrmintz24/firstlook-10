@@ -118,12 +118,40 @@ export const useIDXPropertyExtractor = () => {
       
       console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
-      // Basic selectors for property data
-      const addressSelectors = ['.ihf-address', '.address', '.property-address', 'h1', '.listing-title'];
-      const priceSelectors = ['.ihf-price', '.price', '.property-price'];
-      const bedsSelectors = ['.ihf-beds', '.beds', '.bedrooms'];
-      const bathsSelectors = ['.ihf-baths', '.baths', '.bathrooms'];
-      const sqftSelectors = ['.ihf-sqft', '.sqft', '.square-feet'];
+      // Enhanced selectors for iHomeFinder and other IDX providers
+      const addressSelectors = [
+        '.ihf-address', '.ihf-listing-address', '.ihf-property-address',
+        '.property-address', '.listing-address', '.address', 
+        '[data-testid="property-address"]', '.property-info .address',
+        'h1[class*="address"]', '[class*="property"][class*="address"]',
+        '.listing-details .address', '.property-title', '.listing-title', 'h1'
+      ];
+      
+      const priceSelectors = [
+        '.ihf-price', '.ihf-listing-price', '.ihf-property-price',
+        '.property-price', '.listing-price', '.price', 
+        '[data-testid="property-price"]', '.price-container .price',
+        '[class*="price"]', '.listing-details .price'
+      ];
+      
+      const bedsSelectors = [
+        '.ihf-beds', '.ihf-bedrooms', '.ihf-bed-count',
+        '.property-beds', '.beds', '.bedrooms', '.bed-count',
+        '[data-testid="beds"]', '[class*="bed"]', '.listing-details .beds'
+      ];
+      
+      const bathsSelectors = [
+        '.ihf-baths', '.ihf-bathrooms', '.ihf-bath-count',
+        '.property-baths', '.baths', '.bathrooms', '.bath-count',
+        '[data-testid="baths"]', '[class*="bath"]', '.listing-details .baths'
+      ];
+      
+      const sqftSelectors = [
+        '.ihf-sqft', '.ihf-square-feet', '.ihf-sq-ft',
+        '.property-sqft', '.sqft', '.square-feet', '.sq-ft',
+        '[data-testid="sqft"]', '[class*="sqft"]', '[class*="square"]',
+        '.listing-details .sqft'
+      ];
 
       const extractFromSelectors = (selectors: string[], fieldName: string): string => {
         for (const selector of selectors) {

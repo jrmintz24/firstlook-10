@@ -67,21 +67,50 @@ export const useIDXPropertyExtractor = () => {
         return null;
       }
 
-      // Extract address from title (format: "6413 Cheltenham Way Citrus Heights, CA 95621, Citrus Heights, CA 95621")
-      const addressMatch = titleAttr.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|$)/);
-      const address = addressMatch ? addressMatch[1].trim() : '';
+      console.log('[useIDXPropertyExtractor] Raw title attribute:', titleAttr);
+      console.log('[useIDXPropertyExtractor] Target card element:', targetCard);
+
+      // Handle duplicated address format (e.g., "6413 Cheltenham Way Citrus Heights, CA 95621, Citrus Heights, CA 95621")
+      // Extract the first complete address before any duplication
+      let address = '';
+      
+      // Try multiple extraction methods
+      // Method 1: Extract from title attribute (handle duplicated addresses)
+      const duplicateMatch = titleAttr.match(/^([^,]+,[^,]+,[^,]+)(?:,\s*\1)?/);
+      if (duplicateMatch) {
+        address = duplicateMatch[1].trim();
+      } else {
+        // Method 2: Standard address extraction
+        const addressMatch = titleAttr.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|$)/);
+        address = addressMatch ? addressMatch[1].trim() : '';
+      }
+      
+      // Method 3: Try aria-label if title didn't work
+      if (!address) {
+        const ariaLabel = targetCard.getAttribute('aria-label') || '';
+        console.log('[useIDXPropertyExtractor] Trying aria-label:', ariaLabel);
+        const ariaAddressMatch = ariaLabel.match(/^([^,]+(?:,[^,]+)*?)(?:,\s*List Price|\s+List Price|\$|$)/);
+        address = ariaAddressMatch ? ariaAddressMatch[1].trim() : '';
+      }
 
       // Extract price from title or aria-label
       const priceMatch = titleAttr.match(/List Price\s*\$?([\d,]+)/i) || 
-                        titleAttr.match(/\$([0-9,]+)/);
+                        titleAttr.match(/\$([0-9,]+)/) ||
+                        (targetCard.getAttribute('aria-label') || '').match(/\$([0-9,]+)/);
       const price = priceMatch ? `$${priceMatch[1]}` : '';
 
       // Extract MLS ID from href
       const href = targetCard.getAttribute('href') || '';
-      const mlsMatch = href.match(/id=([^&]+)/);
+      const mlsMatch = href.match(/id=([^&]+)/) || href.match(/\/(\d+)$/);
       const mlsId = mlsMatch ? mlsMatch[1] : '';
 
-      console.log('[useIDXPropertyExtractor] Extracted from search results:', { address, price, mlsId });
+      console.log('[useIDXPropertyExtractor] Extracted from search results:', { 
+        address, 
+        price, 
+        mlsId, 
+        titleAttr: titleAttr.substring(0, 100) + '...',
+        ariaLabel: (targetCard.getAttribute('aria-label') || '').substring(0, 100) + '...'
+      });
 
       if (address) {
         return {

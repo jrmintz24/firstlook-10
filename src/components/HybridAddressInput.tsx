@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, Edit3, Check, X } from "lucide-react";
+import { MapPin, Edit3, Check, X, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddressAutocomplete from "./AddressAutocomplete";
 
@@ -14,6 +14,7 @@ interface HybridAddressInputProps {
   className?: string;
   label?: string;
   id?: string;
+  propertyData?: any;
 }
 
 const HybridAddressInput = ({ 
@@ -24,13 +25,28 @@ const HybridAddressInput = ({
   placeholder = "Enter property address...", 
   className,
   label,
-  id 
+  id,
+  propertyData 
 }: HybridAddressInputProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
-  // If we have a propertyId and this is auto-detected, show the display mode
-  const showDisplayMode = propertyId && isAutoDetected && !isEditing;
+  // Update tempValue when value changes
+  React.useEffect(() => {
+    setTempValue(value);
+  }, [value]);
+
+  // Debug logging
+  console.log('[HybridAddressInput] Props:', { 
+    value, 
+    propertyId, 
+    isAutoDetected, 
+    hasPropertyData: !!propertyData,
+    propertyAddress: propertyData?.address 
+  });
+
+  // If we have property data and this is auto-detected, show the display mode
+  const showDisplayMode = isAutoDetected && propertyData && !isEditing;
 
   const handleEdit = () => {
     setTempValue(value);
@@ -53,11 +69,31 @@ const HybridAddressInput = ({
 
   if (showDisplayMode) {
     return (
-      <div className={`space-y-2 ${className || ''}`}>
+      <div className={`space-y-3 ${className || ''}`}>
         {label && (
           <label htmlFor={id} className="block text-sm font-medium text-gray-900">
             {label}
           </label>
+        )}
+        
+        {/* Property Details Card */}
+        {propertyData && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Home className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-gray-900">{propertyData.address}</h4>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                  {propertyData.price && <span className="font-medium text-green-600">{propertyData.price}</span>}
+                  {propertyData.beds && <span>{propertyData.beds} beds</span>}
+                  {propertyData.baths && <span>{propertyData.baths} baths</span>}
+                  {propertyData.sqft && <span>{propertyData.sqft} sqft</span>}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
         
         <div className="relative">

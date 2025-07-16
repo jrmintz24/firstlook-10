@@ -43,17 +43,57 @@ export const useIDXPropertyExtractor = () => {
     const extractFromSearchResults = (): IDXPropertyData | null => {
       console.log('[useIDXPropertyExtractor] Extracting from search results...');
       
-      // Look for property cards - prioritize hovered/focused ones
-      const propertyCards = document.querySelectorAll('a[title*=","], .property-card, .listing-card, .ifkrq');
+      // Get the current URL to find the property ID
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPropertyId = urlParams.get('id');
       
-      if (propertyCards.length === 0) {
+      console.log('[useIDXPropertyExtractor] Looking for property ID:', urlPropertyId);
+      
+      // Look for property cards with various selectors
+      const propertyCardSelectors = [
+        'a[title*=","]',
+        '.property-card',
+        '.listing-card', 
+        '.ifkrq',
+        '[data-property-id]',
+        '[href*="id="]',
+        '.listing-result',
+        '.property-result'
+      ];
+      
+      let allCards: Element[] = [];
+      propertyCardSelectors.forEach(selector => {
+        allCards.push(...Array.from(document.querySelectorAll(selector)));
+      });
+      
+      console.log('[useIDXPropertyExtractor] Found', allCards.length, 'potential property cards');
+      
+      if (allCards.length === 0) {
         console.log('[useIDXPropertyExtractor] No property cards found');
         return null;
       }
 
-      // Try to find a focused/hovered card first
-      let targetCard = document.querySelector('a[title*=","]:hover, a[title*=","]:focus') || 
-                       propertyCards[0]; // Fallback to first card
+      // If we have a property ID from URL, try to find the matching card
+      let targetCard: Element | null = null;
+      
+      if (urlPropertyId) {
+        for (const card of allCards) {
+          const href = card.getAttribute('href') || '';
+          const dataId = card.getAttribute('data-property-id') || '';
+          
+          if (href.includes(`id=${urlPropertyId}`) || dataId === urlPropertyId) {
+            targetCard = card;
+            console.log('[useIDXPropertyExtractor] Found matching card for property ID:', urlPropertyId);
+            break;
+          }
+        }
+      }
+      
+      // If no specific card found, use the first one
+      if (!targetCard && allCards.length > 0) {
+        targetCard = allCards[0];
+        console.log('[useIDXPropertyExtractor] Using first available card as fallback');
+      }
 
       if (!targetCard) {
         console.log('[useIDXPropertyExtractor] No target card found');
@@ -61,15 +101,8 @@ export const useIDXPropertyExtractor = () => {
       }
 
       const titleAttr = targetCard.getAttribute('title') || targetCard.getAttribute('aria-label') || '';
+      console.log('[useIDXPropertyExtractor] Target card:', targetCard);
       console.log('[useIDXPropertyExtractor] Title attribute:', titleAttr);
-
-      if (!titleAttr) {
-        console.log('[useIDXPropertyExtractor] No title attribute found');
-        return null;
-      }
-
-      console.log('[useIDXPropertyExtractor] Raw title attribute:', titleAttr);
-      console.log('[useIDXPropertyExtractor] Target card element:', targetCard);
 
       // Handle duplicated address format (e.g., "6413 Cheltenham Way Citrus Heights, CA 95621, Citrus Heights, CA 95621")
       // Extract the first complete address before any duplication

@@ -7,7 +7,7 @@ import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import HybridAddressInput from "@/components/HybridAddressInput";
-import { usePropertyDataById } from "@/hooks/usePropertyDataById";
+import { useIDXPropertyExtractor } from "@/hooks/useIDXPropertyExtractor";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 
@@ -106,14 +106,17 @@ const ModernTourSchedulingModal = ({
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
 
-  // Fetch property data if propertyId is provided
-  const { propertyData, isLoading: isLoadingProperty } = usePropertyDataById(propertyId);
-
+  // Use the IDX property extractor hook to get property data from current page
+  const { propertyData: extractedData, isLoading: isExtractingData } = useIDXPropertyExtractor();
+  
   const [propertyAddress, setPropertyAddress] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [showAllTimes, setShowAllTimes] = useState(false);
+
+  // Use extracted data as the primary property data source
+  const propertyData = extractedData;
 
   const {
     isSubmitting,
@@ -137,24 +140,22 @@ const ModernTourSchedulingModal = ({
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
-  // Reset form state when modal opens fresh or initialAddress/propertyId changes
+  // Reset form state when modal opens fresh
   useEffect(() => {
     if (isOpen && modalFlow === 'scheduling') {
-      console.log('[ModernTourSchedulingModal] Initializing with address:', initialAddress, 'and propertyId:', propertyId);
-      setPropertyAddress(initialAddress || "");
+      console.log('[ModernTourSchedulingModal] Initializing modal');
+      
+      // Set address based on priority: extracted data > initial address > propertyId fallback
+      const addressToUse = extractedData?.address || initialAddress || "";
+      console.log('[ModernTourSchedulingModal] Using address:', addressToUse);
+      
+      setPropertyAddress(addressToUse);
       setSelectedDate("");
       setSelectedTime("");
       setNotes("");
       setShowAllTimes(false);
     }
-  }, [isOpen, modalFlow, initialAddress, propertyId]);
-
-  // Update address when property data is loaded
-  useEffect(() => {
-    if (propertyData?.address && !propertyAddress) {
-      setPropertyAddress(propertyData.address);
-    }
-  }, [propertyData, propertyAddress]);
+  }, [isOpen, modalFlow, extractedData, initialAddress]);
 
   // Determine user capabilities
   const isGuest = !user;
@@ -384,26 +385,6 @@ const ModernTourSchedulingModal = ({
                     {hasAddress && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
                   
-                  {/* Show property details if available */}
-                  {propertyData && (
-                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Home className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900">{propertyData.address}</h4>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                            {propertyData.price && <span className="font-medium text-green-600">{propertyData.price}</span>}
-                            {propertyData.beds && <span>{propertyData.beds} beds</span>}
-                            {propertyData.baths && <span>{propertyData.baths} baths</span>}
-                            {propertyData.sqft && <span>{propertyData.sqft} sqft</span>}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
                   <HybridAddressInput
                     value={propertyAddress}
                     onChange={setPropertyAddress}
@@ -411,6 +392,7 @@ const ModernTourSchedulingModal = ({
                     isAutoDetected={!!propertyData}
                     placeholder="Enter property address..."
                     className="h-12 border-gray-300 focus:border-black focus:ring-0"
+                    propertyData={propertyData}
                   />
                 </div>
 

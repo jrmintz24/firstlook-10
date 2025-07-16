@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Heart } from 'lucide-react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../ui/button';
 import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
@@ -21,12 +21,15 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
   const { user } = useAuth();
   const location = useLocation();
   const { listingId } = useParams<{ listingId: string }>();
+  const [searchParams] = useSearchParams();
+  const queryId = searchParams.get('id');
 
-  // Check if we're on an individual property detail page using useParams
-  const isPropertyDetailPage = !!listingId;
+  // Check if we're on an individual property detail page using either route params or query params
+  const isPropertyDetailPage = !!listingId || !!queryId;
   
   console.log('[PropertyToolbar] Current path:', location.pathname);
   console.log('[PropertyToolbar] Listing ID from params:', listingId);
+  console.log('[PropertyToolbar] Query ID from search params:', queryId);
   console.log('[PropertyToolbar] Is property detail page:', isPropertyDetailPage);
   console.log('[PropertyToolbar] Property data:', propertyData);
   console.log('[PropertyToolbar] Is loading:', isLoading);

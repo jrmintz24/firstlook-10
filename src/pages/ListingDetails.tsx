@@ -46,77 +46,96 @@ const ListingDetails = () => {
     });
   };
 
-  // Enhanced property data extraction from IDX content
+  // Enhanced property data extraction from IDX content with robust DOM scanning
   const extractPropertyFromIDX = () => {
     if (!containerRef.current) return null;
     
     console.log('[ListingDetails] Extracting property data from IDX content');
-    console.log('[ListingDetails] Container HTML:', containerRef.current.innerHTML.substring(0, 500));
-    
-    // First, try to get the complete address by combining listing-address-1 and listing-address-2
-    const address1Element = containerRef.current.querySelector('[class*="listing-address-1"]');
-    const address2Element = containerRef.current.querySelector('[class*="listing-address-2"]');
+    console.log('[ListingDetails] Container HTML sample:', containerRef.current.innerHTML.substring(0, 1000));
     
     let foundAddress = '';
+    
+    // More comprehensive address extraction based on actual IDX structure
+    const addressSelectors = [
+      // Exact match for the IDX structure you showed
+      'p.ui-typography.listing-address-1',
+      'p.ui-typography.listing-address-2', 
+      // Partial class matching for flexibility
+      '[class*="listing-address-1"]',
+      '[class*="listing-address-2"]',
+      // Combined selector approach
+      'p[class*="listing-address"]',
+      // Fallback generic selectors
+      '[data-address]',
+      '.address', '.property-address', '.listing-address',
+      '.ihf-detail-address', '.ihf-property-address', '.ihf-address',
+      'h1', 'h2', '[class*="address"]', '[class*="Address"]'
+    ];
+    
+    // First attempt: Look for the split address format (address-1 + address-2)
+    const address1Element = containerRef.current.querySelector('p.ui-typography.listing-address-1, [class*="listing-address-1"]');
+    const address2Element = containerRef.current.querySelector('p.ui-typography.listing-address-2, [class*="listing-address-2"]');
     
     if (address1Element && address2Element) {
       const address1 = address1Element.textContent?.trim() || '';
       const address2 = address2Element.textContent?.trim() || '';
-      if (address1 && address2) {
+      console.log(`[ListingDetails] Found address parts - address1: "${address1}", address2: "${address2}"`);
+      
+      if (address1 && address2 && !address1.includes('Property') && !address2.includes('Property')) {
         foundAddress = `${address1}, ${address2}`;
-        console.log(`[ListingDetails] Found complete address from IDX elements: "${foundAddress}"`);
+        console.log(`[ListingDetails] Combined address: "${foundAddress}"`);
       }
     }
     
-    // If we didn't find the split address format, fall back to other selectors
+    // Second attempt: Try all selectors for complete address
     if (!foundAddress) {
-      const addressSelectors = [
-        // Specific selectors for other IDX formats
-        'p[class*="listing-address"]',
-        '[class*="listing-address"]',
-        // General IDX selectors
-        '[data-address]',
-        '.address',
-        '.property-address', 
-        '.listing-address',
-        '.ihf-detail-address',
-        '.ihf-property-address',
-        '.ihf-address',
-        'h1',
-        'h2',
-        '[class*="address"]',
-        '[class*="Address"]',
-        '[id*="address"]',
-        '.detail-address',
-        '.property-title',
-        '.listing-title'
-      ];
-      
-      // Try each selector until we find a valid address
-      let addressElement = null;
+      console.log('[ListingDetails] Attempting comprehensive DOM scan...');
       
       for (const selector of addressSelectors) {
         const elements = containerRef.current.querySelectorAll(selector);
-        console.log(`[ListingDetails] Checking selector "${selector}", found ${elements.length} elements`);
+        console.log(`[ListingDetails] Selector "${selector}" found ${elements.length} elements`);
         
         for (const element of elements) {
           const text = element.textContent?.trim() || '';
-          console.log(`[ListingDetails] Element text: "${text}"`);
+          console.log(`[ListingDetails] Examining text: "${text.substring(0, 100)}"`);
           
-          // Check if this looks like an address (contains numbers and common address words)
-          if (text && (
-            /\d+\s+\w+/.test(text) || // Number followed by street name
-            /\w+\s+(St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Ln|Lane|Blvd|Boulevard|Ct|Court|Pl|Place|Way|Circle|Cir)/i.test(text) ||
-            /\d+.*,.*\w{2}\s+\d{5}/.test(text) // Address with state and zip
-          )) {
+          // Validate this looks like a real address, not a property ID
+          if (text && 
+              text.length > 10 && 
+              !text.includes('Property') && 
+              !text.match(/^[A-Z0-9_]+$/) && // Skip property IDs like "225062549_13"
+              (
+                /\d+\s+\w+/.test(text) || // Number followed by street name
+                /\w+\s+(St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Ln|Lane|Blvd|Boulevard|Ct|Court|Pl|Place|Way|Circle|Cir)/i.test(text) ||
+                /\d+.*,.*[A-Z]{2}\s+\d{5}/.test(text) || // Address with state and zip
+                /^[0-9]+\s+[A-Za-z\s]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5}/.test(text) // Full address format
+              )) {
             foundAddress = text;
-            addressElement = element;
-            console.log(`[ListingDetails] Found valid address: "${foundAddress}"`);
+            console.log(`[ListingDetails] ✅ Found valid address: "${foundAddress}"`);
             break;
           }
         }
         
         if (foundAddress) break;
+      }
+    }
+    
+    // Third attempt: Scan all text content if still no address found
+    if (!foundAddress) {
+      console.log('[ListingDetails] Last resort: scanning all text content...');
+      const allElements = containerRef.current.querySelectorAll('*');
+      
+      for (const element of allElements) {
+        const text = element.textContent?.trim() || '';
+        if (text && 
+            text.length > 15 && 
+            text.length < 200 && 
+            !text.includes('Property') &&
+            /^[0-9]+\s+[A-Za-z\s]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5}/.test(text)) {
+          foundAddress = text;
+          console.log(`[ListingDetails] ✅ Found address in full scan: "${foundAddress}"`);
+          break;
+        }
       }
     }
     

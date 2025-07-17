@@ -166,6 +166,13 @@ export function useIDXPropertyEnhanced() {
         if (error) throw error;
         setIsSaved(false);
       } else {
+        // First get the idx_property_id from database
+        const { data: savedProperty } = await supabase
+          .from('idx_properties')
+          .select('id')
+          .eq('mls_id', property.mlsId)
+          .single();
+
         // Add favorite
         const { error } = await supabase
           .from('property_favorites')
@@ -173,7 +180,7 @@ export function useIDXPropertyEnhanced() {
             buyer_id: user.id,
             property_address: property.address,
             mls_id: property.mlsId,
-            idx_property_id: property.id,
+            idx_property_id: savedProperty?.id || null,
             notes: ''
           });
 

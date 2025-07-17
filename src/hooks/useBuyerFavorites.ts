@@ -10,6 +10,21 @@ interface FavoriteProperty {
   property_address: string;
   notes: string | null;
   created_at: string;
+  mls_id?: string;
+  idx_property_id?: string;
+  // IDX property details
+  idx_property?: {
+    id: string;
+    price: number | null;
+    beds: number | null;
+    baths: number | null;
+    sqft: number | null;
+    images: any;
+    property_type: string | null;
+    status: string | null;
+    city: string | null;
+    state: string | null;
+  };
 }
 
 export const useBuyerFavorites = (buyerId?: string) => {
@@ -26,7 +41,21 @@ export const useBuyerFavorites = (buyerId?: string) => {
     try {
       const { data, error } = await supabase
         .from('property_favorites')
-        .select('*')
+        .select(`
+          *,
+          idx_property:idx_properties!left(
+            id,
+            price,
+            beds,
+            baths,
+            sqft,
+            images,
+            property_type,
+            status,
+            city,
+            state
+          )
+        `)
         .eq('buyer_id', buyerId)
         .order('created_at', { ascending: false });
 

@@ -79,29 +79,8 @@ serve(async (req) => {
 
     console.log('Successfully upserted property:', data.id)
 
-    // Log property view for analytics if user is authenticated
-    const authHeader = req.headers.get('Authorization')
-    if (authHeader) {
-      try {
-        const token = authHeader.replace('Bearer ', '')
-        const { data: { user } } = await supabaseClient.auth.getUser(token)
-        
-        if (user) {
-          await supabaseClient
-            .from('property_views')
-            .insert({
-              user_id: user.id,
-              idx_property_id: data.id,
-              mls_id: data.mls_id,
-              viewed_at: new Date().toISOString()
-            })
-          console.log('Logged property view for user:', user.id)
-        }
-      } catch (viewError) {
-        console.warn('Failed to log property view:', viewError)
-        // Continue without failing the main operation
-      }
-    }
+    // Skip property view logging for now since table doesn't exist yet
+    console.log('Property upserted successfully, skipping view logging')
 
     return new Response(
       JSON.stringify({ 

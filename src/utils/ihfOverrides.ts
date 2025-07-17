@@ -411,10 +411,12 @@ function injectEnhancedExtractor() {
         startObserving();
       }
       
-      // Multiple extraction attempts for reliability
+      // Multiple extraction attempts for reliability with longer delays
       setTimeout(extractData, 1000);
       setTimeout(extractData, 3000);
       setTimeout(extractData, 5000);
+      setTimeout(extractData, 10000);
+      setTimeout(extractData, 15000);
       
       console.log('Enhanced property extractor initialized');
     })();

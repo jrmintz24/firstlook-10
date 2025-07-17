@@ -6,12 +6,32 @@
       
       // Enhanced selectors for comprehensive data extraction
       var extractors = {
-        address: ['.ihf-address', '.ihf-listing-address', '.property-address', '.address', '[itemprop="streetAddress"]'],
-        price: ['.ihf-price', '.ihf-listing-price', '.property-price', '.price', '[itemprop="price"]'],
-        beds: ['.ihf-beds', '.bedrooms', '.beds', '[data-beds]'],
-        baths: ['.ihf-baths', '.bathrooms', '.baths', '[data-baths]'],
-        sqft: ['.ihf-sqft', '.square-feet', '.sqft', '[data-sqft]'],
-        mlsId: ['.ihf-mls-number', '.mls-number', '[data-mls]', '.listing-mls'],
+        address: [
+          '.ihf-address', '.ihf-listing-address', '.property-address', '.address', 
+          '[itemprop="streetAddress"]', '.listing-address', '.property-street-address',
+          '.ihf-detail-address', '.detail-address', 'h1', 'h2'
+        ],
+        price: [
+          '.ihf-price', '.ihf-listing-price', '.property-price', '.price', 
+          '[itemprop="price"]', '.listing-price', '.price-value', '.current-price',
+          '.ihf-detail-price', '.detail-price'
+        ],
+        beds: [
+          '.ihf-beds', '.bedrooms', '.beds', '[data-beds]', '.bed-count',
+          '.ihf-detail-beds', '.detail-beds', '.bedroom-count'
+        ],
+        baths: [
+          '.ihf-baths', '.bathrooms', '.baths', '[data-baths]', '.bath-count',
+          '.ihf-detail-baths', '.detail-baths', '.bathroom-count'
+        ],
+        sqft: [
+          '.ihf-sqft', '.square-feet', '.sqft', '[data-sqft]', '.sq-ft',
+          '.ihf-detail-sqft', '.detail-sqft', '.square-footage'
+        ],
+        mlsId: [
+          '.ihf-mls-number', '.mls-number', '[data-mls]', '.listing-mls',
+          '.ihf-detail-mls', '.detail-mls', '.mls-id', '.listing-number'
+        ],
         listingId: ['.ihf-listing-number', '[data-listing-id]'],
         status: ['.ihf-status', '.listing-status', '[data-status]'],
         propertyType: ['.ihf-property-type', '.property-type', '[data-property-type]'],
@@ -41,12 +61,17 @@
         }
       }
       
-      // Extract images
-      var imageSelectors = ['.ihf-main-image img', '.ihf-slideshow img', '.property-photo img', '.gallery img'];
+      // Extract images with enhanced selectors
+      var imageSelectors = [
+        '.ihf-main-image img', '.ihf-slideshow img', '.property-photo img', 
+        '.gallery img', '.listing-photos img', '.detail-photos img',
+        '.carousel img', '.slider img', '.photo-gallery img',
+        'img[src*="listing"]', 'img[src*="property"]'
+      ];
       var images = [];
       imageSelectors.forEach(function(selector) {
         document.querySelectorAll(selector).forEach(function(img) {
-          if (img.src && !images.includes(img.src)) {
+          if (img.src && img.src.indexOf('data:') !== 0 && !images.includes(img.src)) {
             images.push(img.src);
           }
         });

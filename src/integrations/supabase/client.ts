@@ -16,15 +16,16 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   },
   realtime: {
     params: {
-      eventsPerSecond: 1, // Reduced from 2 to prevent rate limiting
+      eventsPerSecond: 0.5, // Further reduced to prevent rate limiting
     },
-    heartbeatIntervalMs: 45000, // Increased from 30s to reduce connection overhead
+    heartbeatIntervalMs: 60000, // Increased to 60s to reduce connection overhead
     reconnectAfterMs: (tries: number) => {
-      // Exponential backoff with jitter to prevent thundering herd
-      const baseDelay = Math.min(tries * 2000, 30000);
-      const jitter = Math.random() * 1000;
+      // Exponential backoff with jitter and longer delays
+      const baseDelay = Math.min(tries * 3000, 60000);
+      const jitter = Math.random() * 2000;
       return baseDelay + jitter;
     },
+    timeout: 30000, // 30 second timeout
   },
   global: {
     headers: {

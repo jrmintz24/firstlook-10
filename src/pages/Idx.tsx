@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import SimplePropertyToolbar from '../components/SimplePropertyToolbar';
 
 const Idx = () => {
   useEffect(() => {
@@ -18,6 +19,7 @@ const Idx = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SimplePropertyToolbar />
       <div 
         id="idx-container"
         className="w-full h-full"

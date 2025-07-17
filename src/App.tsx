@@ -39,6 +39,8 @@ import Idx from './pages/Idx'
 import Listing from './pages/Listing'
 import ListingDetails from './pages/ListingDetails'
 import Listings from './pages/Listings'
+import ScheduleTour from './pages/ScheduleTour'
+import MakeOffer from './pages/MakeOffer'
 
 const queryClient = new QueryClient()
 
@@ -174,6 +176,10 @@ function App() {
 
                 {/* Property Search Pages */}
                 <Route path="/search" element={<Search />} />
+
+                {/* Tour and Offer Pages */}
+                <Route path="/schedule-tour" element={<ScheduleTour />} />
+                <Route path="/make-offer" element={<MakeOffer />} />
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />

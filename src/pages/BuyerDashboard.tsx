@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle, TrendingUp, FileText, Home } from "lucide-react";
+import { Calendar, Clock, CheckCircle, TrendingUp, FileText, Home, Heart } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
 
@@ -21,6 +21,9 @@ import BuyerPostShowingHub from "@/components/dashboard/BuyerPostShowingHub";
 
 // Tour scheduling modal
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
+
+// Simple favorites display
+import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDisplay";
 
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
@@ -197,6 +200,24 @@ const BuyerDashboard = () => {
           buttonText="Refresh"
           onButtonClick={refresh}
           icon={FileText}
+        />
+      )
+    },
+    {
+      id: "favorites",
+      title: "Favorites",
+      icon: Heart,
+      count: 0,
+      color: "bg-pink-100 text-pink-700",
+      content: currentUser?.id ? (
+        <SimpleFavoritesDisplay buyerId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Favorites"
+          description="Please refresh the page to load your favorites."
+          buttonText="Refresh"
+          onButtonClick={refresh}
+          icon={Heart}
         />
       )
     },

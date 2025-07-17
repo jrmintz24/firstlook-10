@@ -8,6 +8,17 @@ export default function SimplePropertyToolbar() {
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
 
+  // Debug logging
+  console.log('🔍 [SimplePropertyToolbar] Debug Info:', {
+    propertyData,
+    isLoading,
+    hasUser: !!user,
+    userId: user?.id,
+    currentUrl: window.location.href,
+    sessionStorage: sessionStorage.getItem('ihfPropertyData'),
+    windowData: window.ihfPropertyData
+  });
+
   const handleFavorite = async () => {
     if (!propertyData || !user) return;
 

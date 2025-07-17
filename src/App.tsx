@@ -41,6 +41,7 @@ import ListingDetails from './pages/ListingDetails'
 import Listings from './pages/Listings'
 import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
+import Debug from './pages/Debug'
 
 const queryClient = new QueryClient()
 
@@ -180,6 +181,9 @@ function App() {
                 {/* Tour and Offer Pages */}
                 <Route path="/schedule-tour" element={<ScheduleTour />} />
                 <Route path="/make-offer" element={<MakeOffer />} />
+                
+                {/* Debug Page */}
+                <Route path="/debug" element={<Debug />} />
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />

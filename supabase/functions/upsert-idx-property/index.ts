@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -26,49 +25,35 @@ serve(async (req) => {
 
     const { property } = await req.json()
     
-    console.log('🔍 [Upsert Function] Received property data:', property)
+    console.log('[Simple Upsert] Received property data:', property)
 
+    // Validate required fields
     if (!property?.mlsId || !property?.address) {
-      console.error('🚨 [Upsert Function] Missing required data:', { 
+      console.error('[Simple Upsert] Missing required fields:', { 
         mlsId: property?.mlsId, 
-        address: property?.address,
-        hasProperty: !!property
+        address: property?.address 
       })
-      throw new Error('Missing required property data: mlsId and address are required')
+      throw new Error('Missing required fields: mlsId and address')
     }
 
-    console.log('✅ [Upsert Function] Processing property data:', { mlsId: property.mlsId, address: property.address })
-
-    // Clean and normalize property data
+    // Simple data cleaning - focus on essential fields only
     const cleanedProperty = {
       mls_id: property.mlsId.toString().trim(),
-      listing_id: property.listingId || null,
-      address: property.address,
+      address: property.address.trim(),
+      price: property.price ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
+      beds: property.beds ? parseInt(property.beds.replace(/[^0-9]/g, '')) || null : null,
+      baths: property.baths ? parseFloat(property.baths.replace(/[^0-9.]/g, '')) || null : null,
+      sqft: property.sqft ? parseInt(property.sqft.replace(/[^0-9]/g, '')) || null : null,
+      images: Array.isArray(property.images) ? property.images.slice(0, 10) : [],
+      property_type: property.property_type || null,
+      status: property.status || 'active',
       city: property.city || null,
       state: property.state || null,
-      zip: property.zip || null,
-      price: property.price ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
-      beds: property.beds ? parseInt(property.beds) || null : null,
-      baths: property.baths ? parseFloat(property.baths) || null : null,
-      sqft: property.sqft ? parseInt(property.sqft.replace(/[^0-9]/g, '')) || null : null,
-      lot_size: property.lotSize || null,
-      year_built: property.yearBuilt ? parseInt(property.yearBuilt) || null : null,
-      property_type: property.propertyType || null,
-      status: property.status || 'active',
-      description: property.description || null,
-      features: property.features || [],
-      images: property.images || [],
-      virtual_tour_url: property.virtualTourUrl || null,
-      latitude: property.latitude ? parseFloat(property.latitude) || null : null,
-      longitude: property.longitude ? parseFloat(property.longitude) || null : null,
-      agent_name: property.agentName || null,
-      agent_phone: property.agentPhone || null,
-      agent_email: property.agentEmail || null,
       ihf_page_url: property.pageUrl || null,
       raw_data: property
     }
 
-    console.log('Cleaned property data:', cleanedProperty)
+    console.log('[Simple Upsert] Cleaned property data:', cleanedProperty)
 
     // Upsert property data
     const { data, error } = await supabaseClient
@@ -80,14 +65,11 @@ serve(async (req) => {
       .single()
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('[Simple Upsert] Database error:', error)
       throw error
     }
 
-    console.log('Successfully upserted property:', data.id)
-
-    // Skip property view logging for now since table doesn't exist yet
-    console.log('Property upserted successfully, skipping view logging')
+    console.log('[Simple Upsert] Success:', data.id)
 
     return new Response(
       JSON.stringify({ 
@@ -101,7 +83,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Edge function error:', error)
+    console.error('[Simple Upsert] Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

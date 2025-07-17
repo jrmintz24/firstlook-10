@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Heart, Calendar, MessageSquare } from 'lucide-react';
 import { useSimpleIDXIntegration } from '../hooks/useSimpleIDXIntegration';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SimplePropertyToolbar() {
   const { propertyData, isLoading, favoriteProperty, scheduleShowingForProperty } = useSimpleIDXIntegration();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
 
   const handleFavorite = async () => {

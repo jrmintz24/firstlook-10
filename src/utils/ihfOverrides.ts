@@ -195,8 +195,10 @@ function injectEnhancedExtractor() {
           // Comprehensive selectors combining both systems
           var extractors = {
             address: [
+              '.listing-address-1', '.ui-typography.listing-address-1', 
+              'p.listing-address-1', '.listing-address',
               '.ihf-address', '.ihf-listing-address', '.ihf-property-address',
-              '.property-address', '.address', '.listing-address',
+              '.property-address', '.address', 
               '[itemprop="streetAddress"]', '.property-street-address',
               '.ihf-detail-address', '.detail-address', 
               'h1.property-title', 'h1.listing-title',
@@ -204,25 +206,33 @@ function injectEnhancedExtractor() {
               'h1', 'h2'
             ],
             price: [
+              '.listing-price-1', '.ui-typography.listing-price-1', 
+              'p.listing-price-1', '.listing-price',
               '.ihf-price', '.ihf-listing-price', '.ihf-property-price',
-              '.property-price', '.price', '.listing-price',
+              '.property-price', '.price', 
               '[itemprop="price"]', '.price-value', '.current-price',
               '.ihf-detail-price', '.detail-price',
               '[data-testid="property-price"]', '.price-container .price'
             ],
             beds: [
+              '.listing-beds-1', '.ui-typography.listing-beds-1', 
+              'p.listing-beds-1', '.listing-beds',
               '.ihf-beds', '.ihf-bedrooms', '.bedrooms', '.beds',
               '[data-beds]', '.bed-count', '.property-beds',
               '.ihf-detail-beds', '.detail-beds', '.bedroom-count',
               '[data-testid="beds"]'
             ],
             baths: [
+              '.listing-baths-1', '.ui-typography.listing-baths-1', 
+              'p.listing-baths-1', '.listing-baths',
               '.ihf-baths', '.ihf-bathrooms', '.bathrooms', '.baths',
               '[data-baths]', '.bath-count', '.property-baths',
               '.ihf-detail-baths', '.detail-baths', '.bathroom-count',
               '[data-testid="baths"]'
             ],
             sqft: [
+              '.listing-sqft-1', '.ui-typography.listing-sqft-1', 
+              'p.listing-sqft-1', '.listing-sqft',
               '.ihf-sqft', '.ihf-square-feet', '.square-feet', '.sqft',
               '[data-sqft]', '.sq-ft', '.property-sqft',
               '.ihf-detail-sqft', '.detail-sqft', '.square-footage',

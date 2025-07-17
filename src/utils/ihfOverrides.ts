@@ -333,6 +333,12 @@ function injectEnhancedExtractor() {
             console.log('🔍 [Enhanced Extractor] Extracted property data:', window.ihfPropertyData);
             console.log('🔍 [Enhanced Extractor] Raw extraction data:', data);
             console.log('🔍 [Enhanced Extractor] Page URL:', window.location.href);
+            console.log('🔍 [Enhanced Extractor] Required fields check:', {
+              hasAddress: !!data.address && data.address.trim() !== '',
+              hasMlsId: !!data.mlsId && data.mlsId.trim() !== '',
+              addressValue: data.address,
+              mlsIdValue: data.mlsId
+            });
             
             // Store in sessionStorage for persistence
             sessionStorage.setItem('ihfPropertyData', JSON.stringify(window.ihfPropertyData));
@@ -352,7 +358,14 @@ function injectEnhancedExtractor() {
             
             console.log('Property data extraction completed successfully');
           } else {
-            console.log('No property data found to extract');
+            console.log('❌ [Enhanced Extractor] No property data found to extract');
+            console.log('❌ [Enhanced Extractor] Missing required fields:', {
+              hasAddress: !!data.address && data.address.trim() !== '',
+              hasMlsId: !!data.mlsId && data.mlsId.trim() !== '',
+              addressValue: data.address,
+              mlsIdValue: data.mlsId,
+              allExtractedData: data
+            });
           }
         } catch(e) {
           console.error('Property data extraction error:', e);

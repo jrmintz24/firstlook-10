@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIDXPropertyExtractor } from './useIDXPropertyExtractor';
 
 interface IDXProperty {
   id?: string;
@@ -31,10 +32,37 @@ interface IDXProperty {
 }
 
 export function useIDXPropertyEnhanced() {
+  const { propertyData: extractedData, isLoading: extractorLoading, error: extractorError } = useIDXPropertyExtractor();
   const [property, setProperty] = useState<IDXProperty | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+
+  // Convert extracted data to our interface and update state
+  useEffect(() => {
+    if (extractedData) {
+      console.log('🔍 [useIDXPropertyEnhanced] Converting extracted data:', extractedData);
+      const convertedProperty: IDXProperty = {
+        mlsId: extractedData.mlsId || '',
+        address: extractedData.address || '',
+        price: extractedData.price || '',
+        beds: extractedData.beds || '',
+        baths: extractedData.baths || '',
+        sqft: extractedData.sqft || '',
+        propertyType: extractedData.propertyType || '',
+        extractedAt: new Date().toISOString(),
+        pageUrl: window.location.href
+      };
+      setProperty(convertedProperty);
+      setLoading(false);
+      setError(null);
+    } else if (extractorError) {
+      setError(extractorError);
+      setLoading(false);
+    } else {
+      setLoading(extractorLoading);
+    }
+  }, [extractedData, extractorLoading, extractorError]);
 
   // Check if property is already favorited
   const checkIfFavorited = useCallback(async (mlsId: string) => {
@@ -87,76 +115,12 @@ export function useIDXPropertyEnhanced() {
     }
   }, []);
 
-  // Handle property data from iHomeFinder
-  const handlePropertyData = useCallback(async (data: IDXProperty) => {
-    console.log('Handling property data:', data);
-    setProperty(data);
-    setLoading(false);
-
-    // Save to database if we have MLS ID
-    if (data.mlsId) {
-      await savePropertyToDatabase(data);
-      const favorited = await checkIfFavorited(data.mlsId);
-      setIsSaved(favorited);
-    }
-  }, [savePropertyToDatabase, checkIfFavorited]);
-
-  // Listen for property data
+  // Check if property is favorited when property data changes
   useEffect(() => {
-    console.log('Setting up property data listeners');
-    
-    // Check for existing data
-    if (window.ihfPropertyData) {
-      console.log('Found existing window.ihfPropertyData');
-      handlePropertyData(window.ihfPropertyData as IDXProperty);
+    if (property?.mlsId) {
+      checkIfFavorited(property.mlsId).then(setIsSaved);
     }
-
-    // Check sessionStorage
-    const storedData = sessionStorage.getItem('ihfPropertyData');
-    if (storedData && !property) {
-      try {
-        const parsed = JSON.parse(storedData);
-        console.log('Found stored property data');
-        handlePropertyData(parsed);
-      } catch (e) {
-        console.error('Failed to parse stored property data:', e);
-      }
-    }
-
-    // Listen for custom event
-    const handleEvent = (event: CustomEvent) => {
-      console.log('Received ihfPropertyDataReady event');
-      if (event.detail) {
-        handlePropertyData(event.detail);
-      }
-    };
-
-    // Listen for postMessage (iframe communication)
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'ihfPropertyData' && event.data?.data) {
-        console.log('Received property data via postMessage');
-        handlePropertyData(event.data.data);
-      }
-    };
-
-    window.addEventListener('ihfPropertyDataReady', handleEvent as EventListener);
-    window.addEventListener('message', handleMessage);
-
-    // Set timeout to stop loading if no data found
-    const timeout = setTimeout(() => {
-      if (!property) {
-        console.log('No property data found after timeout');
-        setLoading(false);
-        setError('Property data not found');
-      }
-    }, 5000);
-
-    return () => {
-      window.removeEventListener('ihfPropertyDataReady', handleEvent as EventListener);
-      window.removeEventListener('message', handleMessage);
-      clearTimeout(timeout);
-    };
-  }, [handlePropertyData, property]);
+  }, [property?.mlsId, checkIfFavorited]);
 
   // Toggle favorite status
   const toggleFavorite = useCallback(async () => {
@@ -179,12 +143,13 @@ export function useIDXPropertyEnhanced() {
         if (error) throw error;
         setIsSaved(false);
       } else {
-        // First get the idx_property_id from database
-        const { data: savedProperty } = await supabase
-          .from('idx_properties')
-          .select('id')
-          .eq('mls_id', property.mlsId)
-          .single();
+        // First save the property using our upsert function
+        console.log('🔍 [toggleFavorite] Saving property to database first...');
+        const propertyId = await savePropertyToDatabase(property);
+        
+        if (!propertyId) {
+          throw new Error('Failed to save property to database');
+        }
 
         // Add favorite
         const { error } = await supabase
@@ -193,7 +158,7 @@ export function useIDXPropertyEnhanced() {
             buyer_id: user.id,
             property_address: property.address,
             mls_id: property.mlsId,
-            idx_property_id: savedProperty?.id || null,
+            idx_property_id: propertyId,
             notes: ''
           });
 

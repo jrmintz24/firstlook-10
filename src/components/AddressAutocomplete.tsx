@@ -13,6 +13,7 @@ interface AddressAutocompleteProps {
   className?: string;
   label?: string;
   id?: string;
+  fallback?: React.ReactNode;
 }
 
 const AddressAutocomplete = ({ 
@@ -21,7 +22,8 @@ const AddressAutocomplete = ({
   placeholder = "Enter address, neighborhood, city, or ZIP code...", 
   className,
   label,
-  id 
+  id,
+  fallback
 }: AddressAutocompleteProps) => {
   const {
     searchTerm,
@@ -97,6 +99,11 @@ const AddressAutocomplete = ({
       setShowResults(true);
     }
   };
+
+  // If there's a persistent error and we have a fallback, show the fallback
+  if (error && error.includes('API key configuration error') && fallback) {
+    return <>{fallback}</>;
+  }
 
   return (
     <div className={`relative ${className || ''}`}>

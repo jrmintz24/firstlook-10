@@ -41,6 +41,7 @@ serve(async (req) => {
 
     // Call Google Places Autocomplete API with broader location types
     // Removed restrictive types parameter to allow all location types while keeping US-only
+    // Note: This API key must be configured for server-side use (not browser/referrer restricted)
     const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&components=country:us&key=${apiKey}`;
     
     const response = await fetch(placesUrl);
@@ -48,8 +49,26 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error('Google Places API error:', data);
+      
+      // Handle specific Google Places API errors
+      if (data.error_message?.includes('API keys with referer restrictions cannot be used with this API')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'API key configuration error. Please use a server-side API key without referrer restrictions.',
+            details: data.error_message 
+          }),
+          { 
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Google Places API request failed' }),
+        JSON.stringify({ 
+          error: 'Google Places API request failed',
+          details: data.error_message || 'Unknown error'
+        }),
         { 
           status: response.status, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

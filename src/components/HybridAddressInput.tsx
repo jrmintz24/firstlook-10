@@ -14,7 +14,14 @@ interface HybridAddressInputProps {
   className?: string;
   label?: string;
   id?: string;
-  propertyData?: any;
+  propertyData?: {
+    address?: string;
+    price?: string;
+    beds?: string;
+    baths?: string;
+    sqft?: string;
+    [key: string]: unknown;
+  };
 }
 
 const HybridAddressInput = ({ 
@@ -180,16 +187,33 @@ const HybridAddressInput = ({
     );
   }
 
-  // Default mode: use AddressAutocomplete for manual entry
+  // Default mode: use AddressAutocomplete with fallback to simple input
   return (
-    <AddressAutocomplete
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className={className}
-      label={label}
-      id={id}
-    />
+    <div className={`space-y-2 ${className || ''}`}>
+      {label && (
+        <label htmlFor={id} className="block text-sm font-medium text-gray-900">
+          {label}
+        </label>
+      )}
+      <AddressAutocomplete
+        id={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full"
+        // Fallback to simple input if API fails
+        fallback={
+          <Input
+            id={id}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full"
+          />
+        }
+      />
+    </div>
   );
 };
 

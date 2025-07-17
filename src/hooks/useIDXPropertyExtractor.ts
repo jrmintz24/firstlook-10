@@ -182,7 +182,18 @@ export const useIDXPropertyExtractor = () => {
         return '';
       };
 
-      const address = extractFromSelectors(addressSelectors, 'address') || 'Address not found';
+      let address = extractFromSelectors(addressSelectors, 'address');
+      
+      // Fallback: Extract address from page title if selectors fail
+      if (!address && document.title) {
+        const titleMatch = document.title.match(/^(.+?)\s+(?:\w{2}\s+\d{5}|\w{2,}\s*$)/);
+        if (titleMatch) {
+          address = titleMatch[1].trim();
+          console.log('✅ [DEBUG] Found address in page title:', address);
+        }
+      }
+      
+      address = address || 'Address not found';
       const price = extractFromSelectors(priceSelectors, 'price');
       const beds = extractFromSelectors(bedsSelectors, 'beds');
       const baths = extractFromSelectors(bathsSelectors, 'baths');

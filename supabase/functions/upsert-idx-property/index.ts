@@ -25,16 +25,23 @@ serve(async (req) => {
     )
 
     const { property } = await req.json()
+    
+    console.log('🔍 [Upsert Function] Received property data:', property)
 
     if (!property?.mlsId || !property?.address) {
+      console.error('🚨 [Upsert Function] Missing required data:', { 
+        mlsId: property?.mlsId, 
+        address: property?.address,
+        hasProperty: !!property
+      })
       throw new Error('Missing required property data: mlsId and address are required')
     }
 
-    console.log('Processing property data:', { mlsId: property.mlsId, address: property.address })
+    console.log('✅ [Upsert Function] Processing property data:', { mlsId: property.mlsId, address: property.address })
 
     // Clean and normalize property data
     const cleanedProperty = {
-      mls_id: property.mlsId,
+      mls_id: property.mlsId.toString().trim(),
       listing_id: property.listingId || null,
       address: property.address,
       city: property.city || null,

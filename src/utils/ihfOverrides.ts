@@ -304,7 +304,9 @@ function injectEnhancedExtractor() {
               pageUrl: window.location.href
             };
             
-            console.log('Extracted property data:', window.ihfPropertyData);
+            console.log('🔍 [Enhanced Extractor] Extracted property data:', window.ihfPropertyData);
+            console.log('🔍 [Enhanced Extractor] Raw extraction data:', data);
+            console.log('🔍 [Enhanced Extractor] Page URL:', window.location.href);
             
             // Store in sessionStorage for persistence
             sessionStorage.setItem('ihfPropertyData', JSON.stringify(window.ihfPropertyData));

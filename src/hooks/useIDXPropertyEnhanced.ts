@@ -42,15 +42,24 @@ export function useIDXPropertyEnhanced() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      const { data } = await supabase
+      console.log('🔍 [checkIfFavorited] Checking MLS ID:', mlsId);
+      
+      const { data, error } = await supabase
         .from('property_favorites')
         .select('id')
         .eq('buyer_id', user.id)
         .eq('mls_id', mlsId)
-        .single();
+        .maybeSingle();
 
+      if (error) {
+        console.error('🚨 [checkIfFavorited] Error:', error);
+        return false;
+      }
+
+      console.log('✅ [checkIfFavorited] Result:', !!data);
       return !!data;
-    } catch {
+    } catch (err) {
+      console.error('🚨 [checkIfFavorited] Exception:', err);
       return false;
     }
   }, []);
@@ -58,18 +67,22 @@ export function useIDXPropertyEnhanced() {
   // Save property data to Supabase
   const savePropertyToDatabase = useCallback(async (propertyData: IDXProperty) => {
     try {
-      console.log('Saving property to database:', propertyData.mlsId);
+      console.log('🔍 [savePropertyToDatabase] Saving property to database:', propertyData.mlsId);
+      console.log('🔍 [savePropertyToDatabase] Property data:', propertyData);
       
       const { data, error } = await supabase.functions.invoke('upsert-idx-property', {
         body: { property: propertyData }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('🚨 [savePropertyToDatabase] Function error:', error);
+        throw error;
+      }
       
-      console.log('Property saved successfully:', data);
+      console.log('✅ [savePropertyToDatabase] Property saved successfully:', data);
       return data.propertyId;
     } catch (err) {
-      console.error('Failed to save property to database:', err);
+      console.error('🚨 [savePropertyToDatabase] Failed to save property:', err);
       return null;
     }
   }, []);

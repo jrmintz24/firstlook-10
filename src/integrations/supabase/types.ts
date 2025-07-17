@@ -531,6 +531,99 @@ export type Database = {
         }
         Relationships: []
       }
+      idx_properties: {
+        Row: {
+          address: string
+          agent_email: string | null
+          agent_name: string | null
+          agent_phone: string | null
+          baths: number | null
+          beds: number | null
+          city: string | null
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          ihf_page_url: string | null
+          images: Json | null
+          latitude: number | null
+          listing_id: string | null
+          longitude: number | null
+          lot_size: string | null
+          mls_id: string
+          price: number | null
+          property_type: string | null
+          raw_data: Json | null
+          sqft: number | null
+          state: string | null
+          status: string | null
+          updated_at: string | null
+          virtual_tour_url: string | null
+          year_built: number | null
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          agent_email?: string | null
+          agent_name?: string | null
+          agent_phone?: string | null
+          baths?: number | null
+          beds?: number | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          ihf_page_url?: string | null
+          images?: Json | null
+          latitude?: number | null
+          listing_id?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id: string
+          price?: number | null
+          property_type?: string | null
+          raw_data?: Json | null
+          sqft?: number | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          year_built?: number | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          agent_email?: string | null
+          agent_name?: string | null
+          agent_phone?: string | null
+          baths?: number | null
+          beds?: number | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          ihf_page_url?: string | null
+          images?: Json | null
+          latitude?: number | null
+          listing_id?: string | null
+          longitude?: number | null
+          lot_size?: string | null
+          mls_id?: string
+          price?: number | null
+          property_type?: string | null
+          raw_data?: Json | null
+          sqft?: number | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          year_built?: number | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           access_expires_at: string | null
@@ -1121,6 +1214,8 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
+          idx_property_id: string | null
+          mls_id: string | null
           notes: string | null
           property_address: string
           showing_request_id: string | null
@@ -1129,6 +1224,8 @@ export type Database = {
           buyer_id: string
           created_at?: string
           id?: string
+          idx_property_id?: string | null
+          mls_id?: string | null
           notes?: string | null
           property_address: string
           showing_request_id?: string | null
@@ -1137,6 +1234,8 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           id?: string
+          idx_property_id?: string | null
+          mls_id?: string | null
           notes?: string | null
           property_address?: string
           showing_request_id?: string | null
@@ -1147,6 +1246,13 @@ export type Database = {
             columns: ["buyer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_favorites_idx_property_id_fkey"
+            columns: ["idx_property_id"]
+            isOneToOne: false
+            referencedRelation: "idx_properties"
             referencedColumns: ["id"]
           },
           {
@@ -1253,8 +1359,10 @@ export type Database = {
           created_at: string
           estimated_confirmation_date: string | null
           id: string
+          idx_property_id: string | null
           internal_notes: string | null
           message: string | null
+          mls_id: string | null
           preferred_date: string | null
           preferred_time: string | null
           property_address: string
@@ -1277,8 +1385,10 @@ export type Database = {
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
+          idx_property_id?: string | null
           internal_notes?: string | null
           message?: string | null
+          mls_id?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           property_address: string
@@ -1301,8 +1411,10 @@ export type Database = {
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
+          idx_property_id?: string | null
           internal_notes?: string | null
           message?: string | null
+          mls_id?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           property_address?: string
@@ -1322,6 +1434,13 @@ export type Database = {
             columns: ["assigned_agent_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "showing_requests_idx_property_id_fkey"
+            columns: ["idx_property_id"]
+            isOneToOne: false
+            referencedRelation: "idx_properties"
             referencedColumns: ["id"]
           },
         ]

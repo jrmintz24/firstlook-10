@@ -4,10 +4,9 @@ import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../ui/button';
 import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
-import { useIDXPropertyExtractor } from '../../hooks/useIDXPropertyExtractor';
-import { useEnhancedPostShowingActions } from '../../hooks/useEnhancedPostShowingActions';
+import { useIDXPropertyEnhanced } from '../../hooks/useIDXPropertyEnhanced';
 import { useAuth } from '../../contexts/AuthContext';
-import { PropertyEntry } from '../../types/propertyRequest';
+import { toast } from 'sonner';
 
 interface PropertyToolbarProps {
   className?: string;
@@ -16,8 +15,7 @@ interface PropertyToolbarProps {
 export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = '' }) => {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isFavoriteOpen, setIsFavoriteOpen] = useState(false);
-  const { propertyData, isLoading, error } = useIDXPropertyExtractor();
-  const { favoriteProperty, isSubmitting } = useEnhancedPostShowingActions();
+  const { property: propertyData, loading: isLoading, error, isSaved, toggleFavorite, scheduleShowing } = useIDXPropertyEnhanced();
   const { user } = useAuth();
   const location = useLocation();
   const { listingId } = useParams<{ listingId: string }>();
@@ -44,22 +42,23 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
     setIsScheduleOpen(false);
   };
 
-  const handleSaveProperty = () => {
+  const handleSaveProperty = async () => {
     if (!user) {
-      // Could trigger auth modal here
+      toast.error('Please sign in to save properties');
       return;
     }
-    setIsFavoriteOpen(true);
+    
+    try {
+      await toggleFavorite();
+      toast.success(isSaved ? 'Removed from favorites' : 'Added to favorites');
+    } catch (error) {
+      toast.error('Failed to update favorites');
+    }
   };
 
   const handleFavoriteProperty = async (notes?: string) => {
-    if (!user || !propertyData?.address) return;
-    
-    await favoriteProperty({
-      showingId: null,
-      buyerId: user.id,
-      propertyAddress: propertyData.address,
-    }, notes);
+    // This is handled by the new toggleFavorite function
+    await handleSaveProperty();
   };
 
   // Don't show toolbar if not on a property detail page
@@ -114,8 +113,8 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
                 className="hidden sm:flex hover:bg-accent"
                 disabled={isLoading}
               >
-                <Heart className="h-4 w-4 mr-2" />
-                Save
+                <Heart className={`h-4 w-4 mr-2 ${isSaved ? 'fill-primary text-primary' : ''}`} />
+                {isSaved ? 'Saved' : 'Save'}
               </Button>
               
               <Button
@@ -147,7 +146,7 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         onClose={() => setIsFavoriteOpen(false)}
         onSave={handleFavoriteProperty}
         propertyAddress={propertyData?.address || ''}
-        isSubmitting={isSubmitting}
+        isSubmitting={false}
       />
     </>
   );

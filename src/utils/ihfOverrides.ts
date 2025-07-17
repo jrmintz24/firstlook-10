@@ -165,14 +165,30 @@ function injectEnhancedExtractor() {
             return;
           }
           
+          // Debug: Show what elements are available on the page
+          console.log('🔍 [Enhanced Extractor] Available elements on page:');
+          console.log('  - All divs with class containing "ihf":', document.querySelectorAll('div[class*="ihf"]'));
+          console.log('  - All elements with class containing "price":', document.querySelectorAll('[class*="price"]'));
+          console.log('  - All elements with class containing "address":', document.querySelectorAll('[class*="address"]'));
+          console.log('  - All elements with class containing "bed":', document.querySelectorAll('[class*="bed"]'));
+          console.log('  - All elements with class containing "bath":', document.querySelectorAll('[class*="bath"]'));
+          console.log('  - All h1 elements:', document.querySelectorAll('h1'));
+          console.log('  - All h2 elements:', document.querySelectorAll('h2'));
+          console.log('  - All span elements:', document.querySelectorAll('span'));
+          console.log('  - Page HTML preview:', document.body.outerHTML.substring(0, 1000));
+          
           // Enhanced extraction function combining best selectors from both systems
           const extractText = (selectors) => {
+            console.log('🔍 [extractText] Trying selectors:', selectors);
             for (const selector of selectors) {
               const element = document.querySelector(selector);
+              console.log('🔍 [extractText] Selector:', selector, 'Element:', element, 'Text:', element?.textContent?.trim());
               if (element && element.textContent && element.textContent.trim()) {
+                console.log('✅ [extractText] Found match:', selector, '=', element.textContent.trim());
                 return element.textContent.trim();
               }
             }
+            console.log('❌ [extractText] No matches found for selectors:', selectors);
             return '';
           };
           

@@ -120,6 +120,19 @@ export const useIDXPropertyExtractor = () => {
       
       console.log('[useIDXPropertyExtractor] MLS ID from URL:', mlsId);
 
+      // Debug: Show what elements are actually on the page
+      console.log('🔍 [DEBUG] Page analysis:');
+      console.log('  - Page title:', document.title);
+      console.log('  - All h1 elements:', document.querySelectorAll('h1'));
+      console.log('  - All h2 elements:', document.querySelectorAll('h2'));
+      console.log('  - All elements with "ihf" in class:', document.querySelectorAll('[class*="ihf"]'));
+      console.log('  - All elements with "address" in class:', document.querySelectorAll('[class*="address"]'));
+      console.log('  - All elements with "price" in class:', document.querySelectorAll('[class*="price"]'));
+      console.log('  - All elements with "bed" in class:', document.querySelectorAll('[class*="bed"]'));
+      console.log('  - All elements with "bath" in class:', document.querySelectorAll('[class*="bath"]'));
+      console.log('  - All elements with "sqft" in class:', document.querySelectorAll('[class*="sqft"]'));
+      console.log('  - Body innerHTML sample:', document.body.innerHTML.substring(0, 1000));
+
       // Enhanced selectors for iHomeFinder and other IDX providers
       const addressSelectors = [
         '.ihf-address', '.ihf-listing-address', '.ihf-property-address',
@@ -156,13 +169,16 @@ export const useIDXPropertyExtractor = () => {
       ];
 
       const extractFromSelectors = (selectors: string[], fieldName: string): string => {
+        console.log(`🔍 [DEBUG] Extracting ${fieldName} from selectors:`, selectors);
         for (const selector of selectors) {
           const element = document.querySelector(selector);
+          console.log(`  - Selector "${selector}":`, element, 'Text:', element?.textContent?.trim());
           if (element?.textContent?.trim()) {
-            console.log(`[useIDXPropertyExtractor] Found ${fieldName}:`, element.textContent.trim());
+            console.log(`✅ [DEBUG] Found ${fieldName} using selector "${selector}":`, element.textContent.trim());
             return element.textContent.trim();
           }
         }
+        console.log(`❌ [DEBUG] No ${fieldName} found with any selector`);
         return '';
       };
 

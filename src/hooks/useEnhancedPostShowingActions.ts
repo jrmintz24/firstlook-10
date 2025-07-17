@@ -107,6 +107,7 @@ export const useEnhancedPostShowingActions = () => {
     buyerId: string;
     propertyAddress: string;
     agentName?: string;
+    mls_id?: string;
   }, notes?: string) => {
     setIsSubmitting(true);
     try {
@@ -114,6 +115,7 @@ export const useEnhancedPostShowingActions = () => {
         buyer_id: data.buyerId,
         showing_request_id: data.showingId,
         property_address: data.propertyAddress,
+        mls_id: data.mls_id,
         notes: notes
       });
 
@@ -125,12 +127,43 @@ export const useEnhancedPostShowingActions = () => {
         throw new Error('User not authenticated');
       }
 
+      // Try to get IDX property data if mls_id is provided
+      let idx_property_id = null;
+      let mls_id = data.mls_id;
+      
+      if (mls_id) {
+        const { data: savedProperty } = await supabase
+          .from('idx_properties')
+          .select('id')
+          .eq('mls_id', mls_id)
+          .single();
+        
+        idx_property_id = savedProperty?.id || null;
+      }
+
+      // If no mls_id provided, try to extract from current page data
+      if (!mls_id && typeof window !== 'undefined' && window.ihfPropertyData) {
+        const propertyData = window.ihfPropertyData as any;
+        if (propertyData.mlsId) {
+          const { data: savedProperty } = await supabase
+            .from('idx_properties')
+            .select('id')
+            .eq('mls_id', propertyData.mlsId)
+            .single();
+          
+          idx_property_id = savedProperty?.id || null;
+          mls_id = propertyData.mlsId;
+        }
+      }
+
       const { error } = await supabase
         .from('property_favorites')
         .insert({
           buyer_id: data.buyerId,
           showing_request_id: data.showingId,
           property_address: data.propertyAddress,
+          mls_id: mls_id || null,
+          idx_property_id,
           notes: notes || null
         });
 

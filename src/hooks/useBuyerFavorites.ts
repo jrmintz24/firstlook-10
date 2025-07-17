@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { enhancedBackfillFavorites } from "@/utils/backfillFavorites";
 
 interface FavoriteProperty {
   id: string;
@@ -39,6 +40,13 @@ export const useBuyerFavorites = (buyerId?: string) => {
     }
 
     try {
+      // First, try to backfill any missing IDX property data
+      try {
+        await enhancedBackfillFavorites(buyerId);
+      } catch (backfillError) {
+        console.warn('Backfill failed, continuing with normal fetch:', backfillError);
+      }
+
       const { data, error } = await supabase
         .from('property_favorites')
         .select(`

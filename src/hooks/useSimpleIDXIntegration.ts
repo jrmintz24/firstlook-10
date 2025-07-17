@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { useIDXPropertyExtractor } from './useIDXPropertyExtractor';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -21,9 +22,24 @@ interface IDXProperty {
 }
 
 export function useSimpleIDXIntegration() {
-  const [propertyData, setPropertyData] = useState<IDXProperty | null>(null);
+  const { propertyData: extractedData, isLoading: extractorLoading, error: extractorError } = useIDXPropertyExtractor();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Convert extracted data to our interface
+  const propertyData: IDXProperty | null = extractedData ? {
+    mlsId: extractedData.mlsId || '',
+    address: extractedData.address || '',
+    price: extractedData.price || '',
+    beds: extractedData.beds || '',
+    baths: extractedData.baths || '',
+    sqft: extractedData.sqft || '',
+    images: [],
+    property_type: extractedData.propertyType || '',
+    status: 'active',
+    city: '',
+    state: ''
+  } : null;
 
   const savePropertyToDatabase = async (property: IDXProperty) => {
     try {
@@ -127,35 +143,10 @@ export function useSimpleIDXIntegration() {
     }
   };
 
-  useEffect(() => {
-    // Listen for property data from the simple extractor
-    const handlePropertyData = (event: CustomEvent<IDXProperty>) => {
-      console.log('[Simple IDX Hook] Received property data:', event.detail);
-      setPropertyData(event.detail);
-    };
-
-    window.addEventListener('ihfPropertyDataReady', handlePropertyData as EventListener);
-    
-    // Check session storage for existing data
-    const storedData = sessionStorage.getItem('ihfPropertyData');
-    if (storedData) {
-      try {
-        const parsed = JSON.parse(storedData);
-        setPropertyData(parsed);
-      } catch (err) {
-        console.error('[Simple IDX Hook] Failed to parse stored data:', err);
-      }
-    }
-
-    return () => {
-      window.removeEventListener('ihfPropertyDataReady', handlePropertyData as EventListener);
-    };
-  }, []);
-
   return {
     propertyData,
-    isLoading,
-    error,
+    isLoading: isLoading || extractorLoading,
+    error: error || extractorError,
     savePropertyToDatabase,
     favoriteProperty,
     scheduleShowingForProperty

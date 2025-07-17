@@ -13,6 +13,43 @@ export function initSimpleIDXExtractor() {
         return;
       }
       
+      // First check for globally injected iHomeFinder data
+      if (window.ihfPropertyData) {
+        console.log('[Simple IDX] Found global iHomeFinder data:', window.ihfPropertyData);
+        const globalData = {
+          mlsId: window.ihfPropertyData.mlsId || '',
+          address: window.ihfPropertyData.address || '',
+          price: window.ihfPropertyData.price || '',
+          beds: window.ihfPropertyData.beds || '',
+          baths: window.ihfPropertyData.baths || '',
+          sqft: window.ihfPropertyData.sqft || '',
+          images: [],
+          property_type: '',
+          status: 'active',
+          city: '',
+          state: '',
+          pageUrl: window.location.href,
+          extractedAt: new Date().toISOString()
+        };
+        
+        // Only proceed if we have the minimum required data
+        if (globalData.address && globalData.mlsId) {
+          console.log('[Simple IDX] Using global property data:', globalData);
+          
+          // Store globally and in session storage
+          window.ihfPropertyData = globalData;
+          sessionStorage.setItem('ihfPropertyData', JSON.stringify(globalData));
+          
+          // Dispatch event
+          window.dispatchEvent(new CustomEvent('ihfPropertyDataReady', {
+            detail: globalData
+          }));
+          
+          console.log('[Simple IDX] Property data extraction completed');
+          return;
+        }
+      }
+      
       // Get MLS ID from URL first (most reliable)
       const urlParams = new URLSearchParams(window.location.search);
       const mlsId = urlParams.get('id') || urlParams.get('mlsId') || '';
@@ -22,57 +59,81 @@ export function initSimpleIDXExtractor() {
         return;
       }
       
-      // Simple selector function - try a few key patterns
-      const getText = (selectors: string[]) => {
-        for (const selector of selectors) {
-          const element = document.querySelector(selector);
-          if (element && element.textContent && element.textContent.trim()) {
-            return element.textContent.trim();
+      // Enhanced DOM extraction using same logic as working extractor
+      const extractFromDOM = () => {
+        console.log('[Simple IDX] Starting DOM extraction...');
+        
+        const getTextContent = (selectors: string[]) => {
+          for (const selector of selectors) {
+            const element = document.querySelector(selector);
+            if (element && element.textContent && element.textContent.trim()) {
+              return element.textContent.trim();
+            }
           }
-        }
-        return '';
+          return '';
+        };
+        
+        // Enhanced selectors based on working extractor
+        const address = getTextContent([
+          '.ihf-address',
+          '.ihf-listing-address', 
+          '.listing-address',
+          '.property-address',
+          '.address',
+          'h1',
+          '.ihf-property-title'
+        ]);
+        
+        const price = getTextContent([
+          '.ihf-price',
+          '.ihf-listing-price',
+          '.listing-price',
+          '.property-price', 
+          '.price'
+        ]);
+        
+        const beds = getTextContent([
+          '.ihf-beds',
+          '.ihf-bedrooms',
+          '.bedrooms',
+          '.beds'
+        ]);
+        
+        const baths = getTextContent([
+          '.ihf-baths',
+          '.ihf-bathrooms', 
+          '.bathrooms',
+          '.baths'
+        ]);
+        
+        const sqft = getTextContent([
+          '.ihf-sqft',
+          '.ihf-square-feet',
+          '.square-feet',
+          '.sqft'
+        ]);
+        
+        return {
+          mlsId,
+          address,
+          price,
+          beds,
+          baths,
+          sqft,
+          images: Array.from(document.querySelectorAll('img[src*="listing"], img[src*="property"]'))
+            .map(img => (img as HTMLImageElement).src)
+            .filter(src => src && !src.includes('data:'))
+            .slice(0, 10),
+          property_type: getTextContent(['.ihf-property-type', '.property-type']),
+          status: getTextContent(['.ihf-status', '.listing-status']) || 'active',
+          city: getTextContent(['.ihf-city']),
+          state: getTextContent(['.ihf-state']),
+          pageUrl: window.location.href,
+          extractedAt: new Date().toISOString()
+        };
       };
       
-      // Extract only the essential 11 fields
-      const propertyData = {
-        mlsId,
-        address: getText([
-          '.listing-address-1', 
-          '.ui-typography.listing-address-1',
-          'h1', 
-          '.ihf-address'
-        ]),
-        price: getText([
-          '.listing-price-1',
-          '.ui-typography.listing-price-1', 
-          '.ihf-price'
-        ]),
-        beds: getText([
-          '.listing-beds-1',
-          '.ui-typography.listing-beds-1',
-          '.ihf-beds'
-        ]),
-        baths: getText([
-          '.listing-baths-1', 
-          '.ui-typography.listing-baths-1',
-          '.ihf-baths'
-        ]),
-        sqft: getText([
-          '.listing-sqft-1',
-          '.ui-typography.listing-sqft-1',
-          '.ihf-sqft'
-        ]),
-        images: Array.from(document.querySelectorAll('img[src*="listing"], img[src*="property"]'))
-          .map(img => (img as HTMLImageElement).src)
-          .filter(src => src && !src.includes('data:'))
-          .slice(0, 10), // Limit to 10 images
-        property_type: getText(['.ihf-property-type', '.property-type']),
-        status: getText(['.ihf-status', '.listing-status']) || 'active',
-        city: getText(['.ihf-city']),
-        state: getText(['.ihf-state']),
-        pageUrl: window.location.href,
-        extractedAt: new Date().toISOString()
-      };
+      const propertyData = extractFromDOM();
       
       // Only proceed if we have the minimum required data
       if (propertyData.address && propertyData.mlsId) {

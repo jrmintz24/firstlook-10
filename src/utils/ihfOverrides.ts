@@ -6,6 +6,7 @@ export function initIhfOverrides() {
   
   document.addEventListener('DOMContentLoaded', () => {
     hideIhfForms();
+    preserveExtractionElements();
 
     const observer = new MutationObserver(() => {
       const tourBtn = document.querySelector(
@@ -84,9 +85,62 @@ function injectToolbar() {
 }
 
 function hideIhfForms() {
+  // Add styles to ensure our elements are preserved while hiding IDX forms
   const style = document.createElement('style');
-  style.textContent = '.ihf-request-form, .ihf-tour-request-form { display: none !important; }';
+  style.textContent = `
+    /* Hide IDX request forms but preserve elements needed for extraction */
+    .ihf-request-form:not([data-preserve-for-extraction]), 
+    .ihf-tour-request-form:not([data-preserve-for-extraction]) { 
+      display: none !important; 
+    }
+    
+    /* Ensure our custom toolbar and rewired buttons are always visible */
+    .ihf-custom-toolbar {
+      display: flex !important;
+      visibility: visible !important;
+    }
+    
+    button[data-rewired="true"] {
+      display: inline-block !important;
+      visibility: visible !important;
+    }
+    
+    /* Preserve elements that might contain property data */
+    [class*="property"]:not([class*="request"]):not([class*="contact"]),
+    [class*="listing"]:not([class*="request"]):not([class*="contact"]),
+    [class*="mls"]:not([class*="request"]):not([class*="contact"]),
+    [data-preserve-for-extraction] {
+      display: block !important;
+      visibility: visible !important;
+    }
+  `;
   document.head.append(style);
+}
+
+function preserveExtractionElements() {
+  // Mark elements that contain property data for preservation
+  const selectors = [
+    '.ihf-address', '.ihf-listing-address', '.property-address', '.address',
+    '.ihf-price', '.ihf-listing-price', '.property-price', '.price',
+    '.ihf-beds', '.bedrooms', '.beds', '.ihf-baths', '.bathrooms', '.baths',
+    '.ihf-sqft', '.square-feet', '.sqft', '.ihf-mls-number', '.mls-number',
+    '[itemprop="streetAddress"]', '[itemprop="price"]', '[data-beds]', '[data-baths]',
+    '[data-sqft]', '[data-mls]', '.listing-address', '.listing-price',
+    '.ihf-detail-address', '.ihf-detail-price', '.ihf-detail-beds', '.ihf-detail-baths'
+  ];
+  
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(element => {
+      element.setAttribute('data-preserve-for-extraction', 'true');
+    });
+  });
+  
+  // Also preserve any parent containers that might be important
+  const containers = document.querySelectorAll('.ihf-property-detail, .property-detail, .listing-detail');
+  containers.forEach(container => {
+    container.setAttribute('data-preserve-for-extraction', 'true');
+  });
 }
 
 function injectEnhancedExtractor() {
@@ -98,31 +152,65 @@ function injectEnhancedExtractor() {
     (function(){
       var extractData = function() {
         try {
-          console.log('Starting enhanced property data extraction...');
+          console.log('[Enhanced Extractor] Starting property data extraction...');
           
-          // Enhanced selectors for comprehensive data extraction
+          // Check if we're on a property detail page
+          const isPropertyPage = window.location.href.includes('listing') || 
+                               window.location.href.includes('property') ||
+                               document.querySelector('.ihf-property-detail') ||
+                               document.querySelector('.property-detail');
+                               
+          if (!isPropertyPage) {
+            console.log('[Enhanced Extractor] Not on property page, skipping extraction');
+            return;
+          }
+          
+          // Enhanced extraction function combining best selectors from both systems
+          const extractText = (selectors) => {
+            for (const selector of selectors) {
+              const element = document.querySelector(selector);
+              if (element && element.textContent && element.textContent.trim()) {
+                return element.textContent.trim();
+              }
+            }
+            return '';
+          };
+          
+          // Comprehensive selectors combining both systems
           var extractors = {
             address: [
-              '.ihf-address', '.ihf-listing-address', '.property-address', '.address', 
-              '[itemprop="streetAddress"]', '.listing-address', '.property-street-address',
-              '.ihf-detail-address', '.detail-address', 'h1', 'h2'
+              '.ihf-address', '.ihf-listing-address', '.ihf-property-address',
+              '.property-address', '.address', '.listing-address',
+              '[itemprop="streetAddress"]', '.property-street-address',
+              '.ihf-detail-address', '.detail-address', 
+              'h1.property-title', 'h1.listing-title',
+              '[data-testid="property-address"]', '.property-info .address',
+              'h1', 'h2'
             ],
             price: [
-              '.ihf-price', '.ihf-listing-price', '.property-price', '.price', 
-              '[itemprop="price"]', '.listing-price', '.price-value', '.current-price',
-              '.ihf-detail-price', '.detail-price'
+              '.ihf-price', '.ihf-listing-price', '.ihf-property-price',
+              '.property-price', '.price', '.listing-price',
+              '[itemprop="price"]', '.price-value', '.current-price',
+              '.ihf-detail-price', '.detail-price',
+              '[data-testid="property-price"]', '.price-container .price'
             ],
             beds: [
-              '.ihf-beds', '.bedrooms', '.beds', '[data-beds]', '.bed-count',
-              '.ihf-detail-beds', '.detail-beds', '.bedroom-count'
+              '.ihf-beds', '.ihf-bedrooms', '.bedrooms', '.beds',
+              '[data-beds]', '.bed-count', '.property-beds',
+              '.ihf-detail-beds', '.detail-beds', '.bedroom-count',
+              '[data-testid="beds"]'
             ],
             baths: [
-              '.ihf-baths', '.bathrooms', '.baths', '[data-baths]', '.bath-count',
-              '.ihf-detail-baths', '.detail-baths', '.bathroom-count'
+              '.ihf-baths', '.ihf-bathrooms', '.bathrooms', '.baths',
+              '[data-baths]', '.bath-count', '.property-baths',
+              '.ihf-detail-baths', '.detail-baths', '.bathroom-count',
+              '[data-testid="baths"]'
             ],
             sqft: [
-              '.ihf-sqft', '.square-feet', '.sqft', '[data-sqft]', '.sq-ft',
-              '.ihf-detail-sqft', '.detail-sqft', '.square-footage'
+              '.ihf-sqft', '.ihf-square-feet', '.square-feet', '.sqft',
+              '[data-sqft]', '.sq-ft', '.property-sqft',
+              '.ihf-detail-sqft', '.detail-sqft', '.square-footage',
+              '[data-testid="sqft"]'
             ],
             mlsId: [
               '.ihf-mls-number', '.mls-number', '[data-mls]', '.listing-mls',
@@ -143,16 +231,24 @@ function injectEnhancedExtractor() {
             images: [] // Special handling below
           };
           
-          // Extract text data
+          // Extract text data using enhanced extraction
           var data = {};
           for (var key in extractors) {
             if (key !== 'images') {
-              for (var i = 0; i < extractors[key].length; i++) {
-                var el = document.querySelector(extractors[key][i]);
-                if (el) {
-                  data[key] = el.textContent.trim();
-                  break;
-                }
+              data[key] = extractText(extractors[key]);
+            }
+          }
+          
+          // Enhanced MLS ID extraction from URL if not found in page
+          if (!data.mlsId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            data.mlsId = urlParams.get('id') || urlParams.get('mlsId') || '';
+            
+            if (!data.mlsId) {
+              const pathSegments = window.location.pathname.split('/');
+              const listingIndex = pathSegments.findIndex(segment => segment === 'listing');
+              if (listingIndex !== -1 && pathSegments[listingIndex + 1]) {
+                data.mlsId = pathSegments[listingIndex + 1];
               }
             }
           }
@@ -267,6 +363,12 @@ function injectEnhancedExtractor() {
           console.log('MutationObserver started');
         }
       }
+      
+      // Listen for trigger event from control panel coordinator
+      window.addEventListener('ihfTriggerExtraction', function() {
+        console.log('Received trigger event from control panel coordinator');
+        extractData();
+      });
       
       // Initialize
       if (document.readyState === 'loading') {

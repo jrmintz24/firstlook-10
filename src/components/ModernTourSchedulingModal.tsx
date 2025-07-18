@@ -263,14 +263,22 @@ const ModernTourSchedulingModal = ({
     }
 
     console.log('DEBUG: Creating form data with address:', propertyAddress);
+    console.log('DEBUG: Using extracted MLS ID:', extractedData?.mlsId);
+    console.log('DEBUG: Full extracted data:', extractedData);
 
-    // Create the form data object with current values
+    // Create the form data object with current values including MLS ID
     const currentFormData = {
-      properties: [{ address: propertyAddress.trim(), notes: notes }],
+      properties: [{ 
+        address: propertyAddress.trim(), 
+        notes: notes,
+        mlsId: extractedData?.mlsId || '',
+        source: extractedData?.mlsId ? 'idx' : 'manual'
+      }],
       preferredOptions: [{ date: selectedDate, time: selectedTime }],
       notes: notes,
       propertyAddress: propertyAddress.trim(),
       propertyId: propertyId || undefined,
+      mlsId: extractedData?.mlsId || '',
       preferredDate1: selectedDate,
       preferredTime1: selectedTime,
       preferredDate2: '',

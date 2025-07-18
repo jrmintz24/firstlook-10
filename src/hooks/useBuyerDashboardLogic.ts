@@ -141,18 +141,38 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
       // Transform the joined data to flatten property information
       const transformedShowings = (data || []).map((showing: any) => {
         const propertyData = showing.idx_properties;
-        return {
+        
+        // Handle images - they might be stored as JSON string or array
+        let firstImage = null;
+        if (propertyData?.images) {
+          try {
+            if (typeof propertyData.images === 'string') {
+              const parsedImages = JSON.parse(propertyData.images);
+              firstImage = Array.isArray(parsedImages) ? parsedImages[0] : parsedImages?.url || parsedImages;
+            } else if (Array.isArray(propertyData.images)) {
+              firstImage = propertyData.images[0];
+            }
+          } catch (e) {
+            // If parsing fails, treat as string
+            firstImage = propertyData.images;
+          }
+        }
+        
+        const transformed = {
           ...showing,
           // Flatten property data into the showing object
           property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
           property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
           property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
           property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
-          property_image: propertyData?.images?.[0] || null, // Use first image
+          property_image: firstImage,
           property_page_url: propertyData?.ihf_page_url || null,
           // Remove the nested object to avoid confusion
           idx_properties: undefined
         };
+        
+        console.log('BuyerDashboardLogic: Transformed showing:', showing.property_address, transformed);
+        return transformed;
       });
       
       console.log('BuyerDashboardLogic: Transformed showing requests:', transformedShowings);

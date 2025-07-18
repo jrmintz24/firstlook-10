@@ -42,6 +42,7 @@ interface ShowingRequest {
   user_id?: string | null;
   // Enhanced property data
   property_id?: string | null;
+  mls_id?: string | null; // Add MLS ID for lookup
   property_price?: string | null;
   property_beds?: string | null;
   property_baths?: string | null;
@@ -196,6 +197,7 @@ const OptimizedShowingCard = ({
                     sqft={showing.property_sqft}
                     image={showing.property_image}
                     pageUrl={showing.property_page_url}
+                    mlsId={showing.mls_id}
                     size="md"
                   />
                 </div>

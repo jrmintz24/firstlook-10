@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Home, 
   Bed, 
   Bath, 
   Square, 
-  ExternalLink 
+  ExternalLink,
+  Loader2
 } from "lucide-react";
+import { getCachedPropertyData } from '@/services/propertyLookupService';
 
 interface PropertyDisplayProps {
   address: string;
@@ -18,6 +20,7 @@ interface PropertyDisplayProps {
   pageUrl?: string | null;
   size?: 'sm' | 'md' | 'lg';
   showImage?: boolean;
+  mlsId?: string | null; // Add MLS ID for lookup
 }
 
 const PropertyDisplay = ({ 
@@ -29,10 +32,48 @@ const PropertyDisplay = ({
   image,
   pageUrl,
   size = 'md',
-  showImage = true
+  showImage = true,
+  mlsId
 }: PropertyDisplayProps) => {
+  const [lookupData, setLookupData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const hasPropertyData = price || beds || baths || sqft;
-  const showEnhancedLayout = hasPropertyData || (image && showImage);
+  
+  // Use lookup data if available, otherwise use props
+  const displayData = {
+    address: lookupData?.address || address,
+    price: lookupData?.price || price,
+    beds: lookupData?.beds || beds,
+    baths: lookupData?.baths || baths,
+    sqft: lookupData?.sqft || sqft,
+    image: lookupData?.images?.[0] || image,
+    pageUrl: lookupData?.propertyUrl || pageUrl
+  };
+  
+  const showEnhancedLayout = hasPropertyData || lookupData || (displayData.image && showImage);
+  
+  // Fetch property data on-demand if we have MLS ID but no property data
+  useEffect(() => {
+    if (mlsId && !hasPropertyData && !lookupData) {
+      console.log('🔍 [PropertyDisplay] Fetching property data for MLS ID:', mlsId);
+      setIsLoading(true);
+      
+      getCachedPropertyData(mlsId)
+        .then(data => {
+          if (data) {
+            console.log('✅ [PropertyDisplay] Received property data:', data);
+            setLookupData(data);
+          }
+        })
+        .catch(error => {
+          console.error('❌ [PropertyDisplay] Error fetching property data:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [mlsId, hasPropertyData, lookupData]);
   
   // Debug logging
   console.log('PropertyDisplay props:', { 
@@ -43,7 +84,10 @@ const PropertyDisplay = ({
     sqft, 
     image, 
     pageUrl,
+    mlsId,
     hasPropertyData,
+    lookupData,
+    displayData,
     showEnhancedLayout
   });
   
@@ -74,6 +118,23 @@ const PropertyDisplay = ({
 
   const config = sizeConfig[size];
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className={`flex items-start ${config.spacing}`}>
+        <Loader2 className={`${config.iconSize} text-gray-400 flex-shrink-0 mt-0.5 animate-spin`} />
+        <div>
+          <h3 className={`font-medium text-gray-900 ${config.titleSize} leading-tight`}>
+            {address}
+          </h3>
+          <p className={`${config.textSize} text-gray-500 mt-1`}>
+            Loading property details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!showEnhancedLayout) {
     // Simple fallback layout
     return (
@@ -81,11 +142,11 @@ const PropertyDisplay = ({
         <MapPin className={`${config.iconSize} text-gray-500 flex-shrink-0 mt-0.5`} />
         <div>
           <h3 className={`font-medium text-gray-900 ${config.titleSize} leading-tight`}>
-            {address}
+            {displayData.address}
           </h3>
-          {pageUrl && (
+          {displayData.pageUrl && (
             <a 
-              href={pageUrl}
+              href={displayData.pageUrl}
               target="_blank"
               rel="noopener noreferrer"
               className={`inline-flex items-center gap-1 ${config.textSize} text-blue-600 hover:text-blue-800 mt-1`}
@@ -101,12 +162,12 @@ const PropertyDisplay = ({
   return (
     <div className={`flex ${config.spacing}`}>
       {/* Property Image */}
-      {image && showImage && (
+      {displayData.image && showImage && (
         <div className="flex-shrink-0">
           <div className={`${config.imageSize} rounded-lg overflow-hidden bg-gray-100 border`}>
             <img 
-              src={image} 
-              alt={address}
+              src={displayData.image} 
+              alt={displayData.address}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -126,31 +187,31 @@ const PropertyDisplay = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className={`font-medium text-gray-900 ${config.titleSize} leading-tight`}>
-              {address}
+              {displayData.address}
             </h3>
             
             {/* Property Details */}
-            {hasPropertyData && (
+            {(hasPropertyData || lookupData) && (
               <div className={`flex items-center gap-3 mt-1 ${config.textSize} text-gray-600`}>
-                {price && (
-                  <span className="font-semibold text-green-600">{price}</span>
+                {displayData.price && (
+                  <span className="font-semibold text-green-600">{displayData.price}</span>
                 )}
-                {beds && (
+                {displayData.beds && (
                   <div className="flex items-center gap-1">
                     <Bed className={config.iconSize} />
-                    <span>{beds}</span>
+                    <span>{displayData.beds}</span>
                   </div>
                 )}
-                {baths && (
+                {displayData.baths && (
                   <div className="flex items-center gap-1">
                     <Bath className={config.iconSize} />
-                    <span>{baths}</span>
+                    <span>{displayData.baths}</span>
                   </div>
                 )}
-                {sqft && (
+                {displayData.sqft && (
                   <div className="flex items-center gap-1">
                     <Square className={config.iconSize} />
-                    <span>{sqft}</span>
+                    <span>{displayData.sqft}</span>
                   </div>
                 )}
               </div>
@@ -158,9 +219,9 @@ const PropertyDisplay = ({
           </div>
           
           {/* View Property Link */}
-          {pageUrl && (
+          {displayData.pageUrl && (
             <a 
-              href={pageUrl}
+              href={displayData.pageUrl}
               target="_blank"
               rel="noopener noreferrer"
               className={`flex items-center gap-1 ${config.textSize} text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors`}

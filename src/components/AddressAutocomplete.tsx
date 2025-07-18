@@ -33,6 +33,7 @@ const AddressAutocomplete = ({
     isLoading,
     error,
     fetchLocations,
+    getPlaceDetails,
     clearResults,
     clearError
   } = useGooglePlaces();
@@ -87,11 +88,28 @@ const AddressAutocomplete = ({
     clearError();
   };
 
-  const handleSelect = (location: string) => {
-    setSearchTerm(location);
-    onChange(location);
+  const handleSelect = async (result: { description: string; place_id: string }) => {
+    console.log('🏠 Selected place:', result);
+    
+    // First set the description immediately for better UX
+    setSearchTerm(result.description);
+    onChange(result.description);
     setShowResults(false);
     clearResults();
+    
+    // Then try to get full address details in the background
+    try {
+      const placeDetails = await getPlaceDetails(result.place_id);
+      if (placeDetails && placeDetails.formatted_address) {
+        console.log('🏠 Got full address:', placeDetails.formatted_address);
+        // Update with the full formatted address
+        setSearchTerm(placeDetails.formatted_address);
+        onChange(placeDetails.formatted_address);
+      }
+    } catch (error) {
+      console.error('Failed to get place details:', error);
+      // Keep the original description if details fetch fails
+    }
   };
 
   const handleInputFocus = () => {
@@ -158,7 +176,7 @@ const AddressAutocomplete = ({
               >
                 <MapPin className="h-4 w-4 text-gray-400 group-hover:text-black transition-colors flex-shrink-0" />
                 <span className="text-sm text-gray-900 group-hover:text-black transition-colors">
-                  {result}
+                  {result.description}
                 </span>
               </button>
             ))}

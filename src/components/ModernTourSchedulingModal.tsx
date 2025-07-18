@@ -148,9 +148,11 @@ const ModernTourSchedulingModal = ({
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
-  // Reset form state when modal opens fresh
+  // Initialize form state when modal opens fresh (only once per open)
+  const [hasInitialized, setHasInitialized] = useState(false);
+  
   useEffect(() => {
-    if (isOpen && modalFlow === 'scheduling') {
+    if (isOpen && modalFlow === 'scheduling' && !hasInitialized) {
       console.log('[ModernTourSchedulingModal] Initializing modal');
       console.log('[ModernTourSchedulingModal] extractedData:', extractedData);
       console.log('[ModernTourSchedulingModal] isExtractingData:', isExtractingData);
@@ -169,8 +171,17 @@ const ModernTourSchedulingModal = ({
       setSelectedTime("");
       setNotes("");
       setShowAllTimes(false);
+      setHasInitialized(true);
     }
-  }, [isOpen, modalFlow, extractedData, initialAddress, isExtractingData]);
+  }, [isOpen, modalFlow, extractedData, initialAddress, hasInitialized]);
+
+  // Update address when property data becomes available (without resetting other fields)
+  useEffect(() => {
+    if (isOpen && modalFlow === 'scheduling' && hasInitialized && extractedData?.address && extractedData.address !== "Address not found" && !propertyAddress) {
+      console.log('[ModernTourSchedulingModal] Updating address from extracted data:', extractedData.address);
+      setPropertyAddress(extractedData.address);
+    }
+  }, [extractedData, isOpen, modalFlow, hasInitialized, propertyAddress]);
 
   // Determine user capabilities
   const isGuest = !user;
@@ -187,6 +198,7 @@ const ModernTourSchedulingModal = ({
     setSelectedTime("");
     setNotes("");
     setShowAllTimes(false);
+    setHasInitialized(false);
     setModalFlow('closed');
     onClose();
   };

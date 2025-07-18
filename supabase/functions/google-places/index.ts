@@ -25,11 +25,11 @@ serve(async (req) => {
       );
     }
 
-    const { input } = await req.json();
+    const { input, placeId } = await req.json();
     
-    if (!input) {
+    if (!input && !placeId) {
       return new Response(
-        JSON.stringify({ error: 'Input is required' }),
+        JSON.stringify({ error: 'Input or placeId is required' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -37,7 +37,36 @@ serve(async (req) => {
       );
     }
 
-    console.log('Making Google Places API request for input:', input);
+    console.log('Making Google Places API request for input:', input, 'placeId:', placeId);
+
+    // If placeId is provided, get place details for full address
+    if (placeId) {
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_address,address_components,geometry&key=${apiKey}`;
+      
+      const detailsResponse = await fetch(detailsUrl);
+      const detailsData = await detailsResponse.json();
+      
+      if (!detailsResponse.ok) {
+        console.error('Google Places Details API error:', detailsData);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Google Places Details API request failed',
+            details: detailsData.error_message || 'Unknown error'
+          }),
+          { 
+            status: detailsResponse.status, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      return new Response(
+        JSON.stringify(detailsData),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
     // Call Google Places Autocomplete API with broader location types
     // Removed restrictive types parameter to allow all location types while keeping US-only

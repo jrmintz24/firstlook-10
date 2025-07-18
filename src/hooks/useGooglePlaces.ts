@@ -8,8 +8,13 @@ interface UseGooglePlacesOptions {
   minSearchLength?: number;
 }
 
+interface PlaceResult {
+  description: string;
+  place_id: string;
+}
+
 interface CacheEntry {
-  results: string[];
+  results: PlaceResult[];
   timestamp: number;
 }
 
@@ -20,7 +25,7 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
   const { debounceMs = 1000, minSearchLength = 2 } = options; // Increased debounce to 1000ms
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<PlaceResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -100,7 +105,10 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
       }
 
       if (data && data.status === 'OK' && data.predictions) {
-        const formattedLocations = data.predictions.map((prediction: any) => prediction.description);
+        const formattedLocations = data.predictions.map((prediction: any) => ({
+          description: prediction.description,
+          place_id: prediction.place_id
+        }));
         console.log('✅ Formatted locations:', formattedLocations);
         
         // Cache the results
@@ -142,6 +150,40 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
     }
   }, [minSearchLength, resetRequestCount]);
 
+  // Get full address details for a place
+  const getPlaceDetails = useCallback(async (placeId: string) => {
+    console.log('🔍 Getting place details for:', placeId);
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('google-places', {
+        body: { placeId }
+      });
+
+      if (error) {
+        console.error('❌ Error getting place details:', error);
+        setError('Unable to get address details');
+        return null;
+      }
+
+      if (data && data.status === 'OK' && data.result) {
+        console.log('✅ Place details:', data.result);
+        return data.result;
+      } else {
+        console.error('❌ Error getting place details:', data?.error_message || data?.status);
+        setError('Address details unavailable');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error getting place details:', error);
+      setError('Address details unavailable');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     searchTerm,
     setSearchTerm,
@@ -150,6 +192,7 @@ export const useGooglePlaces = (options: UseGooglePlacesOptions = {}) => {
     isLoading,
     error,
     fetchLocations,
+    getPlaceDetails,
     clearResults,
     clearError
   };

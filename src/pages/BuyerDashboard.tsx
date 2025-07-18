@@ -25,9 +25,6 @@ import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 // Simple favorites display
 import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDisplay";
 
-// Debug component
-import DatabaseDebugger from "@/components/debug/DatabaseDebugger";
-
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
   const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
@@ -308,11 +305,6 @@ const BuyerDashboard = () => {
         />
       </div>
       
-      {/* Debug component - temporary */}
-      <div className="px-6 py-4">
-        <DatabaseDebugger />
-      </div>
-
       {/* Modals */}
       {selectedRequest && (
         <SignAgreementModal

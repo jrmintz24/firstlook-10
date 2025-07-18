@@ -1,8 +1,11 @@
 
 import React, { useEffect } from 'react';
 import SimplePropertyToolbar from '../components/SimplePropertyToolbar';
+import { useAutomaticPropertySaver } from '../hooks/useAutomaticPropertySaver';
 
 const Idx = () => {
+  // Enable automatic property saving when users visit IDX pages
+  useAutomaticPropertySaver();
 
   useEffect(() => {
     // Execute the IDX embed code when component mounts

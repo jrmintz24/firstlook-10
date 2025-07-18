@@ -4,11 +4,15 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import { useSimpleIDXIntegration } from '@/hooks/useSimpleIDXIntegration';
+import { useAutomaticPropertySaver } from '@/hooks/useAutomaticPropertySaver';
 
 const ScheduleTour = () => {
   const [searchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const { propertyData } = useSimpleIDXIntegration();
+  
+  // Enable automatic property saving when property data is available
+  useAutomaticPropertySaver();
   
   // Get listing ID from URL params
   const listingId = searchParams.get('listing');

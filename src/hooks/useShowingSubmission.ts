@@ -64,6 +64,8 @@ export const useShowingSubmission = (
         updated_at: new Date().toISOString()
       };
       
+      console.log('🏠 Creating new property with data:', newProperty);
+      
       const { data: createdProperty, error } = await supabase
         .from('idx_properties')
         .insert([newProperty])
@@ -118,11 +120,13 @@ export const useShowingSubmission = (
     return 700000;
   };
 
-  const getDefaultImages = (): string => {
-    return JSON.stringify([
+  const getDefaultImages = () => {
+    const images = [
       {"url": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop&auto=format", "caption": "Beautiful home"},
       {"url": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop&auto=format", "caption": "Comfortable living"}
-    ]);
+    ];
+    console.log('📸 Default images being created:', images);
+    return images; // Return as array, not JSON string
   };
 
   const submitShowingRequests = async (formData: PropertyRequestFormData) => {

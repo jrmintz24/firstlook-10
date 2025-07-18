@@ -9,11 +9,11 @@ import ShowingCheckoutButton from "./ShowingCheckoutButton";
 import ShowingSpecialistCard from "./ShowingSpecialistCard";
 import RescheduleModal from "./RescheduleModal";
 import { usePostShowingActionsManager } from "@/hooks/usePostShowingActionsManager";
+import PropertyDisplay from "./shared/PropertyDisplay";
 import { 
   Calendar,
   Clock,
   MessageCircle,
-  MapPin,
   User,
   Phone,
   Mail,
@@ -40,6 +40,14 @@ interface ShowingRequest {
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
+  // Enhanced property data
+  property_id?: string | null;
+  property_price?: string | null;
+  property_beds?: string | null;
+  property_baths?: string | null;
+  property_sqft?: string | null;
+  property_image?: string | null;
+  property_page_url?: string | null;
 }
 
 interface OptimizedShowingCardProps {
@@ -56,6 +64,7 @@ interface OptimizedShowingCardProps {
   onSignAgreement?: (showing: ShowingRequest) => void;
   onRequestShowing?: () => void;
 }
+
 
 const OptimizedShowingCard = ({
   showing,
@@ -178,11 +187,17 @@ const OptimizedShowingCard = ({
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                  <h3 className="font-medium text-gray-900 text-sm sm:text-base leading-tight">
-                    {showing.property_address}
-                  </h3>
+                <div className="mb-3">
+                  <PropertyDisplay 
+                    address={showing.property_address}
+                    price={showing.property_price}
+                    beds={showing.property_beds}
+                    baths={showing.property_baths}
+                    sqft={showing.property_sqft}
+                    image={showing.property_image}
+                    pageUrl={showing.property_page_url}
+                    size="md"
+                  />
                 </div>
                 
                 {/* Mobile-optimized Status Row */}

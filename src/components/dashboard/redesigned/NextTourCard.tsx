@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Clock, MessageCircle, Navigation } from "lucide-react";
 import { format } from "date-fns";
+import PropertyDisplay from "../shared/PropertyDisplay";
 
 interface NextTourCardProps {
   showing?: {
@@ -14,6 +15,13 @@ interface NextTourCardProps {
     status: string;
     assigned_agent_name?: string;
     assigned_agent_phone?: string;
+    // Enhanced property data
+    property_price?: string | null;
+    property_beds?: string | null;
+    property_baths?: string | null;
+    property_sqft?: string | null;
+    property_image?: string | null;
+    property_page_url?: string | null;
   };
   onMessageAgent: (showingId: string) => void;
 }
@@ -90,7 +98,18 @@ const NextTourCard = ({ showing, onMessageAgent }: NextTourCardProps) => {
       </div>
 
       <div className="mb-4">
-        <p className="text-lg font-medium text-gray-800 mb-2">{showing.property_address}</p>
+        <div className="mb-3">
+          <PropertyDisplay 
+            address={showing.property_address}
+            price={showing.property_price}
+            beds={showing.property_beds}
+            baths={showing.property_baths}
+            sqft={showing.property_sqft}
+            image={showing.property_image}
+            pageUrl={showing.property_page_url}
+            size="sm"
+          />
+        </div>
         <div className="flex items-center gap-2 text-gray-600">
           <Clock className="w-4 h-4" />
           <span>{formatDateTime()}</span>

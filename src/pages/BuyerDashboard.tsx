@@ -25,6 +25,9 @@ import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 // Simple favorites display
 import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDisplay";
 
+// Debug component
+import PropertyLookupDebugger from "@/components/debug/PropertyLookupDebugger";
+
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
   const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
@@ -268,6 +271,9 @@ const BuyerDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
+      {/* Debug Component */}
+      <PropertyLookupDebugger />
+
       {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming Tours"

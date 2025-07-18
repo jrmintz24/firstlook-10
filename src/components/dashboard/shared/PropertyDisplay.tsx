@@ -40,9 +40,9 @@ const PropertyDisplay = ({
   
   const hasPropertyData = price || beds || baths || sqft;
   
-  // Use lookup data if available, otherwise use props
+  // Use lookup data if available, but prefer original address
   const displayData = {
-    address: lookupData?.address || address,
+    address: address, // Always use the original address from the showing request
     price: lookupData?.price || price,
     beds: lookupData?.beds || beds,
     baths: lookupData?.baths || baths,
@@ -59,7 +59,7 @@ const PropertyDisplay = ({
       console.log('🔍 [PropertyDisplay] Fetching property data for MLS ID:', mlsId);
       setIsLoading(true);
       
-      getCachedPropertyData(mlsId)
+      getCachedPropertyData(mlsId, address)
         .then(data => {
           if (data) {
             console.log('✅ [PropertyDisplay] Received property data:', data);

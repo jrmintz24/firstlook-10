@@ -10,13 +10,13 @@ export interface PropertyLookupData {
   propertyUrl: string;
 }
 
-export const lookupPropertyByMlsId = async (mlsId: string): Promise<PropertyLookupData | null> => {
+export const lookupPropertyByMlsId = async (mlsId: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
   try {
-    console.log('🔍 [Property Lookup] Fetching property data for MLS ID:', mlsId);
+    console.log('🔍 [Property Lookup] Fetching property data for MLS ID:', mlsId, 'Original address:', originalAddress);
     
     // For now, we'll use realistic mock data based on MLS ID patterns
     // In the future, this could call your IDX provider's API
-    const propertyData = generatePropertyDataFromMlsId(mlsId);
+    const propertyData = generatePropertyDataFromMlsId(mlsId, originalAddress);
     
     console.log('✅ [Property Lookup] Found property data:', propertyData);
     return propertyData;
@@ -27,7 +27,7 @@ export const lookupPropertyByMlsId = async (mlsId: string): Promise<PropertyLook
   }
 };
 
-const generatePropertyDataFromMlsId = (mlsId: string): PropertyLookupData => {
+const generatePropertyDataFromMlsId = (mlsId: string, originalAddress?: string): PropertyLookupData => {
   // Generate realistic property data based on MLS ID patterns
   const mlsNumber = mlsId.replace(/[^0-9]/g, '');
   const lastDigit = parseInt(mlsNumber.slice(-1)) || 0;
@@ -57,18 +57,9 @@ const generatePropertyDataFromMlsId = (mlsId: string): PropertyLookupData => {
     imageUrls[(lastDigit + 2) % imageUrls.length]
   ];
   
-  // Generate address based on MLS ID
-  const addresses = [
-    'Beautiful Family Home, Sacramento, CA',
-    'Luxury Property, El Dorado Hills, CA',
-    'Charming Residence, Folsom, CA',
-    'Modern Home, Roseville, CA',
-    'Executive Property, Granite Bay, CA'
-  ];
-  
   return {
     mlsId,
-    address: addresses[priceIndex],
+    address: originalAddress || 'Property Address Not Available', // Use original address if available
     price: `$${priceRanges[priceIndex].toLocaleString()}`,
     beds: `${bedCounts[bedIndex]} bed${bedCounts[bedIndex] > 1 ? 's' : ''}`,
     baths: `${bathCounts[bedIndex]} bath${bathCounts[bedIndex] > 1 ? 's' : ''}`,
@@ -81,7 +72,7 @@ const generatePropertyDataFromMlsId = (mlsId: string): PropertyLookupData => {
 // Cache for property lookups to avoid repeated calls
 const propertyCache = new Map<string, PropertyLookupData>();
 
-export const getCachedPropertyData = async (mlsId: string): Promise<PropertyLookupData | null> => {
+export const getCachedPropertyData = async (mlsId: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
   // Check cache first
   if (propertyCache.has(mlsId)) {
     console.log('🎯 [Property Lookup] Using cached data for MLS ID:', mlsId);
@@ -89,7 +80,7 @@ export const getCachedPropertyData = async (mlsId: string): Promise<PropertyLook
   }
   
   // Fetch and cache
-  const propertyData = await lookupPropertyByMlsId(mlsId);
+  const propertyData = await lookupPropertyByMlsId(mlsId, originalAddress);
   if (propertyData) {
     propertyCache.set(mlsId, propertyData);
   }

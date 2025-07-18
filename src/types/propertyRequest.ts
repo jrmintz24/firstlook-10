@@ -24,6 +24,7 @@ export interface PropertyRequestFormData {
   // Keep the old fields for backward compatibility with other components
   propertyAddress: string;
   propertyId?: string;
+  mlsId?: string;
   preferredDate1: string;
   preferredTime1: string;
   preferredDate2: string;

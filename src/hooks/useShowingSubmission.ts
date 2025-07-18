@@ -12,6 +12,41 @@ export const useShowingSubmission = (
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const findPropertyByAddress = async (address: string) => {
+    try {
+      console.log('🔍 Looking for property with address:', address);
+      
+      // Try exact match first
+      const { data: exactMatch } = await supabase
+        .from('idx_properties')
+        .select('id, mls_id, address')
+        .eq('address', address)
+        .single();
+      
+      if (exactMatch) {
+        console.log('✅ Found exact property match:', exactMatch);
+        return exactMatch;
+      }
+      
+      // Try partial match (in case address format is slightly different)
+      const { data: partialMatches } = await supabase
+        .from('idx_properties')
+        .select('id, mls_id, address')
+        .ilike('address', `%${address.split(',')[0]}%`); // Match street address part
+      
+      if (partialMatches && partialMatches.length > 0) {
+        console.log('✅ Found partial property match:', partialMatches[0]);
+        return partialMatches[0];
+      }
+      
+      console.log('❌ No property found for address:', address);
+      return null;
+    } catch (error) {
+      console.error('Error finding property:', error);
+      return null;
+    }
+  };
+
   const submitShowingRequests = async (formData: PropertyRequestFormData) => {
     console.log('DEBUG: submitShowingRequests called with formData:', formData);
     
@@ -39,10 +74,16 @@ export const useShowingSubmission = (
         for (const property of formData.properties) {
           if (property.address && property.address.trim()) {
             console.log('DEBUG: Adding property from properties array:', property.address.trim());
+            
+            // Find matching property in idx_properties
+            const propertyMatch = await findPropertyByAddress(property.address.trim());
+            
             showingRequests.push({
-              user_id: user.id, // Ensure user_id is always set
+              user_id: user.id,
               property_address: property.address.trim(),
               property_id: formData.propertyId || null,
+              idx_property_id: propertyMatch?.id || null,
+              mls_id: propertyMatch?.mls_id || null,
               message: property.notes || formData.notes || null,
               preferred_date: formData.preferredDate1 || null,
               preferred_time: formData.preferredTime1 || null,
@@ -55,10 +96,16 @@ export const useShowingSubmission = (
         // Handle single property from direct form fields
         if (formData.propertyAddress && formData.propertyAddress.trim()) {
           console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
+          
+          // Find matching property in idx_properties
+          const propertyMatch = await findPropertyByAddress(formData.propertyAddress.trim());
+          
           const request = {
-            user_id: user.id, // Ensure user_id is always set
+            user_id: user.id,
             property_address: formData.propertyAddress.trim(),
             property_id: formData.propertyId || null,
+            idx_property_id: propertyMatch?.id || null,
+            mls_id: propertyMatch?.mls_id || null,
             message: formData.notes || null,
             preferred_date: formData.preferredDate1 || null,
             preferred_time: formData.preferredTime1 || null,

@@ -17,6 +17,10 @@ declare global {
   interface Window {
     ihfPropertyData?: {
       address: string;
+      fullAddress: string;
+      city: string;
+      state: string;
+      zip: string;
       price: string;
       beds: string;
       baths: string;
@@ -41,7 +45,7 @@ export const useIDXPropertyExtractor = () => {
       if (window.ihfPropertyData) {
         console.log('[useIDXPropertyExtractor] Found global iHomeFinder data:', window.ihfPropertyData);
         const globalData: IDXPropertyData = {
-          address: window.ihfPropertyData.address || '',
+          address: window.ihfPropertyData.fullAddress || window.ihfPropertyData.address || '',
           price: window.ihfPropertyData.price || '',
           beds: window.ihfPropertyData.beds || '',
           baths: window.ihfPropertyData.baths || '',
@@ -184,16 +188,30 @@ export const useIDXPropertyExtractor = () => {
 
       let address = extractFromSelectors(addressSelectors, 'address');
       
-      // Fallback: Extract address from page title if selectors fail
-      if (!address && document.title) {
-        const titleMatch = document.title.match(/^(.+?)\s+(?:\w{2}\s+\d{5}|\w{2,}\s*$)/);
-        if (titleMatch) {
-          address = titleMatch[1].trim();
-          console.log('✅ [DEBUG] Found address in page title:', address);
+      // Fallback: Extract complete address from page title if selectors fail
+      if (!address && document.title && document.title !== 'Property Listing') {
+        const fullTitle = document.title.trim();
+        console.log('✅ [DEBUG] Parsing complete address from page title:', fullTitle);
+        
+        // Try to parse "6680 Baseline Road Roseville, CA 95747"
+        const addressMatch = fullTitle.match(/^(.+?)\s+([A-Za-z\s]+),?\s+([A-Z]{2})\s+(\d{5})/);
+        if (addressMatch) {
+          const streetAddress = addressMatch[1].trim();
+          const city = addressMatch[2].trim();
+          const state = addressMatch[3].trim();
+          const zip = addressMatch[4].trim();
+          
+          // Build complete address with USA
+          address = `${streetAddress}, ${city}, ${state} ${zip}, USA`;
+          console.log('✅ [DEBUG] Built complete address:', address);
+        } else {
+          // Fallback: use entire title and add USA
+          address = `${fullTitle}, USA`;
+          console.log('✅ [DEBUG] Using full title with USA suffix:', address);
         }
       }
       
-      address = address || 'Address not found';
+      address = address || 'Property';
       const price = extractFromSelectors(priceSelectors, 'price');
       const beds = extractFromSelectors(bedsSelectors, 'beds');
       const baths = extractFromSelectors(bathsSelectors, 'baths');

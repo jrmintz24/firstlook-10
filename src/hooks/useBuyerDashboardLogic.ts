@@ -89,6 +89,16 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
 
     try {
       console.log('BuyerDashboardLogic: Fetching showing requests for user:', currentUser.id);
+      
+      // First, let's check if any idx_properties exist at all
+      const { data: propsCheck, error: propsError } = await supabase
+        .from('idx_properties')
+        .select('address, price, beds')
+        .limit(5);
+      
+      console.log('BuyerDashboardLogic: Available idx_properties:', propsCheck);
+      if (propsError) console.error('BuyerDashboardLogic: idx_properties error:', propsError);
+      
       const { data, error } = await supabase
         .from('showing_requests')
         .select(`
@@ -109,6 +119,17 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
       
       console.log('BuyerDashboardLogic: Raw showing requests data:', data);
       console.log('BuyerDashboardLogic: Found', data?.length || 0, 'showing requests');
+      
+      // Check which showing requests have idx_property_id populated
+      const withPropertyId = data?.filter((showing: any) => showing.idx_property_id) || [];
+      console.log('BuyerDashboardLogic: Showings with idx_property_id:', withPropertyId.length);
+      if (withPropertyId.length > 0) {
+        console.log('BuyerDashboardLogic: First showing with property ID:', {
+          id: withPropertyId[0].id,
+          property_address: withPropertyId[0].property_address,
+          idx_property_id: withPropertyId[0].idx_property_id
+        });
+      }
       
       // Debug: Check if any have idx_properties data
       const withPropertyData = data?.filter((showing: any) => showing.idx_properties) || [];

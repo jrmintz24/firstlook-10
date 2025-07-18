@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIDXPropertyExtractor } from './useIDXPropertyExtractor';
+import IDXBackfillService from '@/utils/comprehensiveIDXBackfill';
 
 interface IDXProperty {
   id?: string;
@@ -119,8 +120,10 @@ export function useIDXPropertyEnhanced() {
   useEffect(() => {
     if (property?.mlsId) {
       checkIfFavorited(property.mlsId).then(setIsSaved);
+      // Automatically save property to database when detected
+      savePropertyToDatabase(property);
     }
-  }, [property?.mlsId, checkIfFavorited]);
+  }, [property?.mlsId, checkIfFavorited, savePropertyToDatabase]);
 
   // Toggle favorite status
   const toggleFavorite = useCallback(async () => {

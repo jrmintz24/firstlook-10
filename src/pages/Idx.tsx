@@ -1,8 +1,12 @@
 
 import React, { useEffect } from 'react';
 import SimplePropertyToolbar from '../components/SimplePropertyToolbar';
+import { useAutomaticIDXPropertySaver } from '../hooks/useAutomaticIDXPropertySaver';
 
 const Idx = () => {
+  // Enable automatic property data saving
+  useAutomaticIDXPropertySaver();
+
   useEffect(() => {
     // Execute the IDX embed code when component mounts
     if (window.ihfKestrel) {

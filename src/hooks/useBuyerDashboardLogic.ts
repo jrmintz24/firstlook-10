@@ -110,6 +110,13 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
       console.log('BuyerDashboardLogic: Raw showing requests data:', data);
       console.log('BuyerDashboardLogic: Found', data?.length || 0, 'showing requests');
       
+      // Debug: Check if any have idx_properties data
+      const withPropertyData = data?.filter((showing: any) => showing.idx_properties) || [];
+      console.log('BuyerDashboardLogic: Showings with property data:', withPropertyData.length);
+      if (withPropertyData.length > 0) {
+        console.log('BuyerDashboardLogic: First property data:', withPropertyData[0].idx_properties);
+      }
+      
       // Transform the joined data to flatten property information
       const transformedShowings = (data || []).map((showing: any) => {
         const propertyData = showing.idx_properties;

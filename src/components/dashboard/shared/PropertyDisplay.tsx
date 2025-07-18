@@ -34,6 +34,19 @@ const PropertyDisplay = ({
   const hasPropertyData = price || beds || baths || sqft;
   const showEnhancedLayout = hasPropertyData || (image && showImage);
   
+  // Debug logging
+  console.log('PropertyDisplay props:', { 
+    address, 
+    price, 
+    beds, 
+    baths, 
+    sqft, 
+    image, 
+    pageUrl,
+    hasPropertyData,
+    showEnhancedLayout
+  });
+  
   // Size configurations
   const sizeConfig = {
     sm: {

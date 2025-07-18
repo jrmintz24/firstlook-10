@@ -27,6 +27,13 @@ interface ShowingRequest {
   assigned_agent_email?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
+  // Enhanced property data from idx_properties join
+  property_price?: string | null;
+  property_beds?: string | null;
+  property_baths?: string | null;
+  property_sqft?: string | null;
+  property_image?: string | null;
+  property_page_url?: string | null;
 }
 
 export const useBuyerDashboardData = () => {
@@ -83,7 +90,17 @@ export const useBuyerDashboardData = () => {
         
         supabase
           .from('showing_requests')
-          .select('*')
+          .select(`
+            *,
+            idx_properties (
+              price,
+              beds,
+              baths,
+              sqft,
+              images,
+              ihf_page_url
+            )
+          `)
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false }),
         
@@ -120,7 +137,24 @@ export const useBuyerDashboardData = () => {
           });
           setShowingRequests([]);
         } else {
-          setShowingRequests(requestsData || []);
+          // Transform the joined data to flatten property information
+          const transformedShowings = (requestsData || []).map((showing: any) => {
+            const propertyData = showing.idx_properties;
+            return {
+              ...showing,
+              // Flatten property data into the showing object
+              property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
+              property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
+              property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
+              property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
+              property_image: propertyData?.images?.[0] || null, // Use first image
+              property_page_url: propertyData?.ihf_page_url || null,
+              // Remove the nested object to avoid confusion
+              idx_properties: undefined
+            };
+          });
+          
+          setShowingRequests(transformedShowings);
         }
       }
 
@@ -156,7 +190,17 @@ export const useBuyerDashboardData = () => {
     try {
       const { data: requestsData, error: requestsError } = await supabase
         .from('showing_requests')
-        .select('*')
+        .select(`
+          *,
+          idx_properties (
+            price,
+            beds,
+            baths,
+            sqft,
+            images,
+            ihf_page_url
+          )
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
@@ -169,7 +213,24 @@ export const useBuyerDashboardData = () => {
         });
         setShowingRequests([]);
       } else {
-        setShowingRequests(requestsData || []);
+        // Transform the joined data to flatten property information
+        const transformedShowings = (requestsData || []).map((showing: any) => {
+          const propertyData = showing.idx_properties;
+          return {
+            ...showing,
+            // Flatten property data into the showing object
+            property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
+            property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
+            property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
+            property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
+            property_image: propertyData?.images?.[0] || null, // Use first image
+            property_page_url: propertyData?.ihf_page_url || null,
+            // Remove the nested object to avoid confusion
+            idx_properties: undefined
+          };
+        });
+        
+        setShowingRequests(transformedShowings);
       }
     } catch (error) {
       console.error('Error fetching showing requests:', error);

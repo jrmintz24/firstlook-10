@@ -17,6 +17,14 @@ interface ShowingRequest {
   user_id?: string | null;
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
+  // Enhanced property data from idx_properties join
+  idx_property_id?: string | null;
+  property_price?: string | null;
+  property_beds?: number | null;
+  property_baths?: number | null;
+  property_sqft?: number | null;
+  property_images?: string[] | null;
+  property_page_url?: string | null;
 }
 
 export const useBuyerShowings = (currentUser: any, profile: any) => {
@@ -38,7 +46,17 @@ export const useBuyerShowings = (currentUser: any, profile: any) => {
       
       const { data: showingData, error: showingError } = await supabase
         .from('showing_requests')
-        .select('*')
+        .select(`
+          *,
+          idx_properties (
+            price,
+            beds,
+            baths,
+            sqft,
+            images,
+            ihf_page_url
+          )
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
@@ -49,7 +67,24 @@ export const useBuyerShowings = (currentUser: any, profile: any) => {
         throw showingError;
       }
 
-      setShowingRequests(showingData || []);
+      // Transform the joined data to flatten property information
+      const transformedShowings = (showingData || []).map((showing: any) => {
+        const propertyData = showing.idx_properties;
+        return {
+          ...showing,
+          // Flatten property data into the showing object
+          property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
+          property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
+          property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
+          property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
+          property_image: propertyData?.images?.[0] || null, // Use first image
+          property_page_url: propertyData?.ihf_page_url || null,
+          // Remove the nested object to avoid confusion
+          idx_properties: undefined
+        };
+      });
+
+      setShowingRequests(transformedShowings);
 
       const { data: agreementData, error: agreementError } = await supabase
         .from('tour_agreements')

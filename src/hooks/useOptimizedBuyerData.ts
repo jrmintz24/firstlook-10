@@ -24,7 +24,15 @@ export const useOptimizedBuyerData = () => {
         .from('showing_requests')
         .select(`
           *,
-          tour_agreements(*)
+          tour_agreements(*),
+          idx_properties (
+            price,
+            beds,
+            baths,
+            sqft,
+            images,
+            ihf_page_url
+          )
         `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
@@ -32,7 +40,25 @@ export const useOptimizedBuyerData = () => {
       if (error) throw error;
       
       console.log('Fetched showing requests:', data?.length || 0);
-      setShowingRequests(data || []);
+      
+      // Transform the joined data to flatten property information
+      const transformedShowings = (data || []).map((showing: any) => {
+        const propertyData = showing.idx_properties;
+        return {
+          ...showing,
+          // Flatten property data into the showing object
+          property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
+          property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
+          property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
+          property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
+          property_image: propertyData?.images?.[0] || null, // Use first image
+          property_page_url: propertyData?.ihf_page_url || null,
+          // Remove the nested object to avoid confusion
+          idx_properties: undefined
+        };
+      });
+      
+      setShowingRequests(transformedShowings);
     } catch (error) {
       console.error('Error fetching showing requests:', error);
       setShowingRequests([]);

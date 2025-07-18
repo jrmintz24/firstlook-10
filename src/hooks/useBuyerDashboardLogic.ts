@@ -19,6 +19,13 @@ interface ShowingRequest {
   assigned_agent_id?: string;
   user_id?: string;
   status_updated_at?: string;
+  // Enhanced property data from idx_properties join
+  property_price?: string | null;
+  property_beds?: string | null;
+  property_baths?: string | null;
+  property_sqft?: string | null;
+  property_image?: string | null;
+  property_page_url?: string | null;
 }
 
 interface Profile {
@@ -81,14 +88,47 @@ export const useBuyerDashboardLogic = ({ onOpenChat }: BuyerDashboardLogicProps)
     }
 
     try {
+      console.log('BuyerDashboardLogic: Fetching showing requests for user:', currentUser.id);
       const { data, error } = await supabase
         .from('showing_requests')
-        .select('*')
+        .select(`
+          *,
+          idx_properties (
+            price,
+            beds,
+            baths,
+            sqft,
+            images,
+            ihf_page_url
+          )
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setShowingRequests(data || []);
+      
+      console.log('BuyerDashboardLogic: Raw showing requests data:', data);
+      console.log('BuyerDashboardLogic: Found', data?.length || 0, 'showing requests');
+      
+      // Transform the joined data to flatten property information
+      const transformedShowings = (data || []).map((showing: any) => {
+        const propertyData = showing.idx_properties;
+        return {
+          ...showing,
+          // Flatten property data into the showing object
+          property_price: propertyData?.price ? `$${Number(propertyData.price).toLocaleString()}` : null,
+          property_beds: propertyData?.beds ? `${propertyData.beds} bed${propertyData.beds !== 1 ? 's' : ''}` : null,
+          property_baths: propertyData?.baths ? `${propertyData.baths} bath${propertyData.baths !== 1 ? 's' : ''}` : null,
+          property_sqft: propertyData?.sqft ? `${Number(propertyData.sqft).toLocaleString()} sqft` : null,
+          property_image: propertyData?.images?.[0] || null, // Use first image
+          property_page_url: propertyData?.ihf_page_url || null,
+          // Remove the nested object to avoid confusion
+          idx_properties: undefined
+        };
+      });
+      
+      console.log('BuyerDashboardLogic: Transformed showing requests:', transformedShowings);
+      setShowingRequests(transformedShowings);
     } catch (error) {
       console.error('Error fetching showing requests:', error);
       toast({

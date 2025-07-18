@@ -26,10 +26,10 @@ const PropertyLookupDebugger = () => {
           return;
         }
 
-        // Get all properties and their MLS IDs
+        // Get all properties and their MLS IDs and listing IDs
         const { data: properties, error: propertiesError } = await supabase
           .from('idx_properties')
-          .select('mls_id, address, price, beds, baths, sqft, images')
+          .select('mls_id, listing_id, address, price, beds, baths, sqft, images')
           .limit(20);
 
         if (propertiesError) {
@@ -37,15 +37,19 @@ const PropertyLookupDebugger = () => {
           return;
         }
 
-        // For each showing, try to find matching property
+        // For each showing, try to find matching property by listing_id first, then mls_id
         const lookupResults = [];
         for (const showing of showings || []) {
           if (showing.mls_id) {
-            const matchingProperty = properties?.find(p => p.mls_id === showing.mls_id);
+            const matchingPropertyByListingId = properties?.find(p => p.listing_id === showing.mls_id);
+            const matchingPropertyByMlsId = properties?.find(p => p.mls_id === showing.mls_id);
+            const matchingProperty = matchingPropertyByListingId || matchingPropertyByMlsId;
+            
             lookupResults.push({
               showing,
               matchingProperty,
-              hasMatch: !!matchingProperty
+              hasMatch: !!matchingProperty,
+              matchType: matchingPropertyByListingId ? 'listing_id' : (matchingPropertyByMlsId ? 'mls_id' : 'none')
             });
           }
         }
@@ -95,7 +99,7 @@ const PropertyLookupDebugger = () => {
               <div key={index} className={`p-2 mb-2 rounded ${result.hasMatch ? 'bg-green-100' : 'bg-red-100'}`}>
                 <div><strong>Showing MLS ID:</strong> {result.showing.mls_id}</div>
                 <div><strong>Address:</strong> {result.showing.property_address}</div>
-                <div><strong>Match Found:</strong> {result.hasMatch ? '✅ YES' : '❌ NO'}</div>
+                <div><strong>Match Found:</strong> {result.hasMatch ? `✅ YES (${result.matchType})` : '❌ NO'}</div>
                 {result.matchingProperty && (
                   <div className="mt-1 text-sm">
                     <div><strong>Property Price:</strong> ${result.matchingProperty.price}</div>
@@ -115,9 +119,9 @@ const PropertyLookupDebugger = () => {
         </div>
 
         <div>
-          <strong>All MLS IDs in Properties DB:</strong>
+          <strong>All IDs in Properties DB:</strong>
           <pre className="bg-white p-2 rounded mt-2 text-xs overflow-auto max-h-40">
-            {debugData.properties.map((p: any) => `${p.mls_id} - ${p.address} - $${p.price}`).join('\n')}
+            {debugData.properties.map((p: any) => `MLS: ${p.mls_id} | Listing: ${p.listing_id} | ${p.address} - $${p.price}`).join('\n')}
           </pre>
         </div>
       </div>

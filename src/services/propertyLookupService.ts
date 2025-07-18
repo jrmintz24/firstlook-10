@@ -16,20 +16,35 @@ export const lookupPropertyByMlsId = async (mlsId: string, originalAddress?: str
   try {
     console.log('🔍 [Property Lookup] Fetching REAL property data for MLS ID:', mlsId, 'Original address:', originalAddress);
     
-    // First, try to get real data from the database
+    // First, try to get real data from the database using listing_id (IDX ID)
     const { data: propertyData, error } = await supabase
       .from('idx_properties')
       .select('*')
-      .eq('mls_id', mlsId)
+      .eq('listing_id', mlsId)
       .single();
+    
+    if (propertyData) {
+      console.log('✅ [Property Lookup] Found REAL property data by listing_id:', propertyData);
+      return formatDatabaseProperty(propertyData, originalAddress);
+    }
+    
+    // If no match with listing_id, try with mls_id as fallback
+    if (!propertyData && error?.code === 'PGRST116') {
+      console.log('🔍 [Property Lookup] No match with listing_id, trying mls_id as fallback');
+      const { data: mlsData, error: mlsError } = await supabase
+        .from('idx_properties')
+        .select('*')
+        .eq('mls_id', mlsId)
+        .single();
+      
+      if (mlsData) {
+        console.log('✅ [Property Lookup] Found property by MLS ID fallback:', mlsData);
+        return formatDatabaseProperty(mlsData, originalAddress);
+      }
+    }
     
     if (error && error.code !== 'PGRST116') {
       console.error('❌ [Property Lookup] Database error:', error);
-    }
-    
-    if (propertyData) {
-      console.log('✅ [Property Lookup] Found REAL property data in database:', propertyData);
-      return formatDatabaseProperty(propertyData, originalAddress);
     }
     
     // If no real data found, create a property record with realistic data
@@ -79,14 +94,14 @@ const formatDatabaseProperty = (dbProperty: any, originalAddress?: string): Prop
   }
   
   return {
-    mlsId: dbProperty.mls_id,
+    mlsId: dbProperty.listing_id || dbProperty.mls_id, // Use listing_id if available, fallback to mls_id
     address: originalAddress || dbProperty.address || 'Property',
     price: dbProperty.price ? `$${Number(dbProperty.price).toLocaleString()}` : '',
     beds: dbProperty.beds ? `${dbProperty.beds} bed${dbProperty.beds > 1 ? 's' : ''}` : '',
     baths: dbProperty.baths ? `${dbProperty.baths} bath${dbProperty.baths > 1 ? 's' : ''}` : '',
     sqft: dbProperty.sqft ? `${Number(dbProperty.sqft).toLocaleString()} sqft` : '',
     images,
-    propertyUrl: dbProperty.ihf_page_url || `https://www.firstlookhometours.com/listing?id=${dbProperty.mls_id}`
+    propertyUrl: dbProperty.ihf_page_url || `https://www.firstlookhometours.com/listing?id=${dbProperty.listing_id || dbProperty.mls_id}`
   };
 };
 
@@ -97,7 +112,8 @@ const storePropertyData = async (propertyData: PropertyLookupData) => {
     const { error } = await supabase
       .from('idx_properties')
       .upsert({
-        mls_id: propertyData.mlsId,
+        listing_id: propertyData.mlsId, // Store as listing_id (IDX ID)
+        mls_id: propertyData.mlsId, // Also store as mls_id for fallback
         address: propertyData.address,
         price: parseInt(propertyData.price.replace(/[^\d]/g, '')) || null,
         beds: parseInt(propertyData.beds.replace(/[^\d]/g, '')) || null,
@@ -110,7 +126,7 @@ const storePropertyData = async (propertyData: PropertyLookupData) => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'mls_id'
+        onConflict: 'listing_id'
       });
     
     if (error) {

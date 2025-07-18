@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIDXPropertyExtractor } from './useIDXPropertyExtractor';
-import IDXBackfillService from '@/utils/comprehensiveIDXBackfill';
 
 interface IDXProperty {
   id?: string;

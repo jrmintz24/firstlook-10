@@ -45,21 +45,25 @@ export const useShowingSubmission = (
       // Third priority: Auto-create property with available data
       console.log('🔄 Creating new property record for:', address);
       
+      // Check if we have extracted property data from the page
+      const extractedData = (window as any).extractedPropertyData;
+      console.log('🔍 Checking for extracted property data:', extractedData);
+      
       const newProperty = {
         mls_id: mlsId || `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        address: address,
+        address: extractedData?.address || address,
         city: extractCityFromAddress(address),
         state: 'CA',
         zip: extractZipFromAddress(address),
-        price: getEstimatedPrice(address),
-        beds: 3,
-        baths: 2.5,
-        sqft: 2000,
-        property_type: 'Single Family Residential',
+        price: extractedData?.price ? parsePrice(extractedData.price) : getEstimatedPrice(address),
+        beds: extractedData?.beds ? parseInt(extractedData.beds) : 3,
+        baths: extractedData?.baths ? parseFloat(extractedData.baths) : 2.5,
+        sqft: extractedData?.sqft ? parseInt(extractedData.sqft.replace(/,/g, '')) : 2000,
+        property_type: extractedData?.propertyType || 'Single Family Residential',
         status: 'Active',
-        description: 'Beautiful home in desirable location',
-        images: getDefaultImages(),
-        ihf_page_url: `https://www.firstlookhometours.com/listing?search=${encodeURIComponent(address)}`,
+        description: extractedData?.description || 'Beautiful home in desirable location',
+        images: extractedData?.images || getDefaultImages(),
+        ihf_page_url: mlsId ? `https://www.firstlookhometours.com/listing?id=${mlsId}` : `https://www.firstlookhometours.com/listing?search=${encodeURIComponent(address)}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -118,6 +122,12 @@ export const useShowingSubmission = (
     if (address.includes('Rocklin')) return 800000;
     if (address.includes('Elk Grove')) return 650000;
     return 700000;
+  };
+
+  const parsePrice = (priceString: string): number => {
+    // Extract numeric value from price string like "$750,000" or "750000"
+    const numericValue = priceString.replace(/[^\d]/g, '');
+    return parseInt(numericValue) || 0;
   };
 
   const getDefaultImages = () => {

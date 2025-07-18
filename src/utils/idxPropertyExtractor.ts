@@ -1,4 +1,6 @@
 // Enhanced IDX Property Extractor that prioritizes MLS IDs
+import { extractIHomeFinderPropertyData } from './iHomeFinderExtractor';
+
 export interface ExtractedPropertyData {
   mlsId: string;
   address: string;
@@ -15,6 +17,12 @@ export interface ExtractedPropertyData {
 export const extractIDXPropertyData = (): ExtractedPropertyData | null => {
   console.log('🔍 [IDX Extractor] Starting property data extraction...');
   console.log('🔍 [IDX Extractor] Current URL:', window.location.href);
+
+  // Check if this is a firstlookhometours.com URL (iHomeFinder)
+  if (window.location.hostname.includes('firstlookhometours.com')) {
+    console.log('🏠 [IDX Extractor] Detected iHomeFinder page, using specialized extractor');
+    return extractIHomeFinderPropertyData();
+  }
 
   // Step 1: Extract MLS ID from URL (highest priority)
   const mlsId = extractMLSIdFromURL();

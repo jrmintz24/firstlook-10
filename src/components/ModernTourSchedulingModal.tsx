@@ -443,11 +443,8 @@ const ModernTourSchedulingModal = ({
                   <HybridAddressInput
                     value={propertyAddress}
                     onChange={setPropertyAddress}
-                    propertyId={propertyId}
-                    isAutoDetected={!!(propertyData && propertyData.address && propertyData.address !== "Address not found")}
                     placeholder="Enter property address..."
                     className="h-12 border-gray-300 focus:border-black focus:ring-0"
-                    propertyData={propertyData}
                   />
                 </div>
 

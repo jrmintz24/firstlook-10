@@ -19,6 +19,7 @@ interface ModernTourSchedulingModalProps {
   skipNavigation?: boolean;
   initialAddress?: string;
   propertyId?: string;
+  propertyDetails?: any;
 }
 
 interface TimeSlot {
@@ -102,7 +103,8 @@ const ModernTourSchedulingModal = ({
   onSuccess, 
   skipNavigation = false,
   initialAddress = "",
-  propertyId = ""
+  propertyId = "",
+  propertyDetails = null
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
@@ -265,20 +267,30 @@ const ModernTourSchedulingModal = ({
     console.log('DEBUG: Creating form data with address:', propertyAddress);
     console.log('DEBUG: Using extracted MLS ID:', extractedData?.mlsId);
     console.log('DEBUG: Full extracted data:', extractedData);
+    console.log('DEBUG: Using propertyDetails from props:', propertyDetails);
 
-    // Create the form data object with current values including MLS ID
+    // Determine the best data source - prefer propertyDetails from props over extractedData
+    const bestPropertyData = propertyDetails || extractedData;
+    const idxId = propertyId || bestPropertyData?.listingId || bestPropertyData?.mlsId || '';
+
+    // Create the form data object with current values including property details
     const currentFormData = {
       properties: [{ 
         address: propertyAddress.trim(), 
         notes: notes,
-        mlsId: extractedData?.mlsId || '',
-        source: (extractedData?.mlsId ? 'idx' : 'manual') as 'idx' | 'manual'
+        mlsId: bestPropertyData?.mlsId || '',
+        idxId: idxId,
+        source: (bestPropertyData ? 'idx' : 'manual') as 'idx' | 'manual',
+        // Include the complete property details for saving to backend
+        propertyDetails: bestPropertyData
       }],
       preferredOptions: [{ date: selectedDate, time: selectedTime }],
       notes: notes,
       propertyAddress: propertyAddress.trim(),
-      propertyId: propertyId || undefined,
-      mlsId: extractedData?.mlsId || '',
+      propertyId: idxId,
+      mlsId: bestPropertyData?.mlsId || '',
+      idxId: idxId,
+      propertyDetails: bestPropertyData,
       preferredDate1: selectedDate,
       preferredTime1: selectedTime,
       preferredDate2: '',

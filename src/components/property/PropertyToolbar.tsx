@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Heart } from 'lucide-react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -7,6 +7,7 @@ import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
 import { useIDXPropertyEnhanced } from '../../hooks/useIDXPropertyEnhanced';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PropertyToolbarProps {
   className?: string;
@@ -15,7 +16,9 @@ interface PropertyToolbarProps {
 export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = '' }) => {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isFavoriteOpen, setIsFavoriteOpen] = useState(false);
-  const { property: propertyData, loading: isLoading, error, isSaved, toggleFavorite, scheduleShowing } = useIDXPropertyEnhanced();
+  const [extractedPropertyData, setExtractedPropertyData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { property: hookPropertyData, isSaved, toggleFavorite } = useIDXPropertyEnhanced();
   const { user } = useAuth();
   const location = useLocation();
   const { listingId } = useParams<{ listingId: string }>();
@@ -24,6 +27,84 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
 
   // Check if we're on an individual property detail page using either route params or query params
   const isPropertyDetailPage = !!listingId || !!queryId;
+
+  // Function to save property details to backend
+  const savePropertyToBackend = async (propertyDetails: any) => {
+    try {
+      console.log('[PropertyToolbar] Saving property details to backend:', propertyDetails);
+      
+      if (!propertyDetails.listingId && !propertyDetails.address) {
+        console.warn('[PropertyToolbar] No listing ID or address, cannot save property');
+        return null;
+      }
+
+      const propertyData = {
+        idx_id: propertyDetails.listingId || queryId || listingId,
+        mls_id: propertyDetails.listingId || queryId || listingId,
+        address: propertyDetails.address,
+        price: propertyDetails.price ? parseFloat(propertyDetails.price.replace(/[^0-9.]/g, '')) || null : null,
+        beds: propertyDetails.beds ? parseInt(propertyDetails.beds.replace(/[^0-9]/g, '')) || null : null,
+        baths: propertyDetails.baths ? parseFloat(propertyDetails.baths.replace(/[^0-9.]/g, '')) || null : null,
+        sqft: propertyDetails.sqft ? parseInt(propertyDetails.sqft.replace(/[^0-9]/g, '')) || null : null,
+        images: propertyDetails.image ? [propertyDetails.image] : [],
+        ihf_page_url: propertyDetails.link,
+        raw_data: propertyDetails
+      };
+
+      // Use the existing edge function
+      const { data, error } = await supabase.functions.invoke('upsert-idx-property', {
+        body: { property: propertyData }
+      });
+
+      if (error) {
+        throw new Error(`Failed to save property: ${error.message}`);
+      }
+
+      console.log('[PropertyToolbar] Property saved successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('[PropertyToolbar] Error saving property to backend:', error);
+      return null;
+    }
+  };
+
+  // Listen for extracted property details
+  useEffect(() => {
+    const handleListingDetailsExtracted = (event: CustomEvent) => {
+      console.log('[PropertyToolbar] Received extracted property details:', event.detail);
+      setExtractedPropertyData(event.detail);
+      setIsLoading(false);
+      
+      // Save property details to backend automatically
+      savePropertyToBackend(event.detail);
+    };
+
+    // Check if details are already available
+    if ((window as any).currentListingDetails) {
+      console.log('[PropertyToolbar] Using existing property details');
+      setExtractedPropertyData((window as any).currentListingDetails);
+      setIsLoading(false);
+      savePropertyToBackend((window as any).currentListingDetails);
+    }
+
+    window.addEventListener('listingDetailsExtracted', handleListingDetailsExtracted);
+    
+    // Stop loading after a timeout if no data is extracted
+    const timeout = setTimeout(() => {
+      if (!extractedPropertyData) {
+        console.log('[PropertyToolbar] No property details extracted, using fallback');
+        setIsLoading(false);
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('listingDetailsExtracted', handleListingDetailsExtracted);
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  // Use extracted data if available, fallback to hook data
+  const propertyData = extractedPropertyData || hookPropertyData;
   
   console.log('[PropertyToolbar] Current path:', location.pathname);
   console.log('[PropertyToolbar] Listing ID from params:', listingId);
@@ -137,7 +218,8 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         onClose={() => setIsScheduleOpen(false)}
         onSuccess={handleScheduleSuccess}
         initialAddress={propertyData?.address}
-        propertyId={propertyData?.mlsId}
+        propertyId={propertyData?.listingId || queryId || listingId}
+        propertyDetails={extractedPropertyData}
       />
 
       {/* Favorite Property Modal */}

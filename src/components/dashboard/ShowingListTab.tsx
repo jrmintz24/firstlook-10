@@ -5,6 +5,7 @@ import AgentRequestCard from "./AgentRequestCard";
 import ShowingRequestCard from "./ShowingRequestCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
+import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
 
 interface ShowingRequest {
   id: string;
@@ -22,6 +23,7 @@ interface ShowingRequest {
   status_updated_at?: string | null;
   user_id?: string | null;
   buyer_consents_to_contact?: boolean | null;
+  idx_property_id?: string | null;
 }
 
 interface ShowingListTabProps {
@@ -81,8 +83,13 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   eligibility,
   onUpgradeClick
 }) => {
+  // Fetch property details for the showings
+  const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(showings);
 
-  if (showings.length === 0) {
+  // Use showings with details if available, otherwise fall back to original showings
+  const enhancedShowings = showingsWithDetails.length > 0 ? showingsWithDetails : showings;
+
+  if (enhancedShowings.length === 0) {
     return (
       <EmptyStateCard
         title={emptyTitle}
@@ -98,7 +105,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">{title}</h2>
       <div className="space-y-4">
-        {showings.map((showing) => {
+        {enhancedShowings.map((showing) => {
           if (userType === 'agent') {
             return (
               <AgentRequestCard

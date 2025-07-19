@@ -25,6 +25,17 @@ import {
 import { usePostShowingActionsTracking } from "@/hooks/usePostShowingActionsTracking";
 import { useEffect } from "react";
 
+interface PropertyDetails {
+  id: string;
+  address: string;
+  price: number | null;
+  beds: number | null;
+  baths: number | null;
+  sqft: number | null;
+  images: string[] | null;
+  ihf_page_url: string | null;
+}
+
 interface ShowingRequest {
   id: string;
   property_address: string;
@@ -40,6 +51,8 @@ interface ShowingRequest {
   estimated_confirmation_date?: string | null;
   status_updated_at?: string | null;
   user_id?: string | null;
+  idx_property_id?: string | null;
+  propertyDetails?: PropertyDetails | null;
 }
 
 interface ShowingRequestCardProps {
@@ -207,6 +220,71 @@ const ShowingRequestCard = ({
                   {showing.property_address}
                 </h3>
               </div>
+
+              {/* Property Details */}
+              {showing.propertyDetails && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                  <div className="flex gap-4">
+                    {/* Property Image */}
+                    {showing.propertyDetails.images && showing.propertyDetails.images.length > 0 && (
+                      <div className="flex-shrink-0">
+                        <img
+                          src={showing.propertyDetails.images[0]}
+                          alt="Property"
+                          className="w-16 h-16 rounded-lg object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Property Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        {showing.propertyDetails.price && (
+                          <div className="font-semibold text-green-600">
+                            ${showing.propertyDetails.price.toLocaleString()}
+                          </div>
+                        )}
+                        
+                        {showing.propertyDetails.beds && (
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <Home className="h-3 w-3" />
+                            {showing.propertyDetails.beds} bed
+                          </div>
+                        )}
+                        
+                        {showing.propertyDetails.baths && (
+                          <div className="text-gray-600">
+                            {showing.propertyDetails.baths} bath
+                          </div>
+                        )}
+                        
+                        {showing.propertyDetails.sqft && (
+                          <div className="text-gray-600">
+                            {showing.propertyDetails.sqft.toLocaleString()} sqft
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Property Link */}
+                      {showing.propertyDetails.ihf_page_url && (
+                        <div className="mt-2">
+                          <a
+                            href={showing.propertyDetails.ihf_page_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-xs font-medium hover:underline"
+                          >
+                            View Property Details →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Status and Date Info */}
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">

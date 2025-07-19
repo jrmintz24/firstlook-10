@@ -20,7 +20,7 @@ interface PropertyDisplayProps {
   pageUrl?: string | null;
   size?: 'sm' | 'md' | 'lg';
   showImage?: boolean;
-  mlsId?: string | null; // Add MLS ID for lookup
+  idxId?: string | null; // Add IDX ID for lookup
 }
 
 const PropertyDisplay = ({ 
@@ -33,7 +33,7 @@ const PropertyDisplay = ({
   pageUrl,
   size = 'md',
   showImage = true,
-  mlsId
+  idxId
 }: PropertyDisplayProps) => {
   const [lookupData, setLookupData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,13 +53,13 @@ const PropertyDisplay = ({
   
   const showEnhancedLayout = hasPropertyData || lookupData || (displayData.image && showImage);
   
-  // Fetch property data on-demand if we have MLS ID but no property data
+  // Fetch property data on-demand if we have IDX ID but no property data
   useEffect(() => {
-    if (mlsId && !hasPropertyData && !lookupData) {
-      console.log('🔍 [PropertyDisplay] Fetching property data for MLS ID:', mlsId);
+    if (idxId && !hasPropertyData && !lookupData) {
+      console.log('🔍 [PropertyDisplay] Fetching property data for IDX ID:', idxId);
       setIsLoading(true);
       
-      getCachedPropertyData(mlsId, address)
+      getCachedPropertyData(idxId, address)
         .then(data => {
           if (data) {
             console.log('✅ [PropertyDisplay] Received property data:', data);
@@ -73,7 +73,7 @@ const PropertyDisplay = ({
           setIsLoading(false);
         });
     }
-  }, [mlsId, hasPropertyData, lookupData]);
+  }, [idxId, hasPropertyData, lookupData]);
   
   // Debug logging
   console.log('PropertyDisplay props:', { 
@@ -84,7 +84,7 @@ const PropertyDisplay = ({
     sqft, 
     image, 
     pageUrl,
-    mlsId,
+    idxId,
     hasPropertyData,
     lookupData,
     displayData,

@@ -13,10 +13,10 @@ const PropertyLookupDebugger = () => {
       try {
         console.log('🔍 [Debug] Fetching property lookup debug data for user:', user.id);
         
-        // Get showing requests with MLS IDs
+        // Get showing requests with IDX IDs
         const { data: showings, error: showingsError } = await supabase
           .from('showing_requests')
-          .select('id, property_address, mls_id, created_at')
+          .select('id, property_address, idx_id, mls_id, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5);
@@ -26,10 +26,10 @@ const PropertyLookupDebugger = () => {
           return;
         }
 
-        // Get all properties and their MLS IDs and listing IDs
+        // Get all properties and their IDX IDs, MLS IDs and listing IDs
         const { data: properties, error: propertiesError } = await supabase
           .from('idx_properties')
-          .select('mls_id, listing_id, address, price, beds, baths, sqft, images')
+          .select('idx_id, mls_id, listing_id, address, price, beds, baths, sqft, images')
           .limit(20);
 
         if (propertiesError) {
@@ -37,19 +37,22 @@ const PropertyLookupDebugger = () => {
           return;
         }
 
-        // For each showing, try to find matching property by listing_id first, then mls_id
+        // For each showing, try to find matching property by idx_id first, then other IDs
         const lookupResults = [];
         for (const showing of showings || []) {
-          if (showing.mls_id) {
-            const matchingPropertyByListingId = properties?.find(p => p.listing_id === showing.mls_id);
-            const matchingPropertyByMlsId = properties?.find(p => p.mls_id === showing.mls_id);
-            const matchingProperty = matchingPropertyByListingId || matchingPropertyByMlsId;
+          const searchId = showing.idx_id || showing.mls_id;
+          if (searchId) {
+            const matchingPropertyByIdxId = properties?.find(p => p.idx_id === searchId);
+            const matchingPropertyByMlsId = properties?.find(p => p.mls_id === searchId);
+            const matchingPropertyByListingId = properties?.find(p => p.listing_id === searchId);
+            const matchingProperty = matchingPropertyByIdxId || matchingPropertyByMlsId || matchingPropertyByListingId;
             
             lookupResults.push({
               showing,
               matchingProperty,
               hasMatch: !!matchingProperty,
-              matchType: matchingPropertyByListingId ? 'listing_id' : (matchingPropertyByMlsId ? 'mls_id' : 'none')
+              matchType: matchingPropertyByIdxId ? 'idx_id' : (matchingPropertyByMlsId ? 'mls_id' : (matchingPropertyByListingId ? 'listing_id' : 'none')),
+              searchId
             });
           }
         }
@@ -97,7 +100,9 @@ const PropertyLookupDebugger = () => {
           <div className="bg-white p-3 rounded mt-2 max-h-60 overflow-auto">
             {debugData.lookupResults.map((result: any, index: number) => (
               <div key={index} className={`p-2 mb-2 rounded ${result.hasMatch ? 'bg-green-100' : 'bg-red-100'}`}>
-                <div><strong>Showing MLS ID:</strong> {result.showing.mls_id}</div>
+                <div><strong>Showing IDX ID:</strong> {result.showing.idx_id || 'null'}</div>
+                <div><strong>Showing MLS ID:</strong> {result.showing.mls_id || 'null'}</div>
+                <div><strong>Search ID:</strong> {result.searchId}</div>
                 <div><strong>Address:</strong> {result.showing.property_address}</div>
                 <div><strong>Match Found:</strong> {result.hasMatch ? `✅ YES (${result.matchType})` : '❌ NO'}</div>
                 {result.matchingProperty && (
@@ -112,16 +117,16 @@ const PropertyLookupDebugger = () => {
         </div>
 
         <div>
-          <strong>All MLS IDs in Showing Requests:</strong>
+          <strong>All IDs in Showing Requests:</strong>
           <pre className="bg-white p-2 rounded mt-2 text-xs overflow-auto max-h-40">
-            {debugData.showings.map((s: any) => `${s.mls_id} - ${s.property_address}`).join('\n')}
+            {debugData.showings.map((s: any) => `IDX: ${s.idx_id || 'null'} | MLS: ${s.mls_id || 'null'} | ${s.property_address}`).join('\n')}
           </pre>
         </div>
 
         <div>
           <strong>All IDs in Properties DB:</strong>
           <pre className="bg-white p-2 rounded mt-2 text-xs overflow-auto max-h-40">
-            {debugData.properties.map((p: any) => `MLS: ${p.mls_id} | Listing: ${p.listing_id} | ${p.address} - $${p.price}`).join('\n')}
+            {debugData.properties.map((p: any) => `IDX: ${p.idx_id || 'null'} | MLS: ${p.mls_id || 'null'} | Listing: ${p.listing_id || 'null'} | ${p.address} - $${p.price}`).join('\n')}
           </pre>
         </div>
       </div>

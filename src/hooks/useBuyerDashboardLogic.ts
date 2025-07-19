@@ -19,6 +19,9 @@ interface ShowingRequest {
   assigned_agent_id?: string;
   user_id?: string;
   status_updated_at?: string;
+  // IDX identifiers
+  idx_id?: string | null;
+  mls_id?: string | null;
   // Enhanced property data from idx_properties join
   property_price?: string | null;
   property_beds?: string | null;

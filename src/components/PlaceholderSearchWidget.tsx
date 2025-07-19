@@ -15,10 +15,16 @@ const PlaceholderSearchWidget = ({ className = "" }: PlaceholderSearchWidgetProp
   const navigate = useNavigate();
 
   const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      // If no search term, just go to listings
+      navigate('/listings');
+      return;
+    }
+
     setIsSearching(true);
     
     // Navigate to listings page with search parameter
-    const searchParams = searchTerm.trim() ? `?search=${encodeURIComponent(searchTerm.trim())}` : '';
+    const searchParams = `?search=${encodeURIComponent(searchTerm.trim())}`;
     navigate(`/listings${searchParams}`);
     
     // Reset loading state after a brief delay

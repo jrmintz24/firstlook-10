@@ -35,32 +35,29 @@ const Listings = () => {
           const searchTerm = searchParams.get('search');
           console.log('[Listings] Search term from URL:', searchTerm);
           
-          // Create and execute the embed script with error handling
+          // Create and execute the embed script with enhanced search integration
           try {
-            const renderedElement = window.ihfKestrel.render();
+            let renderedElement;
+            
+            // Try to render with search parameters if available
+            if (searchTerm && window.ihfKestrel.renderWithSearch) {
+              console.log('[Listings] Attempting IDX render with search parameters');
+              renderedElement = window.ihfKestrel.renderWithSearch({ search: searchTerm });
+            } else {
+              renderedElement = window.ihfKestrel.render();
+            }
             
             if (renderedElement) {
               containerRef.current.appendChild(renderedElement);
               console.log('[Listings] IDX content successfully rendered with search:', searchTerm);
               
-              // Enhanced click interception for property links
+              // Enhanced search integration and click interception
               setTimeout(() => {
                 interceptPropertyClicks();
                 
-                // If we have a search term, try to trigger search after render
+                // Apply search with retry mechanism
                 if (searchTerm) {
-                  console.log('[Listings] Will attempt to trigger search for:', searchTerm);
-                  try {
-                    const searchInput = containerRef.current?.querySelector('input[type="text"], input[placeholder*="search"], input[name*="search"]') as HTMLInputElement;
-                    if (searchInput) {
-                      searchInput.value = searchTerm;
-                      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                      searchInput.dispatchEvent(new Event('change', { bubbles: true }));
-                      console.log('[Listings] Search term applied to IDX widget');
-                    }
-                  } catch (error) {
-                    console.log('[Listings] Could not auto-populate search:', error);
-                  }
+                  retrySearchApplication(searchTerm, 0, 5); // Try up to 5 times
                 }
               }, 500);
               
@@ -100,6 +97,172 @@ const Listings = () => {
         console.error('[Listings] Error loading IDX content:', error);
         setIsLoading(false);
         setHasError(true);
+      }
+    };
+
+    // Retry mechanism for search application
+    const retrySearchApplication = (searchTerm: string, attempt: number, maxAttempts: number) => {
+      console.log(`[Listings] Search application attempt ${attempt + 1}/${maxAttempts}`);
+      
+      const success = applySearchToIDXWidget(searchTerm);
+      
+      if (!success && attempt < maxAttempts - 1) {
+        // Wait longer between each retry
+        const delay = 1000 + (attempt * 500); // 1s, 1.5s, 2s, etc.
+        setTimeout(() => {
+          retrySearchApplication(searchTerm, attempt + 1, maxAttempts);
+        }, delay);
+      } else if (!success) {
+        console.warn('[Listings] All search application attempts failed');
+        // Show user feedback that search couldn't be auto-applied
+        showSearchFeedback(searchTerm);
+        
+        // Consider falling back to iHomeFinder search shortcode
+        considerSearchFallback(searchTerm);
+      }
+    };
+    
+    // Show user feedback about search status
+    const showSearchFeedback = (searchTerm: string) => {
+      // Create a temporary notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+      notification.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Search for "${searchTerm}" - please use the search box above</span>
+        <button onclick="this.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">×</button>
+      `;
+      document.body.appendChild(notification);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 5000);
+    };
+    
+    // Consider using iHomeFinder search shortcode as fallback
+    const considerSearchFallback = (searchTerm: string) => {
+      console.log('[Listings] Considering search fallback for:', searchTerm);
+      
+      // Store the search term for potential future use
+      sessionStorage.setItem('pendingSearch', searchTerm);
+      
+      // In the future, you could implement a fallback to iHomeFinder's search shortcode
+      // For now, just log that we're considering it
+      console.log('[Listings] Search term stored for potential fallback implementation');
+    };
+
+    // Enhanced function to apply search term to IDX widget
+    const applySearchToIDXWidget = (searchTerm: string | null): boolean => {
+      if (!searchTerm || !containerRef.current) return false;
+      
+      console.log('[Listings] Applying search term to IDX widget:', searchTerm);
+      
+      // Multiple strategies to find and populate the search input
+      const searchStrategies = [
+        // Strategy 1: Common search input selectors
+        () => containerRef.current?.querySelector('input[type="text"][placeholder*="search" i], input[type="text"][placeholder*="city" i], input[type="text"][placeholder*="address" i]') as HTMLInputElement,
+        
+        // Strategy 2: Look for inputs with search-related names
+        () => containerRef.current?.querySelector('input[name*="search" i], input[name*="city" i], input[name*="location" i], input[name*="address" i]') as HTMLInputElement,
+        
+        // Strategy 3: Look for inputs in search forms
+        () => containerRef.current?.querySelector('form[class*="search" i] input[type="text"], .search-form input[type="text"], .ihf-search input[type="text"]') as HTMLInputElement,
+        
+        // Strategy 4: Look for any text input in the first form
+        () => containerRef.current?.querySelector('form input[type="text"]') as HTMLInputElement,
+        
+        // Strategy 5: Look for any text input (last resort)
+        () => containerRef.current?.querySelector('input[type="text"]') as HTMLInputElement
+      ];
+      
+      let searchInput: HTMLInputElement | null = null;
+      let strategyUsed = -1;
+      
+      // Try each strategy
+      for (let i = 0; i < searchStrategies.length; i++) {
+        try {
+          searchInput = searchStrategies[i]();
+          if (searchInput) {
+            strategyUsed = i + 1;
+            console.log(`[Listings] Found search input using strategy ${strategyUsed}`);
+            break;
+          }
+        } catch (error) {
+          console.log(`[Listings] Strategy ${i + 1} failed:`, error);
+        }
+      }
+      
+      if (searchInput) {
+        try {
+          // Set the value and trigger various events
+          searchInput.value = searchTerm;
+          searchInput.focus();
+          
+          // Trigger multiple events to ensure the search is processed
+          const events = ['input', 'change', 'blur', 'keyup'];
+          events.forEach(eventType => {
+            searchInput!.dispatchEvent(new Event(eventType, { bubbles: true }));
+          });
+          
+          // Also try keyboard events
+          searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          searchInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+          
+          console.log(`[Listings] Successfully populated search input with: "${searchTerm}" using strategy ${strategyUsed}`);
+          
+          // Try to find and click search button
+          setTimeout(() => {
+            const searchButtons = containerRef.current?.querySelectorAll('button[type="submit"], input[type="submit"], button[class*="search" i], .search-button, .btn-search');
+            if (searchButtons && searchButtons.length > 0) {
+              const searchButton = searchButtons[0] as HTMLElement;
+              console.log('[Listings] Found search button, attempting to trigger search');
+              searchButton.click();
+            }
+          }, 100);
+          
+          return true; // Success!
+          
+        } catch (error) {
+          console.error('[Listings] Error applying search term to input:', error);
+        }
+      } else {
+        console.warn('[Listings] Could not find search input in IDX widget');
+        
+        // Alternative: Try to modify the IDX URL or configuration
+        tryAlternativeSearchMethods(searchTerm);
+      }
+      
+      return false; // Failed to apply search
+    };
+    
+    // Alternative search methods for IDX
+    const tryAlternativeSearchMethods = (searchTerm: string) => {
+      console.log('[Listings] Trying alternative search methods for:', searchTerm);
+      
+      // Try to update the page URL to include search parameters
+      try {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('ihf-search', searchTerm);
+        currentUrl.searchParams.set('location', searchTerm);
+        window.history.replaceState({}, '', currentUrl.toString());
+        console.log('[Listings] Updated URL with search parameters');
+      } catch (error) {
+        console.log('[Listings] Could not update URL:', error);
+      }
+      
+      // Try to trigger a custom event that IDX might listen for
+      try {
+        window.dispatchEvent(new CustomEvent('idxSearch', { 
+          detail: { searchTerm, location: searchTerm } 
+        }));
+        console.log('[Listings] Dispatched custom IDX search event');
+      } catch (error) {
+        console.log('[Listings] Could not dispatch custom event:', error);
       }
     };
 

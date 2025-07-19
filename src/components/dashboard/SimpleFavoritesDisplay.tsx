@@ -82,7 +82,7 @@ const SimpleFavoritesDisplay = ({
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {favorite.idx_property?.address || favorite.property_address}
+                    {(favorite.idx_property as any)?.address || favorite.property_address}
                   </h3>
                   {favorite.idx_property?.status === 'active' && (
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -120,11 +120,11 @@ const SimpleFavoritesDisplay = ({
                     </Button>
                   )}
                   
-                  {favorite.idx_property?.ihf_page_url && (
+                  {(favorite.idx_property as any)?.ihf_page_url && (
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => handleViewProperty(favorite.idx_property.ihf_page_url)}
+                      onClick={() => handleViewProperty((favorite.idx_property as any).ihf_page_url)}
                       className="flex items-center gap-2"
                     >
                       <ExternalLink className="h-4 w-4" />

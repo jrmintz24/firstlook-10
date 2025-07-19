@@ -199,7 +199,7 @@ export const useShowingSubmission = (
             
             // Add idx_id if the field exists (after migration)
             if (propertyMatch?.idx_id || propertyMatch?.mls_id) {
-              requestData.idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
+              (requestData as any).idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
             }
             
             showingRequests.push(requestData);
@@ -212,7 +212,7 @@ export const useShowingSubmission = (
           console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
           
           // Find matching property in idx_properties
-          const idxId = formData.idxId || formData.mlsId || '';
+          const idxId = (formData as any).idxId || formData.mlsId || '';
           const propertyMatch = await findOrCreatePropertyByIdxId(formData.propertyAddress.trim(), idxId);
           
           const request = {
@@ -229,7 +229,7 @@ export const useShowingSubmission = (
           
           // Add idx_id if the field exists (after migration)
           if (propertyMatch?.idx_id || propertyMatch?.mls_id) {
-            request.idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
+            (request as any).idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
           }
 
         // Avoid duplicates

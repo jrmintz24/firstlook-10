@@ -66,10 +66,10 @@ const ScheduleTour = () => {
           <ModernTourSchedulingModal
             isOpen={isModalOpen}
             onClose={handleClose}
-            onSuccess={handleSuccess}
+            onSuccess={async () => handleSuccess()}
             initialAddress={initialAddress}
             propertyId={listingId}
-            showCloseButton={false}
+            
           />
         </div>
       </div>

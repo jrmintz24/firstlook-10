@@ -544,6 +544,7 @@ export type Database = {
           description: string | null
           features: Json | null
           id: string
+          idx_id: string | null
           ihf_page_url: string | null
           images: Json | null
           latitude: number | null
@@ -574,6 +575,7 @@ export type Database = {
           description?: string | null
           features?: Json | null
           id?: string
+          idx_id?: string | null
           ihf_page_url?: string | null
           images?: Json | null
           latitude?: number | null
@@ -604,6 +606,7 @@ export type Database = {
           description?: string | null
           features?: Json | null
           id?: string
+          idx_id?: string | null
           ihf_page_url?: string | null
           images?: Json | null
           latitude?: number | null
@@ -1214,6 +1217,7 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
+          idx_id: string | null
           idx_property_id: string | null
           mls_id: string | null
           notes: string | null
@@ -1224,6 +1228,7 @@ export type Database = {
           buyer_id: string
           created_at?: string
           id?: string
+          idx_id?: string | null
           idx_property_id?: string | null
           mls_id?: string | null
           notes?: string | null
@@ -1234,6 +1239,7 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           id?: string
+          idx_id?: string | null
           idx_property_id?: string | null
           mls_id?: string | null
           notes?: string | null
@@ -1359,6 +1365,7 @@ export type Database = {
           created_at: string
           estimated_confirmation_date: string | null
           id: string
+          idx_id: string | null
           idx_property_id: string | null
           internal_notes: string | null
           message: string | null
@@ -1385,6 +1392,7 @@ export type Database = {
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
+          idx_id?: string | null
           idx_property_id?: string | null
           internal_notes?: string | null
           message?: string | null
@@ -1411,6 +1419,7 @@ export type Database = {
           created_at?: string
           estimated_confirmation_date?: string | null
           id?: string
+          idx_id?: string | null
           idx_property_id?: string | null
           internal_notes?: string | null
           message?: string | null

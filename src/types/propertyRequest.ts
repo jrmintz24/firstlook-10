@@ -8,6 +8,7 @@ export interface PropertyEntry {
   beds?: string;
   baths?: string;
   sqft?: string;
+  idxId?: string;
 }
 
 export interface PreferredOption {

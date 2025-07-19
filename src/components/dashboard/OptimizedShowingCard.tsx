@@ -197,7 +197,7 @@ const OptimizedShowingCard = ({
                     sqft={showing.property_sqft}
                     image={showing.property_image}
                     pageUrl={showing.property_page_url}
-                    idxId={showing.idx_id || showing.mls_id}
+                    idxId={(showing as any).idx_id || showing.mls_id}
                     size="md"
                   />
                 </div>

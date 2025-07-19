@@ -60,7 +60,7 @@ const findExistingProperty = async (address: string): Promise<PropertyEnrichment
         beds: data.beds,
         baths: data.baths,
         sqft: data.sqft,
-        images: Array.isArray(data.images) ? data.images : [],
+        images: Array.isArray(data.images) ? data.images.map(img => String(img)) : [],
         propertyType: data.property_type,
         yearBuilt: data.year_built,
         lotSize: data.lot_size,

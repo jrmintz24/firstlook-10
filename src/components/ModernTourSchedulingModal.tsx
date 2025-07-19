@@ -272,7 +272,7 @@ const ModernTourSchedulingModal = ({
         address: propertyAddress.trim(), 
         notes: notes,
         mlsId: extractedData?.mlsId || '',
-        source: extractedData?.mlsId ? 'idx' : 'manual'
+        source: (extractedData?.mlsId ? 'idx' : 'manual') as 'idx' | 'manual'
       }],
       preferredOptions: [{ date: selectedDate, time: selectedTime }],
       notes: notes,

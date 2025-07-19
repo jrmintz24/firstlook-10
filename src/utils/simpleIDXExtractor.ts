@@ -36,9 +36,9 @@ export function initSimpleIDXExtractor() {
         if (globalData.address && globalData.mlsId) {
           console.log('[Simple IDX] Using global property data:', globalData);
           
-          // Store globally and in session storage
-          window.ihfPropertyData = globalData;
-          sessionStorage.setItem('ihfPropertyData', JSON.stringify(globalData));
+        // Store globally and in session storage
+        (window as any).ihfPropertyData = { ...globalData, fullAddress: globalData.address, zip: '' };
+        sessionStorage.setItem('ihfPropertyData', JSON.stringify({ ...globalData, fullAddress: globalData.address, zip: '' }));
           
           // Dispatch event
           window.dispatchEvent(new CustomEvent('ihfPropertyDataReady', {
@@ -140,8 +140,8 @@ export function initSimpleIDXExtractor() {
         console.log('[Simple IDX] Extracted property data:', propertyData);
         
         // Store globally and in session storage
-        window.ihfPropertyData = propertyData;
-        sessionStorage.setItem('ihfPropertyData', JSON.stringify(propertyData));
+        (window as any).ihfPropertyData = { ...propertyData, fullAddress: propertyData.address, zip: '' };
+        sessionStorage.setItem('ihfPropertyData', JSON.stringify({ ...propertyData, fullAddress: propertyData.address, zip: '' }));
         
         // Dispatch event
         window.dispatchEvent(new CustomEvent('ihfPropertyDataReady', {

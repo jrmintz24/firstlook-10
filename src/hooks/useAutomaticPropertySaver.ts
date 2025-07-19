@@ -157,6 +157,18 @@ export const useAutomaticPropertySaver = () => {
 // Extend window interface
 declare global {
   interface Window {
-    ihfPropertyData?: ExtractedPropertyData;
+    ihfPropertyData?: {
+      address: string;
+      fullAddress: string;
+      city: string;
+      state: string;
+      zip: string;
+      price: string;
+      beds: string;
+      baths: string;
+      sqft: string;
+      mlsId: string;
+      extractedAt: string;
+    };
   }
 }

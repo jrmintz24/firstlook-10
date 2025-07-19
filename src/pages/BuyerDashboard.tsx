@@ -28,6 +28,7 @@ import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDispla
 // Debug component
 import PropertyLookupDebugger from "@/components/debug/PropertyLookupDebugger";
 import IDXDataTester from "@/components/debug/IDXDataTester";
+import DatabaseCleanup from "@/components/debug/DatabaseCleanup";
 
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
@@ -272,6 +273,9 @@ const BuyerDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
+      {/* Database Cleanup Tool */}
+      <DatabaseCleanup />
+      
       {/* IDX Data Tester */}
       <IDXDataTester />
       

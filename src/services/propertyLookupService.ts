@@ -72,14 +72,9 @@ export const lookupPropertyByIdxId = async (searchKey: string, originalAddress?:
       }
     }
     
-    // If no real data found, create a property record with realistic data
-    console.log('🔄 [Property Lookup] No property found in database, creating realistic data for search key:', searchKey);
-    const mockData = generatePropertyDataFromIdxId(searchKey, originalAddress);
-    
-    // Store this data in the database for future use
-    await storePropertyData(mockData);
-    
-    return mockData;
+    // If no real data found, return null instead of fake data
+    console.log('❌ [Property Lookup] No property found in database for search key:', searchKey);
+    return null;
     
   } catch (error) {
     console.error('❌ [Property Lookup] Error fetching property data:', error);
@@ -111,11 +106,9 @@ const formatDatabaseProperty = (dbProperty: any, originalAddress?: string): Prop
     }
   }
   
-  // If no images, use default
+  // Don't use default images - leave empty if no real images
   if (images.length === 0) {
-    images = [
-      'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop&auto=format'
-    ];
+    images = [];
   }
   
   return {
@@ -164,47 +157,6 @@ const storePropertyData = async (propertyData: PropertyLookupData) => {
   }
 };
 
-const generatePropertyDataFromIdxId = (idxId: string, originalAddress?: string): PropertyLookupData => {
-  // Generate realistic property data based on IDX ID patterns
-  const idxNumber = idxId.replace(/[^0-9]/g, '');
-  const lastDigit = parseInt(idxNumber.slice(-1)) || 0;
-  const secondLastDigit = parseInt(idxNumber.slice(-2, -1)) || 0;
-  
-  // Use MLS ID to determine property characteristics
-  const priceRanges = [650000, 750000, 850000, 950000, 1200000];
-  const bedCounts = [3, 4, 4, 5, 5];
-  const bathCounts = [2, 2.5, 3, 3.5, 4];
-  const sqftRanges = [1800, 2200, 2600, 3000, 3400];
-  
-  const priceIndex = lastDigit % priceRanges.length;
-  const bedIndex = secondLastDigit % bedCounts.length;
-  
-  // Generate property images based on MLS ID
-  const imageUrls = [
-    'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=400&h=300&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=400&h=300&fit=crop&auto=format'
-  ];
-  
-  const selectedImages = [
-    imageUrls[lastDigit % imageUrls.length],
-    imageUrls[(lastDigit + 1) % imageUrls.length],
-    imageUrls[(lastDigit + 2) % imageUrls.length]
-  ];
-  
-  return {
-    mlsId: idxId,
-    address: originalAddress || 'Property Address Not Available', // Use original address if available
-    price: `$${priceRanges[priceIndex].toLocaleString()}`,
-    beds: `${bedCounts[bedIndex]} bed${bedCounts[bedIndex] > 1 ? 's' : ''}`,
-    baths: `${bathCounts[bedIndex]} bath${bathCounts[bedIndex] > 1 ? 's' : ''}`,
-    sqft: `${sqftRanges[bedIndex].toLocaleString()} sqft`,
-    images: selectedImages,
-    propertyUrl: `https://www.firstlookhometours.com/listing?id=${idxId}`
-  };
-};
 
 // Cache for property lookups to avoid repeated calls
 const propertyCache = new Map<string, PropertyLookupData>();

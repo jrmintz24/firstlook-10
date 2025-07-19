@@ -27,6 +27,7 @@ import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDispla
 
 // Debug component
 import PropertyLookupDebugger from "@/components/debug/PropertyLookupDebugger";
+import ManualPropertyImporter from "@/components/debug/ManualPropertyImporter";
 
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
@@ -271,6 +272,9 @@ const BuyerDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
+      {/* Manual Property Importer */}
+      <ManualPropertyImporter />
+      
       {/* Debug Component */}
       <PropertyLookupDebugger />
 

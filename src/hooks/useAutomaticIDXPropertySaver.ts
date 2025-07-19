@@ -101,9 +101,12 @@ export function useAutomaticIDXPropertySaver() {
       // Backfill favorites
       const { error: favError } = await supabase
         .from('property_favorites')
-        .update({ idx_property_id: propertyId })
+        .update({ 
+          idx_property_id: propertyId,
+          idx_id: propertyData.mlsId 
+        })
         .eq('buyer_id', user.id)
-        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId}`)
+        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId},idx_id.eq.${propertyData.mlsId}`)
         .is('idx_property_id', null);
 
       if (favError) {
@@ -115,9 +118,12 @@ export function useAutomaticIDXPropertySaver() {
       // Backfill showing requests
       const { error: showError } = await supabase
         .from('showing_requests')
-        .update({ idx_property_id: propertyId })
+        .update({ 
+          idx_property_id: propertyId,
+          idx_id: propertyData.mlsId 
+        })
         .eq('user_id', user.id)
-        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId}`)
+        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId},idx_id.eq.${propertyData.mlsId}`)
         .is('idx_property_id', null);
 
       if (showError) {

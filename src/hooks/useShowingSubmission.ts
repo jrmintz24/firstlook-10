@@ -12,20 +12,32 @@ export const useShowingSubmission = (
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const findOrCreatePropertyByIdxId = async (address: string, mlsId?: string) => {
+  const findOrCreatePropertyByIdxId = async (address: string, idxId?: string) => {
     try {
-      console.log('🔍 Looking for property with address:', address, 'MLS ID:', mlsId);
+      console.log('🔍 Looking for property with address:', address, 'IDX ID:', idxId);
       
-      // First priority: Find by MLS ID if provided
-      if (mlsId) {
+      // First priority: Find by IDX ID if provided
+      if (idxId) {
+        const { data: idxMatch } = await supabase
+          .from('idx_properties')
+          .select('id, idx_id, mls_id, address')
+          .eq('idx_id', idxId)
+          .single();
+        
+        if (idxMatch) {
+          console.log('✅ Found property by IDX ID:', idxMatch);
+          return idxMatch;
+        }
+        
+        // Fallback to MLS ID search for backwards compatibility
         const { data: mlsMatch } = await supabase
           .from('idx_properties')
-          .select('id, mls_id, address')
-          .eq('mls_id', mlsId)
+          .select('id, idx_id, mls_id, address')
+          .eq('mls_id', idxId)
           .single();
         
         if (mlsMatch) {
-          console.log('✅ Found property by MLS ID:', mlsMatch);
+          console.log('✅ Found property by MLS ID fallback:', mlsMatch);
           return mlsMatch;
         }
       }
@@ -33,7 +45,7 @@ export const useShowingSubmission = (
       // Second priority: Try exact address match
       const { data: exactMatch } = await supabase
         .from('idx_properties')
-        .select('id, mls_id, address')
+        .select('id, idx_id, mls_id, address')
         .eq('address', address)
         .single();
       
@@ -49,8 +61,10 @@ export const useShowingSubmission = (
       const extractedData = (window as any).extractedPropertyData;
       console.log('🔍 Checking for extracted property data:', extractedData);
       
+      const generatedId = idxId || `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const newProperty = {
-        mls_id: mlsId || `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        idx_id: generatedId, // Use idx_id as primary identifier
+        mls_id: generatedId, // Keep mls_id for compatibility
         address: extractedData?.address || address,
         city: extractCityFromAddress(address),
         state: 'CA',
@@ -63,7 +77,7 @@ export const useShowingSubmission = (
         status: 'Active',
         description: extractedData?.description || 'Beautiful home in desirable location',
         images: extractedData?.images || getDefaultImages(),
-        ihf_page_url: mlsId ? `https://www.firstlookhometours.com/listing?id=${mlsId}` : `https://www.firstlookhometours.com/listing?search=${encodeURIComponent(address)}`,
+        ihf_page_url: generatedId ? `https://www.firstlookhometours.com/listing?id=${generatedId}` : `https://www.firstlookhometours.com/listing?search=${encodeURIComponent(address)}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -73,7 +87,7 @@ export const useShowingSubmission = (
       const { data: createdProperty, error } = await supabase
         .from('idx_properties')
         .insert([newProperty])
-        .select('id, mls_id, address')
+        .select('id, idx_id, mls_id, address')
         .single();
       
       if (error) {
@@ -175,6 +189,7 @@ export const useShowingSubmission = (
               property_address: property.address.trim(),
               property_id: formData.propertyId || null,
               idx_property_id: propertyMatch?.id || null,
+              idx_id: propertyMatch?.idx_id || propertyMatch?.mls_id || null,
               mls_id: propertyMatch?.mls_id || null,
               message: property.notes || formData.notes || null,
               preferred_date: formData.preferredDate1 || null,
@@ -197,6 +212,7 @@ export const useShowingSubmission = (
             property_address: formData.propertyAddress.trim(),
             property_id: formData.propertyId || null,
             idx_property_id: propertyMatch?.id || null,
+            idx_id: propertyMatch?.idx_id || propertyMatch?.mls_id || null,
             mls_id: propertyMatch?.mls_id || null,
             message: formData.notes || null,
             preferred_date: formData.preferredDate1 || null,

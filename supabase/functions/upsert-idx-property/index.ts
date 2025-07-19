@@ -38,7 +38,8 @@ serve(async (req) => {
 
     // Simple data cleaning - focus on essential fields only
     const cleanedProperty = {
-      mls_id: property.mlsId.toString().trim(),
+      idx_id: property.mlsId.toString().trim(), // Use idx_id as primary IDX identifier
+      mls_id: property.mlsId.toString().trim(), // Keep mls_id for compatibility
       address: property.address.trim(),
       price: property.price ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
       beds: property.beds ? parseInt(property.beds.replace(/[^0-9]/g, '')) || null : null,
@@ -55,11 +56,11 @@ serve(async (req) => {
 
     console.log('[Simple Upsert] Cleaned property data:', cleanedProperty)
 
-    // Upsert property data
+    // Upsert property data using idx_id as primary conflict resolution
     const { data, error } = await supabaseClient
       .from('idx_properties')
       .upsert(cleanedProperty, {
-        onConflict: 'mls_id'
+        onConflict: 'idx_id'
       })
       .select()
       .single()
@@ -75,6 +76,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         propertyId: data.id,
+        idxId: data.idx_id,
         mlsId: data.mls_id 
       }),
       {

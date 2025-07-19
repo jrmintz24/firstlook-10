@@ -28,6 +28,7 @@ import TourSession from './pages/TourSession'
 import NotFound from './pages/NotFound'
 import ScrollToTop from './components/ScrollToTop'
 import { useAnalytics } from './hooks/useAnalytics'
+import { useAutomaticIDXPropertySaver } from './hooks/useAutomaticIDXPropertySaver'
 import './utils/initializeIDXExtractor'
 import './utils/iHomeFinderExtractor'
 import RedesignedBuyerDashboard from './pages/RedesignedBuyerDashboard'
@@ -53,6 +54,12 @@ const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// IDX Property Saver wrapper component
+const IDXPropertySaverWrapper = ({ children }: { children: React.ReactNode }) => {
+  useAutomaticIDXPropertySaver();
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -62,8 +69,9 @@ function App() {
           <Sonner />
           <BrowserRouter>
             <AnalyticsWrapper>
-              <ScrollToTop />
-              <Navigation />
+              <IDXPropertySaverWrapper>
+                <ScrollToTop />
+                <Navigation />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
@@ -193,6 +201,7 @@ function App() {
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </IDXPropertySaverWrapper>
             </AnalyticsWrapper>
           </BrowserRouter>
         </TooltipProvider>

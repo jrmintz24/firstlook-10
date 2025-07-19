@@ -75,7 +75,7 @@ export function useSimpleIDXIntegration() {
       const { data, error } = await supabase
         .from('property_favorites')
         .insert({
-          user_id: userId,
+          buyer_id: userId,
           idx_property_id: savedProperty.propertyId,
           mls_id: property.mlsId,
           property_address: property.address,

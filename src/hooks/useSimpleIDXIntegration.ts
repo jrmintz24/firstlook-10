@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIDXPropertyExtractor } from './useIDXPropertyExtractor';
@@ -71,15 +72,14 @@ export function useSimpleIDXIntegration() {
       // First save the property data
       const savedProperty = await savePropertyToDatabase(property);
       
-      // Then create the favorite
+      // Then create the favorite - removed favorited_at field as it doesn't exist in the table
       const { data, error } = await supabase
         .from('property_favorites')
         .insert({
           buyer_id: userId,
           idx_property_id: savedProperty.propertyId,
           mls_id: property.mlsId,
-          property_address: property.address,
-          favorited_at: new Date().toISOString()
+          property_address: property.address
         })
         .select()
         .single();

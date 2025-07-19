@@ -9,20 +9,22 @@ export function useAutomaticIDXPropertySaver() {
     const handlePropertyDataReady = async (event: CustomEvent) => {
       const propertyData = event.detail;
       
-      if (!propertyData?.mlsId || !propertyData?.address) {
-        console.log('[AutoSaver] Insufficient property data, skipping save');
+      // Accept either idxId or mlsId as identifier
+      const propertyId = propertyData?.idxId || propertyData?.mlsId;
+      if (!propertyId) {
+        console.log('[AutoSaver] No property ID found, skipping save:', propertyData);
         return;
       }
 
       // Avoid duplicate processing
-      const propertyKey = `${propertyData.mlsId}-${propertyData.address}`;
+      const propertyKey = `${propertyId}-${propertyData.address || 'no-address'}`;
       if (hasProcessedProperty.current.has(propertyKey)) {
         console.log('[AutoSaver] Property already processed:', propertyKey);
         return;
       }
 
       try {
-        console.log('[AutoSaver] Automatically saving property:', propertyData.mlsId);
+        console.log('[AutoSaver] Automatically saving property:', propertyId);
         
         // Save to database via upsert function
         const { data, error } = await supabase.functions.invoke('upsert-idx-property', {
@@ -103,10 +105,10 @@ export function useAutomaticIDXPropertySaver() {
         .from('property_favorites')
         .update({ 
           idx_property_id: propertyId,
-          idx_id: propertyData.mlsId 
+          idx_id: propertyData.idxId || propertyData.mlsId 
         })
         .eq('buyer_id', user.id)
-        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId},idx_id.eq.${propertyData.mlsId}`)
+        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId || propertyData.idxId},idx_id.eq.${propertyData.idxId || propertyData.mlsId}`)
         .is('idx_property_id', null);
 
       if (favError) {
@@ -120,10 +122,10 @@ export function useAutomaticIDXPropertySaver() {
         .from('showing_requests')
         .update({ 
           idx_property_id: propertyId,
-          idx_id: propertyData.mlsId 
+          idx_id: propertyData.idxId || propertyData.mlsId 
         })
         .eq('user_id', user.id)
-        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId},idx_id.eq.${propertyData.mlsId}`)
+        .or(`property_address.eq.${propertyData.address},mls_id.eq.${propertyData.mlsId || propertyData.idxId},idx_id.eq.${propertyData.idxId || propertyData.mlsId}`)
         .is('idx_property_id', null);
 
       if (showError) {

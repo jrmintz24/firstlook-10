@@ -27,19 +27,22 @@ serve(async (req) => {
     
     console.log('[Simple Upsert] Received property data:', property)
 
-    // Validate required fields
-    if (!property?.mlsId || !property?.address) {
-      console.error('[Simple Upsert] Missing required fields:', { 
-        mlsId: property?.mlsId, 
+    // Validate required fields - accept either idxId or mlsId
+    const propertyId = property?.idxId || property?.mlsId;
+    if (!propertyId) {
+      console.error('[Simple Upsert] Missing property ID:', { 
+        idxId: property?.idxId, 
+        mlsId: property?.mlsId,
         address: property?.address 
       })
-      throw new Error('Missing required fields: mlsId and address')
+      throw new Error('Missing required field: idxId or mlsId')
     }
 
     // Simple data cleaning - focus on essential fields only
     const cleanedProperty = {
-      mls_id: property.mlsId.toString().trim(), // Keep mls_id for compatibility and fallback
-      address: property.address.trim(),
+      idx_id: propertyId.toString().trim(), // Primary identifier
+      mls_id: (property.mlsId || propertyId).toString().trim(), // Fallback compatibility
+      address: property.address ? property.address.trim() : 'Address not extracted',
       price: property.price ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
       beds: property.beds ? parseInt(property.beds.replace(/[^0-9]/g, '')) || null : null,
       baths: property.baths ? parseFloat(property.baths.replace(/[^0-9.]/g, '')) || null : null,
@@ -52,21 +55,14 @@ serve(async (req) => {
       ihf_page_url: property.pageUrl || null,
       raw_data: property
     }
-    
-    // Add idx_id if column exists (after migration)
-    try {
-      cleanedProperty.idx_id = property.mlsId.toString().trim();
-    } catch (e) {
-      console.log('[Simple Upsert] idx_id column may not exist yet, continuing with mls_id only');
-    }
 
     console.log('[Simple Upsert] Cleaned property data:', cleanedProperty)
 
-    // Upsert property data (use mls_id for now until migration completes)
+    // Upsert property data using idx_id as primary conflict resolution
     const { data, error } = await supabaseClient
       .from('idx_properties')
       .upsert(cleanedProperty, {
-        onConflict: 'mls_id'
+        onConflict: 'idx_id'
       })
       .select()
       .single()

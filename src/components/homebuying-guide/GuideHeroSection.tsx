@@ -5,56 +5,55 @@ import { ArrowRight, Download } from "lucide-react";
 
 export const GuideHeroSection = () => {
   return (
-    <div className="pt-32 pb-20 bg-gradient-to-br from-gray-50 via-white to-purple-50 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-grid-gray-100/50 bg-[size:20px_20px] opacity-40" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-200/30 to-indigo-200/30 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-200/20 to-purple-200/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+    <div className="pt-32 pb-20 bg-white relative overflow-hidden">
+      {/* Background decoration - subtle and minimal */}
+      <div className="absolute inset-0 bg-gray-50/30" />
       
-      <div className="container mx-auto px-4 max-w-5xl text-center relative z-10">
-        <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md border border-purple-200 rounded-full px-5 py-3 mb-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-sm font-semibold text-gray-800 tracking-wide">Free Guide • No Email Required</span>
+      <div className="container mx-auto px-6 sm:px-8 max-w-5xl text-center relative z-10">
+        <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 mb-8 shadow-sm">
+          <div className="w-2 h-2 bg-gray-900 rounded-full" />
+          <span className="text-sm font-medium text-gray-700">Free Guide • No Email Required</span>
         </div>
         
-        <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-8 tracking-tight leading-[0.9] animate-fade-in-up">
+        <h1 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-6 tracking-tight leading-none">
           Buy Your Home
-          <span className="block bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent font-light">
-            Without an Agent
-          </span>
         </h1>
         
-        <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+        <h2 className="text-4xl md:text-6xl font-extralight text-gray-900 mb-8 tracking-tight leading-tight">
+          Without an Agent
+        </h2>
+        
+        <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
           Save thousands in commission fees while maintaining complete control over your homebuying journey. 
           This comprehensive guide shows you exactly how to navigate every step of the process with confidence.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
           <Link to="/buyer-auth">
-            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-12 py-5 text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-semibold tracking-wide transform hover:scale-105 hover:-translate-y-1">
+            <Button size="lg" className="bg-gray-900 hover:bg-black text-white px-10 py-5 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 rounded-xl min-w-[280px] h-[56px]">
               Start Your Home Search
-              <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+              <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
           </Link>
-          <Button variant="outline" size="lg" className="px-12 py-5 text-lg border-2 border-gray-300 rounded-2xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-semibold backdrop-blur-sm bg-white/90 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1">
+          <Button variant="outline" size="lg" className="px-10 py-5 text-base border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:scale-105 transition-all duration-300 font-medium rounded-xl shadow-sm hover:shadow-md min-w-[280px] h-[56px]">
             <Download className="mr-3 h-5 w-5" />
             Download PDF Guide
           </Button>
         </div>
 
-        {/* Enhanced Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-fade-in-up" style={{animationDelay: '0.6s'}}>
-          <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-3xl border border-gray-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 group">
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform duration-300">$15,000+</div>
-            <div className="text-sm md:text-base text-gray-600 font-medium leading-relaxed">Average savings vs traditional agent</div>
+        {/* Stats Grid - cleaner, minimal design */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="text-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="text-4xl md:text-5xl font-light text-gray-900 mb-2">$15,000+</div>
+            <div className="text-sm md:text-base text-gray-600 font-light">Average savings vs traditional agent</div>
           </div>
-          <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-3xl border border-gray-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 group">
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform duration-300">8 Steps</div>
-            <div className="text-sm md:text-base text-gray-600 font-medium leading-relaxed">Complete process covered</div>
+          <div className="text-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="text-4xl md:text-5xl font-light text-gray-900 mb-2">9 Steps</div>
+            <div className="text-sm md:text-base text-gray-600 font-light">Complete process covered</div>
           </div>
-          <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-3xl border border-gray-200/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 group">
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform duration-300">100%</div>
-            <div className="text-sm md:text-base text-gray-600 font-medium leading-relaxed">Control over your purchase</div>
+          <div className="text-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="text-4xl md:text-5xl font-light text-gray-900 mb-2">100%</div>
+            <div className="text-sm md:text-base text-gray-600 font-light">Control over your purchase</div>
           </div>
         </div>
       </div>

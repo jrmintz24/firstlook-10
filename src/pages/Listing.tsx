@@ -25,27 +25,56 @@ const Listing = () => {
   useEffect(() => {
     console.log('[Listing] Starting IDX render for listing:', listingId);
 
-    if (listingId && containerRef.current && window.ihfKestrel) {
-      // Clear existing content
-      containerRef.current.innerHTML = '';
-      
-      // Render IDX content
-      const renderedElement = window.ihfKestrel.render();
-      if (renderedElement) {
-        containerRef.current.appendChild(renderedElement);
-        console.log('[Listing] IDX content successfully rendered');
-        setIsLoading(false);
-      } else {
-        console.error('[Listing] IDX render returned null/undefined');
+    const renderIDXContent = () => {
+      if (listingId && containerRef.current && window.ihfKestrel?.render) {
+        try {
+          // Clear existing content
+          containerRef.current.innerHTML = '';
+          
+          // Render IDX content using the embed code pattern
+          const script = document.createElement('script');
+          script.textContent = 'document.currentScript.replaceWith(ihfKestrel.render());';
+          containerRef.current.appendChild(script);
+          
+          console.log('[Listing] IDX embed script injected successfully');
+          setIsLoading(false);
+          return true;
+        } catch (error) {
+          console.error('[Listing] Error rendering IDX content:', error);
+          return false;
+        }
+      }
+      return false;
+    };
+
+    // Try immediate render
+    if (renderIDXContent()) {
+      return;
+    }
+
+    // If immediate render fails, wait for ihfKestrel to load
+    let attempts = 0;
+    const maxAttempts = 20;
+    const interval = setInterval(() => {
+      attempts++;
+      console.log(`[Listing] IDX loading attempt ${attempts}/${maxAttempts}`, {
+        listingId,
+        hasContainer: !!containerRef.current,
+        hasIhfKestrel: !!window.ihfKestrel,
+        hasRender: !!window.ihfKestrel?.render
+      });
+
+      if (renderIDXContent()) {
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        console.error('[Listing] Failed to load IDX content after', maxAttempts, 'attempts');
         setIsLoading(false);
         setHasError(true);
       }
-    } else {
-      setTimeout(() => {
-        setIsLoading(false);
-        setHasError(true);
-      }, 2000);
-    }
+    }, 500);
+
+    return () => clearInterval(interval);
   }, [listingId]);
 
   if (hasError) {

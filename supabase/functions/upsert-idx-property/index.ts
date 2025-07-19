@@ -38,15 +38,18 @@ serve(async (req) => {
       throw new Error('Missing required field: idxId or mlsId')
     }
 
+    // Allow saving properties with just ID and address (other fields can be empty)
+    console.log('[Simple Upsert] Processing property with ID:', propertyId);
+
     // Simple data cleaning - focus on essential fields only
     const cleanedProperty = {
       idx_id: propertyId.toString().trim(), // Primary identifier
       mls_id: (property.mlsId || propertyId).toString().trim(), // Fallback compatibility
-      address: property.address ? property.address.trim() : 'Address not extracted',
-      price: property.price ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
-      beds: property.beds ? parseInt(property.beds.replace(/[^0-9]/g, '')) || null : null,
-      baths: property.baths ? parseFloat(property.baths.replace(/[^0-9.]/g, '')) || null : null,
-      sqft: property.sqft ? parseInt(property.sqft.replace(/[^0-9]/g, '')) || null : null,
+      address: property.address ? property.address.trim() : null,
+      price: property.price && property.price !== '' ? parseFloat(property.price.replace(/[^0-9.]/g, '')) || null : null,
+      beds: property.beds && property.beds !== '' ? parseInt(property.beds.replace(/[^0-9]/g, '')) || null : null,
+      baths: property.baths && property.baths !== '' ? parseFloat(property.baths.replace(/[^0-9.]/g, '')) || null : null,
+      sqft: property.sqft && property.sqft !== '' ? parseInt(property.sqft.replace(/[^0-9]/g, '')) || null : null,
       images: Array.isArray(property.images) ? property.images.slice(0, 10) : [],
       property_type: property.property_type || null,
       status: property.status || 'active',

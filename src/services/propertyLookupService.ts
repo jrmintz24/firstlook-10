@@ -12,44 +12,69 @@ export interface PropertyLookupData {
   propertyUrl: string;
 }
 
-export const lookupPropertyByIdxId = async (idxId: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
+export const lookupPropertyByIdxId = async (searchKey: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
   try {
-    console.log('🔍 [Property Lookup] Fetching REAL property data for IDX ID:', idxId, 'Original address:', originalAddress);
+    console.log('🔍 [Property Lookup] Searching for property with key:', searchKey, 'Original address:', originalAddress);
     
-    // Try to get real data from the database using idx_id
-    const { data: propertyData, error } = await supabase
-      .from('idx_properties')
-      .select('*')
-      .eq('idx_id', idxId)
-      .single();
-    
-    if (propertyData) {
-      console.log('✅ [Property Lookup] Found REAL property data by idx_id:', propertyData);
-      return formatDatabaseProperty(propertyData, originalAddress);
-    }
-    
-    // If no match with idx_id, try with mls_id as fallback (for backwards compatibility)
-    if (!propertyData && error?.code === 'PGRST116') {
-      console.log('🔍 [Property Lookup] No match with idx_id, trying mls_id as fallback');
+    // First try: Search by idx_id if it looks like an ID
+    if (searchKey && searchKey.length < 100) {
+      const { data: idxData, error: idxError } = await supabase
+        .from('idx_properties')
+        .select('*')
+        .eq('idx_id', searchKey)
+        .single();
+      
+      if (idxData) {
+        console.log('✅ [Property Lookup] Found property by idx_id:', idxData);
+        return formatDatabaseProperty(idxData, originalAddress);
+      }
+      
+      // Second try: Search by mls_id
       const { data: mlsData, error: mlsError } = await supabase
         .from('idx_properties')
         .select('*')
-        .eq('mls_id', idxId)
+        .eq('mls_id', searchKey)
         .single();
       
       if (mlsData) {
-        console.log('✅ [Property Lookup] Found property by MLS ID fallback:', mlsData);
+        console.log('✅ [Property Lookup] Found property by mls_id:', mlsData);
         return formatDatabaseProperty(mlsData, originalAddress);
       }
     }
     
-    if (error && error.code !== 'PGRST116') {
-      console.error('❌ [Property Lookup] Database error:', error);
+    // Third try: Search by address if we have one
+    const addressToSearch = originalAddress || searchKey;
+    if (addressToSearch && addressToSearch.length > 10) {
+      console.log('🔍 [Property Lookup] Searching by address:', addressToSearch);
+      
+      const { data: addressData, error: addressError } = await supabase
+        .from('idx_properties')
+        .select('*')
+        .eq('address', addressToSearch)
+        .single();
+      
+      if (addressData) {
+        console.log('✅ [Property Lookup] Found property by address:', addressData);
+        return formatDatabaseProperty(addressData, originalAddress);
+      }
+      
+      // Fourth try: Fuzzy address search (contains)
+      const { data: fuzzyData, error: fuzzyError } = await supabase
+        .from('idx_properties')
+        .select('*')
+        .ilike('address', `%${addressToSearch.split(',')[0]}%`)
+        .limit(1)
+        .single();
+      
+      if (fuzzyData) {
+        console.log('✅ [Property Lookup] Found property by fuzzy address match:', fuzzyData);
+        return formatDatabaseProperty(fuzzyData, originalAddress);
+      }
     }
     
     // If no real data found, create a property record with realistic data
-    console.log('🔄 [Property Lookup] No property found in database, creating realistic data for IDX ID:', idxId);
-    const mockData = generatePropertyDataFromIdxId(idxId, originalAddress);
+    console.log('🔄 [Property Lookup] No property found in database, creating realistic data for search key:', searchKey);
+    const mockData = generatePropertyDataFromIdxId(searchKey, originalAddress);
     
     // Store this data in the database for future use
     await storePropertyData(mockData);
@@ -184,17 +209,20 @@ const generatePropertyDataFromIdxId = (idxId: string, originalAddress?: string):
 // Cache for property lookups to avoid repeated calls
 const propertyCache = new Map<string, PropertyLookupData>();
 
-export const getCachedPropertyData = async (idxId: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
+export const getCachedPropertyData = async (searchKey: string, originalAddress?: string): Promise<PropertyLookupData | null> => {
+  // Create cache key using address if available, otherwise use search key
+  const cacheKey = originalAddress || searchKey;
+  
   // Check cache first
-  if (propertyCache.has(idxId)) {
-    console.log('🎯 [Property Lookup] Using cached data for IDX ID:', idxId);
-    return propertyCache.get(idxId) || null;
+  if (propertyCache.has(cacheKey)) {
+    console.log('🎯 [Property Lookup] Using cached data for key:', cacheKey);
+    return propertyCache.get(cacheKey) || null;
   }
   
   // Fetch and cache
-  const propertyData = await lookupPropertyByIdxId(idxId, originalAddress);
+  const propertyData = await lookupPropertyByIdxId(searchKey, originalAddress);
   if (propertyData) {
-    propertyCache.set(idxId, propertyData);
+    propertyCache.set(cacheKey, propertyData);
   }
   
   return propertyData;

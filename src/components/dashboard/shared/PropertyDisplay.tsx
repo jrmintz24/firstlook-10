@@ -53,17 +53,22 @@ const PropertyDisplay = ({
   
   const showEnhancedLayout = hasPropertyData || lookupData || (displayData.image && showImage);
   
-  // Fetch property data on-demand if we have IDX ID but no property data
+  // Fetch property data on-demand if we don't have complete property info
   useEffect(() => {
-    if (idxId && !hasPropertyData && !lookupData) {
-      console.log('🔍 [PropertyDisplay] Fetching property data for IDX ID:', idxId);
+    if (!hasPropertyData && !lookupData && address) {
+      console.log('🔍 [PropertyDisplay] No property data available, trying to fetch for address:', address);
       setIsLoading(true);
       
-      getCachedPropertyData(idxId, address)
+      // Try with IDX ID first, then fall back to address-based lookup
+      const searchKey = idxId || address;
+      
+      getCachedPropertyData(searchKey, address)
         .then(data => {
           if (data) {
             console.log('✅ [PropertyDisplay] Received property data:', data);
             setLookupData(data);
+          } else {
+            console.log('ℹ️ [PropertyDisplay] No property data found for:', searchKey);
           }
         })
         .catch(error => {
@@ -73,7 +78,7 @@ const PropertyDisplay = ({
           setIsLoading(false);
         });
     }
-  }, [idxId, hasPropertyData, lookupData]);
+  }, [hasPropertyData, lookupData, address, idxId]);
   
   // Debug logging
   console.log('PropertyDisplay props:', { 

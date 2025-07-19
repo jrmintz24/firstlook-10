@@ -182,20 +182,27 @@ export const useShowingSubmission = (
             console.log('DEBUG: Adding property from properties array:', property.address.trim());
             
             // Find matching property in idx_properties
-            const propertyMatch = await findOrCreatePropertyByIdxId(property.address.trim(), property.mlsId);
+            const idxId = property.idxId || property.mlsId || '';
+            const propertyMatch = await findOrCreatePropertyByIdxId(property.address.trim(), idxId);
             
-            showingRequests.push({
+            const requestData = {
               user_id: user.id,
               property_address: property.address.trim(),
               property_id: formData.propertyId || null,
               idx_property_id: propertyMatch?.id || null,
-              idx_id: propertyMatch?.idx_id || propertyMatch?.mls_id || null,
               mls_id: propertyMatch?.mls_id || null,
               message: property.notes || formData.notes || null,
               preferred_date: formData.preferredDate1 || null,
               preferred_time: formData.preferredTime1 || null,
               status: 'pending'
-            });
+            };
+            
+            // Add idx_id if the field exists (after migration)
+            if (propertyMatch?.idx_id || propertyMatch?.mls_id) {
+              requestData.idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
+            }
+            
+            showingRequests.push(requestData);
           }
         }
       }
@@ -205,20 +212,25 @@ export const useShowingSubmission = (
           console.log('DEBUG: Processing single propertyAddress:', formData.propertyAddress.trim());
           
           // Find matching property in idx_properties
-          const propertyMatch = await findOrCreatePropertyByIdxId(formData.propertyAddress.trim(), formData.mlsId);
+          const idxId = formData.idxId || formData.mlsId || '';
+          const propertyMatch = await findOrCreatePropertyByIdxId(formData.propertyAddress.trim(), idxId);
           
           const request = {
             user_id: user.id,
             property_address: formData.propertyAddress.trim(),
             property_id: formData.propertyId || null,
             idx_property_id: propertyMatch?.id || null,
-            idx_id: propertyMatch?.idx_id || propertyMatch?.mls_id || null,
             mls_id: propertyMatch?.mls_id || null,
             message: formData.notes || null,
             preferred_date: formData.preferredDate1 || null,
             preferred_time: formData.preferredTime1 || null,
             status: 'pending'
           };
+          
+          // Add idx_id if the field exists (after migration)
+          if (propertyMatch?.idx_id || propertyMatch?.mls_id) {
+            request.idx_id = propertyMatch?.idx_id || propertyMatch?.mls_id;
+          }
 
         // Avoid duplicates
         const isDuplicate = showingRequests.some(req => 

@@ -112,7 +112,6 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
   console.log('[PropertyToolbar] Is property detail page:', isPropertyDetailPage);
   console.log('[PropertyToolbar] Property data:', propertyData);
   console.log('[PropertyToolbar] Is loading:', isLoading);
-  console.log('[PropertyToolbar] Error:', error);
 
   const handleScheduleTour = () => {
     console.log('[PropertyToolbar] Schedule tour with property ID:', propertyData?.mlsId, 'and address:', propertyData?.address);

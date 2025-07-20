@@ -134,33 +134,52 @@ const StreamlinedOfferPrep = ({
     try {
       const scheduledDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${selectedTime}`);
       
-      // Create consultation booking with prep data
-      const { data: booking, error } = await supabase
-        .from('consultation_bookings')
+      // First create an offer intent
+      const { data: offerIntent, error: offerError } = await supabase
+        .from('offer_intents')
         .insert({
           buyer_id: buyerId,
-          agent_id: agentId,
-          scheduled_at: scheduledDateTime.toISOString(),
-          duration_minutes: 30,
-          consultation_type: formData.consultationType,
-          status: 'scheduled',
-          contact_name: formData.contactName,
-          contact_phone: formData.contactPhone,
-          contact_email: formData.contactEmail,
+          agent_id: agentId || buyerId, // Use buyer ID as fallback if no agent
           property_address: propertyAddress,
-          specific_questions: formData.specificQuestions,
-          prep_data: {
-            budgetMax: formData.budgetMax,
-            downPaymentAmount: formData.downPaymentAmount,
-            preApprovalStatus: formData.preApprovalStatus,
-            buyingTimeline: formData.buyingTimeline,
-            competitiveComfort: formData.competitiveComfort
-          }
+          offer_type: agentId ? 'agent_assisted' : 'consultation_request',
+          contract_type: propertyAddress.includes('Montgomery') ? 'gcaar' : 
+                       propertyAddress.includes('DC') || propertyAddress.includes('Washington') ? 'gcaar' : 'mar'
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (offerError) throw offerError;
+
+      // Create consultation booking with prep data in buyer_notes
+      const prepData = {
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        consultationType: formData.consultationType,
+        propertyAddress: propertyAddress,
+        budgetMax: formData.budgetMax,
+        downPaymentAmount: formData.downPaymentAmount,
+        preApprovalStatus: formData.preApprovalStatus,
+        buyingTimeline: formData.buyingTimeline,
+        competitiveComfort: formData.competitiveComfort,
+        specificQuestions: formData.specificQuestions
+      };
+
+      const { data: booking, error: bookingError } = await supabase
+        .from('consultation_bookings')
+        .insert({
+          buyer_id: buyerId,
+          agent_id: agentId || buyerId, // Use buyer ID as fallback if no agent
+          offer_intent_id: offerIntent.id,
+          scheduled_at: scheduledDateTime.toISOString(),
+          duration_minutes: 30,
+          status: 'scheduled',
+          buyer_notes: JSON.stringify(prepData)
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
 
       toast({
         title: "Consultation Scheduled!",

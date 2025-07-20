@@ -85,7 +85,6 @@ export const useAgentConfirmation = () => {
           profiles!showing_requests_user_id_fkey (
             first_name,
             last_name,
-            email,
             phone
           )
         `)
@@ -93,14 +92,22 @@ export const useAgentConfirmation = () => {
         .single();
 
       if (!fetchError && showingRequest) {
+        // Get buyer's email from auth.users
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
+        const buyerEmail = authUser?.user?.email;
+
+        if (!buyerEmail) {
+          console.error('Could not get buyer email for confirmation:', authError);
+        }
+
         // Send confirmation email to agent
         try {
           const { error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
             body: {
               agentName: `${agent.first_name} ${agent.last_name}`,
-              agentEmail: showingRequest.assigned_agent_email,
+              agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerEmail: showingRequest.profiles.email,
+              buyerEmail: buyerEmail,
               buyerPhone: showingRequest.profiles.phone,
               propertyAddress: showingRequest.property_address,
               showingDate: data.confirmedDate,
@@ -124,9 +131,9 @@ export const useAgentConfirmation = () => {
           const { error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
             body: {
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerEmail: showingRequest.profiles.email,
+              buyerEmail: buyerEmail,
               agentName: `${agent.first_name} ${agent.last_name}`,
-              agentEmail: showingRequest.assigned_agent_email,
+              agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
               agentPhone: agent.phone,
               propertyAddress: showingRequest.property_address,
               showingDate: data.confirmedDate,

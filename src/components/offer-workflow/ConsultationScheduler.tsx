@@ -111,20 +111,24 @@ const ConsultationScheduler = ({
 
       if (error) throw error;
 
-      // Get buyer profile for email notification
+      // Get buyer profile for name and email
       const { data: buyerProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, email')
+        .select('first_name, last_name')
         .eq('id', buyerId)
         .single();
 
-      if (!profileError && buyerProfile) {
+      // Get buyer email from auth.users
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(buyerId);
+      const buyerEmail = authUser?.user?.email;
+
+      if (!profileError && buyerProfile && buyerEmail) {
         // Send consultation confirmation email
         try {
           const { error: emailError } = await supabase.functions.invoke('send-consultation-confirmation', {
             body: {
               buyerName: `${buyerProfile.first_name} ${buyerProfile.last_name}`,
-              buyerEmail: buyerProfile.email,
+              buyerEmail: buyerEmail,
               propertyAddress: "Property consultation", // You may want to get this from offer intent
               consultationDate: scheduledDateTime.toISOString().split('T')[0],
               consultationTime: formatTime(scheduledDateTime),

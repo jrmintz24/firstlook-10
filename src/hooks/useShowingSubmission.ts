@@ -269,17 +269,19 @@ export const useShowingSubmission = (
 
       // Send confirmation email
       try {
-        // Get user profile for email and name
+        // Get user profile for name (email is in auth.users, not profiles)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email, first_name, last_name')
+          .select('first_name, last_name')
           .eq('id', user.id)
           .single();
 
-        const userEmail = profile?.email;
+        // Get email from auth user
+        const userEmail = user.email;
         
         console.log('Sending confirmation email to:', userEmail);
         console.log('User profile:', profile);
+        console.log('User email from auth:', userEmail);
 
         if (userEmail) {
           const properties = showingRequests.map(request => ({

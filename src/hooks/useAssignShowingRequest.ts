@@ -92,13 +92,17 @@ export const useAssignShowingRequest = () => {
           profiles!showing_requests_user_id_fkey (
             first_name,
             last_name,
-            email
+            phone
           )
         `)
         .eq('id', requestId)
         .single();
 
       if (!fetchError && showingRequest) {
+        // Get buyer's email from auth.users
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
+        const buyerEmail = authUser?.user?.email;
+
         // Send agent assignment notification email
         try {
           const { error: emailError } = await supabase.functions.invoke('send-agent-assignment-notification', {
@@ -106,7 +110,7 @@ export const useAssignShowingRequest = () => {
               agentName: `${profile.first_name} ${profile.last_name}`,
               agentEmail: agentEmail,
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerEmail: showingRequest.profiles.email,
+              buyerEmail: buyerEmail,
               buyerPhone: showingRequest.profiles.phone,
               properties: [{
                 address: showingRequest.property_address,

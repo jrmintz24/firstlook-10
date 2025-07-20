@@ -66,8 +66,50 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
 
+      // Send follow-up email to buyer
+      try {
+        // Get buyer profile for email
+        const { data: buyerProfile } = await supabaseClient
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', showingRequest.user_id)
+          .single();
+
+        // Get agent profile if assigned
+        let agentProfile = null;
+        if (showingRequest.assigned_agent_id) {
+          const { data: agent } = await supabaseClient
+            .from('profiles')
+            .select('email, first_name, last_name')
+            .eq('id', showingRequest.assigned_agent_id)
+            .single();
+          agentProfile = agent;
+        }
+
+        if (buyerProfile?.email) {
+          const { error: emailError } = await supabaseClient.functions.invoke('send-post-showing-followup', {
+            body: {
+              buyerName: `${buyerProfile.first_name || ''} ${buyerProfile.last_name || ''}`.trim() || 'Buyer',
+              buyerEmail: buyerProfile.email,
+              propertyAddress: showingRequest.property_address,
+              agentName: agentProfile ? `${agentProfile.first_name || ''} ${agentProfile.last_name || ''}`.trim() : undefined,
+              agentEmail: agentProfile?.email,
+              tourDate: showingRequest.updated_at || showingRequest.created_at,
+              showingRequestId: showing_request_id
+            }
+          });
+
+          if (emailError) {
+            console.error('Post-showing follow-up email failed:', emailError);
+          } else {
+            console.log('Post-showing follow-up email sent successfully');
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending post-showing follow-up email:', emailError);
+      }
+
       // You could add more post-showing workflow steps here:
-      // - Send follow-up emails
       // - Create feedback requests
       // - Schedule follow-up appointments
       // - Generate analytics data

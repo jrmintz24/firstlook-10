@@ -267,6 +267,42 @@ export const useShowingSubmission = (
 
       console.log('Successfully submitted showing requests:', data);
 
+      // Send confirmation email
+      try {
+        // Get user profile for email and name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.email) {
+          const properties = showingRequests.map(request => ({
+            address: request.property_address,
+            preferredDate: request.preferred_date,
+            preferredTime: request.preferred_time,
+            notes: request.message
+          }));
+
+          const { error: emailError } = await supabase.functions.invoke('send-showing-request-confirmation', {
+            body: {
+              buyerName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Buyer',
+              buyerEmail: profile.email,
+              properties: properties,
+              requestId: data[0]?.id || 'unknown'
+            }
+          });
+
+          if (emailError) {
+            console.error('Email sending failed:', emailError);
+            // Don't fail the whole process if email fails
+          }
+        }
+      } catch (emailError) {
+        console.error('Email function error:', emailError);
+        // Don't fail the whole process if email fails
+      }
+
       // Clear any pending tour request from localStorage
       localStorage.removeItem('pendingTourRequest');
 
@@ -277,7 +313,7 @@ export const useShowingSubmission = (
 
       toast({
         title: "Tour Request Submitted",
-        description: `Successfully submitted ${showingRequests.length} tour request${showingRequests.length > 1 ? 's' : ''}!`,
+        description: `Successfully submitted ${showingRequests.length} tour request${showingRequests.length > 1 ? 's' : ''}! Check your email for confirmation.`,
       });
 
       return data;

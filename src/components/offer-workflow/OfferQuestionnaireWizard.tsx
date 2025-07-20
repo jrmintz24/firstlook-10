@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { useOfferQuestionnaire } from '@/hooks/useOfferQuestionnaire';
 
 // Step components
+import AppointmentSchedulingStep from './steps/AppointmentSchedulingStep';
 import BuyerQualificationStep from './steps/BuyerQualificationStep';
 import PropertyAnalysisStep from './steps/PropertyAnalysisStep';
 import OfferTermsStep from './steps/OfferTermsStep';
@@ -63,8 +64,8 @@ const OfferQuestionnaireWizard = ({
       // Move to summary step
       const summary = await generateAgentSummary();
       if (summary) {
-        // Show summary step (step 7)
-        goToStep(7);
+        // Show summary step (step 8)
+        goToStep(8);
       }
     }
   };
@@ -74,7 +75,7 @@ const OfferQuestionnaireWizard = ({
   };
 
   const renderCurrentStep = () => {
-    if (!currentStepData && currentStep !== 7) return null;
+    if (!currentStepData && currentStep !== 8) return null;
 
     const stepProps = {
       data: currentStepData?.data || {},
@@ -86,18 +87,20 @@ const OfferQuestionnaireWizard = ({
 
     switch (currentStep) {
       case 1:
-        return <BuyerQualificationStep {...stepProps} />;
+        return <AppointmentSchedulingStep {...stepProps} />;
       case 2:
-        return <PropertyAnalysisStep {...stepProps} />;
+        return <BuyerQualificationStep {...stepProps} />;
       case 3:
-        return <OfferTermsStep {...stepProps} />;
+        return <PropertyAnalysisStep {...stepProps} />;
       case 4:
-        return <FinancingStep {...stepProps} />;
+        return <OfferTermsStep {...stepProps} />;
       case 5:
-        return <ContingenciesStep {...stepProps} />;
+        return <FinancingStep {...stepProps} />;
       case 6:
-        return <AdditionalTermsStep {...stepProps} />;
+        return <ContingenciesStep {...stepProps} />;
       case 7:
+        return <AdditionalTermsStep {...stepProps} />;
+      case 8:
         return (
           <AgentSummaryStep
             offerIntentId={offerIntentId}
@@ -111,12 +114,12 @@ const OfferQuestionnaireWizard = ({
   };
 
   const getStepTitle = () => {
-    if (currentStep === 7) return "Agent Summary";
+    if (currentStep === 8) return "Agent Summary";
     return currentStepData?.title || "";
   };
 
   const getStepDescription = () => {
-    if (currentStep === 7) return "Your comprehensive offer preparation is complete";
+    if (currentStep === 8) return "Your comprehensive offer preparation is complete";
     return currentStepData?.description || "";
   };
 
@@ -136,9 +139,9 @@ const OfferQuestionnaireWizard = ({
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
             <span>Progress: {Math.round(progress)}% Complete</span>
-            <span>Step {currentStep} of {currentStep === 7 ? 7 : steps.length}</span>
+            <span>Step {currentStep} of {currentStep === 8 ? 8 : steps.length}</span>
           </div>
-          <Progress value={currentStep === 7 ? 100 : progress} className="w-full" />
+          <Progress value={currentStep === 8 ? 100 : progress} className="w-full" />
         </div>
 
         {/* Step navigation */}
@@ -157,16 +160,16 @@ const OfferQuestionnaireWizard = ({
               <span className="truncate max-w-32">{step.title}</span>
             </Button>
           ))}
-          {(allStepsComplete || currentStep === 7) && (
+          {(allStepsComplete || currentStep === 8) && (
             <Button
-              variant={currentStep === 7 ? "default" : "outline"}
+              variant={currentStep === 8 ? "default" : "outline"}
               size="sm"
-              onClick={() => goToStep(7)}
+              onClick={() => goToStep(8)}
               className="flex items-center gap-2"
               disabled={loading}
             >
               <CheckCircle className="w-3 h-3" />
-              <span className="hidden sm:inline">7.</span>
+              <span className="hidden sm:inline">8.</span>
               <span className="truncate max-w-32">Summary</span>
             </Button>
           )}
@@ -184,7 +187,7 @@ const OfferQuestionnaireWizard = ({
         </div>
 
         {/* Navigation buttons */}
-        {currentStep !== 7 && (
+        {currentStep !== 8 && (
           <div className="flex justify-between items-center pt-4 border-t">
             <Button
               variant="outline"
@@ -200,7 +203,7 @@ const OfferQuestionnaireWizard = ({
                 <Button
                   onClick={async () => {
                     await generateAgentSummary();
-                    goToStep(7);
+                    goToStep(8);
                   }}
                   disabled={loading}
                   className="bg-green-600 hover:bg-green-700"

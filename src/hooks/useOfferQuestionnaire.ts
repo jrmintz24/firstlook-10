@@ -85,6 +85,18 @@ export interface AdditionalTermsData {
   specialInstructions?: string;
 }
 
+export interface AppointmentSchedulingData {
+  consultationType: 'video' | 'phone';
+  selectedDate?: Date;
+  selectedTime?: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  preferredContactMethod: 'phone' | 'email';
+  specificQuestions?: string;
+  bookingId?: string;
+}
+
 export interface QuestionnaireStep {
   stepNumber: number;
   stepName: string;
@@ -101,6 +113,14 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
   const [steps, setSteps] = useState<QuestionnaireStep[]>([
     {
       stepNumber: 1,
+      stepName: 'appointment_scheduling',
+      title: 'Schedule Consultation',
+      description: 'Schedule your offer strategy consultation with our team',
+      isComplete: false,
+      data: {}
+    },
+    {
+      stepNumber: 2,
       stepName: 'buyer_qualification',
       title: 'Buyer Information & Qualification',
       description: 'Pre-approval status, budget, and financial qualification',
@@ -108,7 +128,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
       data: {}
     },
     {
-      stepNumber: 2,
+      stepNumber: 3,
       stepName: 'property_analysis',
       title: 'Property & Market Analysis',
       description: 'Property details, market conditions, and comparable sales',
@@ -116,7 +136,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
       data: {}
     },
     {
-      stepNumber: 3,
+      stepNumber: 4,
       stepName: 'offer_terms',
       title: 'Offer Terms & Pricing',
       description: 'Offer price, escalation, settlement dates, and terms',
@@ -124,7 +144,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
       data: {}
     },
     {
-      stepNumber: 4,
+      stepNumber: 5,
       stepName: 'financing',
       title: 'Financing Details',
       description: 'Loan information, contingency periods, and lender details',
@@ -132,7 +152,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
       data: {}
     },
     {
-      stepNumber: 5,
+      stepNumber: 6,
       stepName: 'contingencies',
       title: 'Contingencies & Conditions',
       description: 'Inspection, appraisal, and other contingencies',
@@ -140,7 +160,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
       data: {}
     },
     {
-      stepNumber: 6,
+      stepNumber: 7,
       stepName: 'additional_terms',
       title: 'Additional Terms & Disclosures',
       description: 'Special conditions, concessions, and final details',
@@ -224,6 +244,15 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
 
       // Generate comprehensive summary
       const summary = {
+        appointment_summary: {
+          consultationType: allData.appointment_scheduling?.consultationType,
+          scheduledDate: allData.appointment_scheduling?.selectedDate,
+          scheduledTime: allData.appointment_scheduling?.selectedTime,
+          contactName: allData.appointment_scheduling?.contactName,
+          contactPhone: allData.appointment_scheduling?.contactPhone,
+          specificQuestions: allData.appointment_scheduling?.specificQuestions,
+          bookingId: allData.appointment_scheduling?.bookingId
+        },
         buyer_qualification_summary: {
           preApprovalStatus: allData.buyer_qualification?.preApprovalStatus,
           preApprovalAmount: allData.buyer_qualification?.preApprovalAmount,
@@ -277,6 +306,7 @@ export const useOfferQuestionnaire = (offerIntentId: string) => {
         ],
         special_conditions: allData.additional_terms?.specialConditions || [],
         agent_checklist: [
+          'Conduct scheduled consultation call',
           'Review buyer qualification documents',
           'Verify funds availability',
           'Check comparable sales',

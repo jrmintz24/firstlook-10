@@ -17,7 +17,11 @@ const MakeOffer = () => {
   };
 
   const handleOfferQuestionnaire = () => {
-    window.location.href = '/offer-questionnaire';
+    const propertyAddress = propertyData?.address || 'Property Address Not Available';
+    const queryParams = new URLSearchParams({
+      property: propertyAddress
+    });
+    window.location.href = `/offer-questionnaire?${queryParams.toString()}`;
   };
 
   const handleContactAgent = () => {

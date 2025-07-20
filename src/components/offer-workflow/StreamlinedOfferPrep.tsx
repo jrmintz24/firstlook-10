@@ -181,6 +181,30 @@ const StreamlinedOfferPrep = ({
 
       if (bookingError) throw bookingError;
 
+      // Send confirmation email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-consultation-confirmation', {
+          body: {
+            buyerName: formData.contactName,
+            buyerEmail: formData.contactEmail,
+            propertyAddress: propertyAddress,
+            consultationDate: scheduledDateTime.toISOString(),
+            consultationTime: formatTime(scheduledDateTime),
+            consultationType: formData.consultationType,
+            agentName: agentId ? 'FirstLook Expert' : undefined,
+            meetingLink: formData.consultationType === 'video' ? 'https://meet.firstlook.com/consultation' : undefined
+          }
+        });
+
+        if (emailError) {
+          console.error('Email sending failed:', emailError);
+          // Don't fail the whole process if email fails
+        }
+      } catch (emailError) {
+        console.error('Email function error:', emailError);
+        // Don't fail the whole process if email fails
+      }
+
       toast({
         title: "Consultation Scheduled!",
         description: `Your expert consultation is scheduled for ${formatDate(scheduledDateTime)} at ${formatTime(scheduledDateTime)}`,
@@ -234,7 +258,7 @@ const StreamlinedOfferPrep = ({
               Our team will call you at your scheduled time to discuss your offer strategy for {propertyAddress}.
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              You'll receive a confirmation email with all the details.
+              Check your email for a detailed confirmation with everything you need to prepare for your call.
             </p>
             <Button onClick={onClose} className="w-full">
               Got It

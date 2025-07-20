@@ -25,15 +25,10 @@ import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 // Simple favorites display
 import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDisplay";
 
-// Debug component
-import PropertyLookupDebugger from "@/components/debug/PropertyLookupDebugger";
-import IDXDataTester from "@/components/debug/IDXDataTester";
-import DatabaseCleanup from "@/components/debug/DatabaseCleanup";
-
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
   const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
-    console.log('Chat opened', { defaultTab, showingId });
+    // Chat functionality placeholder
   };
 
   const {
@@ -62,9 +57,6 @@ const BuyerDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showTourModal, setShowTourModal] = useState(false);
   const isMobile = useIsMobile();
-
-  console.log('BuyerDashboard - Current user:', currentUser?.id);
-  console.log('BuyerDashboard - Loading states:', { loading, authLoading });
 
   const handleStatClick = (tab: string) => {
     setActiveTab(tab);
@@ -273,15 +265,6 @@ const BuyerDashboard = () => {
 
   const sidebar = (
     <div className="space-y-6">
-      {/* Database Cleanup Tool */}
-      <DatabaseCleanup />
-      
-      {/* IDX Data Tester */}
-      <IDXDataTester />
-      
-      {/* Debug Component */}
-      <PropertyLookupDebugger />
-
       {/* Upcoming Showings */}
       <UpcomingSection
         title="Upcoming Tours"

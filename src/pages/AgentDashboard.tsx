@@ -49,9 +49,6 @@ const AgentDashboard = () => {
   const currentUser = profile;
   const { unreadCount } = useMessages(currentUser?.id || null);
 
-  console.log('AgentDashboard - Current user:', currentUser?.id);
-  console.log('AgentDashboard - Loading states:', { loading, authLoading });
-
   const handleConfirmShowing = (request: any) => {
     setSelectedRequest(request);
     setShowConfirmModal(true);

@@ -44,7 +44,7 @@ import ListingDetails from './pages/ListingDetails'
 import Listings from './pages/Listings'
 import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
-import Debug from './pages/Debug'
+// import Debug from './pages/Debug' // Commented out for production
 
 const queryClient = new QueryClient()
 
@@ -192,8 +192,8 @@ function App() {
                 <Route path="/schedule-tour" element={<ScheduleTour />} />
                 <Route path="/make-offer" element={<MakeOffer />} />
                 
-                {/* Debug Page */}
-                <Route path="/debug" element={<Debug />} />
+                {/* Debug Page - Commented out for production */}
+                {/* <Route path="/debug" element={<Debug />} /> */}
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />

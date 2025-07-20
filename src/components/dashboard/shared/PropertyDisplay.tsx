@@ -56,7 +56,6 @@ const PropertyDisplay = ({
   // Fetch property data on-demand if we don't have complete property info
   useEffect(() => {
     if (!hasPropertyData && !lookupData && address) {
-      console.log('🔍 [PropertyDisplay] No property data available, trying to fetch for address:', address);
       setIsLoading(true);
       
       // Try with IDX ID first, then fall back to address-based lookup
@@ -65,36 +64,17 @@ const PropertyDisplay = ({
       getCachedPropertyData(searchKey, address)
         .then(data => {
           if (data) {
-            console.log('✅ [PropertyDisplay] Received property data:', data);
             setLookupData(data);
-          } else {
-            console.log('ℹ️ [PropertyDisplay] No property data found for:', searchKey);
           }
         })
         .catch(error => {
-          console.error('❌ [PropertyDisplay] Error fetching property data:', error);
+          // Silently handle errors
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
   }, [hasPropertyData, lookupData, address, idxId]);
-  
-  // Debug logging
-  console.log('PropertyDisplay props:', { 
-    address, 
-    price, 
-    beds, 
-    baths, 
-    sqft, 
-    image, 
-    pageUrl,
-    idxId,
-    hasPropertyData,
-    lookupData,
-    displayData,
-    showEnhancedLayout
-  });
   
   // Size configurations
   const sizeConfig = {

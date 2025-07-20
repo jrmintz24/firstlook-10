@@ -111,6 +111,39 @@ const ConsultationScheduler = ({
 
       if (error) throw error;
 
+      // Get buyer profile for email notification
+      const { data: buyerProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, email')
+        .eq('id', buyerId)
+        .single();
+
+      if (!profileError && buyerProfile) {
+        // Send consultation confirmation email
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-consultation-confirmation', {
+            body: {
+              buyerName: `${buyerProfile.first_name} ${buyerProfile.last_name}`,
+              buyerEmail: buyerProfile.email,
+              propertyAddress: "Property consultation", // You may want to get this from offer intent
+              consultationDate: scheduledDateTime.toISOString().split('T')[0],
+              consultationTime: formatTime(scheduledDateTime),
+              consultationType: 'video',
+              agentName: agentName,
+              meetingLink: "Video link will be provided 15 minutes before the call"
+            }
+          });
+
+          if (emailError) {
+            console.error('Failed to send consultation confirmation email:', emailError);
+          } else {
+            console.log('Consultation confirmation email sent successfully');
+          }
+        } catch (emailError) {
+          console.error('Error sending consultation confirmation email:', emailError);
+        }
+      }
+
       toast({
         title: "Consultation Scheduled!",
         description: `Your consultation with ${agentName} is scheduled for ${formatDate(scheduledDateTime)} at ${formatTime(scheduledDateTime)}`,

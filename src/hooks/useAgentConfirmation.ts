@@ -76,6 +76,76 @@ export const useAgentConfirmation = () => {
       }
 
       console.log('Showing request updated successfully');
+
+      // Get showing request details for email notifications
+      const { data: showingRequest, error: fetchError } = await supabase
+        .from('showing_requests')
+        .select(`
+          *,
+          profiles!showing_requests_user_id_fkey (
+            first_name,
+            last_name,
+            email,
+            phone
+          )
+        `)
+        .eq('id', data.requestId)
+        .single();
+
+      if (!fetchError && showingRequest) {
+        // Send confirmation email to agent
+        try {
+          const { error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
+            body: {
+              agentName: `${agent.first_name} ${agent.last_name}`,
+              agentEmail: showingRequest.assigned_agent_email,
+              buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
+              buyerEmail: showingRequest.profiles.email,
+              buyerPhone: showingRequest.profiles.phone,
+              propertyAddress: showingRequest.property_address,
+              showingDate: data.confirmedDate,
+              showingTime: data.confirmedTime,
+              showingInstructions: data.agentMessage,
+              requestId: data.requestId
+            }
+          });
+
+          if (agentEmailError) {
+            console.error('Failed to send agent confirmation email:', agentEmailError);
+          } else {
+            console.log('Agent confirmation email sent successfully');
+          }
+        } catch (emailError) {
+          console.error('Error sending agent confirmation email:', emailError);
+        }
+
+        // Send confirmation email to buyer
+        try {
+          const { error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
+            body: {
+              buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
+              buyerEmail: showingRequest.profiles.email,
+              agentName: `${agent.first_name} ${agent.last_name}`,
+              agentEmail: showingRequest.assigned_agent_email,
+              agentPhone: agent.phone,
+              propertyAddress: showingRequest.property_address,
+              showingDate: data.confirmedDate,
+              showingTime: data.confirmedTime,
+              meetingLocation: "Meet at the property",
+              showingInstructions: data.agentMessage,
+              requestId: data.requestId
+            }
+          });
+
+          if (buyerEmailError) {
+            console.error('Failed to send buyer confirmation email:', buyerEmailError);
+          } else {
+            console.log('Buyer confirmation email sent successfully');
+          }
+        } catch (emailError) {
+          console.error('Error sending buyer confirmation email:', emailError);
+        }
+      }
       
       toast({
         title: "Tour Accepted!",

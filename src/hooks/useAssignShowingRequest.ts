@@ -84,6 +84,53 @@ export const useAssignShowingRequest = () => {
         return false;
       }
 
+      // Get showing request details for email notification
+      const { data: showingRequest, error: fetchError } = await supabase
+        .from('showing_requests')
+        .select(`
+          *,
+          profiles!showing_requests_user_id_fkey (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .eq('id', requestId)
+        .single();
+
+      if (!fetchError && showingRequest) {
+        // Send agent assignment notification email
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-agent-assignment-notification', {
+            body: {
+              agentName: `${profile.first_name} ${profile.last_name}`,
+              agentEmail: agentEmail,
+              buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
+              buyerEmail: showingRequest.profiles.email,
+              buyerPhone: showingRequest.profiles.phone,
+              properties: [{
+                address: showingRequest.property_address,
+                preferredDate: showingRequest.preferred_date,
+                preferredTime: showingRequest.preferred_time,
+                notes: showingRequest.message
+              }],
+              requestId: requestId,
+              assignedBy: "Self-Assignment"
+            }
+          });
+
+          if (emailError) {
+            console.error('Failed to send agent assignment email:', emailError);
+            // Don't fail the assignment if email fails
+          } else {
+            console.log('Agent assignment notification email sent successfully');
+          }
+        } catch (emailError) {
+          console.error('Error sending agent assignment email:', emailError);
+          // Don't fail the assignment if email fails
+        }
+      }
+
       console.log('Successfully assigned request to:', agentEmail);
       toast({
         title: "Request Assigned",

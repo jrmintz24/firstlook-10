@@ -92,13 +92,13 @@ export const useAgentConfirmation = () => {
         .single();
 
       if (!fetchError && showingRequest) {
-        // Send confirmation email to agent
+        // Send confirmation email to agent (let Edge Function fetch buyer email)
         try {
           const { error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
             body: {
               agentName: `${agent.first_name} ${agent.last_name}`,
               agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
-              buyerId: showingRequest.user_id, // Pass buyerId instead of email
+              buyerId: showingRequest.user_id, // Let Edge Function fetch email
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
               buyerPhone: showingRequest.profiles.phone,
               propertyAddress: showingRequest.property_address,
@@ -118,11 +118,11 @@ export const useAgentConfirmation = () => {
           console.error('Error sending agent confirmation email:', emailError);
         }
 
-        // Send confirmation email to buyer
+        // Send confirmation email to buyer (let Edge Function fetch buyer email)
         try {
           const { error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
             body: {
-              buyerId: showingRequest.user_id, // Pass buyerId instead of email
+              buyerId: showingRequest.user_id, // Let Edge Function fetch email
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
               agentName: `${agent.first_name} ${agent.last_name}`,
               agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,

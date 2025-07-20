@@ -138,9 +138,9 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div class="footer">
-              <p><strong>FirstLook</strong><br>
+              <p><strong>FirstLook Home Tours</strong><br>
               Making home buying transparent and affordable<br>
-              <a href="mailto:support@firstlook.com">support@firstlook.com</a></p>
+              <a href="mailto:support@firstlookhometours.com">support@firstlookhometours.com</a></p>
             </div>
           </div>
         </body>
@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: "FirstLook <noreply@firstlook.com>",
+      from: "FirstLook Home Tours <noreply@firstlookhometours.com>",
       to: buyerEmail,
       subject: emailSubject,
       html: emailHtml,

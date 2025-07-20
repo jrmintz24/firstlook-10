@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="cta-section">
                 <h3 style="margin-top: 0; color: #1976d2;">💭 What did you think?</h3>
                 <p style="margin-bottom: 20px;">Your feedback helps us improve and helps other buyers know what to expect.</p>
-                <a href="https://firstlook.com/feedback?showing=${showingRequestId}" class="button">Leave Feedback (2 minutes)</a>
+                <a href="https://firstlookhometours.com/feedback?showing=${showingRequestId}" class="button">Leave Feedback (2 minutes)</a>
               </div>
               
               <h3>What's Next?</h3>
@@ -90,13 +90,13 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="action-card">
                   <h4 style="margin-top: 0; color: #4caf50;">❤️ Loved It?</h4>
                   <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Ready to make an offer or want to see more like this?</p>
-                  <a href="https://firstlook.com/next-steps?property=${encodeURIComponent(propertyAddress)}&action=interested" class="button-outline">I'm Interested</a>
+                  <a href="https://firstlookhometours.com/next-steps?property=${encodeURIComponent(propertyAddress)}&action=interested" class="button-outline">I'm Interested</a>
                 </div>
                 
                 <div class="action-card">
                   <h4 style="margin-top: 0; color: #ff9800;">🤔 Not Sure?</h4>
                   <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Want to discuss what you saw or see similar properties?</p>
-                  <a href="https://firstlook.com/next-steps?property=${encodeURIComponent(propertyAddress)}&action=discuss" class="button-outline">Let's Talk</a>
+                  <a href="https://firstlookhometours.com/next-steps?property=${encodeURIComponent(propertyAddress)}&action=discuss" class="button-outline">Let's Talk</a>
                 </div>
               </div>
               
@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <li>Are you ready to make an offer or need to see more properties?</li>
                   <li>Any questions about the neighborhood or market?</li>
                 </ul>
-                <a href="https://firstlook.com/survey?showing=${showingRequestId}" style="color: #1976d2; text-decoration: none; font-size: 14px;">→ Take 2-minute survey</a>
+                <a href="https://firstlookhometours.com/survey?showing=${showingRequestId}" style="color: #1976d2; text-decoration: none; font-size: 14px;">→ Take 2-minute survey</a>
               </div>
               
               <h3>Need Help Deciding?</h3>
@@ -130,18 +130,18 @@ const handler = async (req: Request): Promise<Response> => {
               ` : ''}
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://firstlook.com/schedule-tour" class="button">Schedule Another Tour</a>
-                <a href="mailto:support@firstlook.com" class="button-outline">Contact Support</a>
+                <a href="https://firstlookhometours.com/schedule-tour" class="button">Schedule Another Tour</a>
+                <a href="mailto:support@firstlookhometours.com" class="button-outline">Contact Support</a>
               </div>
             </div>
             
             <div class="footer">
               <p><strong>FirstLook</strong><br>
               Making home buying transparent and affordable<br>
-              <a href="mailto:support@firstlook.com">support@firstlook.com</a></p>
+              <a href="mailto:support@firstlookhometours.com">support@firstlookhometours.com</a></p>
               
               <p style="font-size: 12px; margin-top: 15px;">
-                <a href="https://firstlook.com/unsubscribe?email=${encodeURIComponent(buyerEmail)}" style="color: #999;">Unsubscribe from follow-up emails</a>
+                <a href="https://firstlookhometours.com/unsubscribe?email=${encodeURIComponent(buyerEmail)}" style="color: #999;">Unsubscribe from follow-up emails</a>
               </p>
             </div>
           </div>
@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: "FirstLook <noreply@firstlook.com>",
+      from: "FirstLook Home Tours <noreply@firstlookhometours.com>",
       to: buyerEmail,
       subject: emailSubject,
       html: emailHtml,

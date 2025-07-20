@@ -276,8 +276,7 @@ export const useShowingSubmission = (
           .eq('id', user.id)
           .single();
 
-        const testEmail = 'firstlookhometourstest@gmail.com';
-        const userEmail = profile?.email || testEmail;
+        const userEmail = profile?.email;
         
         console.log('Sending confirmation email to:', userEmail);
         console.log('User profile:', profile);
@@ -293,7 +292,7 @@ export const useShowingSubmission = (
           const { error: emailError } = await supabase.functions.invoke('send-showing-request-confirmation', {
             body: {
               buyerName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Test Buyer',
-              buyerEmail: testEmail, // Always use test email for now
+              buyerEmail: userEmail,
               properties: properties,
               requestId: data[0]?.id || 'unknown'
             }

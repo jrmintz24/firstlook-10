@@ -55,7 +55,19 @@ const EnhancedOfferTypeDialog = ({
     setSelectedOfferType(type);
     
     if (type === 'work_with_agent') {
-      setCurrentStep('consultation_questions');
+      // Navigate directly to the offer questionnaire with appointment scheduling first
+      const params = new URLSearchParams({
+        property: propertyAddress
+      });
+      
+      // Add agent if one is provided
+      if (agentId) {
+        params.append('agent', agentId);
+      }
+      
+      // Close the modal and navigate to appointment-first workflow
+      onClose();
+      window.location.href = `/offer-questionnaire?${params.toString()}`;
     } else if (type === 'make_offer') {
       // Navigate to the comprehensive offer questionnaire
       const params = new URLSearchParams({
@@ -233,7 +245,10 @@ const EnhancedOfferTypeDialog = ({
                       </div>
                     </div>
                     
-                    <Button className="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg transition-all duration-200 hover:scale-[1.02]">
+                    <Button 
+                      onClick={() => handleOfferTypeSelection('work_with_agent')}
+                      className="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg transition-all duration-200 hover:scale-[1.02]"
+                    >
                       Book Expert Help
                     </Button>
                   </div>

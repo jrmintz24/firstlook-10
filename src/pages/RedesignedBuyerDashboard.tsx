@@ -142,7 +142,10 @@ const RedesignedBuyerDashboard = () => {
 
   const handleMakeOffer = useCallback((propertyAddress: string) => {
     console.log(`Making offer for property: ${propertyAddress}`);
-    alert('Make offer feature not fully implemented yet.');
+    const queryParams = new URLSearchParams({
+      property: propertyAddress
+    });
+    window.location.href = `/offer-questionnaire?${queryParams.toString()}`;
   }, []);
 
   const handleRequestShowing = useCallback(() => {

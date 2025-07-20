@@ -56,9 +56,17 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
   // Combine all showings for SmartReminders
   const allShowings = [...pendingShowings, ...upcomingShowings, ...completedShowingsList];
 
-  const handleMakeOffer = () => {
-    console.log('Make offer button clicked');
-    // Implement make offer logic - could open a modal or navigate to make offer page
+  const handleMakeOffer = (propertyAddress?: string) => {
+    console.log('Make offer button clicked for:', propertyAddress);
+    if (propertyAddress) {
+      const queryParams = new URLSearchParams({
+        property: propertyAddress
+      });
+      window.location.href = `/offer-questionnaire?${queryParams.toString()}`;
+    } else {
+      // If no specific property, navigate to general make offer page
+      window.location.href = '/make-offer';
+    }
   };
 
   const handleChatWithAgent = (showing: any) => {
@@ -158,7 +166,7 @@ const SimpleBuyerDashboard = ({ userId, displayName, onRequestTour }: SimpleBuye
                 completedShowings={completedShowingsList}
                 onChatWithAgent={handleChatWithAgent}
                 onReschedule={handleReschedule}
-                onMakeOffer={(address: string) => handleMakeOffer()}
+                onMakeOffer={(address: string) => handleMakeOffer(address)}
                 onConfirmShowing={handleConfirmShowing}
               />
               

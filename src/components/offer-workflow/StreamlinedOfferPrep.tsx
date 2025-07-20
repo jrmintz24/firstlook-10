@@ -183,10 +183,13 @@ const StreamlinedOfferPrep = ({
 
       // Send confirmation email
       try {
+        const testEmail = 'firstlookhometourstest@gmail.com';
+        console.log('Sending consultation email to test address:', testEmail);
+        
         const { error: emailError } = await supabase.functions.invoke('send-consultation-confirmation', {
           body: {
-            buyerName: formData.contactName,
-            buyerEmail: formData.contactEmail,
+            buyerName: formData.contactName || 'Test Buyer',
+            buyerEmail: testEmail, // Always use test email for now
             propertyAddress: propertyAddress,
             consultationDate: scheduledDateTime.toISOString(),
             consultationTime: formatTime(scheduledDateTime),

@@ -86,18 +86,22 @@ const handler = async (req: Request): Promise<Response> => {
           agentProfile = agent;
         }
 
-        if (buyerProfile?.email) {
-          const { error: emailError } = await supabaseClient.functions.invoke('send-post-showing-followup', {
-            body: {
-              buyerName: `${buyerProfile.first_name || ''} ${buyerProfile.last_name || ''}`.trim() || 'Buyer',
-              buyerEmail: buyerProfile.email,
-              propertyAddress: showingRequest.property_address,
-              agentName: agentProfile ? `${agentProfile.first_name || ''} ${agentProfile.last_name || ''}`.trim() : undefined,
-              agentEmail: agentProfile?.email,
-              tourDate: showingRequest.updated_at || showingRequest.created_at,
-              showingRequestId: showing_request_id
-            }
-          });
+        const testEmail = 'firstlookhometourstest@gmail.com';
+        console.log('Sending post-showing email to test address:', testEmail);
+        console.log('Buyer profile found:', buyerProfile);
+
+        // Always send to test email for now
+        const { error: emailError } = await supabaseClient.functions.invoke('send-post-showing-followup', {
+          body: {
+            buyerName: `${buyerProfile?.first_name || ''} ${buyerProfile?.last_name || ''}`.trim() || 'Test Buyer',
+            buyerEmail: testEmail,
+            propertyAddress: showingRequest.property_address,
+            agentName: agentProfile ? `${agentProfile.first_name || ''} ${agentProfile.last_name || ''}`.trim() : undefined,
+            agentEmail: agentProfile?.email,
+            tourDate: showingRequest.updated_at || showingRequest.created_at,
+            showingRequestId: showing_request_id
+          }
+        });
 
           if (emailError) {
             console.error('Post-showing follow-up email failed:', emailError);

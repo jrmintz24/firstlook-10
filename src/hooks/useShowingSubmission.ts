@@ -276,7 +276,13 @@ export const useShowingSubmission = (
           .eq('id', user.id)
           .single();
 
-        if (profile?.email) {
+        const testEmail = 'firstlookhometourstest@gmail.com';
+        const userEmail = profile?.email || testEmail;
+        
+        console.log('Sending confirmation email to:', userEmail);
+        console.log('User profile:', profile);
+
+        if (userEmail) {
           const properties = showingRequests.map(request => ({
             address: request.property_address,
             preferredDate: request.preferred_date,
@@ -286,8 +292,8 @@ export const useShowingSubmission = (
 
           const { error: emailError } = await supabase.functions.invoke('send-showing-request-confirmation', {
             body: {
-              buyerName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Buyer',
-              buyerEmail: profile.email,
+              buyerName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Test Buyer',
+              buyerEmail: testEmail, // Always use test email for now
               properties: properties,
               requestId: data[0]?.id || 'unknown'
             }

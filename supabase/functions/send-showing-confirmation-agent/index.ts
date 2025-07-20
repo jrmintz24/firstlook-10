@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -12,8 +13,9 @@ const corsHeaders = {
 interface ShowingConfirmationAgentData {
   agentName: string;
   agentEmail: string;
+  buyerId?: string; // New field to fetch buyer email if needed
   buyerName: string;
-  buyerEmail: string;
+  buyerEmail?: string; // Made optional - will fetch if not provided
   buyerPhone?: string;
   propertyAddress: string;
   showingDate: string;
@@ -34,8 +36,9 @@ const handler = async (req: Request): Promise<Response> => {
     const { 
       agentName,
       agentEmail,
+      buyerId,
       buyerName, 
-      buyerEmail,
+      buyerEmail: providedBuyerEmail,
       buyerPhone,
       propertyAddress,
       showingDate,
@@ -45,6 +48,26 @@ const handler = async (req: Request): Promise<Response> => {
       showingInstructions,
       requestId
     }: ShowingConfirmationAgentData = await req.json();
+
+    // Get buyer email if not provided
+    let buyerEmail = providedBuyerEmail;
+    
+    if (!buyerEmail && buyerId) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(buyerId);
+        
+        if (!authError && authUser?.user?.email) {
+          buyerEmail = authUser.user.email;
+          console.log(`Fetched buyer email for ${buyerId}: ${buyerEmail}`);
+        } else {
+          console.error("Failed to fetch buyer email:", authError);
+        }
+      }
+    }
 
     console.log(`Sending showing confirmation to agent ${agentEmail} for ${propertyAddress}`);
 

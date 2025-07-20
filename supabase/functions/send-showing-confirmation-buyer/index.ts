@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -10,8 +11,9 @@ const corsHeaders = {
 };
 
 interface ShowingConfirmationBuyerData {
+  buyerId?: string; // New field to fetch email if not provided
   buyerName: string;
-  buyerEmail: string;
+  buyerEmail?: string; // Made optional - will fetch if not provided
   agentName: string;
   agentEmail?: string;
   agentPhone?: string;
@@ -31,8 +33,9 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { 
+      buyerId,
       buyerName,
-      buyerEmail,
+      buyerEmail: providedBuyerEmail,
       agentName,
       agentEmail,
       agentPhone,
@@ -43,6 +46,43 @@ const handler = async (req: Request): Promise<Response> => {
       showingInstructions,
       requestId
     }: ShowingConfirmationBuyerData = await req.json();
+
+    // Get buyer email if not provided
+    let buyerEmail = providedBuyerEmail;
+    
+    if (!buyerEmail && buyerId) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(buyerId);
+        
+        if (!authError && authUser?.user?.email) {
+          buyerEmail = authUser.user.email;
+          console.log(`Fetched buyer email for ${buyerId}: ${buyerEmail}`);
+        } else {
+          console.error("Failed to fetch buyer email:", authError);
+          return new Response(
+            JSON.stringify({ error: "Failed to fetch buyer email" }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
+        }
+      }
+    }
+    
+    if (!buyerEmail) {
+      return new Response(
+        JSON.stringify({ error: "Buyer email is required" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
 
     console.log(`Sending showing confirmation to buyer ${buyerEmail} for ${propertyAddress}`);
 

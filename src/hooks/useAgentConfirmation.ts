@@ -92,22 +92,14 @@ export const useAgentConfirmation = () => {
         .single();
 
       if (!fetchError && showingRequest) {
-        // Get buyer's email from auth.users
-        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
-        const buyerEmail = authUser?.user?.email;
-
-        if (!buyerEmail) {
-          console.error('Could not get buyer email for confirmation:', authError);
-        }
-
         // Send confirmation email to agent
         try {
           const { error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
             body: {
               agentName: `${agent.first_name} ${agent.last_name}`,
               agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
+              buyerId: showingRequest.user_id, // Pass buyerId instead of email
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerEmail: buyerEmail,
               buyerPhone: showingRequest.profiles.phone,
               propertyAddress: showingRequest.property_address,
               showingDate: data.confirmedDate,
@@ -130,8 +122,8 @@ export const useAgentConfirmation = () => {
         try {
           const { error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
             body: {
+              buyerId: showingRequest.user_id, // Pass buyerId instead of email
               buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerEmail: buyerEmail,
               agentName: `${agent.first_name} ${agent.last_name}`,
               agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
               agentPhone: agent.phone,

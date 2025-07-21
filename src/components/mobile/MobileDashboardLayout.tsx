@@ -1,0 +1,265 @@
+import React, { useState } from 'react';
+import { 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  Heart, 
+  Home, 
+  MessageCircle, 
+  Settings,
+  ChevronRight,
+  Plus
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { useTouchGestures } from '@/hooks/use-mobile';
+
+interface MobileDashboardLayoutProps {
+  user?: any;
+  pendingRequests?: any[];
+  activeShowings?: any[];
+  completedShowings?: any[];
+  favorites?: any[];
+  onRequestTour?: () => void;
+  onTabChange?: (tab: string) => void;
+  children?: React.ReactNode;
+}
+
+const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
+  user,
+  pendingRequests = [],
+  activeShowings = [],
+  completedShowings = [],
+  favorites = [],
+  onRequestTour,
+  onTabChange,
+  children
+}) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures();
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
+
+  const tabs = [
+    { 
+      id: 'overview', 
+      label: 'Overview', 
+      icon: Home,
+      count: 0
+    },
+    { 
+      id: 'pending', 
+      label: 'Pending', 
+      icon: Clock,
+      count: pendingRequests.length
+    },
+    { 
+      id: 'scheduled', 
+      label: 'Scheduled', 
+      icon: Calendar,
+      count: activeShowings.length
+    },
+    { 
+      id: 'completed', 
+      label: 'Completed', 
+      icon: CheckCircle,
+      count: completedShowings.length
+    },
+    { 
+      id: 'favorites', 
+      label: 'Saved', 
+      icon: Heart,
+      count: favorites.length
+    }
+  ];
+
+  const quickStats = [
+    {
+      label: 'Pending Tours',
+      value: pendingRequests.length,
+      icon: Clock,
+      color: 'bg-yellow-100 text-yellow-700',
+      action: () => handleTabChange('pending')
+    },
+    {
+      label: 'Scheduled',
+      value: activeShowings.length,
+      icon: Calendar,
+      color: 'bg-blue-100 text-blue-700',
+      action: () => handleTabChange('scheduled')
+    },
+    {
+      label: 'Completed',
+      value: completedShowings.length,
+      icon: CheckCircle,
+      color: 'bg-green-100 text-green-700',
+      action: () => handleTabChange('completed')
+    },
+    {
+      label: 'Saved Homes',
+      value: favorites.length,
+      icon: Heart,
+      color: 'bg-red-100 text-red-700',
+      action: () => handleTabChange('favorites')
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-4 safe-area-top">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Hi, {user?.user_metadata?.first_name || 'there'}!
+            </h1>
+            <p className="text-sm text-gray-600">Let's find your dream home</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Action Button */}
+        <Button 
+          onClick={onRequestTour}
+          className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Schedule New Tour
+        </Button>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="bg-white border-b border-gray-200 px-2 py-2">
+        <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors touch-feedback",
+                  isActive 
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <Badge variant="secondary" className="h-5 text-xs min-w-[20px] justify-center">
+                    {tab.count}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="px-4 py-6 pb-20">
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {quickStats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <button
+                    key={index}
+                    onClick={stat.action}
+                    className="p-4 bg-white rounded-xl border border-gray-200 text-left hover:bg-gray-50 transition-colors touch-feedback"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", stat.color)}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 mb-1">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {stat.label}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+              
+              {(pendingRequests.length > 0 || activeShowings.length > 0) ? (
+                <div className="space-y-3">
+                  {/* Show most recent pending requests */}
+                  {pendingRequests.slice(0, 2).map((request, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+                      <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-yellow-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {request.property_address}
+                        </p>
+                        <p className="text-xs text-gray-600">Waiting for agent assignment</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  ))}
+                  
+                  {/* Show most recent active showings */}
+                  {activeShowings.slice(0, 2).map((showing, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {showing.property_address}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {showing.preferred_date} at {showing.preferred_time}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-2">No recent activity</p>
+                  <p className="text-sm text-gray-500">Schedule your first tour to get started!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab Content */}
+        {children}
+      </div>
+
+      {/* Bottom Safe Area */}
+      <div className="safe-area-bottom" />
+    </div>
+  );
+};
+
+export default MobileDashboardLayout;

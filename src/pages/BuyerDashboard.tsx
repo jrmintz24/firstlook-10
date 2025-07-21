@@ -25,6 +25,9 @@ import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 // Simple favorites display
 import SimpleFavoritesDisplay from "@/components/dashboard/SimpleFavoritesDisplay";
 
+// Mobile components
+import MobileDashboardLayout from "@/components/mobile/MobileDashboardLayout";
+
 const BuyerDashboard = () => {
   // Add dummy onOpenChat handler
   const handleOpenChat = (defaultTab: 'property' | 'support' = 'property', showingId?: string) => {
@@ -283,6 +286,48 @@ const BuyerDashboard = () => {
     </div>
   );
 
+  // Mobile vs Desktop rendering
+  if (isMobile) {
+    return (
+      <>
+        <MobileDashboardLayout
+          user={currentUser}
+          pendingRequests={pendingRequests}
+          activeShowings={activeShowings}
+          completedShowings={completedShowings}
+          favorites={[]} // TODO: Get favorites from data
+          onRequestTour={handleRequestTour}
+          onTabChange={setActiveTab}
+        >
+          {/* Tab-specific content for mobile */}
+          {dashboardTabs.find(tab => tab.id === activeTab)?.content}
+        </MobileDashboardLayout>
+        
+        {/* Modals */}
+        {selectedRequest && (
+          <SignAgreementModal
+            isOpen={showSignAgreementModal}
+            onClose={() => setShowSignAgreementModal(false)}
+            onSign={handleSignAgreementSuccess}
+            showingDetails={{
+              propertyAddress: selectedRequest.property_address,
+              date: selectedRequest.preferred_date,
+              time: selectedRequest.preferred_time,
+              agentName: selectedRequest.assigned_agent_name
+            }}
+          />
+        )}
+
+        <ModernTourSchedulingModal
+          isOpen={showTourModal}
+          onClose={() => setShowTourModal(false)}
+          onSuccess={handleTourModalSuccess}
+        />
+      </>
+    );
+  }
+
+  // Desktop rendering
   return (
     <>
       <div className="pt-6">

@@ -7,10 +7,13 @@ import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
+import { useDeviceInfo } from "@/hooks/use-mobile";
 import HybridAddressInput from "@/components/HybridAddressInput";
 import { useIDXPropertyExtractor } from "@/hooks/useIDXPropertyExtractor";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
+import MobileDateTimePicker from "@/components/mobile/MobileDateTimePicker";
+import { cn } from "@/lib/utils";
 
 interface ModernTourSchedulingModalProps {
   isOpen: boolean;
@@ -108,6 +111,7 @@ const ModernTourSchedulingModal = ({
 }: ModernTourSchedulingModalProps) => {
   const { user } = useAuth();
   const { eligibility } = useShowingEligibility();
+  const { isMobile, isTablet } = useDeviceInfo();
   const location = useLocation();
   const { listingId } = useParams<{ listingId: string }>();
   const [searchParams] = useSearchParams();
@@ -251,6 +255,11 @@ const ModernTourSchedulingModal = ({
     setSelectedTime(timeValue);
   };
 
+  const handleMobileDateTimeChange = (date: string, time: string) => {
+    setSelectedDate(date);
+    setSelectedTime(time);
+  };
+
   const handleSubmit = async () => {
     console.log('DEBUG: handleSubmit called with:', {
       propertyAddress: propertyAddress.trim(),
@@ -318,7 +327,9 @@ const ModernTourSchedulingModal = ({
   const hasAddress = propertyAddress.trim();
   const hasDate = selectedDate !== "";
   const hasTime = selectedTime !== "";
-  const completionSteps = [hasAddress, hasDate, hasTime];
+  const completionSteps = isMobile 
+    ? [hasAddress, hasDate && hasTime] // On mobile, date and time are combined
+    : [hasAddress, hasDate, hasTime];   // On desktop, they're separate steps
   const completedSteps = completionSteps.filter(Boolean).length;
   const totalSteps = completionSteps.length;
 
@@ -337,10 +348,18 @@ const ModernTourSchedulingModal = ({
   return (
     <>
       <Dialog open={showSchedulingModal} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
+        <DialogContent className={cn(
+          "bg-white border-0 shadow-2xl p-0 flex flex-col",
+          isMobile 
+            ? "fixed bottom-0 left-0 right-0 top-auto max-h-[90vh] rounded-t-3xl rounded-b-none m-0 w-full sm:max-w-none" 
+            : "sm:max-w-4xl max-h-[80vh]"
+        )}>
           <div className="flex flex-col h-full">
             {/* Header */}
-            <DialogHeader className="px-8 pt-8 pb-6 flex-shrink-0">
+            <DialogHeader className={cn(
+              "flex-shrink-0",
+              isMobile ? "px-6 pt-6 pb-4" : "px-8 pt-8 pb-6"
+            )}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center">
@@ -380,7 +399,12 @@ const ModernTourSchedulingModal = ({
             </DialogHeader>
 
             {/* Scrollable content */}
-            <div className="px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
+            <div className={cn(
+              "flex-1 overflow-y-auto",
+              isMobile 
+                ? "px-6 max-h-[calc(90vh-200px)] scroll-container-mobile" 
+                : "px-8 max-h-[calc(80vh-240px)]"
+            )}>
               {/* Wrong Page Notice */}
               {!isPropertyDetailPage && (
                 <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
@@ -468,52 +492,62 @@ const ModernTourSchedulingModal = ({
                   />
                 </div>
 
-                {/* Step 2: Choose Date */}
+                {/* Step 2: Choose Date & Time */}
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Step 2: Choose Your Date
-                    {hasDate && <span className="text-green-600 ml-2">✓</span>}
+                    {isMobile ? 'Step 2: Choose Date & Time' : 'Step 2: Choose Your Date'}
+                    {isMobile ? (hasDate && hasTime) && <span className="text-green-600 ml-2">✓</span> : hasDate && <span className="text-green-600 ml-2">✓</span>}
                   </h3>
                   
-                  {/* Horizontal Date Picker */}
-                  <div className="grid grid-cols-7 gap-2 mb-6">
-                    {availableDays.map((day) => {
-                      const isSelected = selectedDate === day.date;
-                      const hasAvailableTimes = timeSlotsToShow.some(slot => 
-                        isTimeSlotAvailable(day.date, slot.value)
-                      );
-                      
-                      return (
-                        <button
-                          key={day.date}
-                          type="button"
-                          onClick={() => hasAvailableTimes && handleDateSelection(day.date)}
-                          disabled={!hasAvailableTimes}
-                          className={`p-3 rounded-xl border-2 transition-all text-center ${
-                            isSelected
-                              ? 'bg-black text-white border-black'
-                              : hasAvailableTimes
-                              ? 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
-                              : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                          }`}
-                        >
-                          <div className="text-xs font-medium">{day.dayName}</div>
-                          <div className="text-lg font-bold">{day.dayNumber}</div>
-                          <div className="text-xs">{day.monthName}</div>
-                          {day.isToday && (
-                            <div className="text-xs mt-1 text-blue-600 font-medium">Today</div>
-                          )}
-                          {day.isTomorrow && (
-                            <div className="text-xs mt-1 text-green-600 font-medium">Tomorrow</div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {isMobile ? (
+                    /* Mobile: Use single combined date/time picker */
+                    <MobileDateTimePicker
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      onDateTimeChange={handleMobileDateTimeChange}
+                      placeholder="Select date & time for your tour"
+                    />
+                  ) : (
+                    /* Desktop: Use horizontal date picker */
+                    <div className="grid grid-cols-7 gap-2 mb-6">
+                      {availableDays.map((day) => {
+                        const isSelected = selectedDate === day.date;
+                        const hasAvailableTimes = timeSlotsToShow.some(slot => 
+                          isTimeSlotAvailable(day.date, slot.value)
+                        );
+                        
+                        return (
+                          <button
+                            key={day.date}
+                            type="button"
+                            onClick={() => hasAvailableTimes && handleDateSelection(day.date)}
+                            disabled={!hasAvailableTimes}
+                            className={`p-3 rounded-xl border-2 transition-all text-center ${
+                              isSelected
+                                ? 'bg-black text-white border-black'
+                                : hasAvailableTimes
+                                ? 'bg-white border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                                : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="text-xs font-medium">{day.dayName}</div>
+                            <div className="text-lg font-bold">{day.dayNumber}</div>
+                            <div className="text-xs">{day.monthName}</div>
+                            {day.isToday && (
+                              <div className="text-xs mt-1 text-blue-600 font-medium">Today</div>
+                            )}
+                            {day.isTomorrow && (
+                              <div className="text-xs mt-1 text-green-600 font-medium">Tomorrow</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
-                {/* Step 3: Choose Time (only show if date is selected) */}
-                {selectedDate && (
+                {/* Step 3: Choose Time (only show if date is selected and not mobile) */}
+                {selectedDate && !isMobile && (
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-4">
                       Step 3: Choose Your Time
@@ -601,22 +635,37 @@ const ModernTourSchedulingModal = ({
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-8 py-6 border-t border-gray-100 bg-white flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  {canSubmit ? 
-                    `Ready to schedule your tour` : 
-                    `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
-                </div>
+            <div className={cn(
+              "border-t border-gray-100 bg-white flex-shrink-0",
+              isMobile ? "px-6 py-4" : "px-8 py-6"
+            )}>
+              <div className={cn(
+                isMobile ? "space-y-3" : "flex items-center justify-between"
+              )}>
+                {!isMobile && (
+                  <div className="text-sm text-gray-500">
+                    {canSubmit ? 
+                      `Ready to schedule your tour` : 
+                      `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
+                  </div>
+                )}
                 <Button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isSubmitting || !isPropertyDetailPage}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium disabled:opacity-50"
+                  className={cn(
+                    "bg-black hover:bg-gray-800 text-white rounded-xl font-medium disabled:opacity-50",
+                    isMobile ? "w-full h-12 text-base" : "px-8 py-3"
+                  )}
                 >
                   {!isPropertyDetailPage ? 'Select a Property First' : isSubmitting ? "Scheduling..." : "Schedule Tour"}
                   {isPropertyDetailPage && <ChevronRight className="h-4 w-4 ml-2" />}
                 </Button>
               </div>
+              
+              {/* Mobile safe area */}
+              {isMobile && (
+                <div className="h-safe-area-inset-bottom" />
+              )}
             </div>
           </div>
         </DialogContent>

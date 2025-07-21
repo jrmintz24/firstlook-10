@@ -372,3 +372,197 @@ input[type="button"][value*="Request"] {
 .property-content-card {
   @apply bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden;
 }
+
+/* Mobile Experience Improvements */
+/* Touch-friendly interactions */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button, .btn, [role="button"] {
+    min-height: 44px; /* iOS recommended minimum */
+    min-width: 44px;
+  }
+  
+  /* Input fields with better mobile UX */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+  
+  /* Better modal positioning on mobile */
+  .modal-content-mobile {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+    border-radius: 24px 24px 0 0;
+    max-height: 90vh;
+    transform: translateY(0);
+  }
+  
+  /* Improved form spacing on mobile */
+  .form-mobile {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  
+  /* Better card spacing */
+  .card-grid-mobile {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  /* Navigation improvements */
+  .nav-mobile {
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Touch gesture indicators */
+.swipeable {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipeable::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.swipeable:hover::after,
+.swipeable:focus::after {
+  opacity: 1;
+}
+
+/* Progress indicators for mobile forms */
+.progress-mobile {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.progress-step {
+  flex: 1;
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-step.active {
+  background: #3b82f6;
+}
+
+/* Mobile-specific animations */
+@keyframes slide-up-mobile {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down-mobile {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.mobile-modal-enter {
+  animation: slide-up-mobile 0.3s ease-out;
+}
+
+.mobile-modal-exit {
+  animation: slide-down-mobile 0.3s ease-in;
+}
+
+/* Safe area support for iOS devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Improved scrolling on mobile */
+@media (max-width: 768px) {
+  .scroll-container-mobile {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  
+  /* Hide scrollbars on mobile but keep functionality */
+  .scroll-container-mobile::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scroll-container-mobile {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Touch feedback for interactive elements */
+.touch-feedback {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  transition: background-color 0.1s ease;
+}
+
+.touch-feedback:active {
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: scale(0.98);
+}
+
+/* Mobile-optimized loading states */
+@media (max-width: 768px) {
+  .loading-skeleton-mobile {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+  }
+  
+  @keyframes loading-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
+
+/* Improved focus states for accessibility */
+@media (max-width: 768px) {
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}

@@ -261,3 +261,114 @@ input[type="button"][value*="Request"] {
 .ihf-wrapper [data-action*="favorite"] {
   display: none !important;
 }
+
+/* Property Page Styling Improvements */
+/* Style IDX content containers for better presentation */
+[data-idx-content], .idx-content-wrapper {
+  @apply p-6 md:p-8 lg:p-10;
+  background: white;
+  border-radius: 0.75rem;
+}
+
+/* Improve spacing for IDX property details */
+.ihf-container,
+.ihf-wrapper,
+.ihf-listing,
+.ihf-property,
+.ihf-details {
+  @apply p-4 md:p-6 lg:p-8;
+  line-height: 1.6;
+}
+
+/* Enhance typography in IDX content */
+.ihf-container h1,
+.ihf-wrapper h1,
+.ihf-listing h1,
+.ihf-property h1 {
+  @apply text-2xl md:text-3xl lg:text-4xl font-light mb-4 text-foreground;
+}
+
+.ihf-container h2,
+.ihf-wrapper h2,
+.ihf-listing h2,
+.ihf-property h2 {
+  @apply text-xl md:text-2xl font-medium mb-3 text-foreground;
+}
+
+.ihf-container h3,
+.ihf-wrapper h3,
+.ihf-listing h3,
+.ihf-property h3 {
+  @apply text-lg md:text-xl font-medium mb-2 text-foreground;
+}
+
+/* Improve spacing for property details sections */
+.ihf-container > div,
+.ihf-wrapper > div,
+.ihf-listing > div,
+.ihf-property > div {
+  @apply mb-4 md:mb-6;
+}
+
+/* Style property price displays */
+.ihf-price,
+[class*="price"],
+[class*="listing-price"] {
+  @apply text-2xl md:text-3xl font-bold text-primary mb-2;
+}
+
+/* Style property feature lists */
+.ihf-container ul,
+.ihf-wrapper ul,
+.ihf-listing ul,
+.ihf-property ul {
+  @apply space-y-1 mb-4;
+}
+
+.ihf-container li,
+.ihf-wrapper li,
+.ihf-listing li,
+.ihf-property li {
+  @apply text-muted-foreground;
+}
+
+/* Style property images */
+.ihf-container img,
+.ihf-wrapper img,
+.ihf-listing img,
+.ihf-property img {
+  @apply rounded-lg shadow-sm;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Style property gallery */
+.ihf-gallery,
+[class*="gallery"],
+[class*="photos"] {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6;
+}
+
+/* Improve responsive spacing */
+@media (max-width: 768px) {
+  .ihf-container,
+  .ihf-wrapper,
+  .ihf-listing,
+  .ihf-property,
+  .ihf-details {
+    @apply p-3;
+  }
+}
+
+/* Add proper margins to the container wrapper */
+.property-page-container {
+  @apply min-h-screen bg-gray-50;
+}
+
+.property-content-wrapper {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.property-content-card {
+  @apply bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden;
+}

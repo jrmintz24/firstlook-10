@@ -37,9 +37,20 @@ const ListingDetails = () => {
       {/* Property Toolbar */}
       <PropertyToolbar />
       
-      {/* IDX Content */}
-      <div ref={containerRef} className="w-full min-h-screen pt-32">
-        {/* IDX listing content will be rendered here */}
+      {/* IDX Content Container with improved styling */}
+      <div className="pt-36 pb-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div 
+            ref={containerRef} 
+            className="w-full min-h-screen bg-white rounded-xl shadow-lg border border-border overflow-hidden"
+            style={{
+              /* Ensure IDX content has proper spacing */
+              '--idx-content-padding': '2rem',
+            }}
+          >
+            {/* IDX listing content will be rendered here */}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -267,9 +267,20 @@ const Listing = () => {
         </div>
       )}
       
-      {/* IDX Content */}
-      <div ref={containerRef} className={`w-full min-h-screen ${!isLoading ? 'pt-32' : ''}`}>
-        {/* IDX listing content will be rendered here */}
+      {/* IDX Content Container with improved styling */}
+      <div className={`${!isLoading ? 'pt-36' : 'pt-20'} pb-8`}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div 
+            ref={containerRef} 
+            className="w-full min-h-screen bg-white rounded-xl shadow-lg border border-border overflow-hidden"
+            style={{
+              /* Ensure IDX content has proper spacing */
+              '--idx-content-padding': '2rem',
+            }}
+          >
+            {/* IDX listing content will be rendered here */}
+          </div>
+        </div>
       </div>
     </div>
   );

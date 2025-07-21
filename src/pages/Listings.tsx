@@ -397,11 +397,11 @@ const Listings = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
         {isLoading && (
           <div className="space-y-8">
             {/* Quick loading message */}
-            <div className="text-center py-8">
+            <div className="text-center py-12">
               <LoadingSpinner size="lg" text="Loading property search..." />
             </div>
             
@@ -416,9 +416,13 @@ const Listings = () => {
           className={`
             ${isLoading ? 'opacity-0 absolute -z-10' : 'opacity-100'} 
             transition-opacity duration-500
-            bg-card rounded-lg border border-border overflow-hidden
-            shadow-sm
+            bg-white rounded-xl border border-border overflow-hidden
+            shadow-lg min-h-screen
           `}
+          style={{
+            /* Ensure IDX content has proper spacing */
+            '--idx-content-padding': '2rem',
+          }}
         />
       </div>
     </div>

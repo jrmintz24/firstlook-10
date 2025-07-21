@@ -149,27 +149,27 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
   return (
     <>
       <div className={`fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm ${className}`}>
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex items-center justify-between gap-6">
             {/* Property Info */}
             <div className="flex-1 min-w-0">
               {isLoading ? (
                 <div className="animate-pulse">
-                  <div className="h-6 bg-muted rounded w-64 mb-2"></div>
-                  <div className="h-4 bg-muted rounded w-48"></div>
+                  <div className="h-7 bg-muted rounded w-80 mb-3"></div>
+                  <div className="h-5 bg-muted rounded w-60"></div>
                 </div>
               ) : propertyData ? (
                 <>
-                  <h2 className="text-lg font-semibold text-foreground truncate">
+                  <h2 className="text-xl md:text-2xl font-light text-foreground truncate mb-2">
                     {propertyData.address}
                   </h2>
                   {propertyData.price && (
-                    <div className="flex items-center gap-4 mt-1">
-                      <span className="text-xl font-bold text-primary">
+                    <div className="flex items-center gap-6 mt-2">
+                      <span className="text-2xl md:text-3xl font-bold text-primary">
                         {propertyData.price}
                       </span>
                       {propertyData.beds && propertyData.baths && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm md:text-base text-muted-foreground">
                           {propertyData.beds} bed • {propertyData.baths} bath
                           {propertyData.sqft && ` • ${propertyData.sqft} sqft`}
                         </span>
@@ -190,7 +190,7 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
                 onClick={handleSaveProperty}
                 variant="outline"
                 size="sm"
-                className="hidden sm:flex hover:bg-accent"
+                className="hidden sm:flex hover:bg-accent px-4 py-2 h-auto"
                 disabled={isLoading}
               >
                 <Heart className={`h-4 w-4 mr-2 ${isSaved ? 'fill-primary text-primary' : ''}`} />
@@ -200,7 +200,7 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
               <Button
                 onClick={handleScheduleTour}
                 size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg px-6 py-2 h-auto font-medium"
                 disabled={isLoading}
               >
                 <Calendar className="h-4 w-4 mr-2" />

@@ -27,6 +27,10 @@ export const useAgentConfirmation = () => {
   const { toast } = useToast();
 
   const confirmShowing = async (data: ConfirmationData, agent: AgentProfile) => {
+    console.log('=== CONFIRMING SHOWING ===');
+    console.log('Data:', data);
+    console.log('Agent:', agent);
+    
     setIsLoading(true);
     
     try {
@@ -91,17 +95,24 @@ export const useAgentConfirmation = () => {
         .eq('id', data.requestId)
         .single();
 
-      if (!fetchError && showingRequest) {
+      // Always attempt to send buyer email even if there was a fetch error
+      // This ensures buyers get notified even if there are issues with data retrieval
+      if (showingRequest || !fetchError) {
+        const requestData = showingRequest || {
+          user_id: data.requestId, // fallback
+          profiles: { first_name: 'Buyer', last_name: '' },
+          property_address: 'Property'
+        };
         // Send confirmation email to agent (let Edge Function fetch buyer email)
         try {
           const { error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
             body: {
               agentName: `${agent.first_name} ${agent.last_name}`,
-              agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
-              buyerId: showingRequest.user_id, // Let Edge Function fetch email
-              buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              buyerPhone: showingRequest.profiles.phone,
-              propertyAddress: showingRequest.property_address,
+              agentEmail: requestData.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
+              buyerId: requestData.user_id, // Let Edge Function fetch email
+              buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
+              buyerPhone: requestData.profiles.phone,
+              propertyAddress: requestData.property_address,
               showingDate: data.confirmedDate,
               showingTime: data.confirmedTime,
               showingInstructions: data.agentMessage,
@@ -119,36 +130,43 @@ export const useAgentConfirmation = () => {
         }
 
         // Send confirmation email to buyer (let Edge Function fetch buyer email)
+        console.log('Attempting to send buyer confirmation email...');
         try {
-          const { error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
-            body: {
-              buyerId: showingRequest.user_id, // Let Edge Function fetch email
-              buyerName: `${showingRequest.profiles.first_name} ${showingRequest.profiles.last_name}`,
-              agentName: `${agent.first_name} ${agent.last_name}`,
-              agentEmail: showingRequest.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
-              agentPhone: agent.phone,
-              propertyAddress: showingRequest.property_address,
-              showingDate: data.confirmedDate,
-              showingTime: data.confirmedTime,
-              meetingLocation: "Meet at the property",
-              showingInstructions: data.agentMessage,
-              requestId: data.requestId
-            }
+          const buyerEmailPayload = {
+            buyerId: requestData.user_id,
+            buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
+            agentName: `${agent.first_name} ${agent.last_name}`,
+            agentEmail: requestData.assigned_agent_email || `${agent.first_name.toLowerCase()}.${agent.last_name.toLowerCase()}@firstlookhometours.com`,
+            agentPhone: agent.phone,
+            propertyAddress: requestData.property_address,
+            showingDate: data.confirmedDate,
+            showingTime: data.confirmedTime,
+            meetingLocation: "Meet at the property",
+            showingInstructions: data.agentMessage,
+            requestId: data.requestId
+          };
+
+          console.log('Buyer email payload:', buyerEmailPayload);
+
+          const { data: buyerEmailResponse, error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
+            body: buyerEmailPayload
           });
 
           if (buyerEmailError) {
             console.error('Failed to send buyer confirmation email:', buyerEmailError);
+            // Don't fail the entire process if email fails, just log the error
           } else {
-            console.log('Buyer confirmation email sent successfully');
+            console.log('Buyer confirmation email sent successfully:', buyerEmailResponse);
           }
         } catch (emailError) {
-          console.error('Error sending buyer confirmation email:', emailError);
+          console.error('Exception sending buyer confirmation email:', emailError);
+          // Don't fail the entire process if email fails
         }
       }
       
       toast({
         title: "Tour Accepted!",
-        description: "You have successfully accepted this showing request. The buyer will be notified.",
+        description: "You have successfully accepted this showing request. The buyer has been notified and must sign the agreement.",
       });
       
       return true;

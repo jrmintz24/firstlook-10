@@ -93,27 +93,29 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
 
-    const emailSubject = `Your Tour is Confirmed: ${propertyAddress} - ${formattedDate}`;
+    const emailSubject = `Your Tour is Confirmed: ${propertyAddress} - Action Required`;
     
     const emailHtml = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Your Tour is Confirmed</title>
+          <title>Your Tour is Confirmed - Please Sign Agreement</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: #000; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
             .content { background: #f9f9f9; padding: 30px 20px; border-radius: 0 0 8px 8px; }
+            .action-required { background: #ffebee; padding: 20px; border-radius: 8px; border-left: 4px solid #f44336; margin: 20px 0; }
             .highlight { background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3; margin: 20px 0; }
-            .agent-info { background: #f3e5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #9c27b0; margin: 20px 0; }
+            .specialist-info { background: #f3e5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #9c27b0; margin: 20px 0; }
             .prep-info { background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0; }
             .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
             .info-item { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ddd; }
             .info-label { font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
             .info-value { font-size: 16px; margin-top: 5px; }
             .button { display: inline-block; background: #000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+            .button-primary { display: inline-block; background: #f44336; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: bold; }
             .button-outline { display: inline-block; background: transparent; color: #000; border: 2px solid #000; padding: 10px 22px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
             .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 14px; }
             .request-id { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #666; margin: 15px 0; }
@@ -123,13 +125,22 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="container">
             <div class="header">
               <h1 style="margin: 0; font-size: 24px;">🎉 Your Tour is Confirmed!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Everything is set for your property showing</p>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">A Showing Specialist has accepted your request</p>
             </div>
             
             <div class="content">
               <p>Hi ${buyerName},</p>
               
-              <p>Excellent news! Your property tour has been confirmed and your agent is excited to show you around. Here are all the details you need:</p>
+              <p>Great news! Your property tour has been confirmed by one of our professional Showing Specialists. <strong>To finalize your tour, you must sign the showing agreement.</strong></p>
+              
+              <div class="action-required">
+                <h3 style="margin-top: 0; color: #d32f2f;">⚠️ Action Required: Sign Your Agreement</h3>
+                <p style="margin: 10px 0;"><strong>Your tour is not complete until you sign the showing agreement.</strong> This quick digital signature takes less than 30 seconds and protects both you and the property owner.</p>
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="https://firstlookhometours.com/dashboard" class="button-primary">Sign Agreement Now →</a>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">After signing, you'll receive a final confirmation with all tour details.</p>
+              </div>
               
               <div class="highlight">
                 <h3 style="margin-top: 0; color: #1976d2;">📍 Tour Details</h3>
@@ -154,9 +165,9 @@ const handler = async (req: Request): Promise<Response> => {
                 ${meetingLocation ? `<p style="margin: 15px 0 5px 0;"><strong>Meeting Location:</strong> ${meetingLocation}</p>` : ''}
               </div>
               
-              <div class="agent-info">
-                <h3 style="margin-top: 0; color: #7b1fa2;">👤 Your Agent: ${agentName}</h3>
-                <p style="margin: 10px 0;">Your agent will meet you at the property and guide you through the tour, answering any questions you have about the home and neighborhood.</p>
+              <div class="specialist-info">
+                <h3 style="margin-top: 0; color: #7b1fa2;">👤 Your Showing Specialist: ${agentName}</h3>
+                <p style="margin: 10px 0;">Your professional Showing Specialist will meet you at the property and guide you through the tour, providing expert insights about the home and neighborhood.</p>
                 <div class="info-grid">
                   ${agentEmail ? `
                   <div class="info-item">
@@ -192,8 +203,9 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                ${agentEmail ? `<a href="mailto:${agentEmail}?subject=Tour Question - ${propertyAddress}&body=Hi ${agentName},%0D%0A%0D%0AI have a question about our upcoming tour of ${propertyAddress} on ${formattedDate}.%0D%0A%0D%0A" class="button">Email Your Agent</a>` : ''}
-                ${agentPhone ? `<a href="tel:${agentPhone}" class="button-outline">Call Your Agent</a>` : ''}
+                <a href="https://firstlookhometours.com/dashboard" class="button-primary">Sign Agreement Now →</a>
+                ${agentEmail ? `<a href="mailto:${agentEmail}?subject=Tour Question - ${propertyAddress}&body=Hi ${agentName},%0D%0A%0D%0AI have a question about our upcoming tour of ${propertyAddress} on ${formattedDate}.%0D%0A%0D%0A" class="button">Email Specialist</a>` : ''}
+                ${agentPhone ? `<a href="tel:${agentPhone}" class="button-outline">Call Specialist</a>` : ''}
               </div>
               
               <h3>🏠 What to Expect During Your Tour</h3>
@@ -206,7 +218,19 @@ const handler = async (req: Request): Promise<Response> => {
               </ul>
               
               <h3>📱 Need to Reschedule?</h3>
-              <p>If something comes up and you need to change your appointment, please contact your agent as soon as possible. We understand that schedules can change!</p>
+              <p>If something comes up and you need to change your appointment, please contact your Showing Specialist as soon as possible. We understand that schedules can change!</p>
+              
+              <div style="background: #ffe0b2; padding: 20px; border-radius: 8px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                <h4 style="margin-top: 0; color: #e65100;">🔒 Why the Agreement?</h4>
+                <p style="margin-bottom: 10px;">The showing agreement is a simple document that:</p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>Confirms your scheduled appointment</li>
+                  <li>Protects the property owner's interests</li>
+                  <li>Ensures professional representation</li>
+                  <li>Takes less than 30 seconds to sign digitally</li>
+                </ul>
+                <p style="margin-bottom: 0; font-weight: bold;">No agreement = No tour. Please sign now to secure your appointment!</p>
+              </div>
               
               <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50; margin: 20px 0;">
                 <h4 style="margin-top: 0; color: #2e7d32;">💡 Pro Tip</h4>

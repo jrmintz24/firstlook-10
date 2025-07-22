@@ -298,6 +298,7 @@ const BuyerDashboard = () => {
           favorites={[]} // TODO: Get favorites from data
           onRequestTour={handleRequestTour}
           onTabChange={setActiveTab}
+          activeTab={activeTab}
         >
           {/* Tab-specific content for mobile */}
           {dashboardTabs.find(tab => tab.id === activeTab)?.content}

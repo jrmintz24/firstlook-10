@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -32,6 +32,7 @@ interface MobileDashboardLayoutProps {
   favorites?: any[];
   onRequestTour?: () => void;
   onTabChange?: (tab: string) => void;
+  activeTab?: string;
   children?: React.ReactNode;
 }
 
@@ -43,10 +44,18 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
   favorites = [],
   onRequestTour,
   onTabChange,
+  activeTab: propActiveTab = 'requested',
   children
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(propActiveTab);
   const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures();
+
+  // Sync with parent active tab
+  useEffect(() => {
+    if (propActiveTab !== activeTab) {
+      setActiveTab(propActiveTab);
+    }
+  }, [propActiveTab]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -62,30 +71,30 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
       count: 0
     },
     { 
-      id: 'pending', 
-      label: 'Pending Tours', 
-      shortLabel: 'Pending',
+      id: 'requested', 
+      label: 'Requested Tours', 
+      shortLabel: 'Requested',
       icon: Clock,
       count: pendingRequests.length
     },
     { 
-      id: 'scheduled', 
-      label: 'Upcoming Tours', 
-      shortLabel: 'Upcoming',
+      id: 'confirmed', 
+      label: 'Confirmed Tours', 
+      shortLabel: 'Confirmed',
       icon: Calendar,
       count: activeShowings.length
     },
     { 
-      id: 'completed', 
+      id: 'history', 
       label: 'Completed Tours', 
-      shortLabel: 'Completed',
+      shortLabel: 'History',
       icon: CheckCircle,
       count: completedShowings.length
     },
     { 
       id: 'favorites', 
       label: 'Favorites', 
-      shortLabel: 'Saved',
+      shortLabel: 'Favorites',
       icon: Heart,
       count: favorites.length
     }
@@ -93,25 +102,25 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
   const quickStats = [
     {
-      label: 'Pending Tours',
+      label: 'Requested Tours',
       value: pendingRequests.length,
       icon: Clock,
       color: 'bg-orange-100 text-orange-700',
-      action: () => handleTabChange('pending')
+      action: () => handleTabChange('requested')
     },
     {
-      label: 'Upcoming Tours',
+      label: 'Confirmed Tours',
       value: activeShowings.length,
       icon: Calendar,
       color: 'bg-blue-100 text-blue-700',
-      action: () => handleTabChange('scheduled')
+      action: () => handleTabChange('confirmed')
     },
     {
       label: 'Completed Tours',
       value: completedShowings.length,
       icon: CheckCircle,
       color: 'bg-green-100 text-green-700',
-      action: () => handleTabChange('completed')
+      action: () => handleTabChange('history')
     },
     {
       label: 'Favorites',
@@ -170,14 +179,14 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 min-h-[44px] active:scale-95",
+                  "flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] active:scale-95",
                   isActive 
                     ? "bg-blue-100 text-blue-700 shadow-sm" 
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200"
                 )}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{tab.shortLabel || tab.label}</span>
+                <span className="text-xs whitespace-nowrap">{tab.shortLabel || tab.label}</span>
                 {tab.count > 0 && (
                   <Badge variant="secondary" className="h-5 text-xs min-w-[20px] justify-center flex-shrink-0">
                     {tab.count}

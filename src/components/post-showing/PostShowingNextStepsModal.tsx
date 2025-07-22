@@ -11,7 +11,7 @@ import {
   Star,
   CheckCircle
 } from "lucide-react";
-import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
+// Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 
 interface PostShowingNextStepsModalProps {
   isOpen: boolean;
@@ -34,17 +34,23 @@ const PostShowingNextStepsModal = ({
   showingRequestId,
   onActionTaken
 }: PostShowingNextStepsModalProps) => {
-  const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
 
   const handleOfferInterest = () => {
-    setShowOfferDialog(true);
-  };
-
-  const handleOfferDialogClose = () => {
-    setShowOfferDialog(false);
+    // Skip the dialog and go directly to offer questionnaire
+    const params = new URLSearchParams({
+      property: propertyAddress
+    });
+    
+    // Add agent if one is provided
+    if (agentId) {
+      params.append('agent', agentId);
+    }
+    
+    // Close modal and navigate directly to offer questionnaire with scheduling
     onClose();
     onActionTaken?.();
+    window.location.href = `/offer-questionnaire?${params.toString()}`;
   };
 
   const handleOtherAction = (actionType: string) => {
@@ -89,8 +95,7 @@ const PostShowingNextStepsModal = ({
   ];
 
   return (
-    <>
-      <Dialog open={isOpen && !showOfferDialog} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -165,17 +170,6 @@ const PostShowingNextStepsModal = ({
           </div>
         </DialogContent>
       </Dialog>
-
-      <EnhancedOfferTypeDialog
-        isOpen={showOfferDialog}
-        onClose={handleOfferDialogClose}
-        propertyAddress={propertyAddress}
-        agentId={agentId}
-        agentName={agentName}
-        buyerId={buyerId}
-        showingRequestId={showingRequestId}
-      />
-    </>
   );
 };
 

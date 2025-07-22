@@ -51,7 +51,7 @@ const StreamlinedOfferPrep = ({
   buyerId,
   agentId
 }: StreamlinedOfferPrepProps) => {
-  const [currentStep, setCurrentStep] = useState<'appointment' | 'complete'>('appointment');
+  const [currentStep, setCurrentStep] = useState<'scheduling' | 'questionnaire' | 'complete'>('scheduling');
   const [formData, setFormData] = useState<OfferPrepData>({
     consultationType: 'video',
     contactName: '',
@@ -272,246 +272,290 @@ const StreamlinedOfferPrep = ({
     );
   }
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 'scheduling':
+        return (
+          <>
+            <CardHeader>
+              <CardTitle className="text-xl">Schedule Your Offer Strategy Call</CardTitle>
+              <p className="text-sm text-gray-600">
+                Property: {propertyAddress}
+              </p>
+              <p className="text-sm text-blue-600 font-medium">
+                Step 1 of 2: Choose your preferred time
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Contact Type Selection */}
+              <div className="space-y-2">
+                <Label>Call Type</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={formData.consultationType === 'video' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleInputChange('consultationType', 'video')}
+                    className="flex items-center gap-1"
+                  >
+                    <Video className="h-4 w-4" />
+                    Video
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.consultationType === 'phone' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleInputChange('consultationType', 'phone')}
+                    className="flex items-center gap-1"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Phone
+                  </Button>
+                </div>
+              </div>
+
+              {/* Basic Contact Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contactName">Full Name *</Label>
+                  <Input
+                    id="contactName"
+                    value={formData.contactName}
+                    onChange={(e) => handleInputChange('contactName', e.target.value)}
+                    placeholder="Your full name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPhone">Phone Number *</Label>
+                  <Input
+                    id="contactPhone"
+                    type="tel"
+                    value={formData.contactPhone}
+                    onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+
+              {/* Scheduling */}
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Select Date</Label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {dates.map((dateStr) => {
+                      const date = new Date(dateStr);
+                      const isSelected = selectedDate?.toDateString() === date.toDateString();
+                      
+                      return (
+                        <Button
+                          key={dateStr}
+                          type="button"
+                          variant={isSelected ? "default" : "outline"}
+                          className="flex flex-col py-3 px-2 h-auto"
+                          onClick={() => setSelectedDate(date)}
+                        >
+                          <span className="text-xs">{formatDate(date).split(' ')[0]}</span>
+                          <span className="text-lg font-semibold">{date.getDate()}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedDate && slotsByDate[selectedDate.toDateString()]?.length > 0 && (
+                  <div className="space-y-3">
+                    <Label>Select Time</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {slotsByDate[selectedDate.toDateString()]?.slice(0, 12).map((slot, index) => {
+                        const timeString = slot.datetime.toTimeString().slice(0, 5);
+                        const isSelected = selectedTime === timeString;
+                        
+                        return (
+                          <Button
+                            key={index}
+                            type="button"
+                            variant={isSelected ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedTime(timeString)}
+                          >
+                            {formatTime(slot.datetime)}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between pt-4">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={() => setCurrentStep('questionnaire')}
+                  disabled={!formData.contactName || !formData.contactPhone || !selectedDate || !selectedTime}
+                >
+                  Continue to Details
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        );
+
+      case 'questionnaire':
+        return (
+          <>
+            <CardHeader>
+              <CardTitle className="text-xl">Tell Us About Your Offer Plans</CardTitle>
+              <p className="text-sm text-gray-600">
+                Property: {propertyAddress}
+              </p>
+              <p className="text-sm text-blue-600 font-medium">
+                Step 2 of 2: Help us prepare for your call
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Email field */}
+              <div className="space-y-2">
+                <Label htmlFor="contactEmail">Email Address</Label>
+                <Input
+                  id="contactEmail"
+                  type="email"
+                  value={formData.contactEmail}
+                  onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                  placeholder="your.email@example.com"
+                />
+              </div>
+
+              {/* Financial Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Financial Overview</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="budgetMax">Maximum Budget *</Label>
+                    <Input
+                      id="budgetMax"
+                      type="number"
+                      value={formData.budgetMax || ''}
+                      onChange={(e) => handleInputChange('budgetMax', parseInt(e.target.value) || 0)}
+                      placeholder="500000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="downPayment">Down Payment Amount *</Label>
+                    <Input
+                      id="downPayment"
+                      type="number"
+                      value={formData.downPaymentAmount || ''}
+                      onChange={(e) => handleInputChange('downPaymentAmount', parseInt(e.target.value) || 0)}
+                      placeholder="100000"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Pre-approval Status</Label>
+                  <Select
+                    value={formData.preApprovalStatus}
+                    onValueChange={(value: 'approved' | 'pending' | 'not_started') => 
+                      handleInputChange('preApprovalStatus', value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="approved">Pre-approved</SelectItem>
+                      <SelectItem value="pending">Application in progress</SelectItem>
+                      <SelectItem value="not_started">Haven't started yet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Strategy Questions */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Strategy & Timeline</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Buying Timeline</Label>
+                    <Select
+                      value={formData.buyingTimeline}
+                      onValueChange={(value) => handleInputChange('buyingTimeline', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timeline" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="immediately">ASAP (0-30 days)</SelectItem>
+                        <SelectItem value="soon">Soon (1-3 months)</SelectItem>
+                        <SelectItem value="moderate">Flexible (3-6 months)</SelectItem>
+                        <SelectItem value="exploring">Just Exploring</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Competitive Market Comfort</Label>
+                    <Select
+                      value={formData.competitiveComfort}
+                      onValueChange={(value) => handleInputChange('competitiveComfort', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select comfort level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aggressive">Willing to be aggressive</SelectItem>
+                        <SelectItem value="moderate">Moderate approach</SelectItem>
+                        <SelectItem value="conservative">Conservative/cautious</SelectItem>
+                        <SelectItem value="unsure">Not sure yet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Questions */}
+              <div className="space-y-2">
+                <Label htmlFor="specificQuestions">Specific Questions or Concerns</Label>
+                <Textarea
+                  id="specificQuestions"
+                  value={formData.specificQuestions || ''}
+                  onChange={(e) => handleInputChange('specificQuestions', e.target.value)}
+                  placeholder="Any specific questions about this property or the offer process..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex justify-between pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setCurrentStep('scheduling')}
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isFormValid() || loading}
+                  className="flex-1 ml-3"
+                >
+                  {loading ? "Scheduling..." : "Schedule Consultation"}
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <CardTitle className="text-xl">Schedule Your Offer Strategy Call</CardTitle>
-          <p className="text-sm text-gray-600">
-            Property: {propertyAddress}
-          </p>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Contact & Consultation Type */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contactName">Full Name *</Label>
-              <Input
-                id="contactName"
-                value={formData.contactName}
-                onChange={(e) => handleInputChange('contactName', e.target.value)}
-                placeholder="Your full name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactPhone">Phone Number *</Label>
-              <Input
-                id="contactPhone"
-                type="tel"
-                value={formData.contactPhone}
-                onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                placeholder="(555) 123-4567"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contactEmail">Email Address</Label>
-              <Input
-                id="contactEmail"
-                type="email"
-                value={formData.contactEmail}
-                onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                placeholder="your.email@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Call Type</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={formData.consultationType === 'video' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleInputChange('consultationType', 'video')}
-                  className="flex items-center gap-1"
-                >
-                  <Video className="h-3 w-3" />
-                  Video
-                </Button>
-                <Button
-                  type="button"
-                  variant={formData.consultationType === 'phone' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleInputChange('consultationType', 'phone')}
-                  className="flex items-center gap-1"
-                >
-                  <Phone className="h-3 w-3" />
-                  Phone
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Essential Financial Info */}
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-3">Quick Financial Overview</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="budgetMax">Max Budget *</Label>
-                <Input
-                  id="budgetMax"
-                  type="number"
-                  placeholder="750000"
-                  value={formData.budgetMax || ''}
-                  onChange={(e) => handleInputChange('budgetMax', Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="downPaymentAmount">Down Payment *</Label>
-                <Input
-                  id="downPaymentAmount"
-                  type="number"
-                  placeholder="150000"
-                  value={formData.downPaymentAmount || ''}
-                  onChange={(e) => handleInputChange('downPaymentAmount', Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Pre-Approval Status *</Label>
-                <Select
-                  value={formData.preApprovalStatus}
-                  onValueChange={(value) => handleInputChange('preApprovalStatus', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="approved">Pre-Approved</SelectItem>
-                    <SelectItem value="pending">In Progress</SelectItem>
-                    <SelectItem value="not_started">Not Started</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline & Strategy */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Buying Timeline *</Label>
-              <Select
-                value={formData.buyingTimeline}
-                onValueChange={(value) => handleInputChange('buyingTimeline', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select timeline" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="immediately">ASAP (0-30 days)</SelectItem>
-                  <SelectItem value="soon">Soon (1-3 months)</SelectItem>
-                  <SelectItem value="moderate">Flexible (3-6 months)</SelectItem>
-                  <SelectItem value="exploring">Just Exploring</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Offer Strategy Comfort *</Label>
-              <Select
-                value={formData.competitiveComfort}
-                onValueChange={(value) => handleInputChange('competitiveComfort', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select comfort level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aggressive">Very Competitive</SelectItem>
-                  <SelectItem value="moderate">Moderately Competitive</SelectItem>
-                  <SelectItem value="conservative">Conservative</SelectItem>
-                  <SelectItem value="unsure">Need Guidance</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Questions/Concerns */}
-          <div className="space-y-2">
-            <Label htmlFor="specificQuestions">Questions or Concerns</Label>
-            <Textarea
-              id="specificQuestions"
-              placeholder="Any specific questions about this property, pricing strategy, or the offer process..."
-              value={formData.specificQuestions}
-              onChange={(e) => handleInputChange('specificQuestions', e.target.value)}
-              rows={2}
-            />
-          </div>
-
-          {/* Date & Time Selection */}
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-3">Choose Your Consultation Time</h3>
-            
-            {/* Date Selection */}
-            <div className="space-y-3">
-              <Label>Select a Date</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {dates.map((dateKey) => {
-                  const date = new Date(dateKey);
-                  const isSelected = selectedDate?.toDateString() === dateKey;
-                  
-                  return (
-                    <Button
-                      key={dateKey}
-                      type="button"
-                      variant={isSelected ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedDate(date);
-                        setSelectedTime(null);
-                      }}
-                    >
-                      {formatDate(date)}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Time Selection */}
-            {selectedDate && (
-              <div className="space-y-3 mt-4">
-                <Label>Select a Time</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {slotsByDate[selectedDate.toDateString()]?.slice(0, 12).map((slot, index) => {
-                    const timeString = slot.datetime.toTimeString().slice(0, 5);
-                    const isSelected = selectedTime === timeString;
-                    
-                    return (
-                      <Button
-                        key={index}
-                        type="button"
-                        variant={isSelected ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedTime(timeString)}
-                      >
-                        {formatTime(slot.datetime)}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!selectedDate || !selectedTime || !isFormValid() || loading}
-              className="flex-1"
-            >
-              {loading ? "Scheduling..." : "Schedule Consultation"}
-            </Button>
-          </div>
-        </CardContent>
+        {renderStepContent()}
       </Card>
     </div>
   );

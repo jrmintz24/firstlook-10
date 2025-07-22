@@ -846,8 +846,14 @@ const ModernTourSchedulingModal = ({
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-500">
                     {canSubmit ? 
-                      `Ready to schedule your tour` : 
-                      `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
+                      'Ready to schedule your tour' : 
+                      (() => {
+                        const missing = [];
+                        if (!hasAddress) missing.push('Add address');
+                        if (!hasDate) missing.push('Select date');
+                        if (!hasTime && hasDate) missing.push('Select time');
+                        return `Complete all steps: ${missing.join(', ')}`;
+                      })()}
                   </div>
                   <Button
                     onClick={handleSubmit}

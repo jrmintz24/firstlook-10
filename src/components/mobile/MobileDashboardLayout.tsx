@@ -4,25 +4,13 @@ import {
   Clock, 
   CheckCircle, 
   Heart, 
-  Home, 
   MessageCircle, 
   Settings,
   ChevronRight,
-  Plus,
-  LucideIcon
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useTouchGestures } from '@/hooks/use-mobile';
-
-interface TabItem {
-  id: string;
-  label: string;
-  shortLabel?: string;
-  icon: LucideIcon;
-  count: number;
-}
 
 interface MobileDashboardLayoutProps {
   user?: any;
@@ -48,7 +36,6 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
   children
 }) => {
   const [activeTab, setActiveTab] = useState(propActiveTab);
-  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures();
 
   // Sync with parent active tab
   useEffect(() => {
@@ -62,36 +49,6 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
     onTabChange?.(tab);
   };
 
-  const tabs: TabItem[] = [
-    { 
-      id: 'requested', 
-      label: 'Requested Tours', 
-      shortLabel: 'Requested',
-      icon: Clock,
-      count: pendingRequests.length
-    },
-    { 
-      id: 'confirmed', 
-      label: 'Confirmed Tours', 
-      shortLabel: 'Confirmed',
-      icon: Calendar,
-      count: activeShowings.length
-    },
-    { 
-      id: 'history', 
-      label: 'Completed Tours', 
-      shortLabel: 'History',
-      icon: CheckCircle,
-      count: completedShowings.length
-    },
-    { 
-      id: 'favorites', 
-      label: 'Favorites', 
-      shortLabel: 'Favorites',
-      icon: Heart,
-      count: favorites.length
-    }
-  ];
 
   const quickStats = [
     {
@@ -184,36 +141,6 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200 px-3 py-3">
-        <div className="flex gap-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={cn(
-                  "flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 rounded-lg text-sm font-medium transition-colors min-h-[48px] active:scale-95",
-                  isActive 
-                    ? "bg-blue-100 text-blue-700 shadow-sm" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200"
-                )}
-              >
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                <span className="text-xs font-medium truncate">{tab.shortLabel || tab.label}</span>
-                {tab.count > 0 && (
-                  <Badge variant="secondary" className="h-5 text-xs min-w-[20px] justify-center flex-shrink-0">
-                    {tab.count}
-                  </Badge>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="px-4 py-6 pb-20">

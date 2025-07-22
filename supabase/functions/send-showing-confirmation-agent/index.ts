@@ -33,6 +33,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const requestBody = await req.json();
+    console.log('Agent confirmation email request body:', requestBody);
+    
     const { 
       agentName,
       agentEmail,
@@ -47,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
       listingAgentPhone,
       showingInstructions,
       requestId
-    }: ShowingConfirmationAgentData = await req.json();
+    }: ShowingConfirmationAgentData = requestBody;
 
     // Get buyer email if not provided
     let buyerEmail = providedBuyerEmail;
@@ -69,7 +72,39 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Validate required fields
+    if (!agentName || !agentEmail || !propertyAddress || !showingDate || !showingTime) {
+      const missingFields = [];
+      if (!agentName) missingFields.push('agentName');
+      if (!agentEmail) missingFields.push('agentEmail');
+      if (!propertyAddress) missingFields.push('propertyAddress');
+      if (!showingDate) missingFields.push('showingDate');
+      if (!showingTime) missingFields.push('showingTime');
+      
+      console.error('Missing required fields:', missingFields);
+      return new Response(
+        JSON.stringify({ error: `Missing required fields: ${missingFields.join(', ')}` }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
     console.log(`Sending showing confirmation to agent ${agentEmail} for ${propertyAddress}`);
+    console.log('All email parameters:', {
+      agentName,
+      agentEmail,
+      buyerId,
+      buyerName,
+      buyerEmail,
+      buyerPhone,
+      propertyAddress,
+      showingDate,
+      showingTime,
+      showingInstructions,
+      requestId
+    });
 
     const formattedDate = new Date(showingDate).toLocaleDateString('en-US', {
       weekday: 'long',

@@ -155,6 +155,35 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
         </Button>
       </div>
 
+      {/* Quick Stats Grid - Above Navigation */}
+      <div className="bg-gray-50 px-4 py-4">
+        <div className="grid grid-cols-2 gap-4">
+          {quickStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <button
+                key={index}
+                onClick={stat.action}
+                className="p-4 bg-white rounded-xl border border-gray-200 text-left hover:bg-gray-50 transition-colors touch-feedback"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", stat.color)}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-1">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {stat.label}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Tab Navigation */}
       <div className="bg-white border-b border-gray-200 px-3 py-3">
         <div className="flex gap-2">
@@ -188,35 +217,6 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
       {/* Main Content */}
       <div className="px-4 py-6 pb-20">
-        {/* Quick Stats Grid - Always Visible */}
-        <div className="space-y-6 mb-6">
-          <div className="grid grid-cols-2 gap-4">
-            {quickStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <button
-                  key={index}
-                  onClick={stat.action}
-                  className="p-4 bg-white rounded-xl border border-gray-200 text-left hover:bg-gray-50 transition-colors touch-feedback"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", stat.color)}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900 mb-1">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {stat.label}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Tab Content */}
         {children}
       </div>

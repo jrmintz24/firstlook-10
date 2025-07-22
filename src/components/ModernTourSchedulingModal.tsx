@@ -13,6 +13,7 @@ import { useIDXPropertyExtractor } from "@/hooks/useIDXPropertyExtractor";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 import MobileDateTimePicker from "@/components/mobile/MobileDateTimePicker";
+import PropertySelectionStep from "@/components/tour-scheduling/PropertySelectionStep";
 import { cn } from "@/lib/utils";
 
 interface ModernTourSchedulingModalProps {
@@ -123,6 +124,7 @@ const ModernTourSchedulingModal = ({
   // Use the IDX property extractor hook to get property data from current page
   const { propertyData: extractedData, isLoading: isExtractingData } = useIDXPropertyExtractor();
   
+  const [currentStep, setCurrentStep] = useState<'property' | 'schedule'>('property');
   const [propertyAddress, setPropertyAddress] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -154,6 +156,12 @@ const ModernTourSchedulingModal = ({
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
+  // Handle property selection and step management
+  const handlePropertySelect = (address: string) => {
+    setPropertyAddress(address);
+    setCurrentStep('schedule');
+  };
+
   // Set initial property address from prop or extracted data
   const [hasInitialized, setHasInitialized] = useState(false);
   
@@ -163,6 +171,7 @@ const ModernTourSchedulingModal = ({
       if (addressToUse) {
         console.log('Setting initial property address:', addressToUse);
         setPropertyAddress(addressToUse);
+        setCurrentStep('schedule'); // Skip property selection if we already have an address
         setHasInitialized(true);
       }
     }
@@ -188,6 +197,7 @@ const ModernTourSchedulingModal = ({
     setNotes("");
     setShowAllTimes(false);
     setHasInitialized(false);
+    setCurrentStep('property');
     setModalFlow('closed');
     onClose();
   };
@@ -306,15 +316,26 @@ const ModernTourSchedulingModal = ({
 
   const canSubmit = propertyAddress.trim() && selectedDate && selectedTime;
 
-  // Calculate completion progress
+  // Calculate completion progress based on current step
   const hasAddress = propertyAddress.trim();
   const hasDate = selectedDate !== "";
   const hasTime = selectedTime !== "";
-  const completionSteps = isMobile 
-    ? [hasAddress, hasDate && hasTime] // On mobile, date and time are combined
-    : [hasAddress, hasDate, hasTime];   // On desktop, they're separate steps
-  const completedSteps = completionSteps.filter(Boolean).length;
-  const totalSteps = completionSteps.length;
+  
+  let completedSteps = 0;
+  let totalSteps = 0;
+  
+  if (currentStep === 'property') {
+    // In property selection step
+    totalSteps = 1;
+    completedSteps = hasAddress ? 1 : 0;
+  } else {
+    // In scheduling step
+    const completionSteps = isMobile 
+      ? [hasAddress, hasDate && hasTime] // On mobile, date and time are combined
+      : [hasAddress, hasDate, hasTime];   // On desktop, they're separate steps
+    completedSteps = completionSteps.filter(Boolean).length;
+    totalSteps = completionSteps.length;
+  }
 
   // Get available times for selected date
   const availableTimesForSelectedDate = selectedDate 
@@ -496,14 +517,20 @@ const ModernTourSchedulingModal = ({
 
             {/* Fixed Footer */}
             <div className="px-6 py-4 border-t border-gray-100 bg-white flex-shrink-0">
-              <Button
-                onClick={handleSubmit}
-                disabled={!canSubmit || isSubmitting || !isPropertyDetailPage}
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-xl font-medium disabled:opacity-50 text-base"
-              >
-                {!isPropertyDetailPage ? 'Select a Property First' : isSubmitting ? "Scheduling..." : "Schedule Tour"}
-                {isPropertyDetailPage && <ChevronRight className="h-4 w-4 ml-2" />}
-              </Button>
+              {currentStep === 'property' ? (
+                <div className="text-center text-sm text-gray-600">
+                  Select a property to continue
+                </div>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit || isSubmitting}
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-xl font-medium disabled:opacity-50 text-base"
+                >
+                  {isSubmitting ? "Scheduling..." : "Schedule Tour"}
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
               
               {/* Mobile safe area */}
               <div className="safe-area-bottom" />
@@ -575,22 +602,37 @@ const ModernTourSchedulingModal = ({
 
             {/* Scrollable content */}
             <div className="px-8 flex-1 overflow-y-auto max-h-[calc(80vh-240px)]">
-              {/* Wrong Page Notice */}
-              {!isPropertyDetailPage && (
-                <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-red-800">Cannot Schedule From This Page</p>
-                      <p className="text-xs text-red-600 mt-1">
-                        Please click on a specific property from the search results to schedule a tour.
+              {/* Property Selection Step */}
+              {currentStep === 'property' && (
+                <PropertySelectionStep
+                  userId={user?.id}
+                  onPropertySelect={handlePropertySelect}
+                  initialAddress={initialAddress}
+                />
+              )}
+
+              {/* Schedule Details Step */}
+              {currentStep === 'schedule' && (
+                <div>
+                  {/* Back Button */}
+                  <div className="mb-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep('property')}
+                      className="flex items-center gap-2"
+                    >
+                      <ChevronRight className="h-4 w-4 rotate-180" />
+                      Back to Property Selection
+                    </Button>
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-700">
+                        <strong>Selected Property:</strong> {propertyAddress}
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* User Notice */}
+                  {/* User Notice */}
               {isGuest && (
                 <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
                   <div className="flex items-center gap-3">
@@ -796,21 +838,27 @@ const ModernTourSchedulingModal = ({
 
             {/* Fixed Footer */}
             <div className="px-8 py-6 border-t border-gray-100 bg-white flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  {canSubmit ? 
-                    `Ready to schedule your tour` : 
-                    `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
+              {currentStep === 'property' ? (
+                <div className="text-center text-sm text-gray-500">
+                  Select a property to continue with scheduling
                 </div>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit || isSubmitting || !isPropertyDetailPage}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium disabled:opacity-50"
-                >
-                  {!isPropertyDetailPage ? 'Select a Property First' : isSubmitting ? "Scheduling..." : "Schedule Tour"}
-                  {isPropertyDetailPage && <ChevronRight className="h-4 w-4 ml-2" />}
-                </Button>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    {canSubmit ? 
+                      `Ready to schedule your tour` : 
+                      `Complete all steps: ${!hasAddress ? 'Add address' : ''}${!hasAddress && (!hasDate || !hasTime) ? ', ' : ''}${!hasDate ? 'Select date' : ''}${!hasDate && !hasTime ? ', ' : ''}${!hasTime && hasDate ? 'Select time' : ''}`}
+                  </div>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || isSubmitting}
+                    className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Scheduling..." : "Schedule Tour"}
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

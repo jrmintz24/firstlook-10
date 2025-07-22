@@ -200,8 +200,8 @@ const EnhancedOfferTypeDialog = ({
                     
                     <div className="space-y-1 text-xs">
                       <div className="flex items-center gap-2 text-gray-600">
-                        <MessageCircle className="h-3 w-3 text-black" />
-                        <span>30-minute Strategy Session</span>
+                        <Calendar className="h-3 w-3 text-black" />
+                        <span>Schedule strategy session</span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-600">
                         <CheckCircle className="h-3 w-3 text-black" />
@@ -249,7 +249,7 @@ const EnhancedOfferTypeDialog = ({
                       onClick={() => handleOfferTypeSelection('work_with_agent')}
                       className="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg transition-all duration-200 hover:scale-[1.02]"
                     >
-                      Book Expert Help
+                      Schedule Offer Prep & Get Expert Help
                     </Button>
                   </div>
                 </CardContent>

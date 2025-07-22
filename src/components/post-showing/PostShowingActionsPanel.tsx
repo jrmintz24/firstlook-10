@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Calendar, Heart, User, FileText, CheckCircle } from "lucide-react";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
-import EnhancedOfferTypeDialog from "./EnhancedOfferTypeDialog";
+// Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
 import { PostShowingWorkflowService } from '@/services/postShowingWorkflowService';
@@ -35,7 +35,7 @@ const PostShowingActionsPanel = ({
   onRequestShowing,
   onDataRefresh
 }: PostShowingActionsPanelProps) => {
-  const [showOfferDialog, setShowOfferDialog] = useState(false);
+  // Removed showOfferDialog state - no longer using dialog
   const [showAgentProfile, setShowAgentProfile] = useState(false);
   const [showFavoriteModal, setShowFavoriteModal] = useState(false);
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
@@ -103,13 +103,21 @@ const PostShowingActionsPanel = ({
   };
 
   const handleMakeOffer = () => {
-    setShowOfferDialog(true);
+    // Skip the dialog and go directly to offer questionnaire
+    const params = new URLSearchParams({
+      property: propertyAddress
+    });
+    
+    // Add agent if one is provided
+    if (agentId) {
+      params.append('agent', agentId);
+    }
+    
+    // Navigate directly to offer questionnaire with scheduling
+    window.location.href = `/offer-questionnaire?${params.toString()}`;
   };
 
-  const handleOfferDialogClose = async () => {
-    setShowOfferDialog(false);
-    await handleActionComplete('make_offer');
-  };
+  // Removed handleOfferDialogClose - no longer using dialog
 
   const handleFavoriteProperty = async (notes?: string) => {
     console.log('Favoriting property from post-showing panel:', propertyAddress);
@@ -235,15 +243,7 @@ const PostShowingActionsPanel = ({
         </CardContent>
       </Card>
 
-      <EnhancedOfferTypeDialog
-        isOpen={showOfferDialog}
-        onClose={handleOfferDialogClose}
-        propertyAddress={propertyAddress}
-        agentId={agentId}
-        agentName={agentName}
-        buyerId={buyerId}
-        showingRequestId={showingId}
-      />
+      {/* Removed EnhancedOfferTypeDialog - now going directly to offer questionnaire */}
 
       <AgentProfileModal
         isOpen={showAgentProfile}

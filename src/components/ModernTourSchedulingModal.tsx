@@ -333,8 +333,8 @@ const ModernTourSchedulingModal = ({
     return (
       <>
         {/* Mobile Overlay */}
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-          <div className="bg-white w-full rounded-t-3xl max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up-mobile">
             {/* Header */}
             <div className="px-6 pt-6 pb-4 flex-shrink-0">
               <div className="flex items-center justify-between">
@@ -376,7 +376,7 @@ const ModernTourSchedulingModal = ({
             </div>
 
             {/* Scrollable content */}
-            <div className="px-6 flex-1 overflow-y-auto max-h-[calc(90vh-200px)] scroll-container-mobile">
+            <div className="px-6 flex-1 overflow-y-auto scroll-container-mobile">
               {/* Wrong Page Notice */}
               {!isPropertyDetailPage && (
                 <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-2xl">
@@ -506,7 +506,7 @@ const ModernTourSchedulingModal = ({
               </Button>
               
               {/* Mobile safe area */}
-              <div className="h-safe-area-inset-bottom" />
+              <div className="safe-area-bottom" />
             </div>
           </div>
         </div>

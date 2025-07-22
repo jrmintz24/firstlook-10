@@ -21,16 +21,16 @@ interface OfferPrepData {
   selectedTime?: string;
   contactName: string;
   contactPhone: string;
-  contactEmail: string;
   
   // Essential Financial Info
   budgetMax: number;
   downPaymentAmount: number;
   preApprovalStatus: 'approved' | 'pending' | 'not_started';
   
-  // Timeline & Strategy
-  buyingTimeline: string;
-  competitiveComfort: string;
+  // Strategic Offer Questions
+  maxOverAskingPrice: number;
+  flexibleClosingDate: 'yes' | 'no' | 'somewhat';
+  inspectionDealBreakers: string;
   
   // Specific Questions/Concerns
   specificQuestions?: string;
@@ -56,12 +56,12 @@ const StreamlinedOfferPrep = ({
     consultationType: 'video',
     contactName: '',
     contactPhone: '',
-    contactEmail: '',
     budgetMax: 0,
     downPaymentAmount: 0,
     preApprovalStatus: 'not_started',
-    buyingTimeline: '',
-    competitiveComfort: '',
+    maxOverAskingPrice: 0,
+    flexibleClosingDate: 'somewhat',
+    inspectionDealBreakers: '',
     specificQuestions: ''
   });
   
@@ -154,14 +154,14 @@ const StreamlinedOfferPrep = ({
       const prepData = {
         contactName: formData.contactName,
         contactPhone: formData.contactPhone,
-        contactEmail: formData.contactEmail,
         consultationType: formData.consultationType,
         propertyAddress: propertyAddress,
         budgetMax: formData.budgetMax,
         downPaymentAmount: formData.downPaymentAmount,
         preApprovalStatus: formData.preApprovalStatus,
-        buyingTimeline: formData.buyingTimeline,
-        competitiveComfort: formData.competitiveComfort,
+        maxOverAskingPrice: formData.maxOverAskingPrice,
+        flexibleClosingDate: formData.flexibleClosingDate,
+        inspectionDealBreakers: formData.inspectionDealBreakers,
         specificQuestions: formData.specificQuestions
       };
 
@@ -232,8 +232,8 @@ const StreamlinedOfferPrep = ({
            formData.budgetMax && 
            formData.downPaymentAmount && 
            formData.preApprovalStatus &&
-           formData.buyingTimeline &&
-           formData.competitiveComfort;
+           formData.maxOverAskingPrice !== undefined &&
+           formData.flexibleClosingDate;
   };
 
   // Group slots by date
@@ -416,18 +416,6 @@ const StreamlinedOfferPrep = ({
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Email field */}
-              <div className="space-y-2">
-                <Label htmlFor="contactEmail">Email Address</Label>
-                <Input
-                  id="contactEmail"
-                  type="email"
-                  value={formData.contactEmail}
-                  onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
               {/* Financial Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Financial Overview</h3>
@@ -474,44 +462,50 @@ const StreamlinedOfferPrep = ({
                 </div>
               </div>
 
-              {/* Strategy Questions */}
+              {/* Strategic Offer Questions */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Strategy & Timeline</h3>
+                <h3 className="text-lg font-semibold">Offer Strategy</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Buying Timeline</Label>
-                    <Select
-                      value={formData.buyingTimeline}
-                      onValueChange={(value) => handleInputChange('buyingTimeline', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select timeline" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="immediately">ASAP (0-30 days)</SelectItem>
-                        <SelectItem value="soon">Soon (1-3 months)</SelectItem>
-                        <SelectItem value="moderate">Flexible (3-6 months)</SelectItem>
-                        <SelectItem value="exploring">Just Exploring</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="maxOverAsking">Maximum Over Asking Price *</Label>
+                    <Input
+                      id="maxOverAsking"
+                      type="number"
+                      value={formData.maxOverAskingPrice || ''}
+                      onChange={(e) => handleInputChange('maxOverAskingPrice', parseInt(e.target.value) || 0)}
+                      placeholder="25000"
+                    />
+                    <p className="text-xs text-gray-500">Amount you'd consider going over list price</p>
                   </div>
                   <div className="space-y-2">
-                    <Label>Competitive Market Comfort</Label>
+                    <Label>Flexible on Closing Date? *</Label>
                     <Select
-                      value={formData.competitiveComfort}
-                      onValueChange={(value) => handleInputChange('competitiveComfort', value)}
+                      value={formData.flexibleClosingDate}
+                      onValueChange={(value: 'yes' | 'no' | 'somewhat') => 
+                        handleInputChange('flexibleClosingDate', value)
+                      }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select comfort level" />
+                        <SelectValue placeholder="Select flexibility" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="aggressive">Willing to be aggressive</SelectItem>
-                        <SelectItem value="moderate">Moderate approach</SelectItem>
-                        <SelectItem value="conservative">Conservative/cautious</SelectItem>
-                        <SelectItem value="unsure">Not sure yet</SelectItem>
+                        <SelectItem value="yes">Yes, very flexible</SelectItem>
+                        <SelectItem value="somewhat">Somewhat flexible</SelectItem>
+                        <SelectItem value="no">No, specific date needed</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="dealBreakers">Inspection Deal-Breakers</Label>
+                  <Input
+                    id="dealBreakers"
+                    value={formData.inspectionDealBreakers}
+                    onChange={(e) => handleInputChange('inspectionDealBreakers', e.target.value)}
+                    placeholder="e.g., foundation issues, roof problems, electrical..."
+                  />
+                  <p className="text-xs text-gray-500">Issues that would cause you to walk away</p>
                 </div>
               </div>
 

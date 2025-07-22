@@ -834,6 +834,8 @@ const ModernTourSchedulingModal = ({
                   />
                 </div>
               </div>
+                </div>
+              )}
             </div>
 
             {/* Fixed Footer */}

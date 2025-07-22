@@ -31,9 +31,25 @@ const Listings = () => {
           // Clear any existing content
           containerRef.current.innerHTML = '';
           
-          // Get search parameters from URL
+          // Get search parameters from URL with enhanced data
           const searchTerm = searchParams.get('search');
+          const placeData = searchParams.get('place_data');
+          const locationType = searchParams.get('location_type');
+          
           console.log('[Listings] Search term from URL:', searchTerm);
+          console.log('[Listings] Place data from URL:', placeData);
+          console.log('[Listings] Location type from URL:', locationType);
+          
+          // Parse place data if available
+          let parsedPlaceData = null;
+          if (placeData) {
+            try {
+              parsedPlaceData = JSON.parse(placeData);
+              console.log('[Listings] Parsed place data:', parsedPlaceData);
+            } catch (e) {
+              console.warn('[Listings] Failed to parse place data:', e);
+            }
+          }
           
           // Create and execute the embed script with enhanced search integration
           try {
@@ -55,9 +71,14 @@ const Listings = () => {
               setTimeout(() => {
                 interceptPropertyClicks();
                 
-                // Apply search with retry mechanism
+                // Apply search with retry mechanism using enhanced data
                 if (searchTerm) {
-                  retrySearchApplication(searchTerm, 0, 5); // Try up to 5 times
+                  const searchData = {
+                    searchTerm,
+                    placeData: parsedPlaceData,
+                    locationType: locationType || (parsedPlaceData?.location_type)
+                  };
+                  retrySearchApplication(searchData, 0, 5); // Try up to 5 times
                 }
               }, 500);
               
@@ -101,24 +122,24 @@ const Listings = () => {
     };
 
     // Retry mechanism for search application
-    const retrySearchApplication = (searchTerm: string, attempt: number, maxAttempts: number) => {
-      console.log(`[Listings] Search application attempt ${attempt + 1}/${maxAttempts}`);
+    const retrySearchApplication = (searchData: any, attempt: number, maxAttempts: number) => {
+      console.log(`[Listings] Search application attempt ${attempt + 1}/${maxAttempts}`, searchData);
       
-      const success = applySearchToIDXWidget(searchTerm);
+      const success = applySearchToIDXWidget(searchData);
       
       if (!success && attempt < maxAttempts - 1) {
         // Wait longer between each retry
         const delay = 1000 + (attempt * 500); // 1s, 1.5s, 2s, etc.
         setTimeout(() => {
-          retrySearchApplication(searchTerm, attempt + 1, maxAttempts);
+          retrySearchApplication(searchData, attempt + 1, maxAttempts);
         }, delay);
       } else if (!success) {
         console.warn('[Listings] All search application attempts failed');
         // Show user feedback that search couldn't be auto-applied
-        showSearchFeedback(searchTerm);
+        showSearchFeedback(searchData.searchTerm);
         
         // Consider falling back to iHomeFinder search shortcode
-        considerSearchFallback(searchTerm);
+        considerSearchFallback(searchData.searchTerm);
       }
     };
     
@@ -157,10 +178,19 @@ const Listings = () => {
     };
 
     // Enhanced function to apply search term to IDX widget
-    const applySearchToIDXWidget = (searchTerm: string | null): boolean => {
+    const applySearchToIDXWidget = (searchData: any): boolean => {
+      // Handle both legacy string input and new object format
+      const searchTerm = typeof searchData === 'string' ? searchData : searchData?.searchTerm;
+      const placeData = typeof searchData === 'object' ? searchData?.placeData : null;
+      const locationType = typeof searchData === 'object' ? searchData?.locationType : null;
+      
       if (!searchTerm || !containerRef.current) return false;
       
-      console.log('[Listings] Applying search term to IDX widget:', searchTerm);
+      console.log('[Listings] Applying enhanced search to IDX widget:', {
+        searchTerm,
+        placeData,
+        locationType
+      });
       
       // Multiple strategies to find and populate the search input
       const searchStrategies = [
@@ -199,8 +229,22 @@ const Listings = () => {
       
       if (searchInput) {
         try {
+          // Determine the best search term to use based on available data
+          let bestSearchTerm = searchTerm;
+          
+          // If we have place data, use the most specific address available
+          if (placeData) {
+            if (locationType === 'address' && placeData.formatted_address) {
+              bestSearchTerm = placeData.formatted_address;
+              console.log('[Listings] Using formatted address for search:', bestSearchTerm);
+            } else if (placeData.description && placeData.description.length > searchTerm.length) {
+              bestSearchTerm = placeData.description;
+              console.log('[Listings] Using place description for search:', bestSearchTerm);
+            }
+          }
+          
           // Set the value and trigger various events
-          searchInput.value = searchTerm;
+          searchInput.value = bestSearchTerm;
           searchInput.focus();
           
           // Trigger multiple events to ensure the search is processed
@@ -213,7 +257,7 @@ const Listings = () => {
           searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
           searchInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
           
-          console.log(`[Listings] Successfully populated search input with: "${searchTerm}" using strategy ${strategyUsed}`);
+          console.log(`[Listings] Successfully populated search input with: "${bestSearchTerm}" using strategy ${strategyUsed}`);
           
           // Try to find and click search button
           setTimeout(() => {

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onPlaceSelect?: (placeData: any) => void;
   placeholder?: string;
   className?: string;
   label?: string;
@@ -18,7 +19,8 @@ interface AddressAutocompleteProps {
 
 const AddressAutocomplete = ({ 
   value, 
-  onChange, 
+  onChange,
+  onPlaceSelect,
   placeholder = "Enter address, neighborhood, city, or ZIP code...", 
   className,
   label,
@@ -105,10 +107,34 @@ const AddressAutocomplete = ({
         // Update with the full formatted address
         setSearchTerm(placeDetails.formatted_address);
         onChange(placeDetails.formatted_address);
+        
+        // Call the onPlaceSelect callback with complete place data
+        if (onPlaceSelect) {
+          onPlaceSelect({
+            description: result.description,
+            place_id: result.place_id,
+            formatted_address: placeDetails.formatted_address,
+            placeDetails: placeDetails
+          });
+        }
+      } else if (onPlaceSelect) {
+        // Call with basic data if details fetch fails
+        onPlaceSelect({
+          description: result.description,
+          place_id: result.place_id,
+          formatted_address: result.description
+        });
       }
     } catch (error) {
       console.error('Failed to get place details:', error);
-      // Keep the original description if details fetch fails
+      // Keep the original description if details fetch fails and still call callback
+      if (onPlaceSelect) {
+        onPlaceSelect({
+          description: result.description,
+          place_id: result.place_id,
+          formatted_address: result.description
+        });
+      }
     }
   };
 

@@ -8,12 +8,21 @@ import {
   MessageCircle, 
   Settings,
   ChevronRight,
-  Plus
+  Plus,
+  LucideIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTouchGestures } from '@/hooks/use-mobile';
+
+interface TabItem {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  icon: LucideIcon;
+  count: number;
+}
 
 interface MobileDashboardLayoutProps {
   user?: any;
@@ -44,34 +53,39 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
     onTabChange?.(tab);
   };
 
-  const tabs = [
+  const tabs: TabItem[] = [
     { 
       id: 'overview', 
       label: 'Overview', 
+      shortLabel: 'Home',
       icon: Home,
       count: 0
     },
     { 
       id: 'pending', 
-      label: 'Pending', 
+      label: 'Pending Tours', 
+      shortLabel: 'Pending',
       icon: Clock,
       count: pendingRequests.length
     },
     { 
       id: 'scheduled', 
-      label: 'Scheduled', 
+      label: 'Upcoming Tours', 
+      shortLabel: 'Upcoming',
       icon: Calendar,
       count: activeShowings.length
     },
     { 
       id: 'completed', 
-      label: 'Completed', 
+      label: 'Completed Tours', 
+      shortLabel: 'Completed',
       icon: CheckCircle,
       count: completedShowings.length
     },
     { 
       id: 'favorites', 
-      label: 'Saved', 
+      label: 'Favorites', 
+      shortLabel: 'Saved',
       icon: Heart,
       count: favorites.length
     }
@@ -82,25 +96,25 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
       label: 'Pending Tours',
       value: pendingRequests.length,
       icon: Clock,
-      color: 'bg-yellow-100 text-yellow-700',
+      color: 'bg-orange-100 text-orange-700',
       action: () => handleTabChange('pending')
     },
     {
-      label: 'Scheduled',
+      label: 'Upcoming Tours',
       value: activeShowings.length,
       icon: Calendar,
       color: 'bg-blue-100 text-blue-700',
       action: () => handleTabChange('scheduled')
     },
     {
-      label: 'Completed',
+      label: 'Completed Tours',
       value: completedShowings.length,
       icon: CheckCircle,
       color: 'bg-green-100 text-green-700',
       action: () => handleTabChange('completed')
     },
     {
-      label: 'Saved Homes',
+      label: 'Favorites',
       value: favorites.length,
       icon: Heart,
       color: 'bg-red-100 text-red-700',
@@ -141,7 +155,12 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
       {/* Tab Navigation */}
       <div className="bg-white border-b border-gray-200 px-2 py-2">
-        <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
+        <div 
+          className="flex space-x-1 overflow-x-auto pb-1 scrollbar-none"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -151,16 +170,16 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors touch-feedback",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 min-h-[44px] active:scale-95",
                   isActive 
-                    ? "bg-blue-100 text-blue-700" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-blue-100 text-blue-700 shadow-sm" 
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200"
                 )}
               >
-                <Icon className="h-4 w-4" />
-                <span>{tab.label}</span>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{tab.shortLabel || tab.label}</span>
                 {tab.count > 0 && (
-                  <Badge variant="secondary" className="h-5 text-xs min-w-[20px] justify-center">
+                  <Badge variant="secondary" className="h-5 text-xs min-w-[20px] justify-center flex-shrink-0">
                     {tab.count}
                   </Badge>
                 )}

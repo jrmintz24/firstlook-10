@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ConfirmationData {
   requestId: string;
@@ -26,6 +27,7 @@ interface AgentProfile {
 export const useAgentConfirmation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const confirmShowing = async (data: ConfirmationData, agent: AgentProfile) => {
     console.log('=== CONFIRMING SHOWING ===');
@@ -128,7 +130,7 @@ export const useAgentConfirmation = () => {
         try {
           const agentEmailPayload = {
             agentName: `${agent.first_name} ${agent.last_name}`,
-            agentEmail: agent.email || 'firstlookhometourstest@gmail.com', // Use agent's actual email
+            agentEmail: user?.email || 'firstlookhometourstest@gmail.com', // Use current agent's email
             buyerId: requestData.user_id, // Let Edge Function fetch email
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
             buyerPhone: requestData.profiles.phone,
@@ -166,7 +168,7 @@ export const useAgentConfirmation = () => {
             buyerId: requestData.user_id,
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
             agentName: `${agent.first_name} ${agent.last_name}`,
-            agentEmail: agent.email,
+            agentEmail: user?.email || 'noreply@firstlookhometours.com',
             agentPhone: agent.phone,
             propertyAddress: requestData.property_address,
             showingDate: data.confirmedDate,

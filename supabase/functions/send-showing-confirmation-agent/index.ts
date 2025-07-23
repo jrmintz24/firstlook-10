@@ -177,20 +177,17 @@ const handler = async (req: Request): Promise<Response> => {
                 <h3 style="margin-top: 0; color: #7b1fa2;">👤 Client Information</h3>
                 <div class="info-grid">
                   <div class="info-item">
-                    <div class="info-label">Name</div>
+                    <div class="info-label">Client Name</div>
                     <div class="info-value">${buyerName}</div>
                   </div>
                   <div class="info-item">
-                    <div class="info-label">Email</div>
-                    <div class="info-value"><a href="mailto:${buyerEmail}">${buyerEmail}</a></div>
+                    <div class="info-label">Contact Method</div>
+                    <div class="info-value">Through FirstLook Platform</div>
                   </div>
-                  ${buyerPhone ? `
-                  <div class="info-item">
-                    <div class="info-label">Phone</div>
-                    <div class="info-value"><a href="tel:${buyerPhone}">${buyerPhone}</a></div>
-                  </div>
-                  ` : ''}
                 </div>
+                <p style="margin: 15px 0; font-size: 14px; color: #666;">
+                  <strong>Privacy Protection:</strong> Client contact details are kept private. Use the platform messaging system to communicate directly.
+                </p>
               </div>
               
               ${listingAgent ? `
@@ -221,16 +218,16 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="checklist">
                 <h3 style="margin-top: 0; color: #f57c00;">📋 Pre-Showing Checklist</h3>
                 <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li><strong>Confirm with client:</strong> Send reminder 24 hours before</li>
+                  <li><strong>Confirm with client:</strong> Send reminder through platform messaging 24 hours before</li>
                   <li><strong>Research property:</strong> Review listing details, photos, and comparable sales</li>
                   <li><strong>Prepare materials:</strong> Bring business cards, market reports, and showing agreements</li>
                   <li><strong>Check traffic/parking:</strong> Plan your route and arrival time</li>
-                  <li><strong>Client communication:</strong> Confirm meeting location and any last-minute questions</li>
+                  <li><strong>Platform messaging:</strong> Use dashboard to communicate with client privately</li>
                 </ul>
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="mailto:${buyerEmail}?subject=Showing Reminder - ${propertyAddress}&body=Hi ${buyerName},%0D%0A%0D%0AThis is a friendly reminder about our showing tomorrow at ${showingTime} for ${propertyAddress}.%0D%0A%0D%0APlease let me know if you have any questions or need to make any changes.%0D%0A%0D%0ABest regards,%0D%0A${agentName}" class="button">Send Client Reminder</a>
+                <a href="https://firstlookhometours.com/dashboard" class="button">Access Platform Messaging</a>
               </div>
               
               <h3>📱 Day-of-Showing Tips</h3>

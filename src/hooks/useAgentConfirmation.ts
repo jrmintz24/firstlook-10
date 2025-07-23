@@ -108,6 +108,32 @@ export const useAgentConfirmation = () => {
           showingRequest.profiles = buyerProfile;
           console.log('Valid showing request data found, proceeding with emails...');
           const requestData = showingRequest;
+        } else {
+          // If profile doesn't exist, try to get user data from auth.users
+          console.log('Profile not found, fetching from auth.users...');
+          const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
+          
+          console.log('Auth user result:', { authUser, authError });
+          
+          if (authUser?.user && !authError) {
+            // Create a profile-like object from auth user data
+            const fallbackProfile = {
+              first_name: authUser.user.user_metadata?.first_name || 'Unknown',
+              last_name: authUser.user.user_metadata?.last_name || 'User',
+              phone: authUser.user.user_metadata?.phone || 'No phone'
+            };
+            showingRequest.profiles = fallbackProfile;
+            console.log('Using fallback profile from auth.users:', fallbackProfile);
+            const requestData = showingRequest;
+          } else {
+            console.error('Could not get user data from auth.users either');
+            console.error('Auth error:', authError);
+            return true; // Still return success since tour was confirmed
+          }
+        }
+        
+        if (showingRequest.profiles) {
+          const requestData = showingRequest;
         // Send confirmation email to agent (use test email for development)
         console.log('Attempting to send agent confirmation email...');
         try {
@@ -173,9 +199,7 @@ export const useAgentConfirmation = () => {
           // Don't fail the entire process if email fails
         }
         } else {
-          console.error('Failed to fetch buyer profile data');
-          console.error('Profile error:', profileError);
-          console.error('Buyer profile data:', buyerProfile);
+          console.error('No profile data available for email sending');
         }
       } else {
         console.error('Failed to fetch showing request details');

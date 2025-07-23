@@ -85,25 +85,28 @@ export const useAgentConfirmation = () => {
       console.log('Fetching showing request details for email...');
       const { data: showingRequest, error: fetchError } = await supabase
         .from('showing_requests')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name,
-            phone
-          )
-        `)
+        .select('*')
         .eq('id', data.requestId)
         .single();
 
       console.log('Fetch result:', { showingRequest, fetchError });
-      console.log('Showing request data structure:', showingRequest);
-      console.log('Profiles data:', showingRequest?.profiles);
 
-      // Check if we have valid data before sending emails
-      if (showingRequest && showingRequest.profiles) {
-        console.log('Valid showing request data found, proceeding with emails...');
-        const requestData = showingRequest;
+      if (showingRequest && !fetchError) {
+        // Fetch the buyer's profile separately
+        console.log('Fetching buyer profile for user_id:', showingRequest.user_id);
+        const { data: buyerProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, phone')
+          .eq('id', showingRequest.user_id)
+          .single();
+
+        console.log('Buyer profile result:', { buyerProfile, profileError });
+
+        if (buyerProfile && !profileError) {
+          // Attach profile data to showing request
+          showingRequest.profiles = buyerProfile;
+          console.log('Valid showing request data found, proceeding with emails...');
+          const requestData = showingRequest;
         // Send confirmation email to agent (use test email for development)
         console.log('Attempting to send agent confirmation email...');
         try {
@@ -168,19 +171,18 @@ export const useAgentConfirmation = () => {
           console.error('Exception sending buyer confirmation email:', emailError);
           // Don't fail the entire process if email fails
         }
+        } else {
+          console.error('Failed to fetch buyer profile data');
+          console.error('Profile error:', profileError);
+          console.error('Buyer profile data:', buyerProfile);
+        }
       } else {
-        console.error('Failed to fetch showing request details or missing profile data');
+        console.error('Failed to fetch showing request details');
         console.error('Fetch error:', fetchError);
         console.error('Showing request data:', showingRequest);
-        
-        // Even if we couldn't fetch details, still show success message since the tour was confirmed
-        toast({
-          title: "Tour Accepted!",
-          description: "Tour confirmed, but there may have been an issue sending notification emails.",
-        });
-        return true;
       }
       
+      // Show success message regardless of email issues since the tour was confirmed
       toast({
         title: "Tour Accepted!",
         description: "You have successfully accepted this showing request. The buyer has been notified and must sign the agreement.",

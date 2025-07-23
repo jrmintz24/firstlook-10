@@ -159,17 +159,7 @@ export const useAgentConfirmation = () => {
           console.error('Exception sending agent confirmation email:', emailError);
         }
 
-        // Send buyer notification through agent endpoint (since buyer endpoint is broken)
-        console.log('Sending buyer confirmation via agent endpoint...');
-        try {
-          const formattedDate = new Date(data.confirmedDate).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
-
-          // Send buyer confirmation email using the dedicated buyer edge function
+        // Send buyer confirmation email using the dedicated buyer edge function
         console.log('Sending buyer confirmation email...');
         try {
           const buyerEmailPayload = {

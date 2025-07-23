@@ -169,66 +169,36 @@ export const useAgentConfirmation = () => {
             day: 'numeric'
           });
 
-          // Send buyer notification via agent endpoint with custom message
-          const buyerNotification = {
-            agentName: 'FirstLook Home Tours',
-            agentEmail: 'noreply@firstlookhometours.com', // Use noreply for buyer notifications
-            buyerId: requestData.user_id, // Let Edge Function fetch buyer email
+          // Send buyer confirmation email using the dedicated buyer edge function
+        console.log('Sending buyer confirmation email...');
+        try {
+          const buyerEmailPayload = {
+            buyerId: requestData.user_id,
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
-            buyerPhone: requestData.profiles.phone || 'Phone not provided',
+            agentName: `${agent.first_name} ${agent.last_name}`,
+            agentEmail: agent.email,
+            agentPhone: agent.phone,
             propertyAddress: requestData.property_address,
             showingDate: data.confirmedDate,
             showingTime: data.confirmedTime,
-            showingInstructions: `
-🎉 YOUR TOUR IS CONFIRMED - ACTION REQUIRED!
-
-Dear ${requestData.profiles.first_name},
-
-Your property tour has been confirmed:
-📍 Property: ${requestData.property_address}
-📅 Date: ${formattedDate}
-⏰ Time: ${data.confirmedTime}
-
-YOUR SHOWING SPECIALIST:
-${agent.first_name} ${agent.last_name}
-📞 Phone: ${agent.phone}
-
-⚠️ IMPORTANT: You must sign the tour agreement to finalize your appointment.
-👉 Sign here: https://firstlookhometours.com/dashboard
-
-WHAT TO EXPECT:
-• Your specialist will meet you at the property
-• The tour typically lasts 30-45 minutes
-• Feel free to ask questions about the property and neighborhood
-• Take photos (with permission) to help remember details
-
-PREPARE FOR YOUR TOUR:
-✓ Arrive 5 minutes early
-✓ Bring a valid ID
-✓ Wear comfortable shoes
-✓ Prepare your questions
-✓ Consider bringing a notebook
-
-Need to reschedule? Contact your specialist directly at ${agent.phone}.
-
-Best regards,
-FirstLook Home Tours Team
-`,
+            showingInstructions: data.agentMessage,
             requestId: data.requestId
           };
-          
-          console.log('=== SENDING BUYER NOTIFICATION ===');
-          const { data: buyerResponse, error: buyerError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
-            body: buyerNotification
+
+          console.log('=== SENDING BUYER EMAIL ===');
+          console.log('Buyer email payload:', JSON.stringify(buyerEmailPayload, null, 2));
+
+          const { data: buyerResponse, error: buyerError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
+            body: buyerEmailPayload
           });
           
           if (buyerError) {
-            console.error('Failed to send buyer notification:', buyerError);
+            console.error('Failed to send buyer confirmation email:', buyerError);
           } else {
-            console.log('Buyer notification sent successfully via agent endpoint');
+            console.log('Buyer confirmation email sent successfully:', buyerResponse);
           }
         } catch (emailError) {
-          console.error('Exception sending buyer notification:', emailError);
+          console.error('Exception sending buyer confirmation email:', emailError);
         }
         } else {
           console.error('No profile data available for email sending');

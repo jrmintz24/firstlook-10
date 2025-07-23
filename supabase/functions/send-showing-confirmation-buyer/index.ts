@@ -100,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
 
-    const emailSubject = `Your Tour is Confirmed: ${propertyAddress} - Action Required`;
+    const emailSubject = `Tour Agreement Required: ${propertyAddress} - Sign to Confirm Showing`;
     
     const emailHtml = `
       <!DOCTYPE html>
@@ -131,26 +131,28 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 24px;">🎉 Your Tour is Confirmed!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">A Showing Specialist has accepted your request</p>
+              <h1 style="margin: 0; font-size: 24px;">📋 Agreement Required</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">A Showing Specialist is ready to show you this property</p>
             </div>
             
             <div class="content">
               <p>Hi ${buyerName},</p>
               
-              <p>Great news! Your property tour has been confirmed by one of our professional Showing Specialists. <strong>To finalize your tour, you must sign the showing agreement.</strong></p>
+              <p>Great news! A professional Showing Specialist is ready to show you this property. <strong>However, your tour is NOT yet confirmed.</strong></p>
+              
+              <p><strong>To confirm your showing, you must first sign the single-day tour agreement.</strong> This quick digital signature takes less than 30 seconds and is required before any showing can proceed.</p>
               
               <div class="action-required">
-                <h3 style="margin-top: 0; color: #d32f2f;">⚠️ Action Required: Sign Your Agreement</h3>
-                <p style="margin: 10px 0;"><strong>Your tour is not complete until you sign the showing agreement.</strong> This quick digital signature takes less than 30 seconds and protects both you and the property owner.</p>
+                <h3 style="margin-top: 0; color: #d32f2f;">⚠️ REQUIRED: Sign Tour Agreement First</h3>
+                <p style="margin: 10px 0;"><strong>Your showing CANNOT proceed without this signed agreement.</strong> This protects both you and the property owner during the tour.</p>
                 <div style="text-align: center; margin: 20px 0;">
-                  <a href="https://firstlookhometours.com/dashboard" class="button-primary">Sign Agreement Now →</a>
+                  <a href="https://firstlookhometours.com/dashboard" class="button-primary">SIGN AGREEMENT TO CONFIRM TOUR →</a>
                 </div>
-                <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">After signing, you'll receive a final confirmation with all tour details.</p>
+                <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;"><strong>Only after signing will your tour be officially confirmed.</strong> You'll then receive final tour details and instructions.</p>
               </div>
               
               <div class="highlight">
-                <h3 style="margin-top: 0; color: #1976d2;">📍 Tour Details</h3>
+                <h3 style="margin-top: 0; color: #1976d2;">📍 Proposed Tour Details</h3>
                 <div class="info-grid">
                   <div class="info-item">
                     <div class="info-label">Property</div>
@@ -169,12 +171,13 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="info-value">30-45 minutes</div>
                   </div>
                 </div>
+                <p style="margin: 15px 0 5px 0; color: #e65100; font-weight: bold;">⚠️ These times are TENTATIVE until you sign the agreement</p>
                 ${meetingLocation ? `<p style="margin: 15px 0 5px 0;"><strong>Meeting Location:</strong> ${meetingLocation}</p>` : ''}
               </div>
               
               <div class="specialist-info">
-                <h3 style="margin-top: 0; color: #7b1fa2;">👤 Your Showing Specialist: ${agentName}</h3>
-                <p style="margin: 10px 0;">Your professional Showing Specialist will meet you at the property and guide you through the tour, providing expert insights about the home and neighborhood.</p>
+                <h3 style="margin-top: 0; color: #7b1fa2;">👤 Your Assigned Showing Specialist: ${agentName}</h3>
+                <p style="margin: 10px 0;"><strong>This specialist is ready to show you the property.</strong> However, they cannot proceed until you complete the required tour agreement.</p>
                 <div class="info-grid">
                   ${agentEmail ? `
                   <div class="info-item">
@@ -210,9 +213,8 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://firstlookhometours.com/dashboard" class="button-primary">Sign Agreement Now →</a>
-                ${agentEmail ? `<a href="mailto:${agentEmail}?subject=Tour Question - ${propertyAddress}&body=Hi ${agentName},%0D%0A%0D%0AI have a question about our upcoming tour of ${propertyAddress} on ${formattedDate}.%0D%0A%0D%0A" class="button">Email Specialist</a>` : ''}
-                ${agentPhone ? `<a href="tel:${agentPhone}" class="button-outline">Call Specialist</a>` : ''}
+                <a href="https://firstlookhometours.com/dashboard" class="button-primary">SIGN AGREEMENT TO CONFIRM →</a>
+                <p style="margin: 15px 0; font-size: 14px; color: #666;">Questions? Contact us through your dashboard after signing the agreement.</p>
               </div>
               
               <h3>🏠 What to Expect During Your Tour</h3>
@@ -225,18 +227,19 @@ const handler = async (req: Request): Promise<Response> => {
               </ul>
               
               <h3>📱 Need to Reschedule?</h3>
-              <p>If something comes up and you need to change your appointment, please contact your Showing Specialist as soon as possible. We understand that schedules can change!</p>
+              <p><strong>First, sign the agreement to confirm your tour.</strong> Then, if you need to reschedule, you can contact your specialist through the platform messaging system.</p>
               
               <div style="background: #ffe0b2; padding: 20px; border-radius: 8px; border-left: 4px solid #ff9800; margin: 20px 0;">
-                <h4 style="margin-top: 0; color: #e65100;">🔒 Why the Agreement?</h4>
-                <p style="margin-bottom: 10px;">The showing agreement is a simple document that:</p>
+                <h4 style="margin-top: 0; color: #e65100;">🔒 Single-Day Tour Agreement Required</h4>
+                <p style="margin-bottom: 10px;"><strong>This is NOT optional.</strong> The single-day tour agreement:</p>
                 <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li>Confirms your scheduled appointment</li>
-                  <li>Protects the property owner's interests</li>
-                  <li>Ensures professional representation</li>
-                  <li>Takes less than 30 seconds to sign digitally</li>
+                  <li><strong>Must be signed before any showing</strong></li>
+                  <li>Protects both you and the property owner</li>
+                  <li>Covers only this one property tour</li>
+                  <li>Takes less than 30 seconds to complete digitally</li>
+                  <li>Activates your tour confirmation</li>
                 </ul>
-                <p style="margin-bottom: 0; font-weight: bold;">No agreement = No tour. Please sign now to secure your appointment!</p>
+                <p style="margin-bottom: 0; font-weight: bold; color: #d32f2f;">⚠️ NO AGREEMENT = NO TOUR. Sign now or your showing request will expire.</p>
               </div>
               
               <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50; margin: 20px 0;">

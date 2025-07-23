@@ -113,9 +113,40 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
 
-    const emailSubject = `Showing Confirmed: ${propertyAddress} - ${formattedDate} at ${showingTime}`;
+    // Detect if this is a buyer notification (when agentName is 'FirstLook Home Tours')
+    const isBuyerNotification = agentName === 'FirstLook Home Tours';
     
-    const emailHtml = `
+    const emailSubject = isBuyerNotification 
+      ? `Your Tour is Confirmed: ${propertyAddress} - Action Required`
+      : `Showing Confirmed: ${propertyAddress} - ${formattedDate} at ${showingTime}`;
+    
+    const emailHtml = isBuyerNotification ? `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Your Tour is Confirmed - Please Sign Agreement</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .content { background: #f9f9f9; padding: 30px 20px; border-radius: 8px; }
+            .header { background: #000; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            pre { white-space: pre-wrap; font-family: inherit; margin: 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 24px;">🎉 Your Tour is Confirmed!</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">A Showing Specialist has accepted your request</p>
+            </div>
+            <div class="content">
+              <pre>${showingInstructions || ''}</pre>
+            </div>
+          </div>
+        </body>
+      </html>
+    ` : `
       <!DOCTYPE html>
       <html>
         <head>

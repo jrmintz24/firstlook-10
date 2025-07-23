@@ -147,12 +147,10 @@ const ModernTourSchedulingModal = ({
   // Sync modal flow with isOpen prop - ensure modal flow resets when opened fresh
   useEffect(() => {
     console.log('Modal isOpen changed:', isOpen, 'Current modalFlow:', modalFlow);
-    if (isOpen && modalFlow === 'closed') {
-      console.log('Resetting modal flow to scheduling');
+    if (isOpen && modalFlow !== 'scheduling') {
+      // Only update if not already scheduling to prevent unnecessary re-renders
+      console.log('Setting modal flow to scheduling');
       setModalFlow('scheduling');
-    } else if (!isOpen && modalFlow !== 'closed') {
-      console.log('Setting modal flow to closed');
-      setModalFlow('closed');
     }
   }, [isOpen, modalFlow, setModalFlow]);
 
@@ -166,7 +164,8 @@ const ModernTourSchedulingModal = ({
   const [hasInitialized, setHasInitialized] = useState(false);
   
   useEffect(() => {
-    if (!hasInitialized && (initialAddress || propertyData?.address)) {
+    // Only initialize when modal is actually open to prevent premature state changes
+    if (isOpen && !hasInitialized && (initialAddress || propertyData?.address)) {
       const addressToUse = initialAddress || (propertyData?.address !== "Address not found" ? propertyData?.address : "");
       if (addressToUse) {
         console.log('Setting initial property address:', addressToUse);
@@ -175,7 +174,11 @@ const ModernTourSchedulingModal = ({
         setHasInitialized(true);
       }
     }
-  }, [initialAddress, propertyData?.address, hasInitialized]);
+    // Reset initialization when modal closes
+    if (!isOpen && hasInitialized) {
+      setHasInitialized(false);
+    }
+  }, [isOpen, initialAddress, propertyData?.address, hasInitialized]);
 
   // Get user role and subscription status
   const isGuest = !user;
@@ -344,13 +347,13 @@ const ModernTourSchedulingModal = ({
 
   const selectedDay = availableDays.find(day => day.date === selectedDate);
 
-  // Only show scheduling modal when flow is 'scheduling' and isOpen is true
-  const showSchedulingModal = isOpen && modalFlow === 'scheduling';
+  // Show scheduling modal immediately when isOpen is true, don't wait for modalFlow
+  const showSchedulingModal = isOpen;
 
   console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal });
 
   // Mobile rendering with custom overlay
-  if (isMobile && showSchedulingModal) {
+  if (isMobile && showSchedulingModal && modalFlow === 'scheduling') {
     return (
       <>
         {/* Mobile Overlay */}
@@ -557,7 +560,7 @@ const ModernTourSchedulingModal = ({
   // Desktop rendering with Dialog
   return (
     <>
-      <Dialog open={showSchedulingModal} onOpenChange={handleClose}>
+      <Dialog open={showSchedulingModal && modalFlow === 'scheduling'} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}

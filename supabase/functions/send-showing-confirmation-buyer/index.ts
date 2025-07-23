@@ -92,7 +92,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Sending showing confirmation to buyer ${buyerEmail} for ${propertyAddress}`);
-    console.log('Final email details - To:', buyerEmail, 'Subject:', emailSubject);
 
     const formattedDate = new Date(showingDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -101,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
 
-    const emailSubject = `[DEBUG BUYER] Your Tour is Confirmed: ${propertyAddress} - Action Required`;
+    const emailSubject = `Your Tour is Confirmed: ${propertyAddress} - Action Required`;
     
     const emailHtml = `
       <!DOCTYPE html>
@@ -261,9 +260,10 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // TEMPORARY: Force buyer email to test address for debugging
+    // For testing, still send to test address but log the original
     const finalEmailAddress = 'firstlookhometourstest@gmail.com';
-    console.log('About to send email with Resend API - Original:', buyerEmail, 'Sending to:', finalEmailAddress);
+    console.log('About to send email with Resend API - Original:', buyerEmail, 'Sending to TEST:', finalEmailAddress);
+    console.log('Email subject:', emailSubject);
     
     const { data, error } = await resend.emails.send({
       from: "FirstLook Home Tours <noreply@firstlookhometours.com>",

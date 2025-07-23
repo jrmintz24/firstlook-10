@@ -97,6 +97,11 @@ export const useAgentConfirmation = () => {
         .single();
 
       console.log('Fetch result:', { showingRequest, fetchError });
+      console.log('Detailed fetch error:', fetchError);
+      console.log('Fetch error message:', fetchError?.message);
+      console.log('Fetch error details:', fetchError?.details);
+      console.log('Fetch error hint:', fetchError?.hint);
+      console.log('Fetch error code:', fetchError?.code);
 
       // Check if we have valid data before sending emails
       if (showingRequest && showingRequest.profiles) {

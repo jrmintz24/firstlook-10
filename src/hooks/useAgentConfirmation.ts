@@ -101,6 +101,7 @@ export const useAgentConfirmation = () => {
           .single();
 
         console.log('Buyer profile result:', { buyerProfile, profileError });
+        console.log('Profile error details:', profileError?.message, profileError?.details, profileError?.code);
 
         if (buyerProfile && !profileError) {
           // Attach profile data to showing request

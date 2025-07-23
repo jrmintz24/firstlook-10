@@ -254,11 +254,13 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log('About to send email with Resend API - To:', buyerEmail);
+    // TEMPORARY: Force buyer email to test address for debugging
+    const finalEmailAddress = 'firstlookhometourstest@gmail.com';
+    console.log('About to send email with Resend API - Original:', buyerEmail, 'Sending to:', finalEmailAddress);
     
     const { data, error } = await resend.emails.send({
       from: "FirstLook Home Tours <noreply@firstlookhometours.com>",
-      to: buyerEmail,
+      to: finalEmailAddress,
       subject: emailSubject,
       html: emailHtml,
     });

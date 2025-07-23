@@ -131,9 +131,7 @@ export const useAgentConfirmation = () => {
           const agentEmailPayload = {
             agentName: `${agent.first_name} ${agent.last_name}`,
             agentEmail: user?.email || 'firstlookhometourstest@gmail.com', // Use current agent's email
-            buyerId: requestData.user_id, // Let Edge Function fetch email
-            buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
-            buyerPhone: requestData.profiles.phone,
+            buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`, // Name only for privacy-protected display
             propertyAddress: requestData.property_address,
             showingDate: data.confirmedDate,
             showingTime: data.confirmedTime,

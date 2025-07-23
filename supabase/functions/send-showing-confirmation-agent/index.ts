@@ -13,10 +13,7 @@ const corsHeaders = {
 interface ShowingConfirmationAgentData {
   agentName: string;
   agentEmail: string;
-  buyerId?: string; // New field to fetch buyer email if needed
-  buyerName: string;
-  buyerEmail?: string; // Made optional - will fetch if not provided
-  buyerPhone?: string;
+  buyerName: string; // Name only for privacy-protected display
   propertyAddress: string;
   showingDate: string;
   showingTime: string;
@@ -39,10 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { 
       agentName,
       agentEmail,
-      buyerId,
-      buyerName, 
-      buyerEmail: providedBuyerEmail,
-      buyerPhone,
+      buyerName,
       propertyAddress,
       showingDate,
       showingTime,
@@ -51,26 +45,6 @@ const handler = async (req: Request): Promise<Response> => {
       showingInstructions,
       requestId
     }: ShowingConfirmationAgentData = requestBody;
-
-    // Get buyer email if not provided
-    let buyerEmail = providedBuyerEmail;
-    
-    if (!buyerEmail && buyerId) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-      
-      if (supabaseUrl && supabaseKey) {
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(buyerId);
-        
-        if (!authError && authUser?.user?.email) {
-          buyerEmail = authUser.user.email;
-          console.log(`Fetched buyer email for ${buyerId}: ${buyerEmail}`);
-        } else {
-          console.error("Failed to fetch buyer email:", authError);
-        }
-      }
-    }
 
     // Validate required fields
     if (!agentName || !agentEmail || !propertyAddress || !showingDate || !showingTime) {
@@ -95,10 +69,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('All email parameters:', {
       agentName,
       agentEmail,
-      buyerId,
       buyerName,
-      buyerEmail,
-      buyerPhone,
       propertyAddress,
       showingDate,
       showingTime,

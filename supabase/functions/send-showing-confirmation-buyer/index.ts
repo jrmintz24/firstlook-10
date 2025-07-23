@@ -31,10 +31,10 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('🚀 BUYER EMAIL FUNCTION - LATEST VERSION 2.1 - AGREEMENT REQUIRED');
+  console.log('🚀 BUYER EMAIL FUNCTION - LATEST VERSION 2.3 - AGREEMENT REQUIRED');
 
   try {
-    console.log('===== BUYER EMAIL FUNCTION CALLED - v2.0 (AGREEMENT REQUIRED) =====');
+    console.log('===== BUYER EMAIL FUNCTION CALLED - v2.3 (AGREEMENT REQUIRED) =====');
     console.log('Function started successfully - Updated version with agreement focus');
     
     const { 
@@ -252,7 +252,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="request-id">
                 <strong>Tour ID:</strong> ${requestId}<br>
                 <small>Reference this ID if you need to contact support</small><br>
-                <small style="color: #999;">Email v2.0 - Agreement Required (${new Date().toISOString()})</small>
+                <small style="color: #999;">Email v2.3 - Agreement Required (${new Date().toISOString()})</small>
               </div>
             </div>
             
@@ -266,6 +266,9 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    // Force cache-busting log
+    console.log('🔥 CACHE BUSTER - LATEST DEPLOYMENT 2.3:', new Date().toISOString());
+    
     // Send to actual buyer email
     const finalEmailAddress = buyerEmail;
     console.log('About to send email with Resend API to actual buyer:', finalEmailAddress);

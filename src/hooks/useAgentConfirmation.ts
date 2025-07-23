@@ -87,7 +87,7 @@ export const useAgentConfirmation = () => {
         .from('showing_requests')
         .select(`
           *,
-          profiles!showing_requests_user_id_fkey (
+          profiles:user_id (
             first_name,
             last_name,
             phone

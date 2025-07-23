@@ -82,6 +82,7 @@ export const useAgentConfirmation = () => {
       console.log('Showing request updated successfully');
 
       // Get showing request details for email notifications
+      console.log('Fetching showing request details for email...');
       const { data: showingRequest, error: fetchError } = await supabase
         .from('showing_requests')
         .select(`
@@ -95,14 +96,12 @@ export const useAgentConfirmation = () => {
         .eq('id', data.requestId)
         .single();
 
-      // Always attempt to send buyer email even if there was a fetch error
-      // This ensures buyers get notified even if there are issues with data retrieval
-      if (showingRequest || !fetchError) {
-        const requestData = showingRequest || {
-          user_id: data.requestId, // fallback
-          profiles: { first_name: 'Buyer', last_name: '' },
-          property_address: 'Property'
-        };
+      console.log('Fetch result:', { showingRequest, fetchError });
+
+      // Check if we have valid data before sending emails
+      if (showingRequest && showingRequest.profiles) {
+        console.log('Valid showing request data found, proceeding with emails...');
+        const requestData = showingRequest;
         // Send confirmation email to agent (use test email for development)
         console.log('Attempting to send agent confirmation email...');
         try {
@@ -167,6 +166,17 @@ export const useAgentConfirmation = () => {
           console.error('Exception sending buyer confirmation email:', emailError);
           // Don't fail the entire process if email fails
         }
+      } else {
+        console.error('Failed to fetch showing request details or missing profile data');
+        console.error('Fetch error:', fetchError);
+        console.error('Showing request data:', showingRequest);
+        
+        // Even if we couldn't fetch details, still show success message since the tour was confirmed
+        toast({
+          title: "Tour Accepted!",
+          description: "Tour confirmed, but there may have been an issue sending notification emails.",
+        });
+        return true;
       }
       
       toast({

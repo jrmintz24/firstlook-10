@@ -20,6 +20,7 @@ interface AgentProfile {
   first_name: string;
   last_name: string;
   phone: string;
+  email: string;
 }
 
 export const useAgentConfirmation = () => {
@@ -127,7 +128,7 @@ export const useAgentConfirmation = () => {
         try {
           const agentEmailPayload = {
             agentName: `${agent.first_name} ${agent.last_name}`,
-            agentEmail: 'firstlookhometourstest@gmail.com', // Use test email for now
+            agentEmail: agent.email || 'firstlookhometourstest@gmail.com', // Use agent's actual email
             buyerId: requestData.user_id, // Let Edge Function fetch email
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
             buyerPhone: requestData.profiles.phone,
@@ -171,7 +172,8 @@ export const useAgentConfirmation = () => {
           // Send buyer notification via agent endpoint with custom message
           const buyerNotification = {
             agentName: 'FirstLook Home Tours',
-            agentEmail: 'firstlookhometourstest@gmail.com',
+            agentEmail: 'noreply@firstlookhometours.com', // Use noreply for buyer notifications
+            buyerId: requestData.user_id, // Let Edge Function fetch buyer email
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
             buyerPhone: requestData.profiles.phone || 'Phone not provided',
             propertyAddress: requestData.property_address,

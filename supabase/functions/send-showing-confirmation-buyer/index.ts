@@ -260,9 +260,9 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // For testing, still send to test address but log the original
-    const finalEmailAddress = 'firstlookhometourstest@gmail.com';
-    console.log('About to send email with Resend API - Original:', buyerEmail, 'Sending to TEST:', finalEmailAddress);
+    // Send to actual buyer email
+    const finalEmailAddress = buyerEmail;
+    console.log('About to send email with Resend API to actual buyer:', finalEmailAddress);
     console.log('Email subject:', emailSubject);
     
     const { data, error } = await resend.emails.send({

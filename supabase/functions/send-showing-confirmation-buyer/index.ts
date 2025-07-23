@@ -31,6 +31,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('🚀 BUYER EMAIL FUNCTION - LATEST VERSION 2.1 - AGREEMENT REQUIRED');
+
   try {
     console.log('===== BUYER EMAIL FUNCTION CALLED - v2.0 (AGREEMENT REQUIRED) =====');
     console.log('Function started successfully - Updated version with agreement focus');
@@ -131,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 24px;">📋 Agreement Required</h1>
+              <h1 style="margin: 0; font-size: 24px;">📋 TOUR AGREEMENT REQUIRED</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">A Showing Specialist is ready to show you this property</p>
             </div>
             

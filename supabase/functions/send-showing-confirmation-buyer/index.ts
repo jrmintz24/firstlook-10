@@ -32,6 +32,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('===== BUYER EMAIL FUNCTION CALLED =====');
+    console.log('Function started successfully');
+    
     const { 
       buyerId,
       buyerName,
@@ -46,6 +49,10 @@ const handler = async (req: Request): Promise<Response> => {
       showingInstructions,
       requestId
     }: ShowingConfirmationBuyerData = await req.json();
+    
+    console.log('Request payload received:', JSON.stringify({
+      buyerId, buyerName, providedBuyerEmail, agentName, propertyAddress, requestId
+    }, null, 2));
 
     // Get buyer email if not provided
     let buyerEmail = providedBuyerEmail;
@@ -94,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
 
-    const emailSubject = `Your Tour is Confirmed: ${propertyAddress} - Action Required`;
+    const emailSubject = `[DEBUG BUYER] Your Tour is Confirmed: ${propertyAddress} - Action Required`;
     
     const emailHtml = `
       <!DOCTYPE html>
@@ -265,7 +272,12 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     });
     
-    console.log('Resend API response - Data:', data, 'Error:', error);
+    console.log('===== BUYER EMAIL SEND ATTEMPT =====');
+    console.log('Resend API response - Data:', JSON.stringify(data, null, 2));
+    console.log('Resend API response - Error:', JSON.stringify(error, null, 2));
+    console.log('Email sent to:', finalEmailAddress);
+    console.log('Email subject:', emailSubject);
+    console.log('===== END BUYER EMAIL DEBUG =====');
 
     if (error) {
       console.error("Error sending buyer showing confirmation:", error);

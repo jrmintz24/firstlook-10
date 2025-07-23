@@ -85,6 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Sending showing confirmation to buyer ${buyerEmail} for ${propertyAddress}`);
+    console.log('Final email details - To:', buyerEmail, 'Subject:', emailSubject);
 
     const formattedDate = new Date(showingDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -253,12 +254,16 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    console.log('About to send email with Resend API - To:', buyerEmail);
+    
     const { data, error } = await resend.emails.send({
       from: "FirstLook Home Tours <noreply@firstlookhometours.com>",
       to: buyerEmail,
       subject: emailSubject,
       html: emailHtml,
     });
+    
+    console.log('Resend API response - Data:', data, 'Error:', error);
 
     if (error) {
       console.error("Error sending buyer showing confirmation:", error);

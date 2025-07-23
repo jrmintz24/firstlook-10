@@ -109,27 +109,15 @@ export const useAgentConfirmation = () => {
           console.log('Valid showing request data found, proceeding with emails...');
           const requestData = showingRequest;
         } else {
-          // If profile doesn't exist, try to get user data from auth.users
-          console.log('Profile not found, fetching from auth.users...');
-          const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(showingRequest.user_id);
-          
-          console.log('Auth user result:', { authUser, authError });
-          
-          if (authUser?.user && !authError) {
-            // Create a profile-like object from auth user data
-            const fallbackProfile = {
-              first_name: authUser.user.user_metadata?.first_name || 'Unknown',
-              last_name: authUser.user.user_metadata?.last_name || 'User',
-              phone: authUser.user.user_metadata?.phone || 'No phone'
-            };
-            showingRequest.profiles = fallbackProfile;
-            console.log('Using fallback profile from auth.users:', fallbackProfile);
-            const requestData = showingRequest;
-          } else {
-            console.error('Could not get user data from auth.users either');
-            console.error('Auth error:', authError);
-            return true; // Still return success since tour was confirmed
-          }
+          // If profile doesn't exist, use basic fallback data and let edge function handle email fetch
+          console.log('Profile not found, using fallback data. Edge function will fetch email directly.');
+          const fallbackProfile = {
+            first_name: 'FirstLook',
+            last_name: 'User',
+            phone: 'Phone not available'
+          };
+          showingRequest.profiles = fallbackProfile;
+          console.log('Using fallback profile:', fallbackProfile);
         }
         
         if (showingRequest.profiles) {
@@ -150,11 +138,16 @@ export const useAgentConfirmation = () => {
             requestId: data.requestId
           };
 
-          console.log('Agent email payload:', agentEmailPayload);
+          console.log('=== SENDING AGENT EMAIL ===');
+          console.log('Agent email payload:', JSON.stringify(agentEmailPayload, null, 2));
 
           const { data: agentEmailResponse, error: agentEmailError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
             body: agentEmailPayload
           });
+          
+          console.log('=== AGENT EMAIL RESPONSE ===');
+          console.log('Agent email response:', agentEmailResponse);
+          console.log('Agent email error:', agentEmailError);
 
           if (agentEmailError) {
             console.error('Failed to send agent confirmation email:', agentEmailError);
@@ -182,11 +175,16 @@ export const useAgentConfirmation = () => {
             requestId: data.requestId
           };
 
-          console.log('Buyer email payload:', buyerEmailPayload);
+          console.log('=== SENDING BUYER EMAIL ===');
+          console.log('Buyer email payload:', JSON.stringify(buyerEmailPayload, null, 2));
 
           const { data: buyerEmailResponse, error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
             body: buyerEmailPayload
           });
+          
+          console.log('=== BUYER EMAIL RESPONSE ===');
+          console.log('Buyer email response:', buyerEmailResponse);
+          console.log('Buyer email error:', buyerEmailError);
 
           if (buyerEmailError) {
             console.error('Failed to send buyer confirmation email:', buyerEmailError);

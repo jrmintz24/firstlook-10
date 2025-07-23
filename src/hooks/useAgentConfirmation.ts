@@ -158,14 +158,44 @@ export const useAgentConfirmation = () => {
           console.error('Exception sending agent confirmation email:', emailError);
         }
 
-        // Send confirmation email to buyer (let Edge Function fetch buyer email)
+        // TEMPORARY: Test sending buyer email directly to verify it works
         console.log('Attempting to send buyer confirmation email...');
         try {
+          // First, let's test with a minimal email to the agent function
+          const testBuyerEmailPayload = {
+            agentName: `FirstLook User`, // Swap the names
+            agentEmail: 'firstlookhometourstest@gmail.com',
+            buyerId: requestData.user_id,
+            buyerName: `${agent.first_name} ${agent.last_name}`,
+            buyerPhone: agent.phone,
+            propertyAddress: requestData.property_address,
+            showingDate: data.confirmedDate,
+            showingTime: data.confirmedTime,
+            showingInstructions: '[TEST] This is actually the BUYER email sent via agent endpoint',
+            requestId: data.requestId
+          };
+
+          console.log('=== SENDING TEST BUYER EMAIL VIA AGENT ENDPOINT ===');
+          console.log('Test payload:', JSON.stringify(testBuyerEmailPayload, null, 2));
+
+          const { data: testResponse, error: testError } = await supabase.functions.invoke('send-showing-confirmation-agent', {
+            body: testBuyerEmailPayload
+          });
+          
+          console.log('=== TEST EMAIL RESPONSE ===');
+          console.log('Test response:', testResponse);
+          console.log('Test error:', testError);
+
+          if (!testError) {
+            console.log('TEST BUYER EMAIL SENT VIA AGENT ENDPOINT - CHECK YOUR INBOX');
+          }
+
+          // Still try the original buyer endpoint
           const buyerEmailPayload = {
             buyerId: requestData.user_id,
             buyerName: `${requestData.profiles.first_name} ${requestData.profiles.last_name}`,
             agentName: `${agent.first_name} ${agent.last_name}`,
-            agentEmail: 'firstlookhometourstest@gmail.com', // Use test email for now
+            agentEmail: 'firstlookhometourstest@gmail.com',
             agentPhone: agent.phone,
             propertyAddress: requestData.property_address,
             showingDate: data.confirmedDate,
@@ -175,7 +205,7 @@ export const useAgentConfirmation = () => {
             requestId: data.requestId
           };
 
-          console.log('=== SENDING BUYER EMAIL ===');
+          console.log('=== SENDING BUYER EMAIL (ORIGINAL) ===');
           console.log('Buyer email payload:', JSON.stringify(buyerEmailPayload, null, 2));
 
           const { data: buyerEmailResponse, error: buyerEmailError } = await supabase.functions.invoke('send-showing-confirmation-buyer', {
@@ -185,16 +215,8 @@ export const useAgentConfirmation = () => {
           console.log('=== BUYER EMAIL RESPONSE ===');
           console.log('Buyer email response:', buyerEmailResponse);
           console.log('Buyer email error:', buyerEmailError);
-
-          if (buyerEmailError) {
-            console.error('Failed to send buyer confirmation email:', buyerEmailError);
-            // Don't fail the entire process if email fails, just log the error
-          } else {
-            console.log('Buyer confirmation email sent successfully:', buyerEmailResponse);
-          }
         } catch (emailError) {
-          console.error('Exception sending buyer confirmation email:', emailError);
-          // Don't fail the entire process if email fails
+          console.error('Exception in email test:', emailError);
         }
         } else {
           console.error('No profile data available for email sending');

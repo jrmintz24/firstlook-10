@@ -32,8 +32,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log('===== BUYER EMAIL FUNCTION CALLED =====');
-    console.log('Function started successfully');
+    console.log('===== BUYER EMAIL FUNCTION CALLED - v2.0 (AGREEMENT REQUIRED) =====');
+    console.log('Function started successfully - Updated version with agreement focus');
     
     const { 
       buyerId,
@@ -249,7 +249,8 @@ const handler = async (req: Request): Promise<Response> => {
               
               <div class="request-id">
                 <strong>Tour ID:</strong> ${requestId}<br>
-                <small>Reference this ID if you need to contact support</small>
+                <small>Reference this ID if you need to contact support</small><br>
+                <small style="color: #999;">Email v2.0 - Agreement Required (${new Date().toISOString()})</small>
               </div>
             </div>
             

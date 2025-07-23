@@ -160,7 +160,7 @@ export const useAgentConfirmation = () => {
         }
 
         // Send buyer confirmation email using the dedicated buyer edge function
-        console.log('Sending buyer confirmation email...');
+        console.log('Sending buyer confirmation email - v2.0 AGREEMENT REQUIRED VERSION...');
         try {
           const buyerEmailPayload = {
             buyerId: requestData.user_id,

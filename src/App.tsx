@@ -45,6 +45,7 @@ import Listings from './pages/Listings'
 import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
 import AuthDebug from './pages/AuthDebug'
+import OAuthCallback from './pages/OAuthCallback'
 // import Debug from './pages/Debug' // Commented out for production
 
 const queryClient = new QueryClient()
@@ -77,6 +78,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/oauth-callback" element={<OAuthCallback />} />
 
                 {/* IDX Pages - Public Routes */}
                 <Route path="/idx" element={<Idx />} />

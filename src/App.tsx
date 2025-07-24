@@ -44,6 +44,7 @@ import ListingDetails from './pages/ListingDetails'
 import Listings from './pages/Listings'
 import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
+import AuthDebug from './pages/AuthDebug'
 // import Debug from './pages/Debug' // Commented out for production
 
 const queryClient = new QueryClient()
@@ -197,6 +198,9 @@ function App() {
 
                 {/* Agreement signing page */}
                 <Route path="/sign-agreement" element={<SignAgreement />} />
+
+                {/* Auth Debug Page - Temporary */}
+                <Route path="/auth-debug" element={<AuthDebug />} />
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

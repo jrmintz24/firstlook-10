@@ -27,8 +27,14 @@ export default function Auth0Callback() {
           // Get Auth0 access token
           const accessToken = await getAccessTokenSilently();
           
-          // Create or update user in Supabase
-          await createSupabaseUser(user, accessToken);
+          // Try to create or update user in Supabase, but don't fail if it doesn't work
+          try {
+            await createSupabaseUser(user, accessToken);
+            console.log('Supabase profile sync successful');
+          } catch (supabaseError) {
+            console.warn('Supabase profile sync failed, but continuing with Auth0 authentication:', supabaseError);
+            // Continue anyway - Auth0 authentication was successful
+          }
 
           // Check if this was from a tour booking
           const isFromTourBooking = localStorage.getItem('newUserFromPropertyRequest') === 'true';
@@ -70,9 +76,8 @@ export default function Auth0Callback() {
       }
 
       if (!existingProfile) {
-        // Create new user profile
+        // Create new user profile - let Supabase generate the ID
         const profileData = {
-          id: auth0User.sub, // Use Auth0 user ID
           email: auth0User.email,
           first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
           last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
@@ -86,16 +91,20 @@ export default function Auth0Callback() {
           updated_at: new Date().toISOString()
         };
 
-        const { error: createError } = await supabase
+        console.log('Creating new profile with data:', profileData);
+
+        const { data: newProfile, error: createError } = await supabase
           .from('profiles')
-          .insert([profileData]);
+          .insert([profileData])
+          .select()
+          .single();
 
         if (createError) {
           console.error('Error creating Supabase profile:', createError);
           throw createError;
         }
 
-        console.log('Created new Supabase profile for Auth0 user');
+        console.log('Created new Supabase profile for Auth0 user:', newProfile);
       } else {
         // Update existing profile with latest Auth0 data
         const { error: updateError } = await supabase

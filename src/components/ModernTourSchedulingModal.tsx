@@ -347,18 +347,19 @@ const ModernTourSchedulingModal = ({
 
   const selectedDay = availableDays.find(day => day.date === selectedDate);
 
-  // Show scheduling modal immediately when isOpen is true, don't wait for modalFlow
-  const showSchedulingModal = isOpen;
+  // Show scheduling modal only when isOpen is true AND modalFlow is 'scheduling'
+  const showSchedulingModal = isOpen && modalFlow === 'scheduling';
 
   console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal });
 
   // Mobile rendering with custom overlay
-  if (isMobile && showSchedulingModal && modalFlow === 'scheduling') {
+  if (isMobile) {
     return (
       <>
-        {/* Mobile Overlay */}
-        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up-mobile">
+        {/* Mobile Overlay - Only show when scheduling modal is active */}
+        {showSchedulingModal && (
+          <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end justify-center">
+            <div className="bg-white w-full max-w-lg rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up-mobile">
             {/* Header */}
             <div className="px-6 pt-6 pb-4 flex-shrink-0">
               <div className="flex items-center justify-between">
@@ -540,16 +541,17 @@ const ModernTourSchedulingModal = ({
             </div>
           </div>
         </div>
+        )}
         
         <QuickSignInModal
           isOpen={modalFlow === 'auth'}
-          onClose={() => setModalFlow('closed')}
+          onClose={handleClose}
           onSuccess={handleAuthSuccess}
         />
 
         <FreeShowingLimitModal
           isOpen={modalFlow === 'limit'}
-          onClose={() => setModalFlow('closed')}
+          onClose={handleClose}
           onCancelPendingShowing={handleCancelPendingShowing}
           pendingShowingAddress={pendingShowingAddress}
         />
@@ -560,7 +562,7 @@ const ModernTourSchedulingModal = ({
   // Desktop rendering with Dialog
   return (
     <>
-      <Dialog open={showSchedulingModal && modalFlow === 'scheduling'} onOpenChange={handleClose}>
+      <Dialog open={showSchedulingModal} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-4xl max-h-[80vh] bg-white border-0 shadow-2xl p-0 flex flex-col">
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -877,13 +879,13 @@ const ModernTourSchedulingModal = ({
 
       <QuickSignInModal
         isOpen={modalFlow === 'auth'}
-        onClose={() => setModalFlow('closed')}
+        onClose={handleClose}
         onSuccess={handleAuthSuccess}
       />
 
       <FreeShowingLimitModal
         isOpen={modalFlow === 'limit'}
-        onClose={() => setModalFlow('closed')}
+        onClose={handleClose}
         onCancelPendingShowing={handleCancelPendingShowing}
         pendingShowingAddress={pendingShowingAddress}
       />

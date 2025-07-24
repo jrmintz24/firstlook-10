@@ -39,20 +39,23 @@ export const signInWithProvider = async (
 ): Promise<{ error: AuthError | null }> => {
   console.log('authService.signInWithProvider - User type:', userType);
 
-  // Simplified approach - let Supabase handle the redirect to its default site URL
-  // We'll detect the tour booking context in the auth state change listener
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      queryParams: { user_type: userType }
-    }
-  });
-
-  if (data?.url) {
-    window.location.href = data.url;
+  try {
+    // Direct approach - manually construct the OAuth URL to bypass Supabase's redirect issues
+    const supabaseUrl = 'https://uugchegukcccuqpcsqhl.supabase.co';
+    const redirectTo = encodeURIComponent(`${getRedirectUrl()}/buyer-dashboard`);
+    
+    const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&user_type=${userType}`;
+    
+    console.log('Direct OAuth URL:', oauthUrl);
+    
+    // Redirect directly
+    window.location.href = oauthUrl;
+    
+    return { error: null };
+  } catch (error) {
+    console.error('OAuth redirect error:', error);
+    return { error: error as AuthError };
   }
-
-  return { error };
 };
 
 export const signOut = async () => {

@@ -9,11 +9,20 @@ export default function Auth0Callback() {
 
   useEffect(() => {
     const handleAuth0Callback = async () => {
-      if (isLoading) return;
+      console.log('Auth0Callback: Handler called', { isLoading, isAuthenticated, user: !!user });
+      
+      if (isLoading) {
+        console.log('Auth0Callback: Still loading, waiting...');
+        return;
+      }
 
       if (isAuthenticated && user) {
         try {
-          console.log('Auth0 user authenticated:', user);
+          console.log('Auth0Callback: User authenticated successfully', { 
+            user: user.email, 
+            sub: user.sub,
+            tourBooking: localStorage.getItem('newUserFromPropertyRequest')
+          });
 
           // Get Auth0 access token
           const accessToken = await getAccessTokenSilently();

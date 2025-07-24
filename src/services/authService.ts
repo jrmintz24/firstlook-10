@@ -34,7 +34,7 @@ export const signIn = async (
 };
 
 export const signInWithProvider = async (
-  provider: 'google' | 'facebook',
+  provider: 'google',
   userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
   const redirectPath = userType === 'agent'

@@ -554,6 +554,7 @@ const ModernTourSchedulingModal = ({
           isOpen={modalFlow === 'auth'}
           onClose={handleClose}
           onSuccess={handleAuthSuccess}
+          propertyAddress={propertyAddress}
         />
 
         <FreeShowingLimitModal
@@ -888,6 +889,7 @@ const ModernTourSchedulingModal = ({
         isOpen={modalFlow === 'auth'}
         onClose={handleClose}
         onSuccess={handleAuthSuccess}
+        propertyAddress={propertyAddress}
       />
 
       <FreeShowingLimitModal

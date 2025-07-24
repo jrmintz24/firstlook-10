@@ -45,8 +45,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Handle profile creation for new signups only
+      // Handle profile creation for new signups and tour booking redirects
       if (event === 'SIGNED_IN' && session?.user) {
+        // Check if this is from a tour booking
+        const isFromTourBooking = localStorage.getItem('newUserFromPropertyRequest') === 'true';
+        const pendingTourRequest = localStorage.getItem('pendingTourRequest');
+        
+        if (isFromTourBooking && pendingTourRequest) {
+          console.log('AuthContext: Tour booking context detected, redirecting to buyer-dashboard');
+          // Clear the flag
+          localStorage.removeItem('newUserFromPropertyRequest');
+          // Redirect to buyer dashboard where they can continue the tour
+          setTimeout(() => {
+            window.location.href = '/buyer-dashboard';
+          }, 1000);
+        }
+        
         // Use setTimeout to avoid blocking auth state change
         setTimeout(async () => {
           await handleProfileCreation(session.user);

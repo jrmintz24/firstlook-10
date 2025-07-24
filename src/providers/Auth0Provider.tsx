@@ -8,9 +8,9 @@ interface Auth0ProviderWrapperProps {
 export const Auth0ProviderWrapper: React.FC<Auth0ProviderWrapperProps> = ({ children }) => {
   const domain = import.meta.env.VITE_AUTH0_DOMAIN;
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
-  const redirectUri = `${window.location.origin}/auth/callback`;
+  const redirectUri = import.meta.env.VITE_AUTH0_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
-  console.log('Auth0 Config:', { domain, clientId, redirectUri });
+  console.log('Auth0 Config:', { domain, clientId, redirectUri, currentOrigin: window.location.origin });
 
   if (!domain || !clientId) {
     console.error('Auth0 configuration missing:', { domain, clientId });

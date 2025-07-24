@@ -24,7 +24,7 @@ export default function OAuthCallback() {
 
         if (error) {
           console.error('OAuth error:', error, error_description);
-          navigate('/buyer-auth?error=' + encodeURIComponent(error_description || error));
+          navigate('/?error=' + encodeURIComponent(error_description || error));
           return;
         }
 
@@ -37,7 +37,7 @@ export default function OAuthCallback() {
 
           if (sessionError) {
             console.error('Session error:', sessionError);
-            navigate('/buyer-auth?error=' + encodeURIComponent(sessionError.message));
+            navigate('/?error=' + encodeURIComponent(sessionError.message));
             return;
           }
 
@@ -66,11 +66,11 @@ export default function OAuthCallback() {
           }
         } else {
           console.error('No tokens found in callback');
-          navigate('/buyer-auth?error=' + encodeURIComponent('No authentication tokens received'));
+          navigate('/?error=' + encodeURIComponent('No authentication tokens received'));
         }
       } catch (error) {
         console.error('Callback handling error:', error);
-        navigate('/buyer-auth?error=' + encodeURIComponent('Authentication failed'));
+        navigate('/?error=' + encodeURIComponent('Authentication failed'));
       }
     };
 

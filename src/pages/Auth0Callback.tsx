@@ -35,11 +35,11 @@ export default function Auth0Callback() {
           }
         } catch (error) {
           console.error('Auth0 callback error:', error);
-          navigate('/buyer-auth?error=' + encodeURIComponent('Authentication failed'));
+          navigate('/?error=' + encodeURIComponent('Authentication failed'));
         }
       } else if (!isLoading && !isAuthenticated) {
         // Auth failed
-        navigate('/buyer-auth?error=' + encodeURIComponent('Authentication failed'));
+        navigate('/?error=' + encodeURIComponent('Authentication failed'));
       }
     };
 

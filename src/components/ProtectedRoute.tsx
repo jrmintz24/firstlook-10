@@ -1,6 +1,7 @@
 
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { Auth0Redirect } from './Auth0Redirect'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -28,8 +29,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check for both user and session to ensure we have a valid auth state
   if (!user || !session) {
-    console.log('ProtectedRoute - No user or session, redirecting to:', redirectTo);
-    return <Navigate to={redirectTo} state={{ from: location }} replace />
+    console.log('ProtectedRoute - No user or session, using Auth0 redirect');
+    return <Auth0Redirect returnTo={location.pathname + location.search} />
   }
 
   // If no specific user type is required, allow access

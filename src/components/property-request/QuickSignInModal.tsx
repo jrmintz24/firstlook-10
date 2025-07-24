@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
 import { useToast } from "@/hooks/use-toast";
-import { signInWithProvider } from "@/services/authService";
 import { Separator } from "@/components/ui/separator";
 import { Auth0GoogleButton } from "@/components/Auth0GoogleButton";
 
@@ -18,138 +17,50 @@ interface QuickSignInModalProps {
 }
 
 const QuickSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: QuickSignInModalProps) => {
-  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState(false);
-  const { signUp, signIn, user } = useAuth();
+  const { loginWithRedirect, isLoading } = useAuth0();
   const { toast } = useToast();
 
-  // Watch for user authentication after signup
-  useEffect(() => {
-    if (user && loading && isSignUp) {
-      console.log('User authenticated after signup');
-      setLoading(false);
-      
-      toast({
-        title: "Account Created!",
-        description: "Welcome to FirstLook! Processing your tour request...",
-      });
-      
-      onClose();
-      setTimeout(() => {
-        console.log('Calling onSuccess callback after signup');
-        onSuccess();
-      }, 500);
-    }
-  }, [user, loading, isSignUp, onClose, onSuccess, toast]);
-
-  const handleGoogleLogin = async () => {
-    setSocialLoading(true);
-    
-    try {
-      console.log('Starting Google OAuth for tour booking');
-      
-      // Store tour request data before OAuth redirect
-      localStorage.setItem('newUserFromPropertyRequest', 'true');
-      
-      const { error } = await signInWithProvider('google', 'buyer');
-      
-      if (error) {
-        throw error;
-      }
-      
-      // OAuth will redirect, so we don't reach this point unless there's an error
-    } catch (error: any) {
-      console.error('Google OAuth error:', error);
-      setSocialLoading(false);
-      
-      toast({
-        title: "Sign-in Error",
-        description: "Failed to sign in with Google. Please try again or use email.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAuth0EmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        console.log('Quick sign up attempt for:', email);
-        
-        // Store flag to indicate this is a new user from property request
-        localStorage.setItem('newUserFromPropertyRequest', 'true');
-        
-        const result = await signUp(email, password);
-        
-        if (result.error) {
-          throw result.error;
-        }
-        
-        console.log('Sign up successful, waiting for auth state update...');
-        // The useEffect above will handle the success case when user becomes authenticated
-        
-      } else {
-        console.log('Quick sign in attempt for:', email);
-        const result = await signIn(email, password);
-        
-        if (result.error) {
-          throw result.error;
-        }
-        
-        console.log('Sign in successful');
-        setLoading(false);
-        
-        toast({
-          title: "Welcome Back!",
-          description: "Processing your tour request...",
-        });
-        
-        onClose();
-        setTimeout(() => {
-          console.log('Calling onSuccess callback after sign in');
-          onSuccess();
-        }, 500);
-      }
+      // Store tour request data before Auth0 redirect
+      localStorage.setItem('newUserFromPropertyRequest', 'true');
       
+      await loginWithRedirect({
+        authorizationParams: {
+          login_hint: email
+        },
+        appState: {
+          returnTo: '/buyer-dashboard',
+          tourBooking: true
+        }
+      });
     } catch (error: any) {
-      console.error('Auth error:', error);
+      console.error('Auth0 email auth error:', error);
       setLoading(false);
       
-      let errorMessage = error.message || "Failed to authenticate. Please try again.";
-      
-      // Handle specific error cases
-      if (error.message?.includes('User already registered')) {
-        errorMessage = "An account with this email already exists. Try signing in instead.";
-        setIsSignUp(false);
-      } else if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Invalid email or password. Please check your credentials.";
-      }
-      
       toast({
-        title: "Authentication Error",
-        description: errorMessage,
+        title: "Sign-in Error",
+        description: "Failed to authenticate. Please try again.",
         variant: "destructive"
       });
     }
   };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isSignUp ? "Create Account to Continue" : "Welcome Back!"}
+            Sign In to Continue
           </DialogTitle>
           <DialogDescription>
-            {isSignUp 
-              ? "Get started in seconds to complete your tour request" 
-              : "Sign in to continue with your tour booking"
-            }
+            Choose your preferred sign-in method to complete your tour request
           </DialogDescription>
           {propertyAddress && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
@@ -180,7 +91,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Quick
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleAuth0EmailAuth} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -194,47 +105,26 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Quick
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-              minLength={6}
-            />
-          </div>
 
           <div className="flex flex-col gap-3">
             <Button 
               type="submit" 
-              disabled={loading || socialLoading}
+              disabled={loading || isLoading}
               className="w-full h-11 bg-black hover:bg-gray-800 text-white"
             >
               {loading ? (
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-white" />
-                  Processing...
+                  Redirecting...
                 </>
               ) : (
-                isSignUp ? 'Create Account & Book Tour' : 'Sign In & Book Tour'
+                'Continue with Email'
               )}
             </Button>
             
-            <div className="text-center">
-              <Button 
-                type="button" 
-                variant="link" 
-                onClick={() => setIsSignUp(!isSignUp)}
-                disabled={loading || socialLoading}
-                className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto"
-              >
-                {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
-              </Button>
-            </div>
+            <p className="text-xs text-center text-gray-500">
+              Auth0 will handle sign up or sign in for you
+            </p>
           </div>
         </form>
       </DialogContent>

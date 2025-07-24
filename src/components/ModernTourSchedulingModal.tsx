@@ -147,8 +147,9 @@ const ModernTourSchedulingModal = ({
   // Sync modal flow with isOpen prop - ensure modal flow resets when opened fresh
   useEffect(() => {
     console.log('Modal isOpen changed:', isOpen, 'Current modalFlow:', modalFlow);
-    if (isOpen && modalFlow !== 'scheduling') {
-      // Only update if not already scheduling to prevent unnecessary re-renders
+    // Only set to scheduling if modal is opening and flow is closed
+    // Don't interfere with auth or limit flows
+    if (isOpen && modalFlow === 'closed') {
       console.log('Setting modal flow to scheduling');
       setModalFlow('scheduling');
     }
@@ -313,8 +314,12 @@ const ModernTourSchedulingModal = ({
 
   const handleAuthSuccess = async () => {
     console.log('Auth success - continuing with submission');
-    // After successful auth, continue with the submission
-    await handleContinueToSubscriptions();
+    // After successful auth, set modal flow back to scheduling before continuing
+    setModalFlow('scheduling');
+    // Small delay to ensure UI updates
+    setTimeout(async () => {
+      await handleContinueToSubscriptions();
+    }, 100);
   };
 
   const canSubmit = propertyAddress.trim() && selectedDate && selectedTime;
@@ -349,8 +354,10 @@ const ModernTourSchedulingModal = ({
 
   // Show scheduling modal only when isOpen is true AND modalFlow is 'scheduling'
   const showSchedulingModal = isOpen && modalFlow === 'scheduling';
+  // Check if we should show any modal (for debugging)
+  const showAnyModal = isOpen && (modalFlow === 'scheduling' || modalFlow === 'auth' || modalFlow === 'limit');
 
-  console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal });
+  console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal, showAnyModal });
 
   // Mobile rendering with custom overlay
   if (isMobile) {
@@ -358,7 +365,7 @@ const ModernTourSchedulingModal = ({
       <>
         {/* Mobile Overlay - Only show when scheduling modal is active */}
         {showSchedulingModal && (
-          <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end justify-center">
+          <div className="fixed inset-0 bg-black/50 z-40 flex items-end justify-center">
             <div className="bg-white w-full max-w-lg rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up-mobile">
             {/* Header */}
             <div className="px-6 pt-6 pb-4 flex-shrink-0">

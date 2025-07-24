@@ -5,6 +5,7 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { Auth0ProviderWrapper } from './providers/Auth0Provider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
 import { AuthCallback } from './pages/AuthCallback'
@@ -46,6 +47,7 @@ import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
 import AuthDebug from './pages/AuthDebug'
 import OAuthCallback from './pages/OAuthCallback'
+import Auth0Callback from './pages/Auth0Callback'
 // import Debug from './pages/Debug' // Commented out for production
 
 const queryClient = new QueryClient()
@@ -65,8 +67,9 @@ const IDXPropertySaverWrapper = ({ children }: { children: React.ReactNode }) =>
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
+      <Auth0ProviderWrapper>
+        <AuthProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -77,7 +80,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/auth/callback" element={<Auth0Callback />} />
                 <Route path="/oauth-callback" element={<OAuthCallback />} />
 
                 {/* IDX Pages - Public Routes */}
@@ -210,8 +213,9 @@ function App() {
               </IDXPropertySaverWrapper>
             </AnalyticsWrapper>
           </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+          </TooltipProvider>
+        </AuthProvider>
+      </Auth0ProviderWrapper>
     </QueryClientProvider>
   )
 }

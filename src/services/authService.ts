@@ -4,7 +4,9 @@ import type { AuthError } from "@supabase/auth-js";
 
 const getRedirectUrl = () => {
   // Use the current origin, which will be correct for both development and production
-  return window.location.origin;
+  const origin = window.location.origin;
+  console.log('getRedirectUrl() returning:', origin);
+  return origin;
 };
 
 export const signUp = async (
@@ -40,16 +42,28 @@ export const signInWithProvider = async (
   console.log('authService.signInWithProvider - User type:', userType);
 
   try {
-    // Direct approach - manually construct the OAuth URL to bypass Supabase's redirect issues
-    const supabaseUrl = 'https://uugchegukcccuqpcsqhl.supabase.co';
-    const redirectTo = encodeURIComponent(`${getRedirectUrl()}/buyer-dashboard`);
+    // Ensure we have the full URL with protocol
+    const redirectUrl = `${getRedirectUrl()}/buyer-dashboard`;
+    console.log('Full redirect URL:', redirectUrl);
     
-    const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&user_type=${userType}`;
-    
-    console.log('Direct OAuth URL:', oauthUrl);
-    
-    // Redirect directly
-    window.location.href = oauthUrl;
+    // Use Supabase's OAuth method with explicit full URL
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: { user_type: userType }
+      }
+    });
+
+    if (error) {
+      console.error('OAuth error:', error);
+      return { error };
+    }
+
+    if (data?.url) {
+      console.log('OAuth redirect URL:', data.url);
+      window.location.href = data.url;
+    }
     
     return { error: null };
   } catch (error) {

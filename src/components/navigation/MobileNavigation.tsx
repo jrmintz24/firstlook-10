@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -17,7 +18,15 @@ const MobileNavigation = ({
   onSignOut, 
   onMenuItemClick 
 }: MobileNavigationProps) => {
+  const { loginWithRedirect } = useAuth0();
+  
   if (!isOpen) return null;
+  
+  const handleAuth0Login = () => {
+    loginWithRedirect({
+      appState: { returnTo: window.location.pathname }
+    });
+  };
 
   return (
     <div className="md:hidden bg-white border-t border-purple-100 py-4 shadow-lg">
@@ -91,21 +100,25 @@ const MobileNavigation = ({
             </div>
           ) : (
             <div className="flex flex-col space-y-2">
-              <Link to="/buyer-auth?tab=login" onClick={onMenuItemClick}>
-                <Button 
-                  variant="ghost" 
-                  className="text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
-                >
-                  Login
-                </Button>
-              </Link>
-              <Link to="/buyer-auth" onClick={onMenuItemClick}>
-                <Button 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full py-3 px-4"
-                >
-                  Get Started
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                className="text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
+                onClick={() => {
+                  onMenuItemClick();
+                  handleAuth0Login();
+                }}
+              >
+                Login
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full py-3 px-4"
+                onClick={() => {
+                  onMenuItemClick();
+                  handleAuth0Login();
+                }}
+              >
+                Get Started
+              </Button>
             </div>
           )}
         </div>

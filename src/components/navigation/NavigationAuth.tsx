@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface User {
   id: string;
@@ -19,6 +20,7 @@ interface NavigationAuthProps {
 }
 
 const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
+  const { loginWithRedirect } = useAuth0();
   if (user) {
     const userType = user.user_metadata?.user_type;
     const dashboardLink = 
@@ -52,18 +54,27 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
     );
   }
 
+  const handleAuth0Login = () => {
+    loginWithRedirect({
+      appState: { returnTo: window.location.pathname }
+    });
+  };
+
   return (
     <div className="flex items-center space-x-2">
-      <Link to="/buyer-auth?tab=login">
-        <Button variant="ghost" className="text-purple-600 hover:bg-purple-50">
-          Login
-        </Button>
-      </Link>
-      <Link to="/buyer-auth">
-        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
-          Get Started
-        </Button>
-      </Link>
+      <Button 
+        variant="ghost" 
+        className="text-purple-600 hover:bg-purple-50"
+        onClick={handleAuth0Login}
+      >
+        Login
+      </Button>
+      <Button 
+        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+        onClick={handleAuth0Login}
+      >
+        Get Started
+      </Button>
     </div>
   );
 };

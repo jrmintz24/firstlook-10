@@ -173,6 +173,8 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
             Continue with Google
           </Button>
 
+          {/* Facebook temporarily disabled until OAuth is configured */}
+          {/* 
           <Button
             type="button"
             variant="outline"
@@ -189,6 +191,7 @@ const QuickSignInModal = ({ isOpen, onClose, onSuccess }: QuickSignInModalProps)
             )}
             Continue with Facebook
           </Button>
+          */}
         </div>
 
         {/* Divider */}

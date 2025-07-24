@@ -16,14 +16,17 @@ export default function AuthDebug() {
       addLog(`Origin: ${window.location.origin}`);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
+        provider: 'google',
+        options: {
+          skipBrowserRedirect: true
+        }
       });
 
       if (error) {
         addLog(`Error: ${JSON.stringify(error)}`);
       } else {
         addLog(`Success! OAuth URL: ${data?.url}`);
-        // Don't redirect, just log the URL
+        addLog('Copy this URL and examine it for issues');
       }
     } catch (err) {
       addLog(`Exception: ${err}`);
@@ -46,6 +49,26 @@ export default function AuthDebug() {
     window.open(oauthUrl, '_blank');
   };
 
+  const checkCurrentUrl = () => {
+    addLog('Current page URL analysis:');
+    addLog(`Full URL: ${window.location.href}`);
+    addLog(`Hash: ${window.location.hash}`);
+    addLog(`Search params: ${window.location.search}`);
+    
+    // Check if there's an auth error in the URL
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    if (params.get('error') || hashParams.get('error')) {
+      addLog(`Auth error found: ${params.get('error') || hashParams.get('error')}`);
+      addLog(`Error description: ${params.get('error_description') || hashParams.get('error_description')}`);
+    }
+    
+    if (params.get('code')) {
+      addLog(`Auth code found: ${params.get('code')}`);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">Auth Debug Page</h1>
@@ -61,6 +84,10 @@ export default function AuthDebug() {
         
         <Button onClick={testManualRedirect}>
           Test Manual OAuth (New Tab)
+        </Button>
+        
+        <Button onClick={checkCurrentUrl}>
+          Check Current URL
         </Button>
       </div>
 

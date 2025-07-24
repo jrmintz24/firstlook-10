@@ -42,16 +42,15 @@ export const signInWithProvider = async (
   console.log('authService.signInWithProvider - User type:', userType);
 
   try {
-    // Ensure we have the full URL with protocol
-    const redirectUrl = `${getRedirectUrl()}/buyer-dashboard`;
-    console.log('Full redirect URL:', redirectUrl);
-    
-    // Use Supabase's OAuth method with explicit full URL
+    // Let's try without specifying redirectTo at all - let Supabase use its configured Site URL
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: redirectUrl,
-        queryParams: { user_type: userType }
+        queryParams: { 
+          user_type: userType,
+          // Add a flag so we know this came from tour booking
+          source: 'property_request'
+        }
       }
     });
 
@@ -61,7 +60,7 @@ export const signInWithProvider = async (
     }
 
     if (data?.url) {
-      console.log('OAuth redirect URL:', data.url);
+      console.log('OAuth URL (using default Site URL):', data.url);
       window.location.href = data.url;
     }
     

@@ -37,18 +37,16 @@ export const signInWithProvider = async (
   provider: 'google',
   userType: 'buyer' | 'agent' | 'admin'
 ): Promise<{ error: AuthError | null }> => {
-  const redirectPath = userType === 'agent'
-    ? '/agent-dashboard'
-    : userType === 'admin'
-    ? '/admin-dashboard'
-    : '/buyer-dashboard';
+  // For tour booking, we want to return to the auth callback first
+  // then handle redirection based on the context
+  const callbackUrl = `${getRedirectUrl()}/auth/callback`;
 
-  console.log('authService.signInWithProvider - User type:', userType, 'Redirect path:', redirectPath);
+  console.log('authService.signInWithProvider - User type:', userType, 'Callback URL:', callbackUrl);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${getRedirectUrl()}${redirectPath}`,
+      redirectTo: callbackUrl,
       queryParams: { user_type: userType }
     }
   });

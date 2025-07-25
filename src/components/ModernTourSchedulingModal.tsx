@@ -10,7 +10,7 @@ import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import HybridAddressInput from "@/components/HybridAddressInput";
 import { useIDXPropertyExtractor } from "@/hooks/useIDXPropertyExtractor";
-import QuickSignInModal from "@/components/property-request/QuickSignInModal";
+import SupabaseSignInModal from "@/components/property-request/SupabaseSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 import MobileDateTimePicker from "@/components/mobile/MobileDateTimePicker";
 import PropertySelectionStep from "@/components/tour-scheduling/PropertySelectionStep";
@@ -550,7 +550,7 @@ const ModernTourSchedulingModal = ({
         </div>
         )}
         
-        <QuickSignInModal
+        <SupabaseSignInModal
           isOpen={modalFlow === 'auth'}
           onClose={handleClose}
           onSuccess={handleAuthSuccess}
@@ -885,7 +885,7 @@ const ModernTourSchedulingModal = ({
         </DialogContent>
       </Dialog>
 
-      <QuickSignInModal
+      <SupabaseSignInModal
         isOpen={modalFlow === 'auth'}
         onClose={handleClose}
         onSuccess={handleAuthSuccess}

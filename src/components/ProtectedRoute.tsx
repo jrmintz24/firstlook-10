@@ -1,7 +1,6 @@
 
 import { useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Auth0Redirect } from './Auth0Redirect'
 
 interface ProtectedRouteProps {
   children: React.ReactNode

@@ -5,7 +5,7 @@ import { usePropertyRequest } from "@/hooks/usePropertyRequest";
 import PropertySelectionStep from "@/components/property-request/PropertySelectionStep";
 import SchedulingStep from "@/components/property-request/SchedulingStep";
 import SummaryStep from "@/components/property-request/SummaryStep";
-import QuickSignInModal from "@/components/property-request/QuickSignInModal";
+import SupabaseSignInModal from "@/components/property-request/SupabaseSignInModal";
 import FreeShowingLimitModal from "@/components/showing-limits/FreeShowingLimitModal";
 import { PropertyEntry } from "@/types/propertyRequest";
 
@@ -150,7 +150,7 @@ const PropertyRequestWizard = ({
         </DialogContent>
       </Dialog>
 
-      <QuickSignInModal
+      <SupabaseSignInModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}

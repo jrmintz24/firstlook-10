@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -8,6 +9,9 @@ interface MagneticButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   magneticStrength?: number;
+  disabled?: boolean;
+  'aria-label'?: string;
+  'aria-describedby'?: string;
 }
 
 const MagneticButton = ({
@@ -16,13 +20,17 @@ const MagneticButton = ({
   onClick,
   variant = 'default',
   size = 'lg',
-  magneticStrength = 0.3
+  magneticStrength = 0.3,
+  disabled = false,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedBy
 }: MagneticButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const { trackButtonClick } = useAnalytics();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!buttonRef.current) return;
+    if (!buttonRef.current || disabled) return;
 
     const rect = buttonRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -35,13 +43,36 @@ const MagneticButton = ({
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    if (!disabled) setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
     if (buttonRef.current) {
       buttonRef.current.style.transform = 'translate(0px, 0px) scale(1)';
+    }
+  };
+
+  const handleFocus = () => {
+    if (!disabled) setIsHovered(true);
+  };
+
+  const handleBlur = () => {
+    setIsHovered(false);
+    if (buttonRef.current) {
+      buttonRef.current.style.transform = 'translate(0px, 0px) scale(1)';
+    }
+  };
+
+  const handleClick = () => {
+    // Extract button text for analytics
+    const buttonText = typeof children === 'string' ? children : 
+      buttonRef.current?.textContent || 'Unknown Button';
+    
+    trackButtonClick(buttonText, 'hero');
+    
+    if (onClick) {
+      onClick();
     }
   };
 
@@ -57,6 +88,8 @@ const MagneticButton = ({
     transition-all duration-300 ease-out
     rounded-xl min-w-[280px] h-[56px]
     transform-gpu
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+    disabled:opacity-50 disabled:cursor-not-allowed
     ${className}
   `.trim();
 
@@ -66,10 +99,15 @@ const MagneticButton = ({
       size={size}
       variant={variant}
       className={enhancedClassName}
-      onClick={onClick}
+      onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
     >
       {children}
     </Button>

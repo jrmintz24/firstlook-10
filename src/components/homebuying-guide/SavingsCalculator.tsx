@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { DollarSign } from "lucide-react";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export const SavingsCalculator = () => {
   const [homePrice, setHomePrice] = useState([500000]);
+  const { trackCalculatorInteraction } = useAnalytics();
   
   const calculateSavings = (price: number) => {
     const buyerAgentCommission = price * 0.03; // 3% typical buyer's agent commission
@@ -45,7 +47,11 @@ export const SavingsCalculator = () => {
             </div>
             <Slider
               value={homePrice}
-              onValueChange={setHomePrice}
+              onValueChange={(value) => {
+                setHomePrice(value);
+                const newSavings = calculateSavings(value[0]);
+                trackCalculatorInteraction(value[0], Math.round(newSavings.totalSavings));
+              }}
               max={1000000}
               min={200000}
               step={25000}

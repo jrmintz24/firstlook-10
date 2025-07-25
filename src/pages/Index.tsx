@@ -11,6 +11,7 @@ import PricingSection from '../components/buyer-os/PricingSection'
 import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
+import ProblemBridge from '../components/buyer-os/ProblemBridge'
 import ModernTourSchedulingModal from '../components/ModernTourSchedulingModal'
 import AnimatedSection from '../components/ui/AnimatedSection'
 import { useTourQuota } from '../hooks/useTourQuota'
@@ -83,6 +84,16 @@ export default function Index() {
         <ValueProposition />
       </AnimatedSection>
 
+      {/* Trust Indicators - moved up for early social proof */}
+      <AnimatedSection animation="fade-in" delay={150}>
+        <TrustIndicators />
+      </AnimatedSection>
+
+      {/* Problem Bridge - explains the core issue before solution */}
+      <AnimatedSection animation="fade-up" delay={100}>
+        <ProblemBridge />
+      </AnimatedSection>
+
       {/* How It Works */}
       <AnimatedSection animation="slide-up" delay={100}>
         <HowItWorks />
@@ -101,11 +112,6 @@ export default function Index() {
       {/* Pricing Section */}
       <AnimatedSection animation="fade-up" delay={100}>
         <PricingSection onStartTour={handleStartTour} />
-      </AnimatedSection>
-
-      {/* Trust Indicators - moved towards bottom */}
-      <AnimatedSection animation="fade-in" delay={200}>
-        <TrustIndicators />
       </AnimatedSection>
 
       {/* Final CTA Section */}

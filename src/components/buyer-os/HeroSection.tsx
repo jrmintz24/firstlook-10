@@ -38,6 +38,8 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
         style={{
           backgroundImage: 'url(/lovable-uploads/57d76f8d-b9d6-45e0-b1db-18317cbcf150.png)'
         }}
+        role="img"
+        aria-label="Modern home exterior showcasing FirstLook's home buying service"
       />
       
       {/* Overlay for better text readability */}

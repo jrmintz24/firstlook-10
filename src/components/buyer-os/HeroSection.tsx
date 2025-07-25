@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import PlaceholderSearchWidget from "../PlaceholderSearchWidget";
+import MagneticButton from "@/components/ui/MagneticButton";
 
 interface HeroSectionProps {
   onStartTour: () => void;
@@ -66,23 +67,22 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
           <PlaceholderSearchWidget className="mb-12" />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-gray-900 hover:bg-black text-white px-10 py-5 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 rounded-xl min-w-[280px] h-[56px]"
+            <MagneticButton 
+              variant="default"
               onClick={scrollToRebateCalculator}
+              magneticStrength={0.2}
             >
               <span>Get Your Cash Back Estimate</span>
               <ArrowRight className="ml-3 h-5 w-5" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="px-10 py-5 text-base border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:scale-105 transition-all duration-300 font-medium rounded-xl shadow-sm hover:shadow-md min-w-[280px] h-[56px]"
+            </MagneticButton>
+            <MagneticButton 
+              variant="outline"
               onClick={scrollToHowItWorks}
+              magneticStrength={0.15}
             >
               <Play className="mr-3 h-5 w-5" />
               See How It Works
-            </Button>
+            </MagneticButton>
           </div>
         </div>
       </div>

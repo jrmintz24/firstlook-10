@@ -12,6 +12,7 @@ import TrustIndicators from '../components/buyer-os/TrustIndicators'
 import FinalCTASection from '../components/buyer-os/FinalCTASection'
 import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import ModernTourSchedulingModal from '../components/ModernTourSchedulingModal'
+import AnimatedSection from '../components/ui/AnimatedSection'
 import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -73,28 +74,44 @@ export default function Index() {
       <HeroSection onStartTour={handleStartTour} />
 
       {/* FAQ Section - moved directly after hero */}
-      <FAQSection />
+      <AnimatedSection animation="fade-up" delay={100}>
+        <FAQSection />
+      </AnimatedSection>
 
       {/* Value Proposition */}
-      <ValueProposition />
+      <AnimatedSection animation="fade-up" delay={200}>
+        <ValueProposition />
+      </AnimatedSection>
 
       {/* How It Works */}
-      <HowItWorks />
+      <AnimatedSection animation="slide-up" delay={100}>
+        <HowItWorks />
+      </AnimatedSection>
 
       {/* Industry Context + Real Buyer Stories Combined */}
-      <IndustryAndStories />
+      <AnimatedSection animation="fade-up" delay={150}>
+        <IndustryAndStories />
+      </AnimatedSection>
 
       {/* Commission Explainer */}
-      <CommissionExplainer />
+      <AnimatedSection animation="scale-in" delay={100}>
+        <CommissionExplainer />
+      </AnimatedSection>
 
       {/* Pricing Section */}
-      <PricingSection onStartTour={handleStartTour} />
+      <AnimatedSection animation="fade-up" delay={100}>
+        <PricingSection onStartTour={handleStartTour} />
+      </AnimatedSection>
 
       {/* Trust Indicators - moved towards bottom */}
-      <TrustIndicators />
+      <AnimatedSection animation="fade-in" delay={200}>
+        <TrustIndicators />
+      </AnimatedSection>
 
       {/* Final CTA Section */}
-      <FinalCTASection onRequestShowing={handleStartTour} />
+      <AnimatedSection animation="slide-up" delay={100}>
+        <FinalCTASection onRequestShowing={handleStartTour} />
+      </AnimatedSection>
 
       {/* Tour Quota Banner - only show for authenticated users who exceeded quota */}
       {user && tourQuota.isExceeded && !tourQuota.loading && (

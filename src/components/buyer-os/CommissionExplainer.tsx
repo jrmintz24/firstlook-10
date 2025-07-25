@@ -20,7 +20,7 @@ const CommissionExplainer = () => {
         
         {/* Main Explanation Card */}
         <div className="max-w-5xl mx-auto mb-12">
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-lg rounded-2xl">
+          <Card className="bg-gradient-to-br from-blue-50/80 to-indigo-50/60 border-blue-200/50 shadow-2xl backdrop-blur-sm rounded-3xl overflow-hidden">
             <CardContent className="p-8 sm:p-10">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -37,7 +37,7 @@ const CommissionExplainer = () => {
               {/* Progressive Card Stack */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="relative">
-                  <Card className="bg-white border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+                  <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <DollarSign className="w-6 h-6 text-white" />
@@ -56,7 +56,7 @@ const CommissionExplainer = () => {
                 </div>
 
                 <div className="relative">
-                  <Card className="bg-white border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300">
+                  <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <Shield className="w-6 h-6 text-white" />
@@ -75,7 +75,7 @@ const CommissionExplainer = () => {
                 </div>
 
                 <div className="relative">
-                  <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300">
+                  <Card className="bg-gradient-to-br from-green-50/90 to-emerald-50/70 backdrop-blur-sm border border-green-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <DollarSign className="w-6 h-6 text-white" />
@@ -114,7 +114,7 @@ const CommissionExplainer = () => {
         {/* Rebate Calculator Section */}
         <div id="rebate-calculator" className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 text-lg font-semibold backdrop-blur-sm">
               🔁 Estimate Your Rebate
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

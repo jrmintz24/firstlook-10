@@ -144,37 +144,65 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             }
 
             if (!userProfile) {
-              // Try to create new profile for Auth0 user
-              const newProfile = {
-                id: supabaseUserId, // Use the generated UUID as profile ID
-                email: auth0User.email,
-                first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
-                last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
-                user_type: 'buyer',
-                profile_picture_url: auth0User.picture,
-                onboarding_completed: true,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
+              try {
+                // Use RPC function to bypass RLS for Auth0 users
+                const { data: createdProfile, error: createError } = await supabase
+                  .rpc('create_auth0_profile', {
+                    profile_id: supabaseUserId,
+                    user_email: auth0User.email,
+                    first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+                    last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
+                    user_type: 'buyer',
+                    profile_picture_url: auth0User.picture
+                  });
 
-              const { data: createdProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert([newProfile])
-                .select()
-                .single();
+                if (createError) {
+                  console.error('Profile creation via RPC failed:', {
+                    error: createError,
+                    message: createError.message,
+                    code: createError.code,
+                    details: createError.details,
+                    hint: createError.hint
+                  });
+                  
+                  // Fallback to direct insert
+                  const newProfile = {
+                    id: supabaseUserId,
+                    email: auth0User.email,
+                    first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+                    last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
+                    user_type: 'buyer',
+                    profile_picture_url: auth0User.picture,
+                    onboarding_completed: true,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  };
 
-              if (createError) {
-                console.error('Profile creation failed - Error details:', {
-                  error: createError,
-                  message: createError.message,
-                  code: createError.code,
-                  details: createError.details,
-                  hint: createError.hint,
-                  userProfile: newProfile
-                });
-              } else {
-                userProfile = createdProfile;
-                console.log('Profile created successfully:', createdProfile);
+                  const { data: fallbackProfile, error: fallbackError } = await supabase
+                    .from('profiles')
+                    .insert([newProfile])
+                    .select()
+                    .single();
+
+                  if (fallbackError) {
+                    console.error('Fallback profile creation failed:', {
+                      error: fallbackError,
+                      message: fallbackError.message,
+                      code: fallbackError.code,
+                      details: fallbackError.details,
+                      hint: fallbackError.hint,
+                      newProfile: newProfile
+                    });
+                  } else {
+                    userProfile = fallbackProfile;
+                    console.log('Profile created via fallback:', fallbackProfile);
+                  }
+                } else {
+                  userProfile = createdProfile;
+                  console.log('Profile created via RPC:', createdProfile);
+                }
+              } catch (profileCreationError) {
+                console.error('Profile creation completely failed:', profileCreationError);
               }
             }
           } catch (profileError) {

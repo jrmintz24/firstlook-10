@@ -257,11 +257,21 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const logout = async () => {
     try {
+      console.log('Auth0AuthContext: Starting logout process');
+      
+      // Clear local state immediately
       setUser(null);
       setProfile(null);
+      setLoading(false);
+      
       // Clear any stored data
       localStorage.removeItem('newUserFromPropertyRequest');
       localStorage.removeItem('pendingTourRequest');
+      
+      // Clear any other Auth0-related data that might be cached
+      localStorage.removeItem('@@auth0spajs@@::' + import.meta.env.VITE_AUTH0_CLIENT_ID + '::' + import.meta.env.VITE_AUTH0_DOMAIN + '::openid profile email');
+      
+      console.log('Auth0AuthContext: Local state cleared, calling Auth0 logout');
       
       await auth0Logout({
         logoutParams: {
@@ -271,6 +281,9 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (error) {
       console.error('Logout error:', error);
       // Force redirect to home even if Auth0 logout fails
+      setUser(null);
+      setProfile(null);
+      setLoading(false);
       window.location.href = window.location.origin;
     }
   };

@@ -1,5 +1,5 @@
 
-import { useLocation } from 'react-router-dom'
+import { useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/Auth0AuthContext'
 import { Auth0Redirect } from './Auth0Redirect'
 

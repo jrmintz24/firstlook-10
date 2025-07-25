@@ -113,23 +113,37 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // Try to fetch or create Supabase profile, but don't block auth if it fails
           let userProfile = null;
           try {
-            // First, try to find profile by email (for existing users migrating to Auth0)
-            const { data: existingProfile, error: fetchError } = await supabase
+            // First, try to find profile by UUID (for Auth0 users)
+            const { data: profileByUuid, error: uuidError } = await supabase
               .from('profiles')
               .select('*')
-              .eq('email', auth0User.email)
+              .eq('id', supabaseUserId)
               .single();
 
-            if (fetchError && fetchError.code !== 'PGRST116') {
-              console.warn('Profile fetch failed (non-blocking):', fetchError);
-            } else {
-              userProfile = existingProfile;
-              // If we found an existing profile by email, we can optionally update it
-              // to store the Auth0 ID for future reference
-              console.log('Found existing profile by email:', existingProfile);
+            if (uuidError && uuidError.code !== 'PGRST116') {
+              console.warn('Profile fetch by UUID failed:', uuidError);
             }
 
-            if (!existingProfile) {
+            if (profileByUuid) {
+              userProfile = profileByUuid;
+              console.log('Found existing profile by UUID:', profileByUuid);
+            } else {
+              // Fallback: try to find profile by email (for existing users migrating to Auth0)
+              const { data: profileByEmail, error: emailError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('email', auth0User.email)
+                .single();
+
+              if (emailError && emailError.code !== 'PGRST116') {
+                console.warn('Profile fetch by email failed:', emailError);
+              } else if (profileByEmail) {
+                userProfile = profileByEmail;
+                console.log('Found existing profile by email:', profileByEmail);
+              }
+            }
+
+            if (!userProfile) {
               // Try to create new profile for Auth0 user
               const newProfile = {
                 id: supabaseUserId, // Use the generated UUID as profile ID
@@ -150,7 +164,14 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 .single();
 
               if (createError) {
-                console.warn('Profile creation failed (non-blocking):', createError);
+                console.error('Profile creation failed - Error details:', {
+                  error: createError,
+                  message: createError.message,
+                  code: createError.code,
+                  details: createError.details,
+                  hint: createError.hint,
+                  userProfile: newProfile
+                });
               } else {
                 userProfile = createdProfile;
                 console.log('Profile created successfully:', createdProfile);
@@ -208,13 +229,23 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const logout = async () => {
-    setUser(null);
-    setProfile(null);
-    await auth0Logout({
-      logoutParams: {
-        returnTo: window.location.origin
-      }
-    });
+    try {
+      setUser(null);
+      setProfile(null);
+      // Clear any stored data
+      localStorage.removeItem('newUserFromPropertyRequest');
+      localStorage.removeItem('pendingTourRequest');
+      
+      await auth0Logout({
+        logoutParams: {
+          returnTo: window.location.origin
+        }
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect to home even if Auth0 logout fails
+      window.location.href = window.location.origin;
+    }
   };
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {

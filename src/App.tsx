@@ -72,10 +72,17 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Auth0ProviderWrapper>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<TestAuth />} />
-            <Route path="/home" element={<Index />} />
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AnalyticsWrapper>
+              <IDXPropertySaverWrapper>
+                <ScrollToTop />
+                <Navigation />
+                <Routes>
+                  <Route path="/" element={<TestAuth />} />
+                  <Route path="/home" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<Auth0Callback />} />
                 <Route path="/oauth-callback" element={<OAuthCallback />} />
@@ -207,12 +214,11 @@ function App() {
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
-              </Routes>
+                </Routes>
               </IDXPropertySaverWrapper>
             </AnalyticsWrapper>
           </BrowserRouter>
-          </TooltipProvider>
-        {/* </AuthProvider> */}
+        </TooltipProvider>
       </Auth0ProviderWrapper>
     </QueryClientProvider>
   )

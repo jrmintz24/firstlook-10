@@ -101,27 +101,29 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           // Try to fetch or create Supabase profile, but don't block auth if it fails
           let userProfile = null;
           try {
+            // First, try to find profile by email (for existing users migrating to Auth0)
             const { data: existingProfile, error: fetchError } = await supabase
               .from('profiles')
               .select('*')
-              .eq('auth_provider_id', auth0User.sub)
+              .eq('email', auth0User.email)
               .single();
 
             if (fetchError && fetchError.code !== 'PGRST116') {
               console.warn('Profile fetch failed (non-blocking):', fetchError);
             } else {
               userProfile = existingProfile;
+              // If we found an existing profile by email, we can optionally update it
+              // to store the Auth0 ID for future reference
+              console.log('Found existing profile by email:', existingProfile);
             }
 
             if (!existingProfile) {
-              // Try to create new profile
+              // Try to create new profile for Auth0 user
               const newProfile = {
                 email: auth0User.email,
                 first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
                 last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
                 user_type: 'buyer',
-                auth_provider: 'auth0',
-                auth_provider_id: auth0User.sub,
                 profile_picture_url: auth0User.picture,
                 onboarding_completed: true,
                 created_at: new Date().toISOString(),
@@ -222,7 +224,7 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('auth_provider_id', user.sub)
+      .eq('email', user.email)
       .single();
 
     if (error) {
@@ -239,7 +241,7 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('auth_provider_id', user.sub)
+      .eq('email', user.email)
       .select()
       .single();
 

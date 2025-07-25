@@ -1,8 +1,10 @@
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import SupabaseSignInModal from "@/components/property-request/SupabaseSignInModal";
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -15,13 +17,18 @@ const MobileNavigation = ({
   isOpen, 
   onMenuItemClick 
 }: MobileNavigationProps) => {
-  const { user, isAuthenticated, login, logout } = useAuth();
+  const { user, session, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   if (!isOpen) return null;
   
-  const handleAuth0Login = async () => {
+  const handleLogin = () => {
     onMenuItemClick();
-    await login();
+    setShowAuthModal(true);
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
   };
 
   return (
@@ -85,7 +92,7 @@ const MobileNavigation = ({
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  logout();
+                  signOut();
                   onMenuItemClick();
                 }}
                 className="flex items-center gap-3 border-purple-200 text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
@@ -99,16 +106,13 @@ const MobileNavigation = ({
               <Button 
                 variant="ghost" 
                 className="text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
-                onClick={() => {
-                  onMenuItemClick();
-                  handleAuth0Login();
-                }}
+                onClick={handleLogin}
               >
                 Login
               </Button>
               <Button 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full py-3 px-4"
-                onClick={handleAuth0Login}
+                onClick={handleLogin}
               >
                 Get Started
               </Button>
@@ -116,6 +120,13 @@ const MobileNavigation = ({
           )}
         </div>
       </div>
+      
+      {/* Supabase Auth Modal */}
+      <SupabaseSignInModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };

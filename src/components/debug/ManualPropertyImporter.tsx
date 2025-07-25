@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { enrichPropertyData, storeEnrichedPropertyData } from '@/services/propertyEnrichmentService';
-import { useAuth } from '@/contexts/Auth0AuthContext';
+import { useAuth } from '@/contexts/SimpleAuth0Context';
 
 const ManualPropertyImporter = () => {
   const { user } = useAuth();

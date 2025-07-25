@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { useAuth } from '../contexts/Auth0AuthContext'
+import { useAuth } from '../contexts/SimpleAuth0Context'
 import { Button } from '../components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import HouseSelection from '../components/HouseSelection'

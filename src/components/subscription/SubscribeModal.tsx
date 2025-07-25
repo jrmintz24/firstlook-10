@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, CreditCard, Star, User, Mail, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/Auth0AuthContext";
+import { useAuth } from "@/contexts/SimpleAuth0Context";
 import { supabase } from "@/integrations/supabase/client";
 import { signUp, signIn } from "@/services/authService";
 

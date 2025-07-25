@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, User } from 'lucide-react';
-import { useAuth } from '@/contexts/Auth0AuthContext';
+import { useAuth } from '@/contexts/SimpleAuth0Context';
 import { cn } from '@/lib/utils';
 
 interface Message {

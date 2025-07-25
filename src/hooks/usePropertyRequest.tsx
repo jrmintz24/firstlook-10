@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/Auth0AuthContext";
+import { useAuth } from "@/contexts/SimpleAuth0Context";
 import { useNavigate } from "react-router-dom";
 import { PropertyRequestFormData, PropertyEntry } from "@/types/propertyRequest";
 import { usePropertyManagement } from "@/hooks/usePropertyManagement";

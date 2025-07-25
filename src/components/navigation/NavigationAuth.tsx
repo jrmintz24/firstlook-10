@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
-import { useAuth } from "@/contexts/Auth0AuthContext";
+import { useAuth } from "@/contexts/SimpleAuth0Context";
 
 interface NavigationAuthProps {
   // Props are no longer needed since we get auth state from context

@@ -1,5 +1,5 @@
 
-import { useAuth } from "@/contexts/Auth0AuthContext";
+import { useAuth } from "@/contexts/SimpleAuth0Context";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
 import { useNavigate } from "react-router-dom";

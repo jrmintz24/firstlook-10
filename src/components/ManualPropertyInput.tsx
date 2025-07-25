@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSimpleIDXIntegration } from '../hooks/useSimpleIDXIntegration';
-import { useAuth } from '../contexts/Auth0AuthContext';
+import { useAuth } from '../contexts/SimpleAuth0Context';
 
 export default function ManualPropertyInput() {
   const { user } = useAuth();

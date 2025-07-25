@@ -4,8 +4,8 @@ import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-// import { AuthProvider } from './contexts/Auth0AuthContext' // Old Supabase auth - disabled
-import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth
+// import { AuthProvider } from './contexts/SimpleAuth0Context' // Complex Auth0 context - disabled
+import { SimpleAuth0Provider as AuthProvider } from './contexts/SimpleAuth0Context' // Simple Auth0 auth
 import { Auth0ProviderWrapper } from './providers/Auth0Provider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Heart, Calendar, MessageSquare } from 'lucide-react';
 import { useSimpleIDXIntegration } from '../hooks/useSimpleIDXIntegration';
-import { useAuth } from '../contexts/Auth0AuthContext';
+import { useAuth } from '../contexts/SimpleAuth0Context';
 
 export default function SimplePropertyToolbar() {
   const { propertyData, isLoading, favoriteProperty, scheduleShowingForProperty } = useSimpleIDXIntegration();

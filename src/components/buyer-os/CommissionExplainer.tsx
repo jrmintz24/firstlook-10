@@ -112,7 +112,7 @@ const CommissionExplainer = () => {
         </div>
 
         {/* Rebate Calculator Section */}
-        <div className="max-w-4xl mx-auto">
+        <div id="rebate-calculator" className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold">
               🔁 Estimate Your Rebate

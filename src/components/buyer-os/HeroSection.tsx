@@ -15,6 +15,20 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
     }
   };
 
+  const scrollToRebateCalculator = () => {
+    const element = document.getElementById('rebate-calculator');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      // Add highlight animation
+      setTimeout(() => {
+        element.classList.add('animate-pulse');
+        setTimeout(() => {
+          element.classList.remove('animate-pulse');
+        }, 2000);
+      }, 500);
+    }
+  };
+
   return (
     <div className="py-12 sm:py-20 pb-16 sm:pb-24 relative overflow-hidden">
       {/* Background Image */}
@@ -55,9 +69,9 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
             <Button 
               size="lg" 
               className="bg-gray-900 hover:bg-black text-white px-10 py-5 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 rounded-xl min-w-[280px] h-[56px]"
-              onClick={onStartTour}
+              onClick={scrollToRebateCalculator}
             >
-              <span>Book Your Free Tour</span>
+              <span>Get Your Cash Back Estimate</span>
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
             <Button 

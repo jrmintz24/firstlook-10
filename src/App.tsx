@@ -79,7 +79,7 @@ function App() {
             <AnalyticsWrapper>
               <IDXPropertySaverWrapper>
                 <ScrollToTop />
-                <Navigation />
+                {/* <Navigation /> */}
                 <Routes>
                   <Route path="/" element={<TestAuth />} />
                   <Route path="/home" element={<Index />} />

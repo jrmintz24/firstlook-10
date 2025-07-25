@@ -39,7 +39,21 @@ const Auth0AuthContext = createContext<Auth0AuthContextType | undefined>(undefin
 export const useAuth = () => {
   const context = useContext(Auth0AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an Auth0AuthProvider');
+    console.error('useAuth called outside of Auth0AuthProvider');
+    // Return a default object instead of throwing to prevent crashes
+    return {
+      user: null,
+      loading: false,
+      isAuthenticated: false,
+      error: null,
+      login: async () => {},
+      logout: async () => {},
+      signUp: async () => {},
+      getProfile: async () => null,
+      updateProfile: async () => {},
+      supabaseSignIn: async () => ({ error: new Error('Auth disabled') }),
+      supabaseSignUp: async () => ({ error: new Error('Auth disabled') })
+    };
   }
   return context;
 };

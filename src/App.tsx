@@ -5,7 +5,7 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 // import { AuthProvider } from './contexts/AuthContext' // Old Supabase auth - disabled
-// import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth - temporarily disabled
+import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth
 import { Auth0ProviderWrapper } from './providers/Auth0Provider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
@@ -72,7 +72,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Auth0ProviderWrapper>
-        <TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -219,6 +220,7 @@ function App() {
             </AnalyticsWrapper>
           </BrowserRouter>
         </TooltipProvider>
+        </AuthProvider>
       </Auth0ProviderWrapper>
     </QueryClientProvider>
   )

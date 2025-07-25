@@ -35,9 +35,17 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
       const { error } = await signIn(email, password);
       
       if (error) {
+        let errorDescription = "Please check your credentials and try again.";
+        
+        if (error.message?.includes('Invalid login credentials')) {
+          errorDescription = "Invalid email or password. Please check your credentials.";
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorDescription = "Please check your email and click the confirmation link first.";
+        }
+        
         toast({
           title: "Sign In Failed",
-          description: error.message || "Please check your credentials and try again.",
+          description: errorDescription,
           variant: "destructive"
         });
         return;
@@ -67,13 +75,36 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(email, password, {
+      const { error, data } = await signUp(email, password, {
         user_type: 'buyer',
         first_name: firstName,
         last_name: lastName
       });
       
       if (error) {
+        // Check if this is a "user already exists" error
+        if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+          toast({
+            title: "Account Already Exists",
+            description: "This email is already registered. Please sign in instead.",
+          });
+          setActiveTab("signin");
+          return;
+        }
+        
+        // Check if user was actually created despite the error
+        if (data?.user) {
+          console.log('User was created despite error:', data.user);
+          toast({
+            title: "Welcome!",
+            description: "Your account has been created successfully!",
+          });
+          onSuccess();
+          onClose();
+          return;
+        }
+
+        // Only show error if user wasn't created
         toast({
           title: "Sign Up Failed",
           description: error.message || "Please try again with different credentials.",
@@ -82,26 +113,36 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
         return;
       }
 
-      // If email confirmation is disabled, the user should be automatically signed in
-      if (data?.user && !data.user.email_confirmed_at) {
-        // User was created but not confirmed - this means email confirmation is enabled
-        toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account, then sign in.",
-        });
-        setActiveTab("signin");
-        setPassword("");
-      } else {
-        // User is created and ready to use
+      // Successful signup without errors
+      if (data?.user) {
         toast({
           title: "Welcome!",
           description: "Your account has been created and you're now signed in.",
         });
         onSuccess();
         onClose();
+      } else {
+        // Fallback case
+        toast({
+          title: "Account Created!",
+          description: "Your account has been created. You can now sign in.",
+        });
+        setActiveTab("signin");
+        setPassword("");
       }
     } catch (error: any) {
       console.error('Sign up error:', error);
+      
+      // Check if this is a "user already exists" error in the catch block too
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email is already registered. Please sign in instead.",
+        });
+        setActiveTab("signin");
+        return;
+      }
+      
       toast({
         title: "Sign Up Error",
         description: "An unexpected error occurred. Please try again.",
@@ -204,6 +245,10 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
                   "Sign In"
                 )}
               </Button>
+              
+              <p className="text-xs text-center text-gray-500 mt-2">
+                Don't have an account? <button type="button" onClick={() => setActiveTab("signup")} className="text-blue-600 hover:underline">Sign up here</button>
+              </p>
             </form>
           </TabsContent>
           
@@ -284,6 +329,10 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
                   "Create Account"
                 )}
               </Button>
+              
+              <p className="text-xs text-center text-gray-500 mt-2">
+                Already have an account? <button type="button" onClick={() => setActiveTab("signin")} className="text-blue-600 hover:underline">Sign in here</button>
+              </p>
             </form>
           </TabsContent>
         </Tabs>

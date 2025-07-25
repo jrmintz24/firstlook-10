@@ -1,6 +1,7 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { v5 as uuidv5 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SimpleAuthUser {
   id: string;
@@ -90,6 +91,47 @@ export const SimpleAuth0Provider: React.FC<{ children: React.ReactNode }> = ({ c
       last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || ''
     }
   } : null;
+
+  // Simple profile creation when user authenticates
+  useEffect(() => {
+    const ensureProfile = async () => {
+      if (!user || !isAuthenticated) return;
+      
+      try {
+        // Check if profile exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+        
+        if (!existingProfile) {
+          // Create simple profile
+          const { error } = await supabase
+            .from('profiles')
+            .insert([{
+              id: user.id,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+              user_type: 'buyer',
+              onboarding_completed: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }]);
+          
+          if (error) {
+            console.warn('Profile creation failed (non-blocking):', error);
+          } else {
+            console.log('Profile created successfully for user:', user.id);
+          }
+        }
+      } catch (error) {
+        console.warn('Profile check/creation failed (non-blocking):', error);
+      }
+    };
+    
+    ensureProfile();
+  }, [user, isAuthenticated]);
 
   const login = async () => {
     await loginWithRedirect({

@@ -41,29 +41,50 @@ export default function Auth0Callback() {
           const accessToken = await getAccessTokenSilently();
           
           // Create Supabase session and profile for Auth0 user
+          let supabaseProfile = null;
           try {
-            const supabaseProfile = await createSupabaseUser(user, accessToken);
+            supabaseProfile = await createSupabaseUser(user, accessToken);
             console.log('Supabase profile sync successful:', supabaseProfile);
-            
-            // Create a Supabase session for the Auth0 user
-            await createSupabaseSession(user, supabaseProfile);
-            console.log('Supabase session created successfully');
           } catch (supabaseError) {
-            console.warn('Supabase sync failed, but continuing with Auth0 authentication:', supabaseError);
-            // Continue anyway - Auth0 authentication was successful
+            console.error('Supabase profile creation failed:', supabaseError);
+            // Continue anyway - try to create session without profile
+          }
+          
+          // Always try to create a session even if profile creation fails
+          try {
+            // If no profile, create a minimal one for the session
+            if (!supabaseProfile) {
+              supabaseProfile = {
+                id: crypto.randomUUID(),
+                email: user.email,
+                first_name: user.given_name || user.name?.split(' ')[0] || '',
+                last_name: user.family_name || user.name?.split(' ').slice(1).join(' ') || '',
+                user_type: 'buyer',
+                auth_provider: 'auth0',
+                auth_provider_id: user.sub
+              };
+            }
+            
+            await createSupabaseSession(user, supabaseProfile);
+            console.log('Supabase session bridge created successfully');
+          } catch (sessionError) {
+            console.error('Failed to create Supabase session bridge:', sessionError);
           }
 
           // Check if this was from a tour booking
           const isFromTourBooking = localStorage.getItem('newUserFromPropertyRequest') === 'true';
           const pendingTourRequest = localStorage.getItem('pendingTourRequest');
           
+          // Force a page reload to ensure AuthContext picks up the bridge session
+          console.log('Auth0 authentication complete, reloading to activate session...');
+          
           if (isFromTourBooking && pendingTourRequest) {
-            console.log('Tour booking context detected, redirecting to buyer-dashboard');
+            console.log('Tour booking context detected');
             localStorage.removeItem('newUserFromPropertyRequest');
-            navigate('/buyer-dashboard', { replace: true });
+            window.location.href = '/buyer-dashboard';
           } else {
-            // Default redirect to buyer dashboard for now
-            navigate('/buyer-dashboard', { replace: true });
+            // Default redirect to buyer dashboard with reload
+            window.location.href = '/buyer-dashboard';
           }
         } catch (error) {
           console.error('Auth0 callback error:', error);

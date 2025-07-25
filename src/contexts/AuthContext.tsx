@@ -59,8 +59,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     // Check Auth0 bridge first
-    if (checkAuth0Bridge()) {
-      return; // Skip Supabase auth if Auth0 session is active
+    const hasAuth0Session = checkAuth0Bridge();
+    console.log('AuthProvider: Auth0 bridge check result:', hasAuth0Session);
+    
+    if (hasAuth0Session) {
+      // Set up a listener for bridge session updates
+      const checkInterval = setInterval(() => {
+        const bridgeExists = checkAuth0Bridge();
+        if (!bridgeExists) {
+          console.log('AuthProvider: Auth0 bridge session expired or removed');
+          setUser(null);
+          setSession(null);
+          clearInterval(checkInterval);
+        }
+      }, 5000); // Check every 5 seconds
+      
+      return () => clearInterval(checkInterval);
     }
     
     // Set up auth state listener for regular Supabase auth

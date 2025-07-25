@@ -145,11 +145,10 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
             if (!userProfile) {
               try {
-                // Use RPC function to create both auth user and profile for Auth0 users
+                // Use RPC function to create profile for Auth0 users
                 const { data: createdProfile, error: createError } = await supabase
-                  .rpc('create_auth0_user_and_profile', {
-                    user_id: supabaseUserId,
-                    user_email: auth0User.email,
+                  .rpc('create_auth0_profile', {
+                    profile_id: supabaseUserId,
                     first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
                     last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
                     user_type: 'buyer',

@@ -3,12 +3,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import PlaceholderSearchWidget from "../PlaceholderSearchWidget";
 import MagneticButton from "@/components/ui/MagneticButton";
+import { useScrollGradient } from "@/hooks/useScrollGradient";
 
 interface HeroSectionProps {
   onStartTour: () => void;
 }
 
 const HeroSection = ({ onStartTour }: HeroSectionProps) => {
+  const scrollGradient = useScrollGradient({
+    startHue: 210,
+    endHue: 260,
+    saturation: 25,
+    lightness: 97,
+    opacity: 0.85
+  });
+
   const scrollToHowItWorks = () => {
     const element = document.getElementById('how-it-works');
     if (element) {
@@ -42,8 +51,13 @@ const HeroSection = ({ onStartTour }: HeroSectionProps) => {
         aria-label="Modern home exterior showcasing FirstLook's home buying service"
       />
       
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-white/80" />
+      {/* Dynamic gradient overlay for better text readability */}
+      <div 
+        className="absolute inset-0 transition-all duration-1000 ease-out"
+        style={{
+          background: scrollGradient || 'rgba(255, 255, 255, 0.8)'
+        }}
+      />
       
       <div className="container mx-auto px-6 sm:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">

@@ -5,6 +5,8 @@ import { Slider } from "@/components/ui/slider";
 import { DollarSign } from "lucide-react";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
+import FloatingCard from "@/components/ui/FloatingCard";
 
 export const SavingsCalculator = () => {
   const [homePrice, setHomePrice] = useState([500000]);
@@ -25,7 +27,9 @@ export const SavingsCalculator = () => {
   const savings = calculateSavings(homePrice[0]);
 
   return (
-    <Card className="border border-green-200/50 bg-gradient-to-br from-green-50/80 to-emerald-50/60 backdrop-blur-sm shadow-2xl rounded-3xl overflow-hidden">
+    <DynamicShadowCard shadowIntensity={0.2} shadowColor="rgba(34, 197, 94, 0.15)">
+      <FloatingCard intensity="subtle" duration={5000}>
+        <Card className="border border-green-200/50 bg-gradient-to-br from-green-50/80 to-emerald-50/60 backdrop-blur-sm shadow-2xl rounded-3xl overflow-hidden">
       <CardContent className="p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
@@ -93,6 +97,8 @@ export const SavingsCalculator = () => {
                 value={Math.round(savings.totalSavings)} 
                 prefix="$" 
                 duration={1400}
+                enableGlow={true}
+                glowColor="rgba(34, 197, 94, 0.6)"
               />
             </div>
             <div className="text-xs text-gray-500 mt-2">
@@ -101,6 +107,8 @@ export const SavingsCalculator = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      </FloatingCard>
+    </DynamicShadowCard>
   );
 };

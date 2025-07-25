@@ -1,7 +1,10 @@
 
 import { Lock, Clock, Eye, Headphones } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const TrustIndicators = () => {
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
+  
   const features = [
     {
       icon: Lock,
@@ -26,7 +29,12 @@ const TrustIndicators = () => {
   ];
 
   return (
-    <div className="py-12 sm:py-16 bg-white">
+    <div 
+      ref={elementRef}
+      className={`py-12 sm:py-16 bg-white transition-all duration-1000 ${
+        isVisible ? 'opacity-100' : 'opacity-90'
+      }`}
+    >
       <div className="container mx-auto px-6 sm:px-8">
         <div className="text-center mb-12 max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight">

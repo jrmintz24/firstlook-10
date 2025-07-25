@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DollarSign, ArrowRight, Shield, Info, Lock, Unlock } from "lucide-react";
 import { SavingsCalculator } from "@/components/homebuying-guide/SavingsCalculator";
+import FloatingCard from "@/components/ui/FloatingCard";
 
 const CommissionExplainer = () => {
   return (
@@ -37,7 +38,8 @@ const CommissionExplainer = () => {
               {/* Progressive Card Stack */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="relative">
-                  <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
+                  <FloatingCard intensity="subtle" delay={0}>
+                    <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <DollarSign className="w-6 h-6 text-white" />
@@ -46,7 +48,8 @@ const CommissionExplainer = () => {
                       <p className="text-gray-600 text-sm mb-2">e.g., $15,000</p>
                       <p className="text-xs text-gray-500">Typical 2.5% on $600K home</p>
                     </CardContent>
-                  </Card>
+                    </Card>
+                  </FloatingCard>
                   {/* Arrow for desktop */}
                   <div className="hidden md:flex absolute -right-3 top-1/2 transform -translate-y-1/2 z-10">
                     <div className="bg-white rounded-full p-2 shadow-lg border border-gray-200">
@@ -56,7 +59,8 @@ const CommissionExplainer = () => {
                 </div>
 
                 <div className="relative">
-                  <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
+                  <FloatingCard intensity="subtle" delay={500}>
+                    <Card className="bg-white/90 backdrop-blur-sm border border-blue-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <Shield className="w-6 h-6 text-white" />
@@ -65,7 +69,8 @@ const CommissionExplainer = () => {
                       <p className="text-gray-600 text-sm mb-2">We collect & process</p>
                       <p className="text-xs text-gray-500">Acting as your agent of record</p>
                     </CardContent>
-                  </Card>
+                    </Card>
+                  </FloatingCard>
                   {/* Arrow for desktop */}
                   <div className="hidden md:flex absolute -right-3 top-1/2 transform -translate-y-1/2 z-10">
                     <div className="bg-white rounded-full p-2 shadow-lg border border-gray-200">
@@ -75,7 +80,8 @@ const CommissionExplainer = () => {
                 </div>
 
                 <div className="relative">
-                  <Card className="bg-gradient-to-br from-green-50/90 to-emerald-50/70 backdrop-blur-sm border border-green-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
+                  <FloatingCard intensity="subtle" delay={1000}>
+                    <Card className="bg-gradient-to-br from-green-50/90 to-emerald-50/70 backdrop-blur-sm border border-green-200/60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-500 rounded-2xl">
                     <CardContent className="p-6 text-center">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                         <DollarSign className="w-6 h-6 text-white" />
@@ -84,7 +90,8 @@ const CommissionExplainer = () => {
                       <p className="text-green-700 text-lg font-bold mb-2">$13,500</p>
                       <p className="text-xs text-green-600">90% rebate to you</p>
                     </CardContent>
-                  </Card>
+                    </Card>
+                  </FloatingCard>
                 </div>
               </div>
 

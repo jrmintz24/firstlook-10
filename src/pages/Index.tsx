@@ -14,6 +14,7 @@ import TourQuotaBanner from '../components/buyer-os/TourQuotaBanner'
 import ProblemBridge from '../components/buyer-os/ProblemBridge'
 import ModernTourSchedulingModal from '../components/ModernTourSchedulingModal'
 import AnimatedSection from '../components/ui/AnimatedSection'
+import ScrollProgressBar from '../components/ui/ScrollProgressBar'
 import { useTourQuota } from '../hooks/useTourQuota'
 import { useToast } from '../hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -71,6 +72,9 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar color="#1f2937" height={3} />
+      
       {/* Hero Section */}
       <HeroSection onStartTour={handleStartTour} />
 

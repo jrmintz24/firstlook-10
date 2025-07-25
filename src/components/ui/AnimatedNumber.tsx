@@ -9,6 +9,8 @@ interface AnimatedNumberProps {
   className?: string;
   duration?: number;
   formatNumber?: boolean;
+  glowColor?: string;
+  enableGlow?: boolean;
 }
 
 const AnimatedNumber = ({
@@ -17,7 +19,9 @@ const AnimatedNumber = ({
   suffix = '',
   className = '',
   duration = 1200,
-  formatNumber = true
+  formatNumber = true,
+  glowColor = 'rgba(34, 197, 94, 0.5)',
+  enableGlow = false
 }: AnimatedNumberProps) => {
   const { isVisible } = useScrollAnimation({ threshold: 0.3 });
   const { count } = useCountingAnimation(value, {
@@ -29,10 +33,28 @@ const AnimatedNumber = ({
     return formatNumber ? num.toLocaleString() : num.toString();
   };
 
+  const glowStyle = enableGlow && isVisible ? {
+    textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}`,
+    animation: 'pulse 2s ease-in-out infinite'
+  } : {};
+
   return (
-    <span className={className}>
-      {prefix}{formatValue(count)}{suffix}
-    </span>
+    <>
+      {enableGlow && (
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+          }
+        `}</style>
+      )}
+      <span 
+        className={`transition-all duration-500 ${className}`}
+        style={glowStyle}
+      >
+        {prefix}{formatValue(count)}{suffix}
+      </span>
+    </>
   );
 };
 

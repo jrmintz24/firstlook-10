@@ -163,6 +163,7 @@ const ModernTourSchedulingModal = ({
 
   // Set initial property address from prop or extracted data
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [waitingForAuthCompletion, setWaitingForAuthCompletion] = useState(false);
   
   useEffect(() => {
     // Only initialize when modal is actually open to prevent premature state changes
@@ -314,13 +315,21 @@ const ModernTourSchedulingModal = ({
 
   const handleAuthSuccess = async () => {
     console.log('Auth success - continuing with submission');
-    // After successful auth, set modal flow back to scheduling before continuing
+    // After successful auth, reset modal and flag for continuation
     setModalFlow('scheduling');
-    // Small delay to ensure UI updates
-    setTimeout(async () => {
-      await handleContinueToSubscriptions();
-    }, 100);
+    // Set a flag to continue submission after auth
+    setWaitingForAuthCompletion(true);
   };
+
+  // Watch for user to become available after auth and continue submission
+  useEffect(() => {
+    if (waitingForAuthCompletion && user?.id) {
+      console.log('User now available after auth, continuing submission');
+      setWaitingForAuthCompletion(false);
+      // Continue with submission
+      handleContinueToSubscriptions();
+    }
+  }, [waitingForAuthCompletion, user?.id, handleContinueToSubscriptions]);
 
   const canSubmit = propertyAddress.trim() && selectedDate && selectedTime;
 

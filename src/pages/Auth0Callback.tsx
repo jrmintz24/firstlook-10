@@ -38,7 +38,22 @@ export default function Auth0Callback() {
           });
 
           // Get Auth0 access token
-          const accessToken = await getAccessTokenSilently();
+          let accessToken;
+          try {
+            console.log('Auth0Callback: Attempting to get access token silently...');
+            accessToken = await getAccessTokenSilently();
+            console.log('Auth0Callback: Successfully retrieved access token');
+          } catch (tokenError) {
+            console.error('Auth0Callback: Failed to get access token:', tokenError);
+            console.error('Token error details:', {
+              message: tokenError.message,
+              error: tokenError.error,
+              error_description: tokenError.error_description,
+              stack: tokenError.stack
+            });
+            // Try to continue without the access token
+            accessToken = null;
+          }
           
           // Create Supabase session and profile for Auth0 user
           let supabaseProfile = null;
@@ -75,17 +90,23 @@ export default function Auth0Callback() {
           const isFromTourBooking = localStorage.getItem('newUserFromPropertyRequest') === 'true';
           const pendingTourRequest = localStorage.getItem('pendingTourRequest');
           
-          // Force a page reload to ensure AuthContext picks up the bridge session
-          console.log('Auth0 authentication complete, reloading to activate session...');
+          // Add a small delay to ensure localStorage is properly written
+          console.log('Auth0 authentication complete, preparing redirect...');
           
-          if (isFromTourBooking && pendingTourRequest) {
-            console.log('Tour booking context detected');
-            localStorage.removeItem('newUserFromPropertyRequest');
-            window.location.href = '/buyer-dashboard';
-          } else {
-            // Default redirect to buyer dashboard with reload
-            window.location.href = '/buyer-dashboard';
-          }
+          // Verify the bridge session was written
+          const bridgeCheck = localStorage.getItem('auth0-bridge-session');
+          console.log('Bridge session stored:', !!bridgeCheck);
+          
+          setTimeout(() => {
+            if (isFromTourBooking && pendingTourRequest) {
+              console.log('Tour booking context detected');
+              localStorage.removeItem('newUserFromPropertyRequest');
+              window.location.href = '/buyer-dashboard';
+            } else {
+              // Default redirect to buyer dashboard with reload
+              window.location.href = '/buyer-dashboard';
+            }
+          }, 100); // Small delay to ensure localStorage writes are complete
         } catch (error) {
           console.error('Auth0 callback error:', error);
           navigate('/?error=' + encodeURIComponent('Authentication failed'));
@@ -99,7 +120,7 @@ export default function Auth0Callback() {
     handleAuth0Callback();
   }, [isAuthenticated, isLoading, user, navigate, getAccessTokenSilently, error]);
 
-  const createSupabaseUser = async (auth0User: any, accessToken: string) => {
+  const createSupabaseUser = async (auth0User: any, accessToken: string | null) => {
     try {
       // Check if user already exists in Supabase
       const { data: existingProfile, error: fetchError } = await supabase
@@ -196,7 +217,11 @@ export default function Auth0Callback() {
       };
       
       localStorage.setItem('auth0-bridge-session', JSON.stringify(auth0SessionData));
-      console.log('Stored Auth0 bridge session data');
+      console.log('Stored Auth0 bridge session data:', auth0SessionData);
+      
+      // Verify it was stored correctly
+      const verifyStored = localStorage.getItem('auth0-bridge-session');
+      console.log('Verification - bridge session in localStorage:', !!verifyStored);
     } catch (error) {
       console.error('Error creating Supabase session:', error);
       throw error;

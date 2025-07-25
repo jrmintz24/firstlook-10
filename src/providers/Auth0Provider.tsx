@@ -10,7 +10,14 @@ export const Auth0ProviderWrapper: React.FC<Auth0ProviderWrapperProps> = ({ chil
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_AUTH0_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
-  console.log('Auth0 Config:', { domain, clientId, redirectUri, currentOrigin: window.location.origin });
+  console.log('Auth0 Config:', { 
+    domain, 
+    clientId, 
+    redirectUri, 
+    currentOrigin: window.location.origin,
+    currentUrl: window.location.href,
+    pathname: window.location.pathname
+  });
 
   if (!domain || !clientId) {
     console.error('Auth0 configuration missing:', { domain, clientId });
@@ -29,7 +36,7 @@ export const Auth0ProviderWrapper: React.FC<Auth0ProviderWrapperProps> = ({ chil
       clientId={clientId}
       authorizationParams={{
         redirect_uri: redirectUri,
-        audience: `https://${domain}/api/v2/`,
+        // audience: `https://${domain}/api/v2/`, // Commenting out audience to test if it's causing issues
         scope: "openid profile email"
       }}
       cacheLocation="localstorage"

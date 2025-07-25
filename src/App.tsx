@@ -82,8 +82,8 @@ function App() {
                 <ScrollToTop />
                 <Navigation />
                 <Routes>
-                  <Route path="/" element={<TestAuth />} />
-                  <Route path="/index" element={<Index />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/test" element={<TestAuth />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<Auth0Callback />} />
                 <Route path="/oauth-callback" element={<OAuthCallback />} />

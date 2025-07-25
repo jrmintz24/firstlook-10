@@ -98,45 +98,52 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             user_metadata: {}
           };
 
-          // Fetch or create Supabase profile
-          const { data: existingProfile, error: fetchError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('auth_provider_id', auth0User.sub)
-            .single();
-
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error('Error fetching profile:', fetchError);
-          }
-
-          let userProfile = existingProfile;
-
-          if (!existingProfile) {
-            // Create new profile
-            const newProfile = {
-              email: auth0User.email,
-              first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
-              last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
-              user_type: 'buyer',
-              auth_provider: 'auth0',
-              auth_provider_id: auth0User.sub,
-              profile_picture_url: auth0User.picture,
-              onboarding_completed: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-
-            const { data: createdProfile, error: createError } = await supabase
+          // Try to fetch or create Supabase profile, but don't block auth if it fails
+          let userProfile = null;
+          try {
+            const { data: existingProfile, error: fetchError } = await supabase
               .from('profiles')
-              .insert([newProfile])
-              .select()
+              .select('*')
+              .eq('auth_provider_id', auth0User.sub)
               .single();
 
-            if (createError) {
-              console.error('Error creating profile:', createError);
+            if (fetchError && fetchError.code !== 'PGRST116') {
+              console.warn('Profile fetch failed (non-blocking):', fetchError);
             } else {
-              userProfile = createdProfile;
+              userProfile = existingProfile;
             }
+
+            if (!existingProfile) {
+              // Try to create new profile
+              const newProfile = {
+                email: auth0User.email,
+                first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+                last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
+                user_type: 'buyer',
+                auth_provider: 'auth0',
+                auth_provider_id: auth0User.sub,
+                profile_picture_url: auth0User.picture,
+                onboarding_completed: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+
+              const { data: createdProfile, error: createError } = await supabase
+                .from('profiles')
+                .insert([newProfile])
+                .select()
+                .single();
+
+              if (createError) {
+                console.warn('Profile creation failed (non-blocking):', createError);
+              } else {
+                userProfile = createdProfile;
+                console.log('Profile created successfully:', createdProfile);
+              }
+            }
+          } catch (profileError) {
+            console.warn('Supabase profile operations failed (non-blocking):', profileError);
+            // Continue without profile data
           }
 
           // Add profile data to user metadata

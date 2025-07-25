@@ -315,8 +315,8 @@ const ModernTourSchedulingModal = ({
 
   const handleAuthSuccess = async () => {
     console.log('Auth success - continuing with submission');
-    // After successful auth, reset modal and flag for continuation
-    setModalFlow('scheduling');
+    // After successful auth, close the auth modal and flag for continuation
+    setModalFlow('closed');
     // Set a flag to continue submission after auth
     setWaitingForAuthCompletion(true);
   };

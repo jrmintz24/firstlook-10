@@ -57,7 +57,7 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
       });
       
       onSuccess();
-      onClose();
+      // Don't call onClose() here - let onSuccess() handle modal state
     } catch (error: any) {
       console.error('Sign in error:', error);
       toast({
@@ -100,7 +100,7 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
             description: "Your account has been created successfully!",
           });
           onSuccess();
-          onClose();
+          // Don't call onClose() here - let onSuccess() handle modal state
           return;
         }
 
@@ -120,7 +120,7 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
           description: "Your account has been created and you're now signed in.",
         });
         onSuccess();
-        onClose();
+        // Don't call onClose() here - let onSuccess() handle modal state
       } else {
         // Fallback case
         toast({

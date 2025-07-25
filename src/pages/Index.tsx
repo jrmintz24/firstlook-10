@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/Auth0AuthContext'
 import HeroSection from '../components/buyer-os/HeroSection'
 import FAQSection from '../components/buyer-os/FAQSection'
 import ValueProposition from '../components/buyer-os/ValueProposition'

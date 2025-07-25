@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, FileText, Settings, LogOut, ChevronDown } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 
 interface UserDropdownMenuProps {
   displayName: string;
@@ -26,14 +26,14 @@ const UserDropdownMenu = ({
   showProfileLink = true,
   showOffersLink = true
 }: UserDropdownMenuProps) => {
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
 
   const handleSignOut = async () => {
     try {
       if (onSignOut) {
         onSignOut();
       } else {
-        await signOut();
+        await logout();
       }
     } catch (error) {
       console.error('Error signing out:', error);

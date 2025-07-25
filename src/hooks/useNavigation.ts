@@ -1,18 +1,17 @@
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export const useNavigation = () => {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      // Use React Router navigate instead of window.location.href
-      navigate("/", { replace: true });
+      await logout();
+      // Auth0 logout will handle the redirect
     } catch (error) {
       console.error("Error signing out:", error);
       // If there's an error, still try to navigate

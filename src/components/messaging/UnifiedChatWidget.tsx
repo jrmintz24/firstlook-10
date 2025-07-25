@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, X, Minimize2, Maximize2, Users, HelpCircle } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { useSupportMessages } from "@/hooks/useSupportMessages";
-import { useAuth } from "@/contexts/SimpleAuth0Context";
+import { useAuth } from "@/contexts/AuthContext";
 import PropertyChatsTab from "./PropertyChatsTab";
 import SupportChatTab from "./SupportChatTab";
 

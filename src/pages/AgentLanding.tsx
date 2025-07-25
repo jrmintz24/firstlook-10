@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, Clock, Shield, Star, TrendingUp, CheckCircle, Phone, ArrowRight, Sparkles, Home, HandHeart, Target, Navigation, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/SimpleAuth0Context";
+import { useAuth } from "@/contexts/AuthContext";
 import QuickSignInModal from "@/components/property-request/QuickSignInModal";
 import { Link } from "react-router-dom";
 

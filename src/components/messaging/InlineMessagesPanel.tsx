@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, MessageCircle, ArrowLeft } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
-import { useAuth } from "@/contexts/SimpleAuth0Context";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const InlineMessagesPanel = () => {

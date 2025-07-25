@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/SimpleAuth0Context';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DatabaseDebugger = () => {
   const [debugData, setDebugData] = useState<any>(null);

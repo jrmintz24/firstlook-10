@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
-import { useAuth } from "@/contexts/SimpleAuth0Context";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SchedulingStepProps {
   formData: PropertyRequestFormData;

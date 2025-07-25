@@ -4,9 +4,8 @@ import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-// import { AuthProvider } from './contexts/SimpleAuth0Context' // Complex Auth0 context - disabled
-import { SimpleAuth0Provider as AuthProvider } from './contexts/SimpleAuth0Context' // Simple Auth0 auth
-import { Auth0ProviderWrapper } from './providers/Auth0Provider'
+import { AuthProvider } from './contexts/AuthContext' // Original Supabase auth - restored
+// Auth0 removed - using Supabase auth
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
 import { AuthCallback } from './pages/AuthCallback'
@@ -71,8 +70,7 @@ const IDXPropertySaverWrapper = ({ children }: { children: React.ReactNode }) =>
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Auth0ProviderWrapper>
-        <AuthProvider>
+      <AuthProvider>
           <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -85,8 +83,6 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/test" element={<TestAuth />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<Auth0Callback />} />
-                <Route path="/oauth-callback" element={<OAuthCallback />} />
 
                 {/* IDX Pages - Public Routes */}
                 <Route path="/idx" element={<Idx />} />
@@ -221,7 +217,6 @@ function App() {
           </BrowserRouter>
         </TooltipProvider>
         </AuthProvider>
-      </Auth0ProviderWrapper>
     </QueryClientProvider>
   )
 }

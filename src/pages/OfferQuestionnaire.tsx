@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/SimpleAuth0Context';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import StreamlinedOfferPrep from '@/components/offer-workflow/StreamlinedOfferPrep';
 

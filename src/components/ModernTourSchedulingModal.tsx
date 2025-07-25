@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, Home, X, ChevronRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { usePropertyRequest } from "@/hooks/usePropertyRequest";
-import { useAuth } from "@/contexts/SimpleAuth0Context";
+import { useAuth } from "@/contexts/AuthContext";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import HybridAddressInput from "@/components/HybridAddressInput";

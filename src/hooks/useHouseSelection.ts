@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/SimpleAuth0Context'
+import { useAuth } from '../contexts/AuthContext'
 
 interface House {
   id: string

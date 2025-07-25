@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/Auth0AuthContext';
 
 const PropertyLookupDebugger = () => {
   const [debugData, setDebugData] = useState<any>(null);

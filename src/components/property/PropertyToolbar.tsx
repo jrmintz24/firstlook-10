@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import ModernTourSchedulingModal from '../ModernTourSchedulingModal';
 import FavoritePropertyModal from '../post-showing/FavoritePropertyModal';
 import { useIDXPropertyEnhanced } from '../../hooks/useIDXPropertyEnhanced';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/Auth0AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 

@@ -149,11 +149,10 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 const { data: createdProfile, error: createError } = await supabase
                   .rpc('create_auth0_profile', {
                     profile_id: supabaseUserId,
-                    user_email: auth0User.email,
                     first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
                     last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
                     user_type: 'buyer',
-                    profile_picture_url: auth0User.picture
+                    photo_url: auth0User.picture
                   });
 
                 if (createError) {
@@ -168,11 +167,10 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   // Fallback to direct insert
                   const newProfile = {
                     id: supabaseUserId,
-                    email: auth0User.email,
                     first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
                     last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',
                     user_type: 'buyer',
-                    profile_picture_url: auth0User.picture,
+                    photo_url: auth0User.picture,
                     onboarding_completed: true,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()

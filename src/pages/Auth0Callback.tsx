@@ -1,19 +1,24 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export default function Auth0Callback() {
-  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently, error } = useAuth0();
   const navigate = useNavigate();
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   useEffect(() => {
     const handleAuth0Callback = async () => {
+      const logEntry = `Auth0Callback: Handler called - Loading: ${isLoading}, Authenticated: ${isAuthenticated}, User: ${!!user}, Error: ${error?.message || 'none'}`;
+      setDebugInfo(prev => [...prev, logEntry]);
+      
       console.log('Auth0Callback: Handler called', { 
         isLoading, 
         isAuthenticated, 
         user: !!user,
         userEmail: user?.email,
+        error: error,
         currentURL: window.location.href,
         localStorage_tour: localStorage.getItem('newUserFromPropertyRequest'),
         localStorage_pending: localStorage.getItem('pendingTourRequest')
@@ -71,7 +76,7 @@ export default function Auth0Callback() {
     };
 
     handleAuth0Callback();
-  }, [isAuthenticated, isLoading, user, navigate, getAccessTokenSilently]);
+  }, [isAuthenticated, isLoading, user, navigate, getAccessTokenSilently, error]);
 
   const createSupabaseUser = async (auth0User: any, accessToken: string) => {
     try {
@@ -182,6 +187,20 @@ export default function Auth0Callback() {
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
         <p className="mt-4 text-gray-600">Completing sign in...</p>
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md max-w-md mx-auto">
+            <p className="text-red-800 font-semibold">Authentication Error:</p>
+            <p className="text-red-600 text-sm">{error.message}</p>
+          </div>
+        )}
+        {debugInfo.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded-md max-w-2xl mx-auto text-left">
+            <p className="font-semibold text-gray-700 mb-2">Debug Info:</p>
+            {debugInfo.map((info, index) => (
+              <p key={index} className="text-xs text-gray-600 mb-1">{info}</p>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

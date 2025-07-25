@@ -46,6 +46,7 @@ import Listings from './pages/Listings'
 import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
 import AuthDebug from './pages/AuthDebug'
+import Auth0Debug from './pages/Auth0Debug'
 import OAuthCallback from './pages/OAuthCallback'
 import Auth0Callback from './pages/Auth0Callback'
 // import Debug from './pages/Debug' // Commented out for production
@@ -198,7 +199,8 @@ function App() {
                 <Route path="/schedule-tour" element={<ScheduleTour />} />
                 <Route path="/make-offer" element={<MakeOffer />} />
                 
-                {/* Debug Page - Commented out for production */}
+                {/* Debug Pages */}
+                <Route path="/auth0-debug" element={<Auth0Debug />} />
                 {/* <Route path="/debug" element={<Debug />} /> */}
 
                 {/* Agreement signing page */}

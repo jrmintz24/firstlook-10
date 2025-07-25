@@ -1,6 +1,6 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useShowingEligibility } from "@/hooks/useShowingEligibility";
 import { PropertyRequestFormData } from "@/types/propertyRequest";

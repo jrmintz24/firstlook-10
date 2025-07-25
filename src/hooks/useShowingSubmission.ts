@@ -178,6 +178,9 @@ export const useShowingSubmission = (
       if (formData.properties && formData.properties.length > 0) {
         console.log('DEBUG: Processing properties array:', formData.properties);
         for (const property of formData.properties) {
+          console.log('DEBUG: Processing property object:', property);
+          console.log('DEBUG: Property address value:', property.address);
+          console.log('DEBUG: Property address type:', typeof property.address);
           if (property.address && property.address.trim()) {
             console.log('DEBUG: Adding property from properties array:', property.address.trim());
             

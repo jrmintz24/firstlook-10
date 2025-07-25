@@ -5,7 +5,7 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 // import { AuthProvider } from './contexts/AuthContext' // Old Supabase auth - disabled
-import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth
+// import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth - temporarily disabled
 import { Auth0ProviderWrapper } from './providers/Auth0Provider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
@@ -48,6 +48,7 @@ import ScheduleTour from './pages/ScheduleTour'
 import MakeOffer from './pages/MakeOffer'
 import AuthDebug from './pages/AuthDebug'
 import Auth0Debug from './pages/Auth0Debug'
+import TestAuth from './pages/TestAuth'
 import OAuthCallback from './pages/OAuthCallback'
 // import Auth0Callback from './pages/Auth0Callback' // Old complex callback
 import Auth0Callback from './pages/Auth0CallbackSimple' // Simplified Auth0 callback
@@ -71,17 +72,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Auth0ProviderWrapper>
-        <AuthProvider>
-          <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AnalyticsWrapper>
-              <IDXPropertySaverWrapper>
-                <ScrollToTop />
-                <Navigation />
-              <Routes>
-                <Route path="/" element={<Index />} />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<TestAuth />} />
+            <Route path="/home" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<Auth0Callback />} />
                 <Route path="/oauth-callback" element={<OAuthCallback />} />
@@ -218,7 +212,7 @@ function App() {
             </AnalyticsWrapper>
           </BrowserRouter>
           </TooltipProvider>
-        </AuthProvider>
+        {/* </AuthProvider> */}
       </Auth0ProviderWrapper>
     </QueryClientProvider>
   )

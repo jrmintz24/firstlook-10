@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 
 interface Auth0User {
   id: string;
@@ -46,7 +45,6 @@ export const useAuth = () => {
 };
 
 export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
   const {
     user: auth0User,
     isAuthenticated,

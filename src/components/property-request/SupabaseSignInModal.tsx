@@ -82,14 +82,24 @@ const SupabaseSignInModal = ({ isOpen, onClose, onSuccess, propertyAddress }: Su
         return;
       }
 
-      toast({
-        title: "Account Created!",
-        description: "Please check your email to verify your account, then sign in.",
-      });
-      
-      // Switch to sign in tab after successful signup
-      setActiveTab("signin");
-      setPassword("");
+      // If email confirmation is disabled, the user should be automatically signed in
+      if (data?.user && !data.user.email_confirmed_at) {
+        // User was created but not confirmed - this means email confirmation is enabled
+        toast({
+          title: "Account Created!",
+          description: "Please check your email to verify your account, then sign in.",
+        });
+        setActiveTab("signin");
+        setPassword("");
+      } else {
+        // User is created and ready to use
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created and you're now signed in.",
+        });
+        onSuccess();
+        onClose();
+      }
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast({

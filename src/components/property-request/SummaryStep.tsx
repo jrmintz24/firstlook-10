@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Loader2, MapPin, Calendar, CheckCircle } from "lucide-react";
 import { PropertyRequestFormData } from "@/types/propertyRequest";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 
 interface SummaryStepProps {
   formData: PropertyRequestFormData;

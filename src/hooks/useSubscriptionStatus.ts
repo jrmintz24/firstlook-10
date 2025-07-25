@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionStatus {

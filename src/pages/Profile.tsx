@@ -1,5 +1,5 @@
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 import UserProfile from "@/components/UserProfile";
 import { Navigate } from "react-router-dom";
 

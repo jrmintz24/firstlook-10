@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 import { useSimplifiedRealtime } from "./useSimplifiedRealtime";
 import { useAuthValidation } from "./useAuthValidation";
 

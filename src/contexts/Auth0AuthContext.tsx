@@ -208,7 +208,7 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             // Continue without profile data
           }
 
-          // Add profile data to user metadata
+          // Add profile data to user metadata, or set defaults if no profile
           if (userProfile) {
             transformedUser.user_metadata = {
               user_type: userProfile.user_type,
@@ -217,6 +217,14 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               ...userProfile
             };
             setProfile(userProfile);
+          } else {
+            // Set default user_metadata even if profile creation failed
+            transformedUser.user_metadata = {
+              user_type: 'buyer', // Default to buyer for tour booking flow
+              first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
+              last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || ''
+            };
+            console.warn('Profile creation failed, using default metadata for Auth0 user');
           }
 
           setUser(transformedUser);

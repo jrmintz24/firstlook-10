@@ -15,8 +15,12 @@ const FloatingCard = ({
   delay = 0,
   duration = 4000
 }: FloatingCardProps) => {
+  // Reduce animation intensity on mobile devices for better performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const adjustedIntensity = isMobile ? 'subtle' : intensity;
+  const adjustedDuration = isMobile ? duration * 1.5 : duration;
   const getIntensityClasses = () => {
-    switch (intensity) {
+    switch (adjustedIntensity) {
       case 'subtle':
         return 'hover:scale-[1.02]';
       case 'medium':
@@ -29,9 +33,9 @@ const FloatingCard = ({
   };
 
   const breathingKeyframes = `
-    @keyframes breathing-${intensity} {
+    @keyframes breathing-${adjustedIntensity} {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(${intensity === 'subtle' ? '1.015' : intensity === 'medium' ? '1.025' : '1.035'}); }
+      50% { transform: scale(${adjustedIntensity === 'subtle' ? '1.015' : adjustedIntensity === 'medium' ? '1.025' : '1.035'}); }
     }
   `;
 
@@ -46,8 +50,9 @@ const FloatingCard = ({
           ${className}
         `}
         style={{
-          animation: `breathing-${intensity} ${duration}ms ease-in-out infinite`,
-          animationDelay: `${delay}ms`
+          animation: `breathing-${adjustedIntensity} ${adjustedDuration}ms ease-in-out infinite`,
+          animationDelay: `${delay}ms`,
+          willChange: 'transform'
         }}
       >
         {children}

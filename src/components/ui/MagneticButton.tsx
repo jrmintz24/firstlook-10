@@ -31,6 +31,9 @@ const MagneticButton = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current || disabled) return;
+    
+    // Disable magnetic effect on touch devices for better mobile performance
+    if ('ontouchstart' in window) return;
 
     const rect = buttonRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -84,12 +87,13 @@ const MagneticButton = ({
 
   const enhancedClassName = `
     ${baseClasses}
-    px-10 py-5 text-base font-medium 
+    px-6 sm:px-10 py-4 sm:py-5 text-sm sm:text-base font-medium 
     transition-all duration-300 ease-out
-    rounded-xl min-w-[280px] h-[56px]
+    rounded-xl min-w-[240px] sm:min-w-[280px] h-[48px] sm:h-[56px]
     transform-gpu
     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
     disabled:opacity-50 disabled:cursor-not-allowed
+    touch-manipulation
     ${className}
   `.trim();
 

@@ -19,6 +19,9 @@ const DynamicShadowCard = ({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
+    
+    // Disable dynamic shadows on touch devices for better performance
+    if ('ontouchstart' in window) return;
 
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCountingAnimation } from '@/hooks/useCountingAnimation';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { useMobileOptimization } from '@/hooks/useMobileOptimization';
 
 interface AnimatedNumberProps {
   value: number;
@@ -24,16 +25,19 @@ const AnimatedNumber = ({
   enableGlow = false
 }: AnimatedNumberProps) => {
   const { isVisible } = useScrollAnimation({ threshold: 0.3 });
+  const { shouldEnableAnimations, getOptimizedDuration } = useMobileOptimization();
+  
+  const optimizedDuration = getOptimizedDuration(duration);
   const { count } = useCountingAnimation(value, {
-    duration,
-    enableAnimation: isVisible
+    duration: optimizedDuration,
+    enableAnimation: isVisible && shouldEnableAnimations
   });
 
   const formatValue = (num: number) => {
     return formatNumber ? num.toLocaleString() : num.toString();
   };
 
-  const glowStyle = enableGlow && isVisible ? {
+  const glowStyle = enableGlow && isVisible && shouldEnableAnimations ? {
     textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}`,
     animation: 'pulse 2s ease-in-out infinite'
   } : {};

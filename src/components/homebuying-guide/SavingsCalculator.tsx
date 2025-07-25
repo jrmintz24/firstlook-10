@@ -70,7 +70,7 @@ export const SavingsCalculator = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="text-sm text-gray-600 mb-1">Traditional Agent Cost</div>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-xl sm:text-2xl font-bold text-red-600">
                 <AnimatedNumber 
                   value={Math.round(savings.agentCommission)} 
                   prefix="$" 
@@ -80,7 +80,7 @@ export const SavingsCalculator = () => {
             </div>
             <div className="p-4 bg-white rounded-xl border border-green-200">
               <div className="text-sm text-gray-600 mb-1">Your FirstLook Savings</div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
                 <AnimatedNumber 
                   value={Math.round(savings.potentialSavings)} 
                   prefix="$" 
@@ -92,7 +92,7 @@ export const SavingsCalculator = () => {
 
           <div className="text-center p-4 bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="text-sm text-gray-600 mb-1">Total Estimated Savings</div>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-2xl sm:text-3xl font-bold text-green-600">
               <AnimatedNumber 
                 value={Math.round(savings.totalSavings)} 
                 prefix="$" 

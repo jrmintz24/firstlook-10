@@ -9,7 +9,15 @@ export default function Auth0Callback() {
 
   useEffect(() => {
     const handleAuth0Callback = async () => {
-      console.log('Auth0Callback: Handler called', { isLoading, isAuthenticated, user: !!user });
+      console.log('Auth0Callback: Handler called', { 
+        isLoading, 
+        isAuthenticated, 
+        user: !!user,
+        userEmail: user?.email,
+        currentURL: window.location.href,
+        localStorage_tour: localStorage.getItem('newUserFromPropertyRequest'),
+        localStorage_pending: localStorage.getItem('pendingTourRequest')
+      });
       
       if (isLoading) {
         console.log('Auth0Callback: Still loading, waiting...');
@@ -27,12 +35,16 @@ export default function Auth0Callback() {
           // Get Auth0 access token
           const accessToken = await getAccessTokenSilently();
           
-          // Try to create or update user in Supabase, but don't fail if it doesn't work
+          // Create Supabase session and profile for Auth0 user
           try {
-            await createSupabaseUser(user, accessToken);
-            console.log('Supabase profile sync successful');
+            const supabaseProfile = await createSupabaseUser(user, accessToken);
+            console.log('Supabase profile sync successful:', supabaseProfile);
+            
+            // Create a Supabase session for the Auth0 user
+            await createSupabaseSession(user, supabaseProfile);
+            console.log('Supabase session created successfully');
           } catch (supabaseError) {
-            console.warn('Supabase profile sync failed, but continuing with Auth0 authentication:', supabaseError);
+            console.warn('Supabase sync failed, but continuing with Auth0 authentication:', supabaseError);
             // Continue anyway - Auth0 authentication was successful
           }
 
@@ -105,6 +117,7 @@ export default function Auth0Callback() {
         }
 
         console.log('Created new Supabase profile for Auth0 user:', newProfile);
+        return newProfile;
       } else {
         // Update existing profile with latest Auth0 data
         const { error: updateError } = await supabase
@@ -124,9 +137,42 @@ export default function Auth0Callback() {
         }
 
         console.log('Updated existing Supabase profile');
+        return existingProfile;
       }
     } catch (error) {
       console.error('Error managing Supabase user:', error);
+      throw error;
+    }
+  };
+
+  const createSupabaseSession = async (auth0User: any, supabaseProfile: any) => {
+    try {
+      console.log('Creating auth bridge for Auth0 user:', { 
+        auth0Id: auth0User.sub, 
+        supabaseId: supabaseProfile.id,
+        email: auth0User.email 
+      });
+      
+      // Store Auth0 session info in localStorage so AuthContext can use it
+      const auth0SessionData = {
+        user: {
+          id: supabaseProfile.id,
+          email: auth0User.email,
+          user_metadata: {
+            user_type: supabaseProfile.user_type,
+            first_name: supabaseProfile.first_name,
+            last_name: supabaseProfile.last_name,
+            auth_provider: 'auth0',
+            auth_provider_id: auth0User.sub
+          }
+        },
+        expires_at: Date.now() + 3600000 // 1 hour
+      };
+      
+      localStorage.setItem('auth0-bridge-session', JSON.stringify(auth0SessionData));
+      console.log('Stored Auth0 bridge session data');
+    } catch (error) {
+      console.error('Error creating Supabase session:', error);
       throw error;
     }
   };

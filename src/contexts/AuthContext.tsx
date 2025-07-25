@@ -34,7 +34,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
     
-    // Set up auth state listener FIRST
+    // Check for Auth0 bridge session first
+    const checkAuth0Bridge = () => {
+      const auth0SessionStr = localStorage.getItem('auth0-bridge-session');
+      if (auth0SessionStr) {
+        try {
+          const auth0Session = JSON.parse(auth0SessionStr);
+          if (auth0Session.expires_at > Date.now()) {
+            console.log('AuthProvider: Found valid Auth0 bridge session');
+            setUser(auth0Session.user);
+            setSession({ user: auth0Session.user } as any);
+            setLoading(false);
+            return true;
+          } else {
+            console.log('AuthProvider: Auth0 bridge session expired');
+            localStorage.removeItem('auth0-bridge-session');
+          }
+        } catch (error) {
+          console.error('AuthProvider: Error parsing Auth0 bridge session:', error);
+          localStorage.removeItem('auth0-bridge-session');
+        }
+      }
+      return false;
+    };
+    
+    // Check Auth0 bridge first
+    if (checkAuth0Bridge()) {
+      return; // Skip Supabase auth if Auth0 session is active
+    }
+    
+    // Set up auth state listener for regular Supabase auth
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {

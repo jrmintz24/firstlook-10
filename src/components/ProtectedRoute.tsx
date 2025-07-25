@@ -1,6 +1,6 @@
 
-import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useLocation } from 'react-router-dom'
+import { useAuth } from '../contexts/Auth0AuthContext'
 import { Auth0Redirect } from './Auth0Redirect'
 
 interface ProtectedRouteProps {
@@ -14,10 +14,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo = '/buyer-auth', 
   requiredUserType 
 }) => {
-  const { user, session, loading } = useAuth()
+  const { user, loading, isAuthenticated } = useAuth()
   const location = useLocation()
 
-  console.log('ProtectedRoute - Loading:', loading, 'User:', user?.email, 'Required type:', requiredUserType, 'User type:', user?.user_metadata?.user_type);
+  console.log('ProtectedRoute - Loading:', loading, 'Authenticated:', isAuthenticated, 'User:', user?.email, 'Required type:', requiredUserType, 'User type:', user?.user_metadata?.user_type);
 
   if (loading) {
     return (
@@ -27,9 +27,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     )
   }
 
-  // Check for both user and session to ensure we have a valid auth state
-  if (!user || !session) {
-    console.log('ProtectedRoute - No user or session, using Auth0 redirect');
+  // Check if user is authenticated
+  if (!isAuthenticated || !user) {
+    console.log('ProtectedRoute - User not authenticated, using Auth0 redirect');
     return <Auth0Redirect returnTo={location.pathname + location.search} />
   }
 

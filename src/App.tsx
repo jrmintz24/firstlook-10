@@ -4,7 +4,8 @@ import { Toaster as Sonner } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+// import { AuthProvider } from './contexts/AuthContext' // Old Supabase auth - disabled
+import { Auth0AuthProvider as AuthProvider } from './contexts/Auth0AuthContext' // New Auth0 auth
 import { Auth0ProviderWrapper } from './providers/Auth0Provider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
@@ -48,7 +49,8 @@ import MakeOffer from './pages/MakeOffer'
 import AuthDebug from './pages/AuthDebug'
 import Auth0Debug from './pages/Auth0Debug'
 import OAuthCallback from './pages/OAuthCallback'
-import Auth0Callback from './pages/Auth0Callback'
+// import Auth0Callback from './pages/Auth0Callback' // Old complex callback
+import Auth0Callback from './pages/Auth0CallbackSimple' // Simplified Auth0 callback
 // import Debug from './pages/Debug' // Commented out for production
 
 const queryClient = new QueryClient()

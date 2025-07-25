@@ -2,25 +2,14 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import UserDropdownMenu from "@/components/dashboard/UserDropdownMenu";
-import { useAuth0 } from "@auth0/auth0-react";
-
-interface User {
-  id: string;
-  email?: string;
-  user_metadata?: { 
-    user_type?: string;
-    first_name?: string;
-    last_name?: string;
-  };
-}
+import { useAuth } from "@/contexts/Auth0AuthContext";
 
 interface NavigationAuthProps {
-  user: User | null;
-  onSignOut: () => void;
+  // Props are no longer needed since we get auth state from context
 }
 
-const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
-  const { loginWithRedirect } = useAuth0();
+const NavigationAuth = () => {
+  const { user, isAuthenticated, login, logout } = useAuth();
   if (user) {
     const userType = user.user_metadata?.user_type;
     const dashboardLink = 
@@ -46,7 +35,7 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
         {/* User Dropdown Menu */}
         <UserDropdownMenu 
           displayName={displayName} 
-          onSignOut={onSignOut}
+          onSignOut={logout}
           showProfileLink={true}
           showOffersLink={userType === 'buyer'}
         />
@@ -55,9 +44,7 @@ const NavigationAuth = ({ user, onSignOut }: NavigationAuthProps) => {
   }
 
   const handleAuth0Login = () => {
-    loginWithRedirect({
-      appState: { returnTo: window.location.pathname }
-    });
+    login();
   };
 
   return (

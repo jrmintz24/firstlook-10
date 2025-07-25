@@ -2,30 +2,26 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@/contexts/Auth0AuthContext";
 
 interface MobileNavigationProps {
   isOpen: boolean;
-  user: SupabaseUser | null;
-  onSignOut: () => void;
+  user?: any; // Not used anymore, kept for compatibility
+  onSignOut?: () => void; // Not used anymore, kept for compatibility
   onMenuItemClick: () => void;
 }
 
 const MobileNavigation = ({ 
   isOpen, 
-  user, 
-  onSignOut, 
   onMenuItemClick 
 }: MobileNavigationProps) => {
-  const { loginWithRedirect } = useAuth0();
+  const { user, isAuthenticated, login, logout } = useAuth();
   
   if (!isOpen) return null;
   
-  const handleAuth0Login = () => {
-    loginWithRedirect({
-      appState: { returnTo: window.location.pathname }
-    });
+  const handleAuth0Login = async () => {
+    onMenuItemClick();
+    await login();
   };
 
   return (
@@ -89,7 +85,7 @@ const MobileNavigation = ({
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  onSignOut();
+                  logout();
                   onMenuItemClick();
                 }}
                 className="flex items-center gap-3 border-purple-200 text-purple-600 hover:bg-purple-50 justify-start w-full py-3 px-4"
@@ -112,10 +108,7 @@ const MobileNavigation = ({
               </Button>
               <Button 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white justify-start w-full py-3 px-4"
-                onClick={() => {
-                  onMenuItemClick();
-                  handleAuth0Login();
-                }}
+                onClick={handleAuth0Login}
               >
                 Get Started
               </Button>

@@ -33,18 +33,13 @@ const Navigation = () => {
             <NavigationLinks />
 
             {/* Auth Section */}
-            <NavigationAuth 
-              user={user} 
-              onSignOut={handleSignOut} 
-            />
+            <NavigationAuth />
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         <MobileNavigation 
           isOpen={isMobileMenuOpen}
-          user={user}
-          onSignOut={handleSignOut}
           onMenuItemClick={closeMobileMenu}
         />
       </div>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { v5 as uuidv5 } from 'uuid';
 
 interface SimpleAuthUser {
   id: string;
@@ -56,6 +57,13 @@ export const useAuth = () => {
   return context;
 };
 
+// Generate a consistent UUID from Auth0 ID
+const AUTH0_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+const generateUUIDFromAuth0Id = (auth0Id: string): string => {
+  return uuidv5(auth0Id, AUTH0_NAMESPACE);
+};
+
 export const SimpleAuth0Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const {
     user: auth0User,
@@ -66,16 +74,16 @@ export const SimpleAuth0Provider: React.FC<{ children: React.ReactNode }> = ({ c
     logout: auth0Logout,
   } = useAuth0();
 
-  // Transform Auth0 user to our simple format
+  // Transform Auth0 user to our simple format with UUID
   const user: SimpleAuthUser | null = auth0User ? {
-    id: auth0User.sub!, // Use Auth0 sub as ID for simplicity
+    id: generateUUIDFromAuth0Id(auth0User.sub!), // Generate UUID for Supabase compatibility
     email: auth0User.email!,
     email_verified: auth0User.email_verified || false,
     name: auth0User.name,
     given_name: auth0User.given_name,
     family_name: auth0User.family_name,
     picture: auth0User.picture,
-    sub: auth0User.sub!,
+    sub: auth0User.sub!, // Keep original Auth0 ID
     user_metadata: {
       user_type: 'buyer', // Default all users to buyer for now
       first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',

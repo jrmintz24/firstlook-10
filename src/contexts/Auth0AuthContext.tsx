@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { supabase } from '../lib/supabase';
+import { v5 as uuidv5 } from 'uuid';
 
 interface Auth0User {
   id: string;
@@ -58,6 +59,14 @@ export const useAuth = () => {
   return context;
 };
 
+// Generate a consistent UUID from Auth0 ID
+// Using a namespace UUID to ensure consistency across sessions
+const AUTH0_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Standard UUID namespace
+
+const generateUUIDFromAuth0Id = (auth0Id: string): string => {
+  return uuidv5(auth0Id, AUTH0_NAMESPACE);
+};
+
 export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const {
     user: auth0User,
@@ -85,16 +94,19 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (isAuthenticated && auth0User) {
         try {
+          // Generate consistent UUID from Auth0 ID
+          const supabaseUserId = generateUUIDFromAuth0Id(auth0User.sub!);
+          
           // Transform Auth0 user to our format
           const transformedUser: Auth0User = {
-            id: auth0User.sub!,
+            id: supabaseUserId, // Use generated UUID for Supabase queries
             email: auth0User.email!,
             email_verified: auth0User.email_verified || false,
             name: auth0User.name,
             given_name: auth0User.given_name,
             family_name: auth0User.family_name,
             picture: auth0User.picture,
-            sub: auth0User.sub!,
+            sub: auth0User.sub!, // Keep original Auth0 ID
             user_metadata: {}
           };
 
@@ -120,6 +132,7 @@ export const Auth0AuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             if (!existingProfile) {
               // Try to create new profile for Auth0 user
               const newProfile = {
+                id: supabaseUserId, // Use the generated UUID as profile ID
                 email: auth0User.email,
                 first_name: auth0User.given_name || auth0User.name?.split(' ')[0] || '',
                 last_name: auth0User.family_name || auth0User.name?.split(' ').slice(1).join(' ') || '',

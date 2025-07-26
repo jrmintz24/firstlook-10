@@ -25,6 +25,8 @@ export function useShowingRequestPropertyDetails(showings: ShowingWithProperty[]
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const fetchPropertyDetails = async () => {
       if (!showings.length) {
         setShowingsWithDetails([]);
@@ -33,6 +35,13 @@ export function useShowingRequestPropertyDetails(showings: ShowingWithProperty[]
 
       setLoading(true);
       setError(null);
+      
+      // Set a timeout to prevent infinite loading
+      timeoutId = setTimeout(() => {
+        console.warn('[useShowingRequestPropertyDetails] Timeout reached, using showings without details');
+        setShowingsWithDetails(showings);
+        setLoading(false);
+      }, 5000); // 5 second timeout
 
       try {
         // Get unique property IDs that need details
@@ -81,10 +90,12 @@ export function useShowingRequestPropertyDetails(showings: ShowingWithProperty[]
             : null
         }));
 
+        clearTimeout(timeoutId); // Clear timeout on success
         setShowingsWithDetails(enhanced);
       } catch (err) {
         console.error('[useShowingRequestPropertyDetails] Error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch property details');
+        clearTimeout(timeoutId); // Clear timeout on error
         setShowingsWithDetails(showings); // Return original data on error
       } finally {
         setLoading(false);
@@ -92,6 +103,11 @@ export function useShowingRequestPropertyDetails(showings: ShowingWithProperty[]
     };
 
     fetchPropertyDetails();
+    
+    // Cleanup timeout on unmount or when showings change
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [showings]);
 
   return {

@@ -69,12 +69,22 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
   // Sync with parent active tab
   useEffect(() => {
+    console.log('[MobileDashboardLayout] Syncing activeTab:', {
+      propActiveTab,
+      currentActiveTab: activeTab,
+      needsSync: propActiveTab !== activeTab
+    });
     if (propActiveTab !== activeTab) {
       setActiveTab(propActiveTab);
     }
-  }, [propActiveTab]);
+  }, [propActiveTab, activeTab]);
 
   const handleTabChange = (tab: string) => {
+    console.log('[MobileDashboardLayout] Tab change:', { 
+      previousTab: activeTab, 
+      newTab: tab,
+      hasOnTabChange: !!onTabChange 
+    });
     setActiveTab(tab);
     onTabChange?.(tab);
   };
@@ -223,6 +233,11 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
           "transition-all duration-300",
           shouldEnableAnimations && "animate-fade-in"
         )}>
+          {console.log('[MobileDashboardLayout] Rendering tab content:', { 
+            activeTab, 
+            hasChildren: !!children,
+            childrenType: typeof children 
+          })}
           {children}
         </div>
       </div>

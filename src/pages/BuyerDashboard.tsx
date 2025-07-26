@@ -272,6 +272,15 @@ const BuyerDashboard = () => {
 
   // Mobile vs Desktop rendering
   if (isMobile) {
+    console.log('[BuyerDashboard] Mobile render:', {
+      pendingRequestsCount: pendingRequests.length,
+      activeShowingsCount: activeShowings.length,
+      completedShowingsCount: completedShowings.length,
+      activeTab,
+      loading,
+      authLoading,
+      hasCurrentUser: !!currentUser
+    });
     return (
       <>
         <MobileDashboardLayout
@@ -285,7 +294,21 @@ const BuyerDashboard = () => {
           activeTab={activeTab}
         >
           {/* Tab-specific content for mobile */}
-          {dashboardTabs.find(tab => tab.id === activeTab)?.content}
+          {console.log('[BuyerDashboard] Mobile tab content:', {
+            activeTab,
+            availableTabs: dashboardTabs.map(t => t.id),
+            foundTab: !!dashboardTabs.find(tab => tab.id === activeTab),
+            tabContent: dashboardTabs.find(tab => tab.id === activeTab)?.id
+          })}
+          {dashboardTabs.find(tab => tab.id === activeTab)?.content || (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <Calendar className="h-16 w-16" />
+              </div>
+              <p className="text-gray-600">Unable to load tab content</p>
+              <p className="text-sm text-gray-500 mt-2">Please try refreshing the page</p>
+            </div>
+          )}
         </MobileDashboardLayout>
         
         {/* Modals */}

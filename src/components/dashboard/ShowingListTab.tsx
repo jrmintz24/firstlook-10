@@ -88,11 +88,34 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   eligibility,
   onUpgradeClick
 }) => {
-  // Fetch property details for the showings
-  const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(showings);
+  // Check if we're on mobile to optimize loading
+  const isMobile = window.innerWidth < 768;
+  
+  // Fetch property details for the showings (skip on mobile for faster loading)
+  const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(
+    isMobile ? [] : showings
+  );
 
   // Use showings with details if available, otherwise fall back to original showings
-  const enhancedShowings = showingsWithDetails.length > 0 ? showingsWithDetails : showings;
+  const enhancedShowings = isMobile ? showings : (showingsWithDetails.length > 0 ? showingsWithDetails : showings);
+
+  console.log('[ShowingListTab] Rendering:', {
+    title,
+    showingsCount: showings.length,
+    enhancedShowingsCount: enhancedShowings.length,
+    detailsLoading,
+    userType,
+    isMobile
+  });
+
+  // Show loading state while fetching property details (only on desktop)
+  if (!isMobile && detailsLoading && showings.length > 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (enhancedShowings.length === 0) {
     return (

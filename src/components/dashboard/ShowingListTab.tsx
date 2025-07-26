@@ -7,7 +7,6 @@ import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
 import EnhancedTourCard from "./EnhancedTourCard";
 import EnhancedPropertyDisplay from "@/components/property/EnhancedPropertyDisplay";
-import BuyerInsightForm from "@/components/property/BuyerInsightForm";
 import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
 import FloatingCard from "@/components/ui/FloatingCard";
 import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
@@ -90,8 +89,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   buyerActions = {},
   eligibility,
   onUpgradeClick
-}) => {
-  const [showInsightForm, setShowInsightForm] = React.useState<string | null>(null);
+) => {
   // Check if we're on mobile to optimize loading
   const isMobile = useIsMobile();
   
@@ -191,26 +189,8 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 <EnhancedPropertyDisplay
                   address={showing.property_address}
                   mlsId={showing.idx_property_id}
-                  onAddInsight={() => setShowInsightForm(showing.id)}
-                  showInsightForm={true}
+                  showInsightForm={false}
                 />
-                
-                {/* Buyer insight form modal */}
-                {showInsightForm === showing.id && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <BuyerInsightForm
-                        propertyAddress={showing.property_address}
-                        showingRequestId={showing.id}
-                        onClose={() => setShowInsightForm(null)}
-                        onSuccess={() => {
-                          setShowInsightForm(null);
-                          // Could trigger a refetch of property data here
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             );
           }

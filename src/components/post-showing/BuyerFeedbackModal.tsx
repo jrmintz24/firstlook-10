@@ -7,6 +7,7 @@ import { Star } from "lucide-react";
 import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import BuyerInsightForm from "@/components/property/BuyerInsightForm";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -26,8 +27,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
   const [attended, setAttended] = useState<boolean | null>(null);
   const [propertyRating, setPropertyRating] = useState(0);
   const [specialistRating, setSpecialistRating] = useState(0);
-  const [propertyComments, setPropertyComments] = useState("");
-  const [specialistComments, setSpecialistComments] = useState("");
+  const [showInsightForm, setShowInsightForm] = useState(false);
   
   const { loading, submitBuyerFeedback } = usePostShowingWorkflow();
   const { toast } = useToast();
@@ -121,8 +121,8 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
         agent_id: showing.assigned_agent_id,
         property_rating: propertyRating > 0 ? propertyRating : undefined,
         agent_rating: specialistRating > 0 ? specialistRating : undefined,
-        property_comments: propertyComments.trim() || undefined,
-        agent_comments: specialistComments.trim() || undefined
+        property_comments: undefined, // Removed - using insights instead
+        agent_comments: undefined     // Removed - using insights instead
       };
 
       console.log('Submitting feedback:', feedback);
@@ -134,11 +134,13 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       await updateShowingToCompleted();
       
       toast({
-        title: "Feedback Submitted",
-        description: "Thank you for your feedback!",
+        title: "Ratings Submitted",
+        description: "Thank you for your ratings!",
       });
       
-      onComplete?.();
+      // Show insight form after ratings
+      setShowInsightForm(true);
+      
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
@@ -147,6 +149,15 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
         variant: "destructive",
       });
     }
+  };
+
+  const handleInsightSuccess = () => {
+    setShowInsightForm(false);
+    toast({
+      title: "Insights Shared!",
+      description: "Thank you for helping future buyers!",
+    });
+    onComplete?.();
   };
 
   const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (
@@ -173,6 +184,15 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     toast({
       title: "Feedback Skipped",
       description: "You can always provide feedback later.",
+    });
+    onComplete?.();
+  };
+
+  const handleSkipInsights = () => {
+    setShowInsightForm(false);
+    toast({
+      title: "Insights Skipped",
+      description: "You can always share insights later from your dashboard.",
     });
     onComplete?.();
   };
@@ -222,7 +242,7 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
           </div>
         )}
 
-        {step === 'feedback' && (
+        {step === 'feedback' && !showInsightForm && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <StarRating
@@ -240,38 +260,30 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
               )}
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Property feedback (optional)</label>
-                <Textarea
-                  placeholder="What did you think about the property? Any specific likes or concerns?"
-                  value={propertyComments}
-                  onChange={(e) => setPropertyComments(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              {showing.assigned_agent_name && (
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Showing specialist feedback (optional)</label>
-                  <Textarea
-                    placeholder={`How was your experience with ${showing.assigned_agent_name}?`}
-                    value={specialistComments}
-                    onChange={(e) => setSpecialistComments(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              )}
+            <div className="text-center text-sm text-gray-600">
+              <p>After submitting your ratings, you'll be able to share detailed insights to help future buyers.</p>
             </div>
 
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={handleSkipFeedback} disabled={loading}>
-                Skip Feedback
+                Skip All
               </Button>
               <Button onClick={handleFeedbackSubmit} disabled={loading}>
-                {loading ? 'Submitting...' : 'Submit Feedback'}
+                {loading ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
+          </div>
+        )}
+
+        {step === 'feedback' && showInsightForm && (
+          <div className="space-y-4">
+            <BuyerInsightForm
+              propertyAddress={showing.property_address}
+              showingRequestId={showing.id}
+              onClose={handleSkipInsights}
+              onSuccess={handleInsightSuccess}
+              className="border-0 shadow-none"
+            />
           </div>
         )}
       </DialogContent>

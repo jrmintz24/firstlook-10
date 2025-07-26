@@ -7,7 +7,7 @@ import { Star } from "lucide-react";
 import { usePostShowingWorkflow, type BuyerFeedback } from "@/hooks/usePostShowingWorkflow";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import BuyerInsightForm from "@/components/property/BuyerInsightForm";
+import CombinedFeedbackForm from "./CombinedFeedbackForm";
 
 interface BuyerFeedbackModalProps {
   isOpen: boolean;
@@ -25,9 +25,6 @@ interface BuyerFeedbackModalProps {
 const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: BuyerFeedbackModalProps) => {
   const [step, setStep] = useState<'attendance' | 'feedback'>('attendance');
   const [attended, setAttended] = useState<boolean | null>(null);
-  const [propertyRating, setPropertyRating] = useState(0);
-  const [specialistRating, setSpecialistRating] = useState(0);
-  const [showInsightForm, setShowInsightForm] = useState(false);
   
   const { loading, submitBuyerFeedback } = usePostShowingWorkflow();
   const { toast } = useToast();
@@ -92,8 +89,16 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     }
   };
 
-  const handleFeedbackSubmit = async () => {
-    console.log('Submitting feedback with buyerId:', buyerId);
+  const handleCombinedSubmit = async (data: {
+    propertyRating: number;
+    agentRating: number;
+    insightData?: {
+      insightText: string;
+      category: string;
+      buyerName: string;
+    };
+  }) => {
+    console.log('Submitting combined feedback with buyerId:', buyerId);
     
     if (!buyerId || buyerId.trim() === '') {
       console.error('Invalid buyerId:', buyerId);
@@ -105,41 +110,52 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       return;
     }
 
-    if (!showing.assigned_agent_id) {
-      console.error('No assigned specialist ID:', showing);
-      toast({
-        title: "Error",
-        description: "Showing specialist information is missing. Please contact support.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
-      const feedback: BuyerFeedback = {
-        buyer_id: buyerId,
-        agent_id: showing.assigned_agent_id,
-        property_rating: propertyRating > 0 ? propertyRating : undefined,
-        agent_rating: specialistRating > 0 ? specialistRating : undefined,
-        property_comments: undefined, // Removed - using insights instead
-        agent_comments: undefined     // Removed - using insights instead
-      };
+      // Submit star ratings if agent is assigned
+      if (showing.assigned_agent_id) {
+        const feedback: BuyerFeedback = {
+          buyer_id: buyerId,
+          agent_id: showing.assigned_agent_id,
+          property_rating: data.propertyRating > 0 ? data.propertyRating : undefined,
+          agent_rating: data.agentRating > 0 ? data.agentRating : undefined,
+          property_comments: undefined,
+          agent_comments: undefined
+        };
 
-      console.log('Submitting feedback:', feedback);
+        console.log('Submitting star ratings:', feedback);
+        await submitBuyerFeedback(showing.id, feedback);
+      }
+
+      // Submit buyer insight if provided
+      if (data.insightData) {
+        console.log('Submitting buyer insight:', data.insightData);
+        const { error: insertError } = await supabase
+          .from('buyer_insights')
+          .insert({
+            property_address: showing.property_address,
+            insight_text: data.insightData.insightText.trim(),
+            category: data.insightData.category,
+            buyer_name: data.insightData.buyerName.trim(),
+            buyer_id: buyerId,
+            showing_request_id: showing.id,
+            tour_date: new Date().toISOString().split('T')[0],
+            is_approved: false
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+      }
       
-      // Submit feedback using the optimized direct database insertion
-      await submitBuyerFeedback(showing.id, feedback);
-      
-      // Update showing status to completed after feedback is submitted
+      // Update showing status to completed
       await updateShowingToCompleted();
       
       toast({
-        title: "Ratings Submitted",
-        description: "Thank you for your ratings!",
+        title: "Thank you!",
+        description: data.insightData ? "Your ratings and insights have been submitted!" : "Your ratings have been submitted!",
       });
       
-      // Show insight form after ratings
-      setShowInsightForm(true);
+      onComplete?.();
       
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -151,48 +167,12 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
     }
   };
 
-  const handleInsightSuccess = () => {
-    setShowInsightForm(false);
-    toast({
-      title: "Insights Shared!",
-      description: "Thank you for helping future buyers!",
-    });
-    onComplete?.();
-  };
 
-  const StarRating = ({ rating, onRatingChange, label }: { rating: number, onRatingChange: (rating: number) => void, label: string }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`h-6 w-6 cursor-pointer transition-colors ${
-              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-            }`}
-            onClick={() => onRatingChange(star)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-
-  const handleSkipFeedback = async () => {
-    // Update showing status to completed even if skipping feedback
+  const handleSkipAll = async () => {
     await updateShowingToCompleted();
-    
     toast({
       title: "Feedback Skipped",
       description: "You can always provide feedback later.",
-    });
-    onComplete?.();
-  };
-
-  const handleSkipInsights = () => {
-    setShowInsightForm(false);
-    toast({
-      title: "Insights Skipped",
-      description: "You can always share insights later from your dashboard.",
     });
     onComplete?.();
   };
@@ -242,49 +222,15 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
           </div>
         )}
 
-        {step === 'feedback' && !showInsightForm && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StarRating
-                rating={propertyRating}
-                onRatingChange={setPropertyRating}
-                label="How would you rate this property?"
-              />
-              
-              {showing.assigned_agent_name && (
-                <StarRating
-                  rating={specialistRating}
-                  onRatingChange={setSpecialistRating}
-                  label={`How would you rate ${showing.assigned_agent_name}?`}
-                />
-              )}
-            </div>
-
-            <div className="text-center text-sm text-gray-600">
-              <p>After submitting your ratings, you'll be able to share detailed insights to help future buyers.</p>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={handleSkipFeedback} disabled={loading}>
-                Skip All
-              </Button>
-              <Button onClick={handleFeedbackSubmit} disabled={loading}>
-                {loading ? 'Submitting...' : 'Continue'}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 'feedback' && showInsightForm && (
-          <div className="space-y-4">
-            <BuyerInsightForm
-              propertyAddress={showing.property_address}
-              showingRequestId={showing.id}
-              onClose={handleSkipInsights}
-              onSuccess={handleInsightSuccess}
-              className="border-0 shadow-none"
-            />
-          </div>
+        {step === 'feedback' && (
+          <CombinedFeedbackForm
+            propertyAddress={showing.property_address}
+            showingRequestId={showing.id}
+            agentName={showing.assigned_agent_name}
+            onSubmit={handleCombinedSubmit}
+            onSkip={handleSkipAll}
+            loading={loading}
+          />
         )}
       </DialogContent>
     </Dialog>

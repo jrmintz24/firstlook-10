@@ -91,6 +91,36 @@ const BuyerDashboard = () => {
     }
   };
 
+  const renderMobileTabContent = () => {
+    console.log('[BuyerDashboard] Mobile tab content:', {
+      activeTab,
+      availableTabs: dashboardTabs.map(t => t.id),
+      foundTab: !!dashboardTabs.find(tab => tab.id === activeTab),
+      tabContent: dashboardTabs.find(tab => tab.id === activeTab)?.id
+    });
+
+    const activeTabData = dashboardTabs.find(tab => tab.id === activeTab);
+    console.log('[BuyerDashboard] Active tab data:', {
+      activeTab,
+      activeTabData,
+      hasContent: !!activeTabData?.content
+    });
+    
+    if (!activeTabData) {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="text-gray-400 mb-4">
+            <Calendar className="h-16 w-16" />
+          </div>
+          <p className="text-gray-600">Tab not found: {activeTab}</p>
+          <p className="text-sm text-gray-500 mt-2">Available tabs: {dashboardTabs.map(t => t.id).join(', ')}</p>
+        </div>
+      );
+    }
+    
+    return activeTabData.content;
+  };
+
   if (authLoading || loading) {
     return <EnhancedDashboardSkeleton />;
   }
@@ -300,37 +330,7 @@ const BuyerDashboard = () => {
           activeTab={activeTab}
         >
           {/* Tab-specific content for mobile */}
-          {(() => {
-            console.log('[BuyerDashboard] Mobile tab content:', {
-              activeTab,
-              availableTabs: dashboardTabs.map(t => t.id),
-              foundTab: !!dashboardTabs.find(tab => tab.id === activeTab),
-              tabContent: dashboardTabs.find(tab => tab.id === activeTab)?.id
-            });
-            return null;
-          })()}
-          {(() => {
-            const activeTabData = dashboardTabs.find(tab => tab.id === activeTab);
-            console.log('[BuyerDashboard] Active tab data:', {
-              activeTab,
-              activeTabData,
-              hasContent: !!activeTabData?.content
-            });
-            
-            if (!activeTabData) {
-              return (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <div className="text-gray-400 mb-4">
-                    <Calendar className="h-16 w-16" />
-                  </div>
-                  <p className="text-gray-600">Tab not found: {activeTab}</p>
-                  <p className="text-sm text-gray-500 mt-2">Available tabs: {dashboardTabs.map(t => t.id).join(', ')}</p>
-                </div>
-              );
-            }
-            
-            return activeTabData.content;
-          })()}
+          {renderMobileTabContent()}
         </MobileDashboardLayout>
         
         {/* Modals */}

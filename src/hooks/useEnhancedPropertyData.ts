@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface ObjectivePropertyData {
@@ -43,80 +43,86 @@ export const useEnhancedPropertyData = (address: string, mlsId?: string) => {
   const [data, setData] = useState<EnhancedPropertyData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  console.log('[useEnhancedPropertyData] Hook called with:', { address, mlsId });
 
-  useEffect(() => {
+  // Memoized fetch function to prevent infinite loops
+  const fetchPropertyData = useCallback(async () => {
     if (!address) {
       console.log('[useEnhancedPropertyData] No address provided, skipping fetch');
       return;
     }
+
+    setLoading(true);
+    setError(null);
     
-    const fetchPropertyData = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // First, try to get cached property data from our database
-        const { data: cachedData, error: cacheError } = await supabase
-          .from('enhanced_property_data')
-          .select('*')
-          .eq('address', address)
-          .maybeSingle();
+    try {
+      // First, try to get cached property data from our database
+      const { data: cachedData, error: cacheError } = await supabase
+        .from('enhanced_property_data')
+        .select('*')
+        .eq('address', address)
+        .maybeSingle();
 
-        if (cacheError && cacheError.code !== 'PGRST116') {
-          throw cacheError;
-        }
-
-        let objectiveData: ObjectivePropertyData | null = null;
-
-        if (cachedData && isDataFresh(cachedData.last_updated)) {
-          // Use cached data if it's less than 30 days old
-          objectiveData = {
-            beds: cachedData.beds,
-            baths: cachedData.baths,
-            sqft: cachedData.sqft,
-            propertyType: cachedData.property_type,
-            yearBuilt: cachedData.year_built,
-            lotSize: cachedData.lot_size,
-            source: cachedData.data_source || 'Public Records',
-            lastUpdated: cachedData.last_updated
-          };
-        } else {
-          // Fetch fresh data from external sources
-          objectiveData = await fetchFromExternalSources(address, mlsId);
-          
-          // Cache the fresh data
-          if (objectiveData) {
-            await cachePropertyData(address, objectiveData);
-          }
-        }
-
-        // Fetch buyer insights
-        const insights = await fetchBuyerInsights(address);
-        
-        // Fetch property ratings
-        const ratings = await fetchPropertyRatings(address);
-
-        setData({
-          objective: objectiveData,
-          insights: insights,
-          insightsSummary: generateInsightsSummary(insights),
-          ratings: ratings
-        });
-
-      } catch (err) {
-        console.error('Error fetching enhanced property data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch property data');
-      } finally {
-        setLoading(false);
+      if (cacheError && cacheError.code !== 'PGRST116') {
+        throw cacheError;
       }
-    };
 
+      let objectiveData: ObjectivePropertyData | null = null;
+
+      if (cachedData && isDataFresh(cachedData.last_updated)) {
+        // Use cached data if it's less than 30 days old
+        objectiveData = {
+          beds: cachedData.beds,
+          baths: cachedData.baths,
+          sqft: cachedData.sqft,
+          propertyType: cachedData.property_type,
+          yearBuilt: cachedData.year_built,
+          lotSize: cachedData.lot_size,
+          source: cachedData.data_source || 'Public Records',
+          lastUpdated: cachedData.last_updated
+        };
+      } else {
+        // Fetch fresh data from external sources
+        objectiveData = await fetchFromExternalSources(address, mlsId);
+        
+        // Cache the fresh data
+        if (objectiveData) {
+          await cachePropertyData(address, objectiveData);
+        }
+      }
+
+      // Fetch buyer insights
+      const insights = await fetchBuyerInsights(address);
+      
+      // Fetch property ratings
+      const ratings = await fetchPropertyRatings(address);
+
+      setData({
+        objective: objectiveData,
+        insights: insights,
+        insightsSummary: generateInsightsSummary(insights),
+        ratings: ratings
+      });
+
+    } catch (err) {
+      console.error('Error fetching enhanced property data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch property data');
+    } finally {
+      setLoading(false);
+    }
+  }, [address, mlsId, refreshTrigger]);
+
+  useEffect(() => {
     fetchPropertyData();
-  }, [address, mlsId]);
+  }, [fetchPropertyData]);
 
-  return { data, loading, error, refetch: () => setData(null) };
+  // Memoized refetch function that actually triggers a refresh
+  const refetch = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
+
+  return { data, loading, error, refetch };
 };
 
 // Helper function to check if data is fresh (less than 30 days old)

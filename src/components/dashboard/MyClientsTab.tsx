@@ -76,13 +76,10 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
 
       console.log('[MyClientsTab] Agent matches result:', agentMatches);
 
-      // Also get frequent buyers (3+ tours with this agent)
+      // Also get frequent buyers (3+ tours with this agent) - just get user IDs first
       const { data: frequentBuyers, error: frequentError } = await supabase
         .from('showing_requests')
-        .select(`
-          user_id,
-          profiles!inner(first_name, last_name, email, phone)
-        `)
+        .select('user_id')
         .eq('assigned_agent_id', agentId)
         .eq('status', 'completed');
 

@@ -31,6 +31,8 @@ interface ShowingRequest {
   user_id?: string | null;
   buyer_consents_to_contact?: boolean | null;
   idx_property_id?: string | null;
+  idx_id?: string | null;
+  mls_id?: string | null;
 }
 
 interface ShowingListTabProps {
@@ -172,10 +174,10 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 />
                 
                 {/* iHomefinder property widget */}
-                {showing.idx_property_id ? (
+                {showing.idx_id || showing.mls_id ? (
                   <IHomefinderWidget
                     address={showing.property_address}
-                    mlsId={showing.idx_property_id}
+                    mlsId={showing.idx_id || showing.mls_id}
                     height={350}
                   />
                 ) : (

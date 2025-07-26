@@ -73,48 +73,55 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
 
     console.log('[IHomefinderWidget] All requirements met, creating widget for MLS:', mlsId);
 
-    const container = containerRef.current;
-    if (!container) {
-      console.log('[IHomefinderWidget] No container ref available');
-      return;
-    }
-
-    // Clear any existing content
-    container.innerHTML = '';
-    
-    try {
-      // Check if ihfKestrel is available
-      if (typeof (window as any).ihfKestrel === 'undefined') {
-        console.log('[IHomefinderWidget] ihfKestrel not available on window');
+    // Use a timeout to ensure the DOM is ready
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      if (!container) {
+        console.log('[IHomefinderWidget] No container ref available after timeout');
         setHasError(true);
         setIsLoading(false);
         return;
       }
 
-      console.log('[IHomefinderWidget] Creating propertyDetailsWidget for MLS:', mlsId);
+      // Clear any existing content
+      container.innerHTML = '';
       
-      // Create script tag that will be replaced by ihfKestrel
-      const script = document.createElement('script');
-      script.innerHTML = `
-        console.log('[IHomefinderWidget Script] Executing widget render');
-        document.currentScript.replaceWith(ihfKestrel.render({
-          "component": "propertyDetailsWidget",
-          "mlsNumber": "${mlsId}",
-          "showPhotos": true,
-          "showMap": false
-        }));
-      `;
-      
-      container.appendChild(script);
-      setIsLoading(false);
-      setWidgetLoaded(true);
-      console.log('[IHomefinderWidget] Widget script added successfully');
-      
-    } catch (err) {
-      console.error('[IHomefinderWidget] Error creating widget:', err);
-      setHasError(true);
-      setIsLoading(false);
-    }
+      try {
+        // Check if ihfKestrel is available
+        if (typeof (window as any).ihfKestrel === 'undefined') {
+          console.log('[IHomefinderWidget] ihfKestrel not available on window');
+          setHasError(true);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('[IHomefinderWidget] Creating propertyDetailsWidget for MLS:', mlsId);
+        
+        // Create script tag that will be replaced by ihfKestrel
+        const script = document.createElement('script');
+        script.innerHTML = `
+          console.log('[IHomefinderWidget Script] Executing widget render');
+          document.currentScript.replaceWith(ihfKestrel.render({
+            "component": "propertyDetailsWidget",
+            "mlsNumber": "${mlsId}",
+            "showPhotos": true,
+            "showMap": false
+          }));
+        `;
+        
+        container.appendChild(script);
+        setIsLoading(false);
+        setWidgetLoaded(true);
+        console.log('[IHomefinderWidget] Widget script added successfully');
+        
+      } catch (err) {
+        console.error('[IHomefinderWidget] Error creating widget:', err);
+        setHasError(true);
+        setIsLoading(false);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [mlsId, scriptLoaded, scriptError, loading, error, domain]);
 
   // Show loading state

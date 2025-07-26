@@ -6,6 +6,8 @@ import ShowingRequestCard from "./ShowingRequestCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
 import EnhancedTourCard from "./EnhancedTourCard";
+import EnhancedPropertyDisplay from "@/components/property/EnhancedPropertyDisplay";
+import BuyerInsightForm from "@/components/property/BuyerInsightForm";
 import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
 import FloatingCard from "@/components/ui/FloatingCard";
 import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
@@ -89,6 +91,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   eligibility,
   onUpgradeClick
 }) => {
+  const [showInsightForm, setShowInsightForm] = React.useState<string | null>(null);
   // Check if we're on mobile to optimize loading
   const isMobile = useIsMobile();
   
@@ -153,9 +156,9 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
             );
           }
 
-          // Use simplified card for confirmed tours (temporary fix to avoid IDX crashes)
+          // Use enhanced property display for confirmed tours
           if (showing.status === 'confirmed' && userType === 'buyer') {
-            console.log(`[ShowingListTab] Rendering simplified confirmed tour card:`, {
+            console.log(`[ShowingListTab] Rendering enhanced confirmed tour card:`, {
               id: showing.id,
               status: showing.status,
               address: showing.property_address,
@@ -165,11 +168,12 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
               <div
                 key={showing.id}
                 className={cn(
-                  "transition-all duration-500",
+                  "transition-all duration-500 space-y-4",
                   isVisible && "animate-fade-in"
                 )}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
+                {/* Basic tour info card */}
                 <OptimizedShowingCard
                   showing={showing}
                   onCancel={onCancelShowing}
@@ -182,6 +186,31 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                   agreements={agreements}
                   onComplete={onComplete}
                 />
+                
+                {/* Enhanced property data display */}
+                <EnhancedPropertyDisplay
+                  address={showing.property_address}
+                  mlsId={showing.idx_property_id}
+                  onAddInsight={() => setShowInsightForm(showing.id)}
+                  showInsightForm={true}
+                />
+                
+                {/* Buyer insight form modal */}
+                {showInsightForm === showing.id && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <BuyerInsightForm
+                        propertyAddress={showing.property_address}
+                        showingRequestId={showing.id}
+                        onClose={() => setShowInsightForm(null)}
+                        onSuccess={() => {
+                          setShowInsightForm(null);
+                          // Could trigger a refetch of property data here
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             );
           }

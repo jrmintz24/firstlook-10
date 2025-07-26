@@ -4,12 +4,14 @@ import { useLocation } from 'react-router-dom';
 import { useDocumentHead } from '../hooks/useDocumentHead';
 import { LoadingSpinner } from '../components/dashboard/shared/LoadingStates';
 import { PropertyToolbar } from '../components/property/PropertyToolbar';
+import EnhancedPropertyDisplay from '../components/property/EnhancedPropertyDisplay';
 
 const Listing = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [propertyAddress, setPropertyAddress] = useState<string | null>(null);
   
 
   // Extract listing ID from query parameter
@@ -111,6 +113,11 @@ const Listing = () => {
       
       // Store globally for other components to access
       window.currentListingDetails = details;
+      
+      // Set the property address for enhanced display
+      if (details.address) {
+        setPropertyAddress(details.address);
+      }
       
       // Dispatch event for components that might be listening
       window.dispatchEvent(new CustomEvent('listingDetailsExtracted', { 
@@ -280,6 +287,17 @@ const Listing = () => {
           >
             {/* IDX listing content will be rendered here */}
           </div>
+          
+          {/* Enhanced Property Display with Ratings and Insights */}
+          {propertyAddress && !isLoading && (
+            <div className="mt-8">
+              <EnhancedPropertyDisplay 
+                address={propertyAddress}
+                mlsId={listingId}
+                showInsightForm={true}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

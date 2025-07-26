@@ -233,15 +233,6 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
           "transition-all duration-300",
           shouldEnableAnimations && "animate-fade-in"
         )}>
-          {(() => {
-            console.log('[MobileDashboardLayout] Rendering tab content:', { 
-              activeTab, 
-              hasChildren: !!children,
-              childrenType: typeof children,
-              childrenContent: children
-            });
-            return null;
-          })()}
           {children}
         </div>
       </div>

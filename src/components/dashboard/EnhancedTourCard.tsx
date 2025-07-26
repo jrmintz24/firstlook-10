@@ -29,6 +29,7 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { cn } from '@/lib/utils';
 import { usePropertyDetails } from '@/hooks/usePropertyDetails';
+import PropertyDataDebugger from './PropertyDataDebugger';
 
 interface PropertyDetails {
   beds?: number;
@@ -104,18 +105,17 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
     setChecklist(prev => ({ ...prev, [item]: !prev[item] }));
   };
 
-  // Use fetched details if available, otherwise use provided or default
-  const propertyDetails: PropertyDetails = fetchedDetails || showing.property_details || {
-    beds: 3,
-    baths: 2,
-    sqft: 1850,
-    price: 750000,
-    pricePerSqft: 405,
-    propertyType: "Single Family",
-    yearBuilt: 2018,
-    daysOnMarket: 12,
-    lotSize: "7,200 sq ft"
-  };
+  // Remove the default fallback data to see if we're getting real data
+  const propertyDetails: PropertyDetails = fetchedDetails || showing.property_details || {};
+  
+  console.log('🎭 EnhancedTourCard property details:', {
+    fetchedDetails,
+    showingPropertyDetails: showing.property_details,
+    finalPropertyDetails: propertyDetails,
+    showingId: showing.id,
+    address: showing.property_address,
+    idxPropertyId: showing.idx_property_id
+  });
 
   // Save checklist to localStorage
   useEffect(() => {
@@ -418,6 +418,12 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
                 </div>
               </div>
             </div>
+            
+            {/* Temporary Debug Info */}
+            <PropertyDataDebugger 
+              address={showing.property_address}
+              idxPropertyId={showing.idx_property_id}
+            />
           </CardContent>
         </Card>
       </FloatingCard>

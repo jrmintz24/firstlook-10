@@ -14,7 +14,17 @@ import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const { user } = useAuth();
-  const { data, loading, error } = useBuyerDashboard(user?.id);
+  const { 
+    pendingRequests,
+    activeShowings,
+    completedShowings,
+    loading,
+    handleCancelShowing,
+    handleRescheduleShowing,
+    handleConfirmShowing,
+    handleAgreementSign,
+    agreements
+  } = useBuyerDashboard();
   const isMobile = useIsMobile();
 
   if (loading) {
@@ -55,7 +65,7 @@ const UnifiedBuyerDashboard = () => {
       label: 'Pending',
       icon: Clock,
       description: 'Requested tours awaiting confirmation',
-      count: data?.pendingCount || 0,
+      count: pendingRequests?.length || 0,
       color: 'orange'
     },
     {
@@ -63,7 +73,7 @@ const UnifiedBuyerDashboard = () => {
       label: 'Upcoming',
       icon: Calendar,
       description: 'Scheduled tours',
-      count: data?.upcomingCount || 0,
+      count: activeShowings?.length || 0,
       color: 'blue'
     },
     {
@@ -71,7 +81,7 @@ const UnifiedBuyerDashboard = () => {
       label: 'Completed',
       icon: CheckCircle,
       description: 'Past tours and history',
-      count: data?.completedCount || 0,
+      count: completedShowings?.length || 0,
       color: 'green'
     },
     {
@@ -79,7 +89,7 @@ const UnifiedBuyerDashboard = () => {
       label: 'Portfolio',
       icon: FolderOpen,
       description: 'Favorites, offers, and agent connections',
-      count: (data?.favoritesCount || 0) + (data?.offersCount || 0),
+      count: 0, // Will be updated when favorites/offers are implemented
       color: 'purple'
     }
   ];
@@ -109,28 +119,56 @@ const UnifiedBuyerDashboard = () => {
         case 'pending':
           return (
             <ShowingListTab 
-              userType="buyer" 
-              statusFilter="pending"
-              emptyStateMessage="No pending tour requests. Start browsing properties to schedule your first tour!"
-              emptyStateAction="Browse Properties"
+              title="Pending Tour Requests"
+              showings={pendingRequests || []}
+              emptyIcon={Clock}
+              emptyTitle="No pending tour requests"
+              emptyDescription="Start browsing properties to schedule your first tour!"
+              emptyButtonText="Browse Properties"
+              onRequestShowing={() => {/* TODO: Implement */}}
+              onCancelShowing={handleCancelShowing}
+              onRescheduleShowing={handleRescheduleShowing}
+              onConfirmShowing={handleConfirmShowing}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              onSignAgreement={handleAgreementSign}
+              showActions={true}
             />
           );
         case 'upcoming':
           return (
             <ShowingListTab 
-              userType="buyer" 
-              statusFilter="confirmed"
-              emptyStateMessage="No upcoming tours scheduled."
-              showEnhancedView={true}
+              title="Upcoming Tours"
+              showings={activeShowings || []}
+              emptyIcon={Calendar}
+              emptyTitle="No upcoming tours"
+              emptyDescription="No upcoming tours scheduled."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={() => {/* TODO: Implement */}}
+              onCancelShowing={handleCancelShowing}
+              onRescheduleShowing={handleRescheduleShowing}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              showActions={true}
             />
           );
         case 'completed':
           return (
             <ShowingListTab 
-              userType="buyer" 
-              statusFilter="completed"
-              emptyStateMessage="No completed tours yet. Your tour history will appear here."
-              showPostShowingActions={true}
+              title="Completed Tours"
+              showings={completedShowings || []}
+              emptyIcon={CheckCircle}
+              emptyTitle="No completed tours"
+              emptyDescription="No completed tours yet. Your tour history will appear here."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={() => {/* TODO: Implement */}}
+              onCancelShowing={handleCancelShowing}
+              onRescheduleShowing={handleRescheduleShowing}
+              userType="buyer"
+              currentUserId={user?.id}
+              showActions={false}
             />
           );
         case 'portfolio':
@@ -143,10 +181,10 @@ const UnifiedBuyerDashboard = () => {
     return (
       <MobileDashboardLayout
         user={user}
-        pendingRequests={data?.pendingRequests || []}
-        activeShowings={data?.activeShowings || []}
-        completedShowings={data?.completedShowings || []}
-        favorites={data?.favorites || []}
+        pendingRequests={pendingRequests || []}
+        activeShowings={activeShowings || []}
+        completedShowings={completedShowings || []}
+        favorites={[]} // TODO: Implement favorites when available
         onRequestTour={() => {/* TODO: Implement */}}
         onTabChange={setActiveTab}
         activeTab={activeTab}
@@ -172,7 +210,26 @@ const UnifiedBuyerDashboard = () => {
 
         {/* Dashboard Stats */}
         <div className="mb-8">
-          <DashboardStats data={data} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tabs.map((tab, index) => {
+              const Icon = tab.icon;
+              return (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${tab.color === 'orange' ? 'bg-orange-100' : tab.color === 'blue' ? 'bg-blue-100' : tab.color === 'green' ? 'bg-green-100' : 'bg-purple-100'}`}>
+                        <Icon className={`w-6 h-6 ${tab.color === 'orange' ? 'text-orange-600' : tab.color === 'blue' ? 'text-blue-600' : tab.color === 'green' ? 'text-green-600' : 'text-purple-600'}`} />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-gray-900">{tab.count}</div>
+                        <div className="text-sm text-gray-600">{tab.label}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* Main Navigation */}
@@ -227,10 +284,21 @@ const UnifiedBuyerDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ShowingListTab 
-                    userType="buyer" 
-                    statusFilter="pending"
-                    emptyStateMessage="No pending tour requests. Start browsing properties to schedule your first tour!"
-                    emptyStateAction="Browse Properties"
+                    title="Pending Tour Requests"
+                    showings={pendingRequests || []}
+                    emptyIcon={Clock}
+                    emptyTitle="No pending tour requests"
+                    emptyDescription="Start browsing properties to schedule your first tour!"
+                    emptyButtonText="Browse Properties"
+                    onRequestShowing={() => {/* TODO: Implement */}}
+                    onCancelShowing={handleCancelShowing}
+                    onRescheduleShowing={handleRescheduleShowing}
+                    onConfirmShowing={handleConfirmShowing}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    agreements={agreements}
+                    onSignAgreement={handleAgreementSign}
+                    showActions={true}
                   />
                 </CardContent>
               </Card>
@@ -246,10 +314,19 @@ const UnifiedBuyerDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ShowingListTab 
-                    userType="buyer" 
-                    statusFilter="confirmed"
-                    emptyStateMessage="No upcoming tours scheduled."
-                    showEnhancedView={true}
+                    title="Upcoming Tours"
+                    showings={activeShowings || []}
+                    emptyIcon={Calendar}
+                    emptyTitle="No upcoming tours"
+                    emptyDescription="No upcoming tours scheduled."
+                    emptyButtonText="Schedule Tour"
+                    onRequestShowing={() => {/* TODO: Implement */}}
+                    onCancelShowing={handleCancelShowing}
+                    onRescheduleShowing={handleRescheduleShowing}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    agreements={agreements}
+                    showActions={true}
                   />
                 </CardContent>
               </Card>
@@ -265,10 +342,18 @@ const UnifiedBuyerDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ShowingListTab 
-                    userType="buyer" 
-                    statusFilter="completed"
-                    emptyStateMessage="No completed tours yet. Your tour history will appear here."
-                    showPostShowingActions={true}
+                    title="Completed Tours"
+                    showings={completedShowings || []}
+                    emptyIcon={CheckCircle}
+                    emptyTitle="No completed tours"
+                    emptyDescription="No completed tours yet. Your tour history will appear here."
+                    emptyButtonText="Schedule Tour"
+                    onRequestShowing={() => {/* TODO: Implement */}}
+                    onCancelShowing={handleCancelShowing}
+                    onRescheduleShowing={handleRescheduleShowing}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    showActions={false}
                   />
                 </CardContent>
               </Card>

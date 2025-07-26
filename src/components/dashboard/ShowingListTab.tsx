@@ -5,6 +5,7 @@ import AgentRequestCard from "./AgentRequestCard";
 import ShowingRequestCard from "./ShowingRequestCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
+import EnhancedTourCard from "./EnhancedTourCard";
 import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
 import FloatingCard from "@/components/ui/FloatingCard";
 import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
@@ -134,6 +135,36 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
             );
           }
 
+          // Use EnhancedTourCard for confirmed tours
+          if (showing.status === 'confirmed' && userType === 'buyer') {
+            return (
+              <div
+                key={showing.id}
+                className={cn(
+                  "transition-all duration-500",
+                  isVisible && "animate-fade-in"
+                )}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <EnhancedTourCard
+                  showing={showing}
+                  onCancel={onCancelShowing}
+                  onReschedule={onRescheduleShowing}
+                  onAddToCalendar={(showing) => {
+                    // TODO: Implement calendar integration
+                    console.log('Add to calendar:', showing);
+                  }}
+                  onGetDirections={(address) => {
+                    // Open in Google Maps
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+                  }}
+                  index={index}
+                />
+              </div>
+            );
+          }
+
+          // Use standard card for other statuses
           return (
             <div
               key={showing.id}

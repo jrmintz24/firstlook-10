@@ -63,6 +63,7 @@ interface EnhancedTourCardProps {
     assigned_agent_name?: string | null;
     assigned_agent_phone?: string | null;
     assigned_agent_email?: string | null;
+    idx_property_id?: string | null;
     property_details?: PropertyDetails;
   };
   onCancel?: (id: string) => void;
@@ -93,7 +94,11 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [checklist, setChecklist] = useState<TourChecklist>(defaultChecklist);
-  const { details: fetchedDetails, loading: detailsLoading } = usePropertyDetails(showing.property_address);
+  const [notes, setNotes] = useState('');
+  const { details: fetchedDetails, loading: detailsLoading } = usePropertyDetails(
+    showing.property_address, 
+    showing.idx_property_id || undefined
+  );
 
   const toggleChecklistItem = (item: keyof TourChecklist) => {
     setChecklist(prev => ({ ...prev, [item]: !prev[item] }));

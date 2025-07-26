@@ -11,9 +11,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
+import SignAgreementModal from './SignAgreementModal';
 
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
+  const [agreementModalOpen, setAgreementModalOpen] = useState(false);
+  const [selectedShowing, setSelectedShowing] = useState<any>(null);
   const { user } = useAuth();
   const { 
     pendingRequests,
@@ -45,9 +48,18 @@ const UnifiedBuyerDashboard = () => {
     handleConfirmShowing(request);
   }, [handleConfirmShowing]);
 
-  const memoizedHandleAgreementSign = useCallback((request: any) => {
-    handleAgreementSign(request);
-  }, [handleAgreementSign]);
+  const memoizedHandleAgreementSign = useCallback((showing: any) => {
+    setSelectedShowing(showing);
+    setAgreementModalOpen(true);
+  }, []);
+
+  const handleActualAgreementSign = useCallback(async (name: string) => {
+    if (selectedShowing) {
+      await handleAgreementSign(selectedShowing);
+      setAgreementModalOpen(false);
+      setSelectedShowing(null);
+    }
+  }, [selectedShowing, handleAgreementSign]);
 
   if (loading) {
     return (
@@ -431,6 +443,22 @@ const UnifiedBuyerDashboard = () => {
 
         {/* Development Tool */}
         <CreateTestAgentConnection />
+
+        {/* Sign Agreement Modal */}
+        <SignAgreementModal
+          isOpen={agreementModalOpen}
+          onClose={() => {
+            setAgreementModalOpen(false);
+            setSelectedShowing(null);
+          }}
+          onSign={handleActualAgreementSign}
+          showingDetails={selectedShowing ? {
+            propertyAddress: selectedShowing.property_address,
+            date: selectedShowing.preferred_date,
+            time: selectedShowing.preferred_time,
+            agentName: selectedShowing.assigned_agent_name
+          } : undefined}
+        />
       </div>
     </div>
   );

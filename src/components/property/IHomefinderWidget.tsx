@@ -73,14 +73,12 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
 
     console.log('[IHomefinderWidget] All requirements met, creating widget for MLS:', mlsId);
 
-    // Use a timeout to ensure the DOM is ready
-    const timer = setTimeout(() => {
+    // Function to try creating the widget
+    const createWidget = () => {
       const container = containerRef.current;
       if (!container) {
-        console.log('[IHomefinderWidget] No container ref available after timeout');
-        setHasError(true);
-        setIsLoading(false);
-        return;
+        console.log('[IHomefinderWidget] Container not ready, retrying...');
+        return false;
       }
 
       // Clear any existing content
@@ -92,7 +90,7 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
           console.log('[IHomefinderWidget] ihfKestrel not available on window');
           setHasError(true);
           setIsLoading(false);
-          return;
+          return false;
         }
 
         console.log('[IHomefinderWidget] Creating propertyDetailsWidget for MLS:', mlsId);
@@ -113,15 +111,36 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
         setIsLoading(false);
         setWidgetLoaded(true);
         console.log('[IHomefinderWidget] Widget script added successfully');
+        return true;
         
       } catch (err) {
         console.error('[IHomefinderWidget] Error creating widget:', err);
         setHasError(true);
         setIsLoading(false);
+        return false;
       }
-    }, 100);
+    };
 
-    return () => clearTimeout(timer);
+    // Try to create widget with retries
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    const tryCreateWidget = () => {
+      if (createWidget()) {
+        return; // Success!
+      }
+      
+      retryCount++;
+      if (retryCount < maxRetries) {
+        setTimeout(tryCreateWidget, 100);
+      } else {
+        console.log('[IHomefinderWidget] Max retries reached, giving up');
+        setHasError(true);
+        setIsLoading(false);
+      }
+    };
+
+    tryCreateWidget();
   }, [mlsId, scriptLoaded, scriptError, loading, error, domain]);
 
   // Show loading state

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { usePostShowingActions } from "./usePostShowingActions";
 
 interface Profile {
   id: string;
@@ -35,6 +36,7 @@ export const useBuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { getActionsForShowing, getActionCount } = usePostShowingActions();
 
   const currentUser = user || session?.user;
 
@@ -298,6 +300,24 @@ export const useBuyerDashboard = () => {
     fetchUserData();
   }, [user, session, authLoading, navigate]);
 
+  // Create buyerActions object for showing action states
+  const buyerActions = showingRequests.reduce((acc, showing) => {
+    const actions = getActionsForShowing(showing.id);
+    const actionCount = getActionCount(showing.id);
+    
+    acc[showing.id] = {
+      favorited: actions.favorited,
+      madeOffer: actions.made_offer,
+      hiredAgent: actions.hired_agent,
+      scheduledMoreTours: actions.scheduled_more_tours,
+      actionCount,
+      latestAction: actions.actions[0]?.action_type || null,
+      actionTimestamp: actions.actions[0]?.created_at || null
+    };
+    
+    return acc;
+  }, {} as Record<string, any>);
+
   return {
     profile,
     selectedShowing,
@@ -309,6 +329,7 @@ export const useBuyerDashboard = () => {
     pendingRequests,
     activeShowings,
     completedShowings,
+    buyerActions,
     handleCancelShowing,
     handleRescheduleShowing,
     handleConfirmShowing,

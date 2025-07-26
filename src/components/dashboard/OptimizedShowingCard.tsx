@@ -10,6 +10,7 @@ import ShowingSpecialistCard from "./ShowingSpecialistCard";
 import RescheduleModal from "./RescheduleModal";
 import { usePostShowingActionsManager } from "@/hooks/usePostShowingActionsManager";
 import PropertyDisplay from "./shared/PropertyDisplay";
+import ActionStateBadges from "./shared/ActionStateBadges";
 import { 
   Calendar,
   Clock,
@@ -221,6 +222,15 @@ const OptimizedShowingCard = ({
                       </Badge>
                     )}
                   </div>
+
+                  {/* Action State Badges for Completed Tours */}
+                  {isCompletedTour && buyerActions && buyerActions[showing.id] && (
+                    <ActionStateBadges 
+                      actions={buyerActions[showing.id]}
+                      size="sm"
+                      className="mt-2"
+                    />
+                  )}
                   
                   {/* Secondary Info - Mobile Stacked */}
                   <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-3 text-xs sm:text-sm text-gray-600">
@@ -366,6 +376,10 @@ const OptimizedShowingCard = ({
                   agentPhone={showing.assigned_agent_phone}
                   propertyAddress={showing.property_address}
                   onRequestShowing={onRequestShowing}
+                  onDataRefresh={() => {
+                    // Trigger a refresh of the dashboard data
+                    window.location.reload();
+                  }}
                 />
               </div>
             )}

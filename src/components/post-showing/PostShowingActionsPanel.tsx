@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Calendar, Heart, User, FileText, CheckCircle } from "lucide-react";
+import { MessageCircle, Calendar, Heart, User, FileText, CheckCircle, RotateCcw } from "lucide-react";
 import { useEnhancedPostShowingActions } from "@/hooks/useEnhancedPostShowingActions";
+import { usePostShowingActions } from "@/hooks/usePostShowingActions";
 // Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
@@ -38,7 +39,6 @@ const PostShowingActionsPanel = ({
   // Removed showOfferDialog state - no longer using dialog
   const [showAgentProfile, setShowAgentProfile] = useState(false);
   const [showFavoriteModal, setShowFavoriteModal] = useState(false);
-  const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
 
   const {
     isSubmitting,
@@ -47,8 +47,31 @@ const PostShowingActionsPanel = ({
     favoriteProperty
   } = useEnhancedPostShowingActions();
 
-  const handleActionComplete = async (actionType: string) => {
-    setCompletedActions(prev => new Set([...prev, actionType]));
+  const {
+    getActionsForShowing,
+    hasAction,
+    getActionCount,
+    recordAction,
+    removeAction,
+    loading: actionsLoading
+  } = usePostShowingActions();
+
+  // Get current action states for this showing
+  const actionStates = getActionsForShowing(showingId);
+  const actionCount = getActionCount(showingId);
+
+  const handleActionComplete = async (actionType: 'favorited' | 'made_offer' | 'hired_agent' | 'scheduled_more_tours') => {
+    // Record action in database
+    const success = await recordAction(showingId, actionType, {
+      property_address: propertyAddress,
+      agent_name: agentName,
+      agent_id: agentId
+    });
+
+    if (!success) {
+      console.error(`Failed to record action: ${actionType}`);
+      return;
+    }
     
     // Notify workflow service and agent
     if (agentId) {
@@ -68,6 +91,20 @@ const PostShowingActionsPanel = ({
 
     if (onActionCompleted) {
       onActionCompleted(actionType);
+    }
+  };
+
+  const handleActionUndo = async (actionType: 'favorited' | 'hired_agent') => {
+    const success = await removeAction(showingId, actionType);
+    
+    if (!success) {
+      console.error(`Failed to undo action: ${actionType}`);
+      return;
+    }
+
+    // Trigger dashboard refresh
+    if (onDataRefresh) {
+      onDataRefresh();
     }
   };
 
@@ -102,7 +139,10 @@ const PostShowingActionsPanel = ({
     await handleActionComplete('hired_agent');
   };
 
-  const handleMakeOffer = () => {
+  const handleMakeOffer = async () => {
+    // Record the action first
+    await handleActionComplete('made_offer');
+    
     // Skip the dialog and go directly to offer questionnaire
     const params = new URLSearchParams({
       property: propertyAddress
@@ -143,7 +183,9 @@ const PostShowingActionsPanel = ({
       icon: Calendar,
       onClick: handleScheduleAnotherTour,
       variant: 'outline' as const,
-      available: true
+      available: true,
+      completed: actionStates.scheduled_more_tours,
+      canUndo: false
     },
     {
       id: 'hired_agent',
@@ -152,7 +194,10 @@ const PostShowingActionsPanel = ({
       icon: User,
       onClick: handleHireAgentClick,
       variant: 'outline' as const,
-      available: !!agentId && !!agentName
+      available: !!agentId && !!agentName,
+      completed: actionStates.hired_agent,
+      canUndo: true,
+      onUndo: () => handleActionUndo('hired_agent')
     },
     {
       id: 'make_offer',
@@ -161,7 +206,9 @@ const PostShowingActionsPanel = ({
       icon: FileText,
       onClick: handleMakeOffer,
       variant: 'outline' as const,
-      available: true
+      available: true,
+      completed: actionStates.made_offer,
+      canUndo: false
     },
     {
       id: 'favorited',
@@ -170,7 +217,10 @@ const PostShowingActionsPanel = ({
       icon: Heart,
       onClick: () => setShowFavoriteModal(true),
       variant: 'outline' as const,
-      available: true
+      available: true,
+      completed: actionStates.favorited,
+      canUndo: true,
+      onUndo: () => handleActionUndo('favorited')
     }
   ];
 
@@ -187,53 +237,71 @@ const PostShowingActionsPanel = ({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {actions.filter(action => action.available).map((action) => {
-              const isCompleted = completedActions.has(action.id);
-              const Icon = action.icon;
-              
-              return (
-                <Button
-                  key={action.id}
-                  onClick={action.onClick}
-                  disabled={isSubmitting || isCompleted}
-                  variant={action.variant}
-                  className={`h-auto p-4 border-2 transition-all relative ${
-                    isCompleted 
-                      ? 'border-green-200 bg-green-50 hover:bg-green-100' 
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="relative">
-                      <Icon className={`h-5 w-5 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
-                      {isCompleted && (
-                        <CheckCircle className="h-3 w-3 text-green-600 absolute -top-1 -right-1" />
-                      )}
-                    </div>
-                    <div className="text-left flex-1">
-                      <div className={`font-semibold ${isCompleted ? 'text-green-900' : 'text-gray-900'}`}>
-                        {action.title}
+          {actionsLoading ? (
+            <div className="text-center py-4 text-gray-500">Loading actions...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {actions.filter(action => action.available).map((action) => {
+                const isCompleted = action.completed;
+                const Icon = action.icon;
+                
+                return (
+                  <div key={action.id} className="relative">
+                    <Button
+                      onClick={action.onClick}
+                      disabled={isSubmitting || isCompleted}
+                      variant={action.variant}
+                      className={`h-auto p-4 border-2 transition-all w-full ${
+                        isCompleted 
+                          ? 'border-green-200 bg-green-50 hover:bg-green-100' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="relative">
+                          <Icon className={`h-5 w-5 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
+                          {isCompleted && (
+                            <CheckCircle className="h-3 w-3 text-green-600 absolute -top-1 -right-1" />
+                          )}
+                        </div>
+                        <div className="text-left flex-1">
+                          <div className={`font-semibold ${isCompleted ? 'text-green-900' : 'text-gray-900'}`}>
+                            {action.title}
+                          </div>
+                          <div className={`text-xs ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
+                            {isCompleted ? 'Completed' : action.description}
+                          </div>
+                        </div>
+                        {isCompleted && (
+                          <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">
+                            Done
+                          </Badge>
+                        )}
                       </div>
-                      <div className={`text-xs ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
-                        {isCompleted ? 'Completed' : action.description}
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">
-                        Done
-                      </Badge>
+                    </Button>
+                    
+                    {/* Undo button for reversible actions */}
+                    {isCompleted && action.canUndo && action.onUndo && (
+                      <Button
+                        onClick={action.onUndo}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 p-0 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm"
+                        title={`Undo ${action.title}`}
+                      >
+                        <RotateCcw className="h-3 w-3 text-gray-500" />
+                      </Button>
                     )}
                   </div>
-                </Button>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
-          {completedActions.size > 0 && (
+          {actionCount > 0 && (
             <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
               <p className="text-sm text-green-800 font-medium">
-                Great progress! You've completed {completedActions.size} action{completedActions.size > 1 ? 's' : ''}.
+                Great progress! You've completed {actionCount} action{actionCount > 1 ? 's' : ''}.
               </p>
               <p className="text-xs text-green-600 mt-1">
                 We'll keep you updated on any developments with this property.

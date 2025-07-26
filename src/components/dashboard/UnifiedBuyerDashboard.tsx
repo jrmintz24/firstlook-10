@@ -27,7 +27,8 @@ const UnifiedBuyerDashboard = () => {
     handleRescheduleShowing,
     handleConfirmShowing,
     handleAgreementSign,
-    agreements
+    agreements,
+    buyerActions
   } = useBuyerDashboard();
   const isMobile = useIsMobile();
 
@@ -169,6 +170,7 @@ const UnifiedBuyerDashboard = () => {
               currentUserId={user?.id}
               agreements={agreements}
               onSignAgreement={memoizedHandleAgreementSign}
+              buyerActions={buyerActions}
               showActions={true}
             />
           );
@@ -187,6 +189,7 @@ const UnifiedBuyerDashboard = () => {
               userType="buyer"
               currentUserId={user?.id}
               agreements={agreements}
+              buyerActions={buyerActions}
               showActions={true}
             />
           );
@@ -204,6 +207,7 @@ const UnifiedBuyerDashboard = () => {
               onRescheduleShowing={handleRescheduleShowing}
               userType="buyer"
               currentUserId={user?.id}
+              buyerActions={buyerActions}
               showActions={false}
             />
           );
@@ -389,6 +393,7 @@ const UnifiedBuyerDashboard = () => {
                     currentUserId={user?.id}
                     agreements={agreements}
                     onSignAgreement={memoizedHandleAgreementSign}
+                    buyerActions={buyerActions}
                     showActions={true}
                   />
                 </CardContent>
@@ -417,6 +422,7 @@ const UnifiedBuyerDashboard = () => {
                     userType="buyer"
                     currentUserId={user?.id}
                     agreements={agreements}
+                    buyerActions={buyerActions}
                     showActions={true}
                   />
                 </CardContent>
@@ -444,6 +450,7 @@ const UnifiedBuyerDashboard = () => {
                     onRescheduleShowing={memoizedHandleReschedule}
                     userType="buyer"
                     currentUserId={user?.id}
+                    buyerActions={buyerActions}
                     showActions={false}
                   />
                 </CardContent>

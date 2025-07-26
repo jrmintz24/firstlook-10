@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBuyerFavorites } from '@/hooks/useBuyerFavorites';
+import { useBuyerAgentConnections } from '@/hooks/useBuyerAgentConnections';
 import OfferTabContent from './OfferTabContent';
+import AgentConnectionCard from './AgentConnectionCard';
 
 interface PortfolioTabProps {
   buyerId?: string;
@@ -14,6 +16,7 @@ interface PortfolioTabProps {
 export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
   const [activeSection, setActiveSection] = useState('favorites');
   const { favorites, loading: favoritesLoading } = useBuyerFavorites(buyerId);
+  const { connections, loading: connectionsLoading, handleContactAgent } = useBuyerAgentConnections(buyerId);
 
   const sections = [
     {
@@ -36,7 +39,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
       id: 'agents',
       label: 'Agents',
       icon: Users,
-      count: 0, // Will be populated by AgentConnectionCard
+      count: connections?.length || 0,
       color: 'text-purple-600 bg-purple-50 border-purple-200',
       description: 'Your agent connections'
     }
@@ -149,16 +152,36 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No agent connections yet</h3>
-                <p className="text-gray-600 mb-4">
-                  When you request tours, you'll be matched with local agents who will appear here
-                </p>
-                <Button variant="outline">
-                  Request a Tour
-                </Button>
-              </div>
+              {connectionsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-32 bg-gray-200 rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : connections && connections.length > 0 ? (
+                <div className="space-y-4">
+                  {connections.map((connection) => (
+                    <AgentConnectionCard
+                      key={connection.id}
+                      connection={connection}
+                      onContactAgent={handleContactAgent}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No agent connections yet</h3>
+                  <p className="text-gray-600 mb-4">
+                    When you request tours, you'll be matched with local agents who will appear here
+                  </p>
+                  <Button variant="outline" onClick={() => window.location.href = '/properties'}>
+                    Browse Properties
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

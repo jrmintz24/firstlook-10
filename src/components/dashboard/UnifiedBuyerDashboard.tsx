@@ -10,6 +10,7 @@ import { useBuyerDashboard } from '@/hooks/useBuyerDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
+import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
 
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -406,6 +407,9 @@ const UnifiedBuyerDashboard = () => {
             </TabsContent>
           </div>
         </Tabs>
+
+        {/* Development Tool */}
+        <CreateTestAgentConnection />
       </div>
     </div>
   );

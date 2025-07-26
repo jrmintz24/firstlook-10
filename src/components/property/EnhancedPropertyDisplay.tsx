@@ -13,7 +13,8 @@ import {
   ThumbsUp,
   Flag,
   Info,
-  CheckCircle
+  CheckCircle,
+  Star
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,7 +71,7 @@ const EnhancedPropertyDisplay: React.FC<EnhancedPropertyDisplayProps> = ({
     );
   }
 
-  const { objective, insights, insightsSummary } = data;
+  const { objective, insights, insightsSummary, ratings } = data;
 
   const toggleCategory = (category: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -174,7 +175,7 @@ const EnhancedPropertyDisplay: React.FC<EnhancedPropertyDisplayProps> = ({
       )}
 
       {/* Buyer Insights Section */}
-      {(insights.length > 0 || showInsightForm) && (
+      {(insights.length > 0 || showInsightForm || ratings) && (
         <Card className="border-green-200 bg-green-50/30">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -193,6 +194,64 @@ const EnhancedPropertyDisplay: React.FC<EnhancedPropertyDisplayProps> = ({
             )}
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Ratings Display */}
+            {ratings && ratings.totalRatings > 0 && (
+              <>
+                <div className="bg-white rounded-lg p-4 border border-green-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {ratings.averagePropertyRating > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Property Rating</span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= Math.round(ratings.averagePropertyRating)
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {ratings.averagePropertyRating.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {ratings.averageAgentRating > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Specialist Rating</span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= Math.round(ratings.averageAgentRating)
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {ratings.averageAgentRating.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 text-center mt-2">
+                    Based on {ratings.totalRatings} buyer{ratings.totalRatings === 1 ? '' : 's'} who toured this property
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+            
             {insights.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />

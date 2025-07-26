@@ -32,7 +32,6 @@ const StarRating = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Star clicked:', starValue, 'Current rating:', rating);
               onRatingChange(starValue);
             }}
             aria-label={`Rate ${starValue} out of 5 stars`}
@@ -118,16 +117,6 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
   const [propertyRating, setPropertyRating] = useState(0);
   const [agentRating, setAgentRating] = useState(0);
   
-  // Debug state updates
-  const updatePropertyRating = (rating: number) => {
-    console.log('Updating property rating from', propertyRating, 'to', rating);
-    setPropertyRating(rating);
-  };
-  
-  const updateAgentRating = (rating: number) => {
-    console.log('Updating agent rating from', agentRating, 'to', rating);
-    setAgentRating(rating);
-  };
   const [selectedCategory, setSelectedCategory] = useState<InsightCategory>('highlights');
   const [insightText, setInsightText] = useState('');
   const [buyerName, setBuyerName] = useState('');
@@ -167,21 +156,17 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
       {/* Star Ratings Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Rate Your Experience</h3>
-        {/* Debug info */}
-        <div className="text-xs text-gray-500">
-          Property: {propertyRating} stars | Agent: {agentRating} stars
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StarRating
             rating={propertyRating}
-            onRatingChange={updatePropertyRating}
+            onRatingChange={setPropertyRating}
             label="How would you rate this property?"
           />
           
           {agentName && (
             <StarRating
               rating={agentRating}
-              onRatingChange={updateAgentRating}
+              onRatingChange={setAgentRating}
               label={`How would you rate ${agentName}?`}
             />
           )}

@@ -22,6 +22,12 @@ interface BuyerInsight {
   helpfulCount: number;
 }
 
+interface PropertyRatings {
+  averagePropertyRating: number;
+  averageAgentRating: number;
+  totalRatings: number;
+}
+
 interface EnhancedPropertyData {
   objective: ObjectivePropertyData | null;
   insights: BuyerInsight[];
@@ -30,6 +36,7 @@ interface EnhancedPropertyData {
     recent: number;
     topCategories: string[];
   };
+  ratings: PropertyRatings | null;
 }
 
 export const useEnhancedPropertyData = (address: string, mlsId?: string) => {
@@ -82,11 +89,15 @@ export const useEnhancedPropertyData = (address: string, mlsId?: string) => {
 
         // Fetch buyer insights
         const insights = await fetchBuyerInsights(address);
+        
+        // Fetch property ratings
+        const ratings = await fetchPropertyRatings(address);
 
         setData({
           objective: objectiveData,
           insights: insights,
-          insightsSummary: generateInsightsSummary(insights)
+          insightsSummary: generateInsightsSummary(insights),
+          ratings: ratings
         });
 
       } catch (err) {
@@ -236,6 +247,62 @@ const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
   } catch (error) {
     console.error('Error fetching buyer insights:', error);
     return [];
+  }
+};
+
+// Fetch property ratings from completed tours
+const fetchPropertyRatings = async (address: string): Promise<PropertyRatings | null> => {
+  try {
+    // Get all feedback for this property by joining showing_requests with buyer_feedback
+    const { data, error } = await supabase
+      .from('showing_requests')
+      .select(`
+        id,
+        property_address,
+        buyer_feedback!inner(
+          property_rating,
+          agent_rating
+        )
+      `)
+      .eq('property_address', address)
+      .eq('status', 'completed');
+
+    if (error) {
+      console.error('Error fetching property ratings:', error);
+      return null;
+    }
+
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    // Calculate averages
+    let totalPropertyRating = 0;
+    let totalAgentRating = 0;
+    let propertyRatingCount = 0;
+    let agentRatingCount = 0;
+
+    data.forEach(showing => {
+      const feedback = showing.buyer_feedback[0];
+      if (feedback?.property_rating) {
+        totalPropertyRating += feedback.property_rating;
+        propertyRatingCount++;
+      }
+      if (feedback?.agent_rating) {
+        totalAgentRating += feedback.agent_rating;
+        agentRatingCount++;
+      }
+    });
+
+    return {
+      averagePropertyRating: propertyRatingCount > 0 ? totalPropertyRating / propertyRatingCount : 0,
+      averageAgentRating: agentRatingCount > 0 ? totalAgentRating / agentRatingCount : 0,
+      totalRatings: Math.max(propertyRatingCount, agentRatingCount)
+    };
+
+  } catch (error) {
+    console.error('Error fetching property ratings:', error);
+    return null;
   }
 };
 

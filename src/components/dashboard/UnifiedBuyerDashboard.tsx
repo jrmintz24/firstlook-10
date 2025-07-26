@@ -249,8 +249,8 @@ const UnifiedBuyerDashboard = () => {
         </div>
 
         {/* Dashboard Stats */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {tabs.map((tab, index) => {
               const Icon = tab.icon;
               return (
@@ -298,7 +298,7 @@ const UnifiedBuyerDashboard = () => {
         </div>
 
         {/* Main Navigation */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Tab Navigation */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100/80 overflow-hidden backdrop-blur-sm">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-3 bg-transparent gap-2">
@@ -368,7 +368,7 @@ const UnifiedBuyerDashboard = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <TabsContent value="pending" className="mt-0">
               <Card>
                 <CardHeader>

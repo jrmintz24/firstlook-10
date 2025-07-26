@@ -303,7 +303,7 @@ const OptimizedShowingCard = ({
 
               {/* Compact Action Buttons */}
               {showActions && (
-                <div className="flex items-start gap-1 ml-2">
+                <div className="flex items-start gap-2 ml-2">
                   {/* Message Button - Only if agent assigned and not awaiting agreement */}
                   {onSendMessage && showing.assigned_agent_id && !agreementRequired && (
                     <InteractiveButton
@@ -311,9 +311,9 @@ const OptimizedShowingCard = ({
                       size="sm"
                       icon={MessageCircle}
                       onClick={() => onSendMessage(showing.id)}
-                      className="border-gray-300 h-8 px-2"
+                      className="border-gray-300 h-7 px-2 text-xs"
                     >
-                      <span className="hidden xs:inline ml-1">Message</span>
+                      <span className="hidden xs:inline ml-1">Text</span>
                     </InteractiveButton>
                   )}
 
@@ -323,7 +323,7 @@ const OptimizedShowingCard = ({
                     size="sm"
                     icon={isExpanded ? ChevronUp : ChevronDown}
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-gray-500 hover:text-gray-700 h-8 px-2"
+                    className="text-gray-500 hover:text-gray-700 h-7 px-2 text-xs"
                   >
                     <span className="hidden xs:inline ml-1">{isExpanded ? 'Less' : 'More'}</span>
                   </InteractiveButton>
@@ -426,9 +426,9 @@ const OptimizedShowingCard = ({
                         size="sm"
                         icon={MessageCircle}
                         onClick={() => onSendMessage(showing.id)}
-                        className="border-gray-300 w-full sm:w-auto"
+                        className="border-gray-300 h-8 px-3 text-sm w-full sm:w-auto"
                       >
-                        Message Specialist
+                        Text Specialist
                       </InteractiveButton>
                     )}
 
@@ -439,7 +439,7 @@ const OptimizedShowingCard = ({
                         size="sm"
                         icon={X}
                         onClick={handleCancel}
-                        className="border-red-300 text-red-700 hover:bg-red-50 w-full sm:w-auto"
+                        className="border-red-300 text-red-700 hover:bg-red-50 h-8 px-3 text-sm w-full sm:w-auto"
                       >
                         Cancel
                       </InteractiveButton>
@@ -451,7 +451,7 @@ const OptimizedShowingCard = ({
                         variant="outline"
                         size="sm"
                         onClick={handleReschedule}
-                        className="border-gray-300 w-full sm:w-auto"
+                        className="border-gray-300 h-8 px-3 text-sm w-full sm:w-auto"
                       >
                         Reschedule
                       </InteractiveButton>
@@ -463,6 +463,7 @@ const OptimizedShowingCard = ({
                         variant="default"
                         size="sm"
                         onClick={() => onConfirm(showing.id)}
+                        className="h-8 px-3 text-sm"
                       >
                         Confirm Tour
                       </InteractiveButton>

@@ -6,7 +6,7 @@ import ShowingRequestCard from "./ShowingRequestCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
 import EnhancedTourCard from "./EnhancedTourCard";
-import EnhancedPropertyDisplay from "@/components/property/EnhancedPropertyDisplay";
+import IHomefinderWidget from "@/components/property/IHomefinderWidget";
 import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
 import FloatingCard from "@/components/ui/FloatingCard";
 import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
@@ -120,12 +120,12 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
 
   return (
-    <div ref={ref} className="space-y-4 w-full">
+    <div ref={ref} className="space-y-3 w-full">
       <h2 className={cn(
-        "text-xl font-semibold text-gray-900 mb-4 transition-all duration-500",
+        "text-xl font-semibold text-gray-900 mb-3 transition-all duration-500",
         isVisible && "animate-fade-in"
       )}>{title}</h2>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {enhancedShowings.map((showing, index) => {
           if (userType === 'agent') {
             return (
@@ -152,7 +152,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
               <div
                 key={showing.id}
                 className={cn(
-                  "transition-all duration-500 space-y-4",
+                  "transition-all duration-500 space-y-3",
                   isVisible && "animate-fade-in"
                 )}
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -171,12 +171,19 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                   onComplete={onComplete}
                 />
                 
-                {/* Enhanced property data display */}
-                <EnhancedPropertyDisplay
-                  address={showing.property_address}
-                  mlsId={showing.idx_property_id}
-                  showInsightForm={false}
-                />
+                {/* iHomefinder property widget */}
+                {showing.idx_property_id ? (
+                  <IHomefinderWidget
+                    address={showing.property_address}
+                    mlsId={showing.idx_property_id}
+                    height={350}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-gray-500 border rounded-lg bg-gray-50">
+                    <p className="text-sm">Property details will be available with MLS ID</p>
+                    <p className="text-xs mt-1">{showing.property_address}</p>
+                  </div>
+                )}
               </div>
             );
           }

@@ -251,29 +251,29 @@ const PostShowingActionsPanel = ({
                       onClick={action.onClick}
                       disabled={isSubmitting || isCompleted}
                       variant={action.variant}
-                      className={`h-auto p-4 border-2 transition-all w-full ${
+                      className={`h-auto p-3 border transition-all w-full text-sm ${
                         isCompleted 
                           ? 'border-green-200 bg-green-50 hover:bg-green-100' 
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center gap-3 w-full">
-                        <div className="relative">
-                          <Icon className={`h-5 w-5 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
+                        <div className="relative flex-shrink-0">
+                          <Icon className={`h-4 w-4 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
                           {isCompleted && (
                             <CheckCircle className="h-3 w-3 text-green-600 absolute -top-1 -right-1" />
                           )}
                         </div>
-                        <div className="text-left flex-1">
-                          <div className={`font-semibold ${isCompleted ? 'text-green-900' : 'text-gray-900'}`}>
+                        <div className="text-left flex-1 min-w-0">
+                          <div className={`font-medium text-sm leading-tight ${isCompleted ? 'text-green-900' : 'text-gray-900'}`}>
                             {action.title}
                           </div>
-                          <div className={`text-xs ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
+                          <div className={`text-xs mt-0.5 leading-tight ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
                             {isCompleted ? 'Completed' : action.description}
                           </div>
                         </div>
                         {isCompleted && (
-                          <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">
+                          <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50 text-xs px-2 py-0.5 flex-shrink-0">
                             Done
                           </Badge>
                         )}
@@ -286,10 +286,10 @@ const PostShowingActionsPanel = ({
                         onClick={action.onUndo}
                         variant="ghost"
                         size="sm"
-                        className="absolute -top-2 -right-2 h-6 w-6 p-0 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm"
+                        className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm"
                         title={`Undo ${action.title}`}
                       >
-                        <RotateCcw className="h-3 w-3 text-gray-500" />
+                        <RotateCcw className="h-2.5 w-2.5 text-gray-500" />
                       </Button>
                     )}
                   </div>

@@ -6,6 +6,10 @@ import ShowingRequestCard from "./ShowingRequestCard";
 import OptimizedShowingCard from "./OptimizedShowingCard";
 import EmptyStateCard from "./EmptyStateCard";
 import { useShowingRequestPropertyDetails } from "@/hooks/useShowingRequestPropertyDetails";
+import FloatingCard from "@/components/ui/FloatingCard";
+import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { cn } from "@/lib/utils";
 
 interface ShowingRequest {
   id: string;
@@ -101,11 +105,16 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
     );
   }
 
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{title}</h2>
+    <div ref={ref} className="space-y-4">
+      <h2 className={cn(
+        "text-xl font-semibold text-gray-900 mb-4 transition-all duration-500",
+        isVisible && "animate-fade-in"
+      )}>{title}</h2>
       <div className="space-y-4">
-        {enhancedShowings.map((showing) => {
+        {enhancedShowings.map((showing, index) => {
           if (userType === 'agent') {
             return (
               <AgentRequestCard
@@ -126,20 +135,39 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
           }
 
           return (
-            <OptimizedShowingCard
+            <div
               key={showing.id}
-              showing={showing}
-              onCancel={onCancelShowing}
-              onReschedule={onRescheduleShowing}
-              onConfirm={onConfirmShowing ? () => onConfirmShowing(showing) : undefined}
-              onComplete={onComplete}
-              currentUserId={currentUserId}
-              agreements={agreements}
-              userType={userType}
-              showActions={showActions}
-              onSignAgreement={onSignAgreement}
-              onRequestShowing={onRequestShowing}
-            />
+              className={cn(
+                "transition-all duration-500",
+                isVisible && "animate-fade-in"
+              )}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <DynamicShadowCard
+                shadowIntensity={0.1}
+                shadowColor="rgba(0, 0, 0, 0.08)"
+              >
+                <FloatingCard
+                  intensity="subtle"
+                  duration={5000}
+                  delay={index * 200}
+                >
+                  <OptimizedShowingCard
+                    showing={showing}
+                    onCancel={onCancelShowing}
+                    onReschedule={onRescheduleShowing}
+                    onConfirm={onConfirmShowing ? () => onConfirmShowing(showing) : undefined}
+                    onComplete={onComplete}
+                    currentUserId={currentUserId}
+                    agreements={agreements}
+                    userType={userType}
+                    showActions={showActions}
+                    onSignAgreement={onSignAgreement}
+                    onRequestShowing={onRequestShowing}
+                  />
+                </FloatingCard>
+              </DynamicShadowCard>
+            </div>
           );
         })}
       </div>

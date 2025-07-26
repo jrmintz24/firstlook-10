@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { LucideIcon, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useScrollGradient } from "@/hooks/useScrollGradient";
+import MagneticButton from "@/components/ui/MagneticButton";
+import FloatingCard from "@/components/ui/FloatingCard";
+import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import { cn } from "@/lib/utils";
 
 interface DashboardTab {
   id: string;
@@ -48,6 +54,29 @@ const UnifiedDashboardLayout = ({
 }: UnifiedDashboardLayoutProps) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  
+  // Dynamic gradient based on user type and scroll
+  const scrollGradient = useScrollGradient({
+    startHue: userType === 'agent' ? 210 : 270,
+    endHue: userType === 'agent' ? 250 : 330,
+    saturation: 15,
+    lightness: 98,
+    opacity: 0.9
+  });
+
+  // Header hide on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setIsHeaderVisible(currentScrollY < lastScrollY || currentScrollY < 10);
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const getUserTypeStyles = () => {
     return userType === 'agent' 
@@ -71,9 +100,15 @@ const UnifiedDashboardLayout = ({
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getUserTypeStyles()} transition-all duration-300`}>
+    <div 
+      className="min-h-screen transition-all duration-1000"
+      style={{ background: scrollGradient || `linear-gradient(to bottom right, ${getUserTypeStyles()})` }}
+    >
       {/* Enhanced Header with Animation */}
-      <div className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/60 sticky top-0 z-40 transition-all duration-200">
+      <div className={cn(
+        "bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky z-40 transition-all duration-500",
+        isHeaderVisible ? "top-0 translate-y-0" : "-translate-y-full"
+      )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-6">
@@ -92,12 +127,13 @@ const UnifiedDashboardLayout = ({
             <div className="flex items-center gap-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
               {/* Primary Action Button - Only show for buyers */}
               {userType === 'buyer' && primaryAction && (
-                <Button 
+                <MagneticButton
                   onClick={primaryAction.onClick}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  magneticStrength={0.2}
                 >
                   {primaryAction.label}
-                </Button>
+                </MagneticButton>
               )}
               
               <div className={`flex items-center gap-2 text-sm text-gray-600 px-3 py-1.5 rounded-full border transition-all duration-200 hover:shadow-md ${getUserTypeBadge()}`}>
@@ -152,24 +188,38 @@ const UnifiedDashboardLayout = ({
                   <TabsTrigger 
                     key={tab.id}
                     value={tab.id} 
-                    className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className={cn(
+                      "group relative overflow-hidden rounded-lg text-sm font-medium transition-all duration-300",
+                      "hover:bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                      "data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-[1.02]"
+                    )}
                     style={{ animationDelay: `${index * 50}ms` }}
                     role="tab"
                     aria-selected={activeTab === tab.id}
                   >
-                    <div className="flex items-center gap-2">
-                      <tab.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-                      <span className="hidden sm:inline">{tab.title}</span>
+                    <div className="relative z-10 flex items-center gap-2 px-3 py-2">
+                      <tab.icon className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-data-[state=active]:text-blue-600" />
+                      <span className="hidden sm:inline transition-colors duration-300 group-data-[state=active]:text-blue-600">
+                        {tab.title}
+                      </span>
                       {tab.count !== undefined && tab.count > 0 && (
-                        <Badge 
-                          variant="secondary" 
-                          className={`ml-1 text-xs px-1.5 py-0.5 transition-all duration-200 hover:scale-105 ${tab.color || 'bg-gray-100 text-gray-700'}`}
-                          aria-label={`${tab.count} items`}
-                        >
-                          {tab.count}
-                        </Badge>
+                        <AnimatedNumber
+                          value={tab.count}
+                          className={cn(
+                            "ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold transition-all duration-300",
+                            "group-hover:scale-110",
+                            tab.color || "bg-gray-100 text-gray-700"
+                          )}
+                          duration={800}
+                        />
                       )}
                     </div>
+                    {/* Active indicator */}
+                    <div className={cn(
+                      "absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500",
+                      "transform scale-x-0 transition-transform duration-300",
+                      "group-data-[state=active]:scale-x-100"
+                    )} />
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -178,11 +228,16 @@ const UnifiedDashboardLayout = ({
                 <TabsContent 
                   key={tab.id} 
                   value={tab.id} 
-                  className="mt-6 animate-fade-in focus:outline-none"
+                  className={cn(
+                    "mt-6 focus:outline-none transition-all duration-500",
+                    "data-[state=active]:animate-fade-in"
+                  )}
                   role="tabpanel"
                   aria-labelledby={`tab-${tab.id}`}
                 >
-                  {tab.content}
+                  <div className="space-y-6">
+                    {tab.content}
+                  </div>
                 </TabsContent>
               ))}
             </Tabs>
@@ -192,7 +247,13 @@ const UnifiedDashboardLayout = ({
           {sidebar && (
             <div className="lg:col-span-1 animate-fade-in" style={{ animationDelay: '300ms' }}>
               <div className="sticky top-24 space-y-6">
-                {sidebar}
+                <FloatingCard intensity="subtle" duration={6000}>
+                  <DynamicShadowCard shadowIntensity={0.1} shadowColor="rgba(0, 0, 0, 0.05)">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6">
+                      {sidebar}
+                    </div>
+                  </DynamicShadowCard>
+                </FloatingCard>
               </div>
             </div>
           )}

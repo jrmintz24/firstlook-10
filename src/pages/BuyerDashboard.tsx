@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Calendar, Clock, CheckCircle, TrendingUp, FileText, Home, Heart } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useBuyerDashboardLogic } from "@/hooks/useBuyerDashboardLogic";
+import EnhancedDashboardStats from "@/components/dashboard/EnhancedDashboardStats";
+import EnhancedDashboardSkeleton from "@/components/dashboard/EnhancedDashboardSkeleton";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
@@ -89,26 +91,8 @@ const BuyerDashboard = () => {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Checking authentication...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <div className="text-lg mb-4">Loading your dashboard...</div>
-        </div>
-      </div>
-    );
+  if (authLoading || loading) {
+    return <EnhancedDashboardSkeleton />;
   }
 
   if (!profile) {
@@ -328,6 +312,34 @@ const BuyerDashboard = () => {
     );
   }
 
+  // Create stats for the dashboard
+  const dashboardStats = [
+    {
+      id: "requested",
+      title: "Requested Tours",
+      value: pendingRequests.length,
+      icon: Clock,
+      color: "bg-orange-100 text-orange-700",
+      onClick: () => handleStatClick("requested")
+    },
+    {
+      id: "confirmed",
+      title: "Confirmed Tours",
+      value: activeShowings.length,
+      icon: CheckCircle,
+      color: "bg-green-100 text-green-700",
+      onClick: () => handleStatClick("confirmed")
+    },
+    {
+      id: "completed",
+      title: "Completed Tours",
+      value: completedShowings.length,
+      icon: Calendar,
+      color: "bg-gray-100 text-gray-700",
+      onClick: () => handleStatClick("history")
+    }
+  ];
+
   // Desktop rendering
   return (
     <>
@@ -346,6 +358,11 @@ const BuyerDashboard = () => {
             onClick: handleRequestTour
           }}
         />
+        
+        {/* Enhanced Stats Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 mb-8">
+          <EnhancedDashboardStats stats={dashboardStats} />
+        </div>
       </div>
       
       {/* Modals */}

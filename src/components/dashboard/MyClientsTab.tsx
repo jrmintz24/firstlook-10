@@ -50,20 +50,31 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
   const fetchMyClients = async () => {
     try {
       setLoading(true);
+      console.log('[MyClientsTab] Fetching clients for agent:', agentId);
 
       // Get buyers who have hired this agent or have multiple tours with them
-      const { data: agentMatches, error: matchesError } = await supabase
-        .from('buyer_agent_matches')
-        .select(`
-          buyer_id,
-          created_at,
-          status,
-          profiles!inner(first_name, last_name, email, phone)
-        `)
-        .eq('agent_id', agentId)
-        .eq('status', 'active');
+      let agentMatches = null;
+      try {
+        const { data, error } = await supabase
+          .from('buyer_agent_matches')
+          .select(`
+            buyer_id,
+            created_at,
+            status,
+            profiles!inner(first_name, last_name, email, phone)
+          `)
+          .eq('agent_id', agentId)
+          .eq('status', 'active');
+        
+        if (error) throw error;
+        agentMatches = data;
+      } catch (matchesError) {
+        console.warn('[MyClientsTab] Agent matches error (table might not exist):', matchesError);
+        // Continue without agent matches if table doesn't exist
+        agentMatches = [];
+      }
 
-      if (matchesError) throw matchesError;
+      console.log('[MyClientsTab] Agent matches result:', agentMatches);
 
       // Also get frequent buyers (3+ tours with this agent)
       const { data: frequentBuyers, error: frequentError } = await supabase
@@ -75,6 +86,7 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
         .eq('assigned_agent_id', agentId)
         .eq('status', 'completed');
 
+      console.log('[MyClientsTab] Frequent buyers result:', { frequentBuyers, frequentError });
       if (frequentError) throw frequentError;
 
       // Count tours per buyer
@@ -83,12 +95,16 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
         return acc;
       }, {} as Record<string, number>) || {};
 
-      // Get frequent buyers (3+ tours) who aren't already matched
+      console.log('[MyClientsTab] Buyer tour counts:', buyerTourCounts);
+
+      // Get frequent buyers (1+ tours for now to test) who aren't already matched
       const matchedBuyerIds = new Set(agentMatches?.map(m => m.buyer_id) || []);
       const frequentBuyerIds = Object.entries(buyerTourCounts)
-        .filter(([_, count]) => count >= 3)
+        .filter(([_, count]) => count >= 1) // Lowered threshold for testing
         .map(([buyerId]) => buyerId)
         .filter(buyerId => !matchedBuyerIds.has(buyerId));
+
+      console.log('[MyClientsTab] Frequent buyer IDs:', frequentBuyerIds);
 
       // Combine matched clients and frequent buyers
       const allClientIds = [
@@ -96,7 +112,10 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
         ...frequentBuyerIds
       ];
 
+      console.log('[MyClientsTab] All client IDs:', allClientIds);
+
       if (allClientIds.length === 0) {
+        console.log('[MyClientsTab] No clients found');
         setClients([]);
         return;
       }
@@ -104,7 +123,10 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       // Get detailed client data
       const clientsData: ClientData[] = [];
 
+      console.log('[MyClientsTab] Processing client IDs:', allClientIds);
       for (const clientId of allClientIds) {
+        console.log('[MyClientsTab] Processing client:', clientId);
+        
         // Get client profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -112,7 +134,10 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           .eq('id', clientId)
           .single();
 
-        if (profileError) continue;
+        if (profileError) {
+          console.warn('[MyClientsTab] Profile error for client', clientId, ':', profileError);
+          continue;
+        }
 
         // Get tour count
         const { data: tours, error: toursError } = await supabase
@@ -121,18 +146,34 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           .eq('user_id', clientId)
           .eq('assigned_agent_id', agentId);
 
-        // Get favorites count
-        const { data: favorites, error: favoritesError } = await supabase
-          .from('property_favorites')
-          .select('id')
-          .eq('user_id', clientId);
+        // Get favorites count (handle if table doesn't exist)
+        let favorites = null;
+        try {
+          const { data, error } = await supabase
+            .from('property_favorites')
+            .select('id')
+            .eq('user_id', clientId);
+          if (error) throw error;
+          favorites = data;
+        } catch (favoritesError) {
+          console.warn('[MyClientsTab] Favorites error:', favoritesError);
+          favorites = [];
+        }
 
-        // Get offers count
-        const { data: offers, error: offersError } = await supabase
-          .from('post_showing_actions')
-          .select('id')
-          .eq('buyer_id', clientId)
-          .in('action_type', ['made_offer', 'request_offer_assistance']);
+        // Get offers count (handle if table doesn't exist)
+        let offers = null;
+        try {
+          const { data, error } = await supabase
+            .from('post_showing_actions')
+            .select('id')
+            .eq('buyer_id', clientId)
+            .in('action_type', ['made_offer', 'request_offer_assistance']);
+          if (error) throw error;
+          offers = data;
+        } catch (offersError) {
+          console.warn('[MyClientsTab] Offers error:', offersError);
+          offers = [];
+        }
 
         // Get connection date
         const match = agentMatches?.find(m => m.buyer_id === clientId);
@@ -161,6 +202,7 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       // Sort by last activity (most recent first)
       clientsData.sort((a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime());
 
+      console.log('[MyClientsTab] Final clients data:', clientsData);
       setClients(clientsData);
 
     } catch (error) {

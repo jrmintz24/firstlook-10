@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, FileText } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, FileText, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,8 +21,9 @@ import ReportIssueModal from "@/components/dashboard/ReportIssueModal";
 import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 
-// New component
+// New components
 import ProposalsTab from "@/components/dashboard/ProposalsTab";
+import MyClientsTab from "@/components/dashboard/MyClientsTab";
 
 const AgentDashboard = () => {
   const {
@@ -141,6 +144,29 @@ const AgentDashboard = () => {
 
   const displayName = profile.first_name || 'Agent';
 
+  // Enhanced color system for agent dashboard
+  const getColorGradient = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'bg-orange-100 text-orange-700': 'bg-gradient-to-br from-orange-100 to-amber-50 group-hover:from-orange-200 group-hover:to-amber-100',
+      'bg-blue-100 text-blue-700': 'bg-gradient-to-br from-blue-100 to-indigo-50 group-hover:from-blue-200 group-hover:to-indigo-100',
+      'bg-indigo-100 text-indigo-700': 'bg-gradient-to-br from-indigo-100 to-blue-50 group-hover:from-indigo-200 group-hover:to-blue-100',
+      'bg-purple-100 text-purple-700': 'bg-gradient-to-br from-purple-100 to-pink-50 group-hover:from-purple-200 group-hover:to-pink-100',
+      'bg-green-100 text-green-700': 'bg-gradient-to-br from-green-100 to-emerald-50 group-hover:from-green-200 group-hover:to-emerald-100'
+    };
+    return colorMap[color] || colorMap['bg-blue-100 text-blue-700'];
+  };
+
+  const getIconColor = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'bg-orange-100 text-orange-700': 'text-orange-600',
+      'bg-blue-100 text-blue-700': 'text-blue-600',
+      'bg-indigo-100 text-indigo-700': 'text-indigo-600',
+      'bg-purple-100 text-purple-700': 'text-purple-600',
+      'bg-green-100 text-green-700': 'text-green-600'
+    };
+    return colorMap[color] || 'text-blue-600';
+  };
+
   const dashboardTabs = [
     {
       id: "pending",
@@ -194,6 +220,24 @@ const AgentDashboard = () => {
       )
     },
     {
+      id: "clients",
+      title: "My Clients",
+      icon: Users,
+      count: 0, // Count will be implemented in the component
+      color: "bg-indigo-100 text-indigo-700",
+      content: currentUser?.id ? (
+        <MyClientsTab agentId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Clients"
+          description="Please refresh the page to load your clients."
+          buttonText="Refresh"
+          onButtonClick={fetchAgentData}
+          icon={Users}
+        />
+      )
+    },
+    {
       id: "proposals",
       title: "Proposals",
       icon: FileText,
@@ -238,6 +282,36 @@ const AgentDashboard = () => {
     }
   ];
 
+  // Enhanced stats grid for agent dashboard
+  const enhancedStats = (
+    <div className="mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {dashboardTabs.map((tab, index) => {
+          const Icon = tab.icon;
+          return (
+            <Card 
+              key={index} 
+              className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] border border-gray-100/60 bg-white/80 backdrop-blur-sm"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm ${getColorGradient(tab.color)}`}>
+                    <Icon className={`w-7 h-7 transition-all duration-300 group-hover:scale-110 ${getIconColor(tab.color)}`} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-gray-900 group-hover:text-gray-800 transition-colors duration-300 tracking-tight">{tab.count}</div>
+                    <div className="text-sm font-medium text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{tab.title}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const sidebar = (
     <div className="space-y-6">
       {/* Upcoming Showings */}
@@ -269,6 +343,7 @@ const AgentDashboard = () => {
         sidebar={sidebar}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        enhancedStats={enhancedStats}
       />
 
       {/* Modals */}

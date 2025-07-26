@@ -38,6 +38,7 @@ interface UnifiedDashboardLayoutProps {
     label: string;
     onClick: () => void;
   };
+  enhancedStats?: ReactNode;
 }
 
 const UnifiedDashboardLayout = ({
@@ -50,7 +51,8 @@ const UnifiedDashboardLayout = ({
   defaultTab,
   activeTab,
   onTabChange,
-  primaryAction
+  primaryAction,
+  enhancedStats
 }: UnifiedDashboardLayoutProps) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -173,6 +175,13 @@ const UnifiedDashboardLayout = ({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {/* Enhanced Main Content */}
           <div className="lg:col-span-3">
+            {/* Enhanced Stats Section (Agent Dashboard) */}
+            {enhancedStats && (
+              <div className="animate-fade-in mb-6" style={{ animationDelay: '200ms' }}>
+                {enhancedStats}
+              </div>
+            )}
+            
             <Tabs 
               value={activeTab || defaultTab} 
               onValueChange={onTabChange} 

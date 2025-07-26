@@ -54,10 +54,25 @@ const UnifiedBuyerDashboard = () => {
   }, []);
 
   const handleActualAgreementSign = useCallback(async (name: string) => {
-    if (selectedShowing) {
+    if (!selectedShowing) {
+      console.error('No selected showing for agreement signing');
+      return;
+    }
+
+    try {
+      console.log('Starting agreement signing process for:', selectedShowing.id);
       await handleAgreementSign(selectedShowing);
+      console.log('Agreement signing completed successfully');
+      
+      // Close modal and clear state
       setAgreementModalOpen(false);
       setSelectedShowing(null);
+    } catch (error) {
+      console.error('Error in handleActualAgreementSign:', error);
+      // Close modal even on error to prevent dashboard from being stuck
+      setAgreementModalOpen(false);
+      setSelectedShowing(null);
+      // The error toast will be shown by handleAgreementSign
     }
   }, [selectedShowing, handleAgreementSign]);
 

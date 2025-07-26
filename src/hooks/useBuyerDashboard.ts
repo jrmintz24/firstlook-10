@@ -304,7 +304,12 @@ export const useBuyerDashboard = () => {
       });
 
       // Refresh the data to reflect changes
-      fetchShowingRequests();
+      try {
+        await fetchShowingRequests();
+      } catch (refreshError) {
+        console.error('Error refreshing data after agreement signing:', refreshError);
+        // Don't show toast for refresh errors, main operation succeeded
+      }
     } catch (error: any) {
       console.error('Exception signing agreement:', error);
       toast({
@@ -312,6 +317,7 @@ export const useBuyerDashboard = () => {
         description: error.message || "Failed to sign agreement. Please try again.",
         variant: "destructive"
       });
+      throw error; // Re-throw so the caller can handle it
     }
   };
 

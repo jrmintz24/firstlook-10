@@ -146,14 +146,8 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
             );
           }
 
-          // Use enhanced property display for confirmed tours
-          if (showing.status === 'confirmed' && userType === 'buyer') {
-            console.log(`[ShowingListTab] Rendering enhanced confirmed tour card:`, {
-              id: showing.id,
-              status: showing.status,
-              address: showing.property_address,
-              userType
-            });
+          // Use enhanced property display for completed tours
+          if (showing.status === 'completed' && userType === 'buyer') {
             return (
               <div
                 key={showing.id}

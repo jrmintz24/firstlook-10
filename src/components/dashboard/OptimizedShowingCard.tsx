@@ -224,7 +224,7 @@ const OptimizedShowingCard = ({
                   </div>
 
                   {/* Action State Badges for Completed Tours */}
-                  {isCompletedTour && buyerActions && buyerActions[showing.id] && (
+                  {isCompletedTour && buyerActions?.[showing.id] && (
                     <ActionStateBadges 
                       actions={buyerActions[showing.id]}
                       size="sm"

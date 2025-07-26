@@ -8,6 +8,47 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+// Star Rating Component
+const StarRating = ({ 
+  rating, 
+  onRatingChange, 
+  label 
+}: { 
+  rating: number; 
+  onRatingChange: (rating: number) => void; 
+  label: string; 
+}) => {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{label}</label>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((starValue) => (
+          <button
+            key={starValue}
+            type="button"
+            className={`p-1 transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded ${
+              starValue <= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Star clicked:', starValue, 'Current rating:', rating);
+              onRatingChange(starValue);
+            }}
+            aria-label={`Rate ${starValue} out of 5 stars`}
+          >
+            <Star
+              className={`h-6 w-6 pointer-events-none ${
+                starValue <= rating ? 'fill-current' : ''
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 interface CombinedFeedbackFormProps {
   propertyAddress: string;
   showingRequestId: string;
@@ -77,7 +118,16 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
   const [propertyRating, setPropertyRating] = useState(0);
   const [agentRating, setAgentRating] = useState(0);
   
-  console.log('Current ratings:', { propertyRating, agentRating });
+  // Debug state updates
+  const updatePropertyRating = (rating: number) => {
+    console.log('Updating property rating from', propertyRating, 'to', rating);
+    setPropertyRating(rating);
+  };
+  
+  const updateAgentRating = (rating: number) => {
+    console.log('Updating agent rating from', agentRating, 'to', rating);
+    setAgentRating(rating);
+  };
   const [selectedCategory, setSelectedCategory] = useState<InsightCategory>('highlights');
   const [insightText, setInsightText] = useState('');
   const [buyerName, setBuyerName] = useState('');
@@ -102,43 +152,6 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
     onSubmit(submissionData);
   };
 
-  const StarRating = ({ 
-    rating, 
-    onRatingChange, 
-    label 
-  }: { 
-    rating: number; 
-    onRatingChange: (rating: number) => void; 
-    label: string; 
-  }) => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            className={`p-1 transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded ${
-              star <= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Star clicked:', star);
-              onRatingChange(star);
-            }}
-            aria-label={`Rate ${star} out of 5 stars`}
-          >
-            <Star
-              className={`h-6 w-6 pointer-events-none ${
-                star <= rating ? 'fill-current' : ''
-              }`}
-            />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 
   const exampleInsights = {
     neighborhood: "Quiet street but close to schools",
@@ -154,17 +167,21 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
       {/* Star Ratings Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Rate Your Experience</h3>
+        {/* Debug info */}
+        <div className="text-xs text-gray-500">
+          Property: {propertyRating} stars | Agent: {agentRating} stars
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StarRating
             rating={propertyRating}
-            onRatingChange={setPropertyRating}
+            onRatingChange={updatePropertyRating}
             label="How would you rate this property?"
           />
           
           {agentName && (
             <StarRating
               rating={agentRating}
-              onRatingChange={setAgentRating}
+              onRatingChange={updateAgentRating}
               label={`How would you rate ${agentName}?`}
             />
           )}

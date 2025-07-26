@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBuyerFavorites } from '@/hooks/useBuyerFavorites';
-import { OfferTabContent } from './OfferTabContent';
-import { AgentConnectionCard } from './AgentConnectionCard';
+import OfferTabContent from './OfferTabContent';
+import AgentConnectionCard from './AgentConnectionCard';
 
 interface PortfolioTabProps {
   buyerId?: string;
@@ -136,7 +136,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <OfferTabContent />
+              <OfferTabContent buyerId={buyerId || ''} />
             </CardContent>
           </Card>
         </TabsContent>

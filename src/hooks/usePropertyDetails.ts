@@ -26,15 +26,6 @@ export interface PropertyDetails {
   agentEmail?: string;
 }
 
-// Helper function to normalize address for matching
-const normalizeAddress = (address: string): string => {
-  return address
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/[.,#]/g, '')
-    .trim();
-};
-
 // Helper function to calculate days on market
 const calculateDaysOnMarket = (createdAt: string): number => {
   const created = new Date(createdAt);
@@ -43,33 +34,55 @@ const calculateDaysOnMarket = (createdAt: string): number => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-// Convert database record to PropertyDetails
+// Enhanced property data mapping with fallbacks to raw_data
 const mapDbPropertyToDetails = (dbProperty: any): PropertyDetails => {
+  // Helper to get value from db field or raw_data
+  const getValue = (dbField: any, rawDataKey: string) => {
+    if (dbField !== null && dbField !== undefined && dbField !== '') {
+      return dbField;
+    }
+    if (dbProperty.raw_data && dbProperty.raw_data[rawDataKey]) {
+      const rawValue = dbProperty.raw_data[rawDataKey];
+      return rawValue !== '' ? rawValue : null;
+    }
+    return null;
+  };
+
+  // Parse numeric values safely
+  const parseNumber = (value: any): number | undefined => {
+    if (value === null || value === undefined || value === '') return undefined;
+    const parsed = typeof value === 'string' ? parseFloat(value.replace(/[,$]/g, '')) : Number(value);
+    return isNaN(parsed) ? undefined : parsed;
+  };
+
+  const beds = parseNumber(getValue(dbProperty.beds, 'beds'));
+  const baths = parseNumber(getValue(dbProperty.baths, 'baths'));
+  const sqft = parseNumber(getValue(dbProperty.sqft, 'sqft'));
+  const price = parseNumber(getValue(dbProperty.price, 'price'));
+
   return {
-    beds: dbProperty.beds,
-    baths: dbProperty.baths,
-    sqft: dbProperty.sqft,
-    price: dbProperty.price,
-    pricePerSqft: dbProperty.sqft && dbProperty.price 
-      ? Math.round(dbProperty.price / dbProperty.sqft) 
-      : undefined,
-    propertyType: dbProperty.property_type,
-    yearBuilt: dbProperty.year_built,
+    beds,
+    baths,
+    sqft,
+    price,
+    pricePerSqft: sqft && price ? Math.round(price / sqft) : undefined,
+    propertyType: getValue(dbProperty.property_type, 'property_type') || getValue(dbProperty.property_type, 'propertyType'),
+    yearBuilt: parseNumber(getValue(dbProperty.year_built, 'year_built')),
     daysOnMarket: calculateDaysOnMarket(dbProperty.created_at),
-    lotSize: dbProperty.lot_size,
+    lotSize: getValue(dbProperty.lot_size, 'lot_size'),
     address: dbProperty.address,
     listingId: dbProperty.mls_id || dbProperty.idx_id,
     images: Array.isArray(dbProperty.images) ? dbProperty.images : [],
-    description: dbProperty.description,
+    description: getValue(dbProperty.description, 'description'),
     mlsId: dbProperty.mls_id,
     idxId: dbProperty.idx_id,
-    city: dbProperty.city,
-    state: dbProperty.state,
-    zip: dbProperty.zip,
-    status: dbProperty.status,
-    agentName: dbProperty.agent_name,
-    agentPhone: dbProperty.agent_phone,
-    agentEmail: dbProperty.agent_email
+    city: getValue(dbProperty.city, 'city'),
+    state: getValue(dbProperty.state, 'state'),
+    zip: getValue(dbProperty.zip, 'zip'),
+    status: getValue(dbProperty.status, 'status'),
+    agentName: getValue(dbProperty.agent_name, 'agent_name'),
+    agentPhone: getValue(dbProperty.agent_phone, 'agent_phone'),
+    agentEmail: getValue(dbProperty.agent_email, 'agent_email')
   };
 };
 
@@ -98,9 +111,6 @@ export const usePropertyDetails = (address: string | undefined, idxPropertyId?: 
           query = query.or(`idx_id.eq.${idxPropertyId},mls_id.eq.${idxPropertyId}`);
         } else if (address) {
           // Otherwise, try to match by address
-          const normalizedAddress = normalizeAddress(address);
-          
-          // Try exact match first
           query = query.ilike('address', `%${address}%`);
         }
 
@@ -115,7 +125,6 @@ export const usePropertyDetails = (address: string | undefined, idxPropertyId?: 
           setDetails(propertyDetails);
         } else {
           // No property found in database
-          console.warn(`No property found for ${idxPropertyId ? `ID: ${idxPropertyId}` : `address: ${address}`}`);
           setDetails(null);
         }
       } catch (err) {

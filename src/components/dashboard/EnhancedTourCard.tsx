@@ -29,7 +29,6 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { cn } from '@/lib/utils';
 import { usePropertyDetails } from '@/hooks/usePropertyDetails';
-import PropertyDataDebugger from './PropertyDataDebugger';
 
 interface PropertyDetails {
   beds?: number;
@@ -105,17 +104,16 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
     setChecklist(prev => ({ ...prev, [item]: !prev[item] }));
   };
 
-  // Remove the default fallback data to see if we're getting real data
+  // Use fetched details if available, but show graceful fallbacks when data is missing
   const propertyDetails: PropertyDetails = fetchedDetails || showing.property_details || {};
   
-  console.log('🎭 EnhancedTourCard property details:', {
-    fetchedDetails,
-    showingPropertyDetails: showing.property_details,
-    finalPropertyDetails: propertyDetails,
-    showingId: showing.id,
-    address: showing.property_address,
-    idxPropertyId: showing.idx_property_id
-  });
+  // Helper function to check if we have meaningful property data
+  const hasPropertyData = propertyDetails && (
+    propertyDetails.beds || 
+    propertyDetails.baths || 
+    propertyDetails.sqft || 
+    propertyDetails.price
+  );
 
   // Save checklist to localStorage
   useEffect(() => {
@@ -419,11 +417,17 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
               </div>
             </div>
             
-            {/* Temporary Debug Info */}
-            <PropertyDataDebugger 
-              address={showing.property_address}
-              idxPropertyId={showing.idx_property_id}
-            />
+            {/* Show helpful message when property data is incomplete */}
+            {!hasPropertyData && (
+              <div className="bg-amber-50/50 border border-amber-200 rounded-lg p-3 mt-4">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Info className="w-4 h-4" />
+                  <span className="text-sm">
+                    Property details are being updated from MLS. Check back soon for complete information.
+                  </span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </FloatingCard>

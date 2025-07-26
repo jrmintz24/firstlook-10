@@ -65,6 +65,7 @@ interface OptimizedShowingCardProps {
   showActions?: boolean;
   onSignAgreement?: (showing: ShowingRequest) => void;
   onRequestShowing?: () => void;
+  buyerActions?: Record<string, any>;
 }
 
 
@@ -80,7 +81,8 @@ const OptimizedShowingCard = ({
   userType = 'buyer',
   showActions = true,
   onSignAgreement,
-  onRequestShowing
+  onRequestShowing,
+  buyerActions
 }: OptimizedShowingCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -226,7 +228,7 @@ const OptimizedShowingCard = ({
                   {/* Action State Badges for Completed Tours */}
                   {isCompletedTour && buyerActions?.[showing.id] && (
                     <ActionStateBadges 
-                      actions={buyerActions[showing.id]}
+                      actions={buyerActions?.[showing.id]}
                       size="sm"
                       className="mt-2"
                     />

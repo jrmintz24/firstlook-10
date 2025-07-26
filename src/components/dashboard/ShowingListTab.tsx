@@ -212,6 +212,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                     showActions={showActions}
                     onSignAgreement={onSignAgreement}
                     onRequestShowing={onRequestShowing}
+                    buyerActions={buyerActions}
                   />
                 </FloatingCard>
               </DynamicShadowCard>

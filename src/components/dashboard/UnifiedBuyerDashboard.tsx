@@ -28,7 +28,7 @@ const UnifiedBuyerDashboard = () => {
     handleConfirmShowing,
     handleAgreementSign,
     agreements,
-    buyerActions
+    buyerActions = {}
   } = useBuyerDashboard();
   const isMobile = useIsMobile();
 

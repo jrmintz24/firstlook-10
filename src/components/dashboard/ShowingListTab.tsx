@@ -141,7 +141,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 showAssignButton={!showing.assigned_agent_id}
                 onComplete={onComplete}
                 currentAgentId={currentUserId}
-                buyerActions={buyerActions[showing.id]}
+                buyerActions={buyerActions?.[showing.id]}
               />
             );
           }
@@ -172,7 +172,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                   onSignAgreement={() => onSignAgreement?.(showing)}
                   userType={userType}
                   currentUserId={currentUserId}
-                  buyerActions={buyerActions[showing.id]}
+                  buyerActions={buyerActions?.[showing.id]}
                   agreements={agreements}
                   onComplete={onComplete}
                 />

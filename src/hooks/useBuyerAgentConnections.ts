@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface AgentConnection {
   id: string;
@@ -26,7 +25,6 @@ interface AgentConnection {
 export const useBuyerAgentConnections = (buyerId?: string) => {
   const [connections, setConnections] = useState<AgentConnection[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!buyerId) {
@@ -52,14 +50,6 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
 
       if (matchesError) {
         console.error('Error fetching agent matches:', matchesError);
-        // Only show toast for actual database errors, not empty results
-        if (matchesError.code !== 'PGRST116') {
-          toast({
-            title: "Error", 
-            description: "Failed to load agent connections. Please try again.",
-            variant: "destructive"
-          });
-        }
         setConnections([]);
         return;
       }
@@ -127,11 +117,6 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
   const handleContactAgent = async (agentId: string, method: 'phone' | 'email' | 'message') => {
     // TODO: Implement contact functionality
     console.log(`Contacting agent ${agentId} via ${method}`);
-    
-    toast({
-      title: "Contact Request",
-      description: `Contacting agent via ${method}...`,
-    });
   };
 
   return {

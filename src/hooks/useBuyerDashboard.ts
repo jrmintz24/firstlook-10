@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface Profile {
@@ -34,7 +33,6 @@ export const useBuyerDashboard = () => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -86,11 +84,6 @@ export const useBuyerDashboard = () => {
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('useBuyerDashboard: Profile error:', profileError);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data.",
-          variant: "destructive"
-        });
       } else {
         setProfile(profileData);
         console.log('useBuyerDashboard: Profile set:', profileData);
@@ -118,11 +111,6 @@ export const useBuyerDashboard = () => {
       }
     } catch (error) {
       console.error('useBuyerDashboard: Error fetching user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data.",
-        variant: "destructive"
-      });
     } finally {
       console.log('useBuyerDashboard: Setting loading to false');
       setLoading(false);
@@ -150,11 +138,6 @@ export const useBuyerDashboard = () => {
 
       if (requestsError) {
         console.error('useBuyerDashboard: Requests error:', requestsError);
-        toast({
-          title: "Error",
-          description: "Failed to load showing requests.",
-          variant: "destructive"
-        });
         setShowingRequests([]);
       } else {
         setShowingRequests(requestsData || []);
@@ -182,37 +165,20 @@ export const useBuyerDashboard = () => {
 
       if (error) {
         console.error('Error cancelling showing:', error);
-        toast({
-          title: "Error",
-          description: "Failed to cancel showing. Please try again.",
-          variant: "destructive"
-        });
         return;
       }
 
-      toast({
-        title: "Showing Cancelled",
-        description: "Your showing request has been cancelled.",
-      });
-      
+      console.log('Showing cancelled successfully');
       fetchShowingRequests();
     } catch (error) {
       console.error('Exception cancelling showing:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive"
-      });
     }
   };
 
   const handleRescheduleShowing = async (id: string) => {
     console.log('Rescheduling showing:', id);
     // Implement reschedule logic here
-    toast({
-      title: "Feature Coming Soon",
-      description: "Rescheduling functionality will be available soon.",
-    });
+    console.log('Rescheduling functionality will be available soon');
   };
 
   const handleConfirmShowing = (showing: ShowingRequest) => {
@@ -298,10 +264,7 @@ export const useBuyerDashboard = () => {
         [showing.id]: true
       }));
 
-      toast({
-        title: "Agreement Signed",
-        description: "You have successfully signed the tour agreement. Your tour status has been updated to confirmed.",
-      });
+      console.log('Agreement signed successfully');
 
       // Refresh the data to reflect changes
       try {
@@ -312,11 +275,6 @@ export const useBuyerDashboard = () => {
       }
     } catch (error: any) {
       console.error('Exception signing agreement:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign agreement. Please try again.",
-        variant: "destructive"
-      });
       throw error; // Re-throw so the caller can handle it
     }
   };

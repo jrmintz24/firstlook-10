@@ -129,10 +129,23 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
       // Submit buyer insight if provided
       if (data.insightData) {
         console.log('Submitting buyer insight:', data.insightData);
+        
+        // Normalize the property address for consistent storage
+        const normalizedAddress = showing.property_address
+          ?.replace(/,\s*USA\s*$/i, '') // Remove ", USA" at end
+          ?.replace(/^(\d+),\s+/, '$1 ') // Remove comma after house number
+          ?.replace(/\s+/g, ' ') // Normalize multiple spaces
+          ?.trim() || showing.property_address;
+        
+        console.log('Address normalization:', {
+          original: showing.property_address,
+          normalized: normalizedAddress
+        });
+        
         const { error: insertError } = await supabase
           .from('buyer_insights')
           .insert({
-            property_address: showing.property_address,
+            property_address: normalizedAddress,
             insight_text: data.insightData.insightText.trim(),
             category: data.insightData.category,
             buyer_name: data.insightData.buyerName.trim(),
@@ -143,8 +156,19 @@ const BuyerFeedbackModal = ({ isOpen, onClose, onComplete, showing, buyerId }: B
           });
 
         if (insertError) {
+          console.error('Database insertion error:', insertError);
+          console.error('Attempted insert data:', {
+            property_address: normalizedAddress,
+            insight_text: data.insightData.insightText.trim(),
+            category: data.insightData.category,
+            buyer_name: data.insightData.buyerName.trim(),
+            buyer_id: buyerId,
+            showing_request_id: showing.id
+          });
           throw insertError;
         }
+        
+        console.log('✅ Buyer insight inserted successfully');
       }
       
       // Update showing status to completed

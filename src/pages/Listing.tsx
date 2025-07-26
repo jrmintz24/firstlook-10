@@ -97,13 +97,27 @@ const Listing = () => {
         return null;
       };
 
+      const extractedAddress = extractValue(extractors.address);
+      const pageTitle = document.title;
+      
+      // Better address fallback logic
+      let finalAddress = extractedAddress;
+      if (!finalAddress && pageTitle && pageTitle !== 'Property Listing') {
+        finalAddress = pageTitle;
+      }
+      
+      // If still no address, try to get it from the iHomeFinder extractor results
+      if (!finalAddress && window.currentListingDetails?.address) {
+        finalAddress = window.currentListingDetails.address;
+      }
+      
       const details = {
         price: extractValue(extractors.price),
         beds: extractValue(extractors.beds),
         baths: extractValue(extractors.baths),
         sqft: extractValue(extractors.sqft),
         image: extractValue(extractors.image),
-        address: extractValue(extractors.address),
+        address: finalAddress,
         link: window.location.href,
         listingId: listingId,
         extractedAt: new Date().toISOString()
@@ -133,6 +147,43 @@ const Listing = () => {
 
   useEffect(() => {
     console.log('[Listing] Starting IDX render for listing:', listingId);
+    
+    // Listen for iHomeFinder property data extraction events
+    const handlePropertyDataExtracted = (event) => {
+      if (event.detail?.address && !propertyAddress) {
+        console.log('[Listing] Setting property address from iHomeFinder:', event.detail.address);
+        setPropertyAddress(event.detail.address);
+      }
+    };
+    
+    // Listen for custom property data events
+    window.addEventListener('propertyDataExtracted', handlePropertyDataExtracted);
+    
+    // Also check for address in page title periodically
+    const checkForAddress = () => {
+      if (!propertyAddress) {
+        const title = document.title;
+        // If title looks like an address (contains numbers and common street words)
+        if (title && title !== 'Property Listing' && /\d/.test(title) && 
+            (title.includes('Drive') || title.includes('Street') || title.includes('Ave') || 
+             title.includes('Rd') || title.includes('Blvd') || title.includes('Ln') || 
+             title.includes('Ct') || title.includes('Way') || title.includes('Pl'))) {
+          console.log('[Listing] Setting property address from page title:', title);
+          setPropertyAddress(title);
+        }
+      }
+    };
+    
+    // Check immediately and then every 2 seconds for up to 20 seconds
+    checkForAddress();
+    const addressCheckInterval = setInterval(checkForAddress, 2000);
+    setTimeout(() => clearInterval(addressCheckInterval), 20000);
+    
+    // Cleanup
+    const cleanup = () => {
+      window.removeEventListener('propertyDataExtracted', handlePropertyDataExtracted);
+      clearInterval(addressCheckInterval);
+    };
 
     const renderIDXContent = () => {
       if (listingId && containerRef.current && window.ihfKestrel?.render) {
@@ -244,7 +295,10 @@ const Listing = () => {
       }
     }, 500);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      cleanup();
+    };
   }, [listingId]);
 
   if (hasError) {

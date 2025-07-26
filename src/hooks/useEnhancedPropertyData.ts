@@ -223,15 +223,52 @@ const cachePropertyData = async (address: string, data: ObjectivePropertyData) =
   }
 };
 
+// Helper function to normalize addresses for consistent matching
+const normalizeAddress = (address: string): string => {
+  if (!address) return '';
+  
+  // Remove extra commas, normalize spacing, remove USA suffix
+  return address
+    .replace(/,\s*USA\s*$/i, '') // Remove ", USA" at end
+    .replace(/^(\d+),\s+/, '$1 ') // Remove comma after house number
+    .replace(/,(\s+)/, '$1') // Remove other stray commas followed by spaces
+    .replace(/\s+/g, ' ') // Normalize multiple spaces
+    .trim();
+};
+
 // Fetch buyer insights from database
 const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
-  console.log('[fetchBuyerInsights] Fetching insights for address:', address);
+  const normalizedAddress = normalizeAddress(address);
+  console.log('[fetchBuyerInsights] Fetching insights for:', { 
+    original: address, 
+    normalized: normalizedAddress 
+  });
+  
   try {
-    const { data, error } = await supabase
+    // Try multiple address variations
+    const addressVariations = [
+      normalizedAddress,
+      address, // original
+      address.replace(/,\s*USA\s*$/i, ''), // without USA
+      address.replace(/^(\d+),\s+/, '$1 ') // without comma after number
+    ].filter((addr, index, arr) => arr.indexOf(addr) === index); // remove duplicates
+    
+    console.log('[fetchBuyerInsights] Trying address variations:', addressVariations);
+    
+    // In development, also fetch unapproved insights for debugging
+    const isDevelopment = window.location.hostname === 'localhost';
+    
+    let query = supabase
       .from('buyer_insights')
       .select('*')
-      .eq('property_address', address)
-      .eq('is_approved', true)
+      .in('property_address', addressVariations);
+    
+    // Only filter by approval status in production
+    if (!isDevelopment) {
+      query = query.eq('is_approved', true);
+    }
+    
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .limit(10);
 
@@ -241,6 +278,7 @@ const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
     }
 
     console.log('[fetchBuyerInsights] Raw insights data:', data);
+    console.log('[fetchBuyerInsights] Found', data?.length || 0, 'insights');
 
     return data?.map(insight => ({
       id: insight.id,
@@ -260,8 +298,23 @@ const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
 
 // Fetch property ratings from completed tours
 const fetchPropertyRatings = async (address: string): Promise<PropertyRatings | null> => {
-  console.log('[fetchPropertyRatings] Fetching ratings for address:', address);
+  const normalizedAddress = normalizeAddress(address);
+  console.log('[fetchPropertyRatings] Fetching ratings for:', { 
+    original: address, 
+    normalized: normalizedAddress 
+  });
+  
   try {
+    // Try multiple address variations
+    const addressVariations = [
+      normalizedAddress,
+      address, // original
+      address.replace(/,\s*USA\s*$/i, ''), // without USA
+      address.replace(/^(\d+),\s+/, '$1 ') // without comma after number
+    ].filter((addr, index, arr) => arr.indexOf(addr) === index); // remove duplicates
+    
+    console.log('[fetchPropertyRatings] Trying address variations:', addressVariations);
+    
     // Get all feedback for this property by joining showing_requests with buyer_feedback
     const { data, error } = await supabase
       .from('showing_requests')
@@ -273,7 +326,7 @@ const fetchPropertyRatings = async (address: string): Promise<PropertyRatings | 
           agent_rating
         )
       `)
-      .eq('property_address', address)
+      .in('property_address', addressVariations)
       .eq('status', 'completed');
 
     if (error) {

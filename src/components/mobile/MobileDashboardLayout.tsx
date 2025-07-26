@@ -46,8 +46,8 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
   const { shouldEnableAnimations, getOptimizedDuration, getAnimationIntensity } = useMobileOptimization();
   const contentRef = useRef<HTMLDivElement>(null);
   
-  // Tab order for swipe navigation
-  const tabOrder = ['requested', 'confirmed', 'offers', 'favorites', 'activity', 'history'];
+  // Tab order for swipe navigation - Updated for Option B structure
+  const tabOrder = ['pending', 'upcoming', 'completed', 'portfolio'];
   
   // Handle swipe gestures
   useSwipeGesture(contentRef, {
@@ -92,36 +92,36 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
   const quickStats = [
     {
-      label: 'Requested Tours',
+      label: 'Pending',
       value: pendingRequests.length,
       icon: Clock,
       color: 'from-orange-500 to-amber-500',
       shadowColor: 'rgba(251, 146, 60, 0.15)',
-      action: () => handleTabChange('requested')
+      action: () => handleTabChange('pending')
     },
     {
-      label: 'Confirmed Tours',
+      label: 'Upcoming',
       value: activeShowings.length,
       icon: Calendar,
       color: 'from-blue-500 to-indigo-500',
       shadowColor: 'rgba(59, 130, 246, 0.15)',
-      action: () => handleTabChange('confirmed')
+      action: () => handleTabChange('upcoming')
     },
     {
-      label: 'Completed Tours',
+      label: 'Completed',
       value: completedShowings.length,
       icon: CheckCircle,
       color: 'from-green-500 to-emerald-500',
       shadowColor: 'rgba(34, 197, 94, 0.15)',
-      action: () => handleTabChange('history')
+      action: () => handleTabChange('completed')
     },
     {
-      label: 'Favorites',
+      label: 'Portfolio',
       value: favorites.length,
       icon: Heart,
-      color: 'from-pink-500 to-rose-500',
-      shadowColor: 'rgba(236, 72, 153, 0.15)',
-      action: () => handleTabChange('favorites')
+      color: 'from-purple-500 to-pink-500',
+      shadowColor: 'rgba(168, 85, 247, 0.15)',
+      action: () => handleTabChange('portfolio')
     }
   ];
 

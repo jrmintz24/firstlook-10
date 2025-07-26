@@ -147,24 +147,30 @@ const BuyerDashboard = () => {
       icon: CheckCircle,
       count: activeShowings.length,
       color: "bg-green-100 text-green-700",
-      content: (
-        <ShowingListTab
-          title="Confirmed Tours"
-          showings={activeShowings}
-          emptyIcon={CheckCircle}
-          emptyTitle="No Confirmed Tours"
-          emptyDescription="You don't have any confirmed tours scheduled."
-          emptyButtonText="Request a Tour"
-          onRequestShowing={handleRequestTour}
-          onCancelShowing={handleCancelShowing}
-          onRescheduleShowing={handleRescheduleShowing}
-          onSendMessage={handleSendMessage}
-          userType="buyer"
-          currentUserId={currentUser?.id}
-          agreements={agreements}
-          onComplete={refresh}
-        />
-      )
+      content: (() => {
+        console.log(`[BuyerDashboard] Confirmed tab - activeShowings:`, {
+          count: activeShowings.length,
+          showings: activeShowings.map(s => ({ id: s.id, status: s.status, address: s.property_address }))
+        });
+        return (
+          <ShowingListTab
+            title="Confirmed Tours"
+            showings={activeShowings}
+            emptyIcon={CheckCircle}
+            emptyTitle="No Confirmed Tours"
+            emptyDescription="You don't have any confirmed tours scheduled."
+            emptyButtonText="Request a Tour"
+            onRequestShowing={handleRequestTour}
+            onCancelShowing={handleCancelShowing}
+            onRescheduleShowing={handleRescheduleShowing}
+            onSendMessage={handleSendMessage}
+            userType="buyer"
+            currentUserId={currentUser?.id}
+            agreements={agreements}
+            onComplete={refresh}
+          />
+        );
+      })()
     },
     {
       id: "offers",

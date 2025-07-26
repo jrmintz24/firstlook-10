@@ -106,7 +106,8 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
     enhancedShowingsCount: enhancedShowings.length,
     detailsLoading,
     userType,
-    isMobile
+    isMobile,
+    showingsStatuses: showings.map(s => ({ id: s.id, status: s.status, address: s.property_address }))
   });
 
   // Show loading state while fetching property details (only on desktop)
@@ -161,6 +162,12 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
 
           // Use EnhancedTourCard for confirmed tours
           if (showing.status === 'confirmed' && userType === 'buyer') {
+            console.log(`[ShowingListTab] Rendering EnhancedTourCard for confirmed tour:`, {
+              id: showing.id,
+              status: showing.status,
+              address: showing.property_address,
+              userType
+            });
             return (
               <div
                 key={showing.id}

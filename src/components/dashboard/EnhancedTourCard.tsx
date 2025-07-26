@@ -92,6 +92,11 @@ const EnhancedTourCard: React.FC<EnhancedTourCardProps> = ({
   onGetDirections,
   index = 0
 }) => {
+  console.log(`[EnhancedTourCard] Rendering for showing:`, {
+    id: showing.id,
+    address: showing.property_address,
+    status: showing.status
+  });
   const [isExpanded, setIsExpanded] = useState(false);
   const [checklist, setChecklist] = useState<TourChecklist>(defaultChecklist);
   const [notes, setNotes] = useState('');

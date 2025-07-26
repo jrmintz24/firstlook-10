@@ -79,7 +79,6 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<InsightCategory>('highlights');
   const [insightText, setInsightText] = useState('');
   const [buyerName, setBuyerName] = useState('');
-  const [includeInsight, setIncludeInsight] = useState(false);
 
   const selectedOption = categoryOptions.find(opt => opt.value === selectedCategory);
 
@@ -89,7 +88,7 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
     const submissionData = {
       propertyRating,
       agentRating,
-      insightData: includeInsight && insightText.trim().length >= 10 && buyerName.trim()
+      insightData: insightText.trim().length >= 10 && buyerName.trim()
         ? {
             insightText: insightText.trim(),
             category: selectedCategory,
@@ -114,13 +113,20 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
       <label className="text-sm font-medium">{label}</label>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star
+          <button
             key={star}
-            className={`h-6 w-6 cursor-pointer transition-colors ${
-              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-yellow-200'
+            type="button"
+            className={`p-1 transition-all transform hover:scale-110 ${
+              star <= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'
             }`}
             onClick={() => onRatingChange(star)}
-          />
+          >
+            <Star
+              className={`h-6 w-6 ${
+                star <= rating ? 'fill-current' : ''
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>
@@ -163,27 +169,13 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-blue-600" />
-          <h3 className="text-lg font-medium">Share Your Insights (Optional)</h3>
+          <h3 className="text-lg font-medium">Share Your Insights</h3>
         </div>
         <p className="text-sm text-gray-600">
-          Help future buyers by sharing what you discovered during your tour
+          Help future buyers by sharing what you discovered during your tour (optional)
         </p>
 
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="includeInsight"
-            checked={includeInsight}
-            onChange={(e) => setIncludeInsight(e.target.checked)}
-            className="rounded"
-          />
-          <Label htmlFor="includeInsight" className="text-sm">
-            I want to share insights to help future buyers
-          </Label>
-        </div>
-
-        {includeInsight && (
-          <div className="space-y-4 pl-4 border-l-2 border-blue-200">
+        <div className="space-y-4 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
             {/* Category Selection */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">What would you like to share?</Label>
@@ -265,8 +257,7 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
                 </div>
               </div>
             )}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Submit Buttons */}
@@ -276,7 +267,7 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
         </Button>
         <Button 
           type="submit" 
-          disabled={loading || (includeInsight && (insightText.length < 10 || !buyerName.trim()))}
+          disabled={loading}
           className="flex-1"
         >
           {loading ? (

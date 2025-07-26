@@ -39,20 +39,27 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
   const { isLoaded: scriptLoaded, error: scriptError } = useIHomefinderScript({ domain });
 
   useEffect(() => {
+    console.log('[IHomefinderWidget] useEffect triggered:', { 
+      mlsId, scriptLoaded, scriptError, loading, error, domain 
+    });
+
     // If no domain is configured, show error immediately
     if (!domain) {
+      console.log('[IHomefinderWidget] No domain configured');
       setHasError(true);
       setIsLoading(false);
       return;
     }
 
     if (!mlsId || loading || error) {
+      console.log('[IHomefinderWidget] Missing requirements:', { mlsId, loading, error });
       setIsLoading(false);
       return;
     }
 
     // If script failed to load, show error
     if (scriptError) {
+      console.log('[IHomefinderWidget] Script error:', scriptError);
       setHasError(true);
       setIsLoading(false);
       return;
@@ -60,19 +67,36 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
 
     // If script not loaded yet, keep loading
     if (!scriptLoaded) {
+      console.log('[IHomefinderWidget] Script not loaded yet, waiting...');
       return;
     }
 
+    console.log('[IHomefinderWidget] All requirements met, creating widget for MLS:', mlsId);
+
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      console.log('[IHomefinderWidget] No container ref available');
+      return;
+    }
 
     // Clear any existing content
     container.innerHTML = '';
     
     try {
+      // Check if ihfKestrel is available
+      if (typeof (window as any).ihfKestrel === 'undefined') {
+        console.log('[IHomefinderWidget] ihfKestrel not available on window');
+        setHasError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('[IHomefinderWidget] Creating propertyDetailsWidget for MLS:', mlsId);
+      
       // Create script tag that will be replaced by ihfKestrel
       const script = document.createElement('script');
       script.innerHTML = `
+        console.log('[IHomefinderWidget Script] Executing widget render');
         document.currentScript.replaceWith(ihfKestrel.render({
           "component": "propertyDetailsWidget",
           "mlsNumber": "${mlsId}",
@@ -84,9 +108,10 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
       container.appendChild(script);
       setIsLoading(false);
       setWidgetLoaded(true);
+      console.log('[IHomefinderWidget] Widget script added successfully');
       
     } catch (err) {
-      console.error('Error loading iHomefinder widget:', err);
+      console.error('[IHomefinderWidget] Error creating widget:', err);
       setHasError(true);
       setIsLoading(false);
     }

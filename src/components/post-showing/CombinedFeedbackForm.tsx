@@ -76,6 +76,8 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
 }) => {
   const [propertyRating, setPropertyRating] = useState(0);
   const [agentRating, setAgentRating] = useState(0);
+  
+  console.log('Current ratings:', { propertyRating, agentRating });
   const [selectedCategory, setSelectedCategory] = useState<InsightCategory>('highlights');
   const [insightText, setInsightText] = useState('');
   const [buyerName, setBuyerName] = useState('');
@@ -116,13 +118,19 @@ const CombinedFeedbackForm: React.FC<CombinedFeedbackFormProps> = ({
           <button
             key={star}
             type="button"
-            className={`p-1 transition-all transform hover:scale-110 ${
+            className={`p-1 transition-all transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded ${
               star <= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'
             }`}
-            onClick={() => onRatingChange(star)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Star clicked:', star);
+              onRatingChange(star);
+            }}
+            aria-label={`Rate ${star} out of 5 stars`}
           >
             <Star
-              className={`h-6 w-6 ${
+              className={`h-6 w-6 pointer-events-none ${
                 star <= rating ? 'fill-current' : ''
               }`}
             />

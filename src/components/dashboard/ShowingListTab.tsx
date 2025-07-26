@@ -89,7 +89,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   buyerActions = {},
   eligibility,
   onUpgradeClick
-) => {
+}) => {
   // Check if we're on mobile to optimize loading
   const isMobile = useIsMobile();
   

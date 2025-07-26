@@ -61,6 +61,12 @@ export const useUnifiedDashboardData = (userType: 'buyer' | 'agent' = 'buyer') =
   const fetchingRef = useRef(false);
   const lastFetchRef = useRef<number>(0);
   const pollingIntervalRef = useRef<NodeJS.Timeout>();
+  const toastRef = useRef(toast);
+  
+  // Update toast ref when toast changes but don't trigger re-renders
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
 
   const currentUser = user || session?.user;
 
@@ -206,7 +212,7 @@ export const useUnifiedDashboardData = (userType: 'buyer' | 'agent' = 'buyer') =
         error: errorMessage,
       }));
 
-      toast({
+      toastRef.current({
         title: "Error",
         description: `Failed to load dashboard data: ${errorMessage}`,
         variant: "destructive"
@@ -214,7 +220,7 @@ export const useUnifiedDashboardData = (userType: 'buyer' | 'agent' = 'buyer') =
     } finally {
       fetchingRef.current = false;
     }
-  }, [currentUser, userType, authLoading, toast]);
+  }, [currentUser, userType, authLoading]);
 
   // Setup real-time subscriptions with fallback polling
   useEffect(() => {

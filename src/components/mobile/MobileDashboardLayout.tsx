@@ -210,7 +210,7 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
 
 
       {/* Main Content */}
-      <div ref={contentRef} className="px-4 py-6 pb-20 min-h-[50vh]">
+      <div ref={contentRef} className="px-4 py-6">
         {/* Tab Navigation Dots */}
         <div className="flex items-center justify-center gap-2 mb-4">
           {tabOrder.map((tab) => (
@@ -233,11 +233,15 @@ const MobileDashboardLayout: React.FC<MobileDashboardLayoutProps> = ({
           "transition-all duration-300",
           shouldEnableAnimations && "animate-fade-in"
         )}>
-          {console.log('[MobileDashboardLayout] Rendering tab content:', { 
-            activeTab, 
-            hasChildren: !!children,
-            childrenType: typeof children 
-          })}
+          {(() => {
+            console.log('[MobileDashboardLayout] Rendering tab content:', { 
+              activeTab, 
+              hasChildren: !!children,
+              childrenType: typeof children,
+              childrenContent: children
+            });
+            return null;
+          })()}
           {children}
         </div>
       </div>

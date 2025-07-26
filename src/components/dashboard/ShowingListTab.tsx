@@ -11,6 +11,7 @@ import FloatingCard from "@/components/ui/FloatingCard";
 import DynamicShadowCard from "@/components/ui/DynamicShadowCard";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ShowingRequest {
   id: string;
@@ -89,7 +90,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   onUpgradeClick
 }) => {
   // Check if we're on mobile to optimize loading
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useIsMobile();
   
   // Fetch property details for the showings (skip on mobile for faster loading)
   const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(
@@ -132,7 +133,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
 
   return (
-    <div ref={ref} className="space-y-4">
+    <div ref={ref} className="space-y-4 w-full">
       <h2 className={cn(
         "text-xl font-semibold text-gray-900 mb-4 transition-all duration-500",
         isVisible && "animate-fade-in"

@@ -28,7 +28,7 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
   className,
   loading = false,
   error,
-  domain = 'your-site.ihomefinder.com' // TODO: Replace with your actual domain
+  domain = 'kestrel.idxhome.com'
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,29 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
   const { isLoaded: scriptLoaded, error: scriptError } = useIHomefinderScript({ domain });
 
   useEffect(() => {
-    if (!mlsId || loading || error || !scriptLoaded) return;
+    // If no domain is configured, show error immediately
+    if (!domain) {
+      setHasError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!mlsId || loading || error) {
+      setIsLoading(false);
+      return;
+    }
+
+    // If script failed to load, show error
+    if (scriptError) {
+      setHasError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // If script not loaded yet, keep loading
+    if (!scriptLoaded) {
+      return;
+    }
 
     const container = containerRef.current;
     if (!container) return;
@@ -68,7 +90,7 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
       setHasError(true);
       setIsLoading(false);
     }
-  }, [mlsId, scriptLoaded, loading, error]);
+  }, [mlsId, scriptLoaded, scriptError, loading, error, domain]);
 
   // Show loading state
   if (loading || isLoading) {
@@ -96,7 +118,10 @@ const IHomefinderWidget: React.FC<IHomefinderWidgetProps> = ({
             <div className="text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-2 text-orange-600" />
               <p className="text-sm text-orange-700 font-medium mb-1">Property details unavailable</p>
-              <p className="text-xs text-orange-600">{error || scriptError || 'Unable to load property widget'}</p>
+              <p className="text-xs text-orange-600">
+                {!domain ? 'iHomefinder domain not configured' : 
+                 error || scriptError || 'Unable to load property widget'}
+              </p>
               <div className="mt-3 p-3 bg-white rounded border">
                 <div className="flex items-center gap-2 text-gray-700">
                   <Home className="h-4 w-4" />

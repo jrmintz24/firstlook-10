@@ -19,12 +19,13 @@ export const useIHomefinderScript = ({ domain }: UseIHomefinderScriptProps = {})
     // Don't load if no domain provided
     if (!domain) {
       setError('iHomefinder domain not configured');
+      setIsLoaded(false);
       return;
     }
 
     // Create script element
     const script = document.createElement('script');
-    script.src = `https://${domain}/ihf/widget/ihf.js`;
+    script.src = `https://${domain}/ihf-kestrel.js`;
     script.async = true;
 
     script.onload = () => {

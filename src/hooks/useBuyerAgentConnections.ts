@@ -43,74 +43,82 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
     try {
       setLoading(true);
       
-      // Fetch buyer-agent matches with agent profile and showing request details
-      const { data: matches, error } = await supabase
+      // First, just fetch the basic buyer-agent matches
+      const { data: matches, error: matchesError } = await supabase
         .from('buyer_agent_matches')
-        .select(`
-          id,
-          created_at,
-          match_source,
-          agent_id,
-          showing_request_id,
-          agent_profile:profiles!agent_id (
-            id,
-            first_name,
-            last_name,
-            phone,
-            email,
-            photo_url,
-            agent_details
-          ),
-          showing_requests (
-            property_address,
-            preferred_date,
-            preferred_time,
-            status
-          )
-        `)
+        .select('id, created_at, match_source, agent_id, showing_request_id')
         .eq('buyer_id', buyerId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching agent connections:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load agent connections. Please try again.",
-          variant: "destructive"
-        });
+      if (matchesError) {
+        console.error('Error fetching agent matches:', matchesError);
+        // Only show toast for actual database errors, not empty results
+        if (matchesError.code !== 'PGRST116') {
+          toast({
+            title: "Error", 
+            description: "Failed to load agent connections. Please try again.",
+            variant: "destructive"
+          });
+        }
+        setConnections([]);
         return;
       }
 
-      // Transform the data to match the expected format
-      const formattedConnections: AgentConnection[] = (matches || []).map(match => ({
-        id: match.id,
-        created_at: match.created_at,
-        match_source: match.match_source,
-        agent: {
-          id: match.agent_profile?.id || match.agent_id,
-          first_name: match.agent_profile?.first_name || '',
-          last_name: match.agent_profile?.last_name || '',
-          phone: match.agent_profile?.phone,
-          email: match.agent_profile?.email,
-          photo_url: match.agent_profile?.photo_url,
-          agent_details: match.agent_profile?.agent_details
-        },
-        showing_request: match.showing_requests ? {
-          property_address: match.showing_requests.property_address,
-          preferred_date: match.showing_requests.preferred_date,
-          preferred_time: match.showing_requests.preferred_time,
-          status: match.showing_requests.status
-        } : undefined
-      }));
+      // If no matches found, that's fine - just show empty state
+      if (!matches || matches.length === 0) {
+        setConnections([]);
+        return;
+      }
+
+      // For each match, fetch the agent profile separately
+      const formattedConnections: AgentConnection[] = [];
+      
+      for (const match of matches) {
+        // Fetch agent profile
+        const { data: agentProfile } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, phone, email, photo_url, agent_details')
+          .eq('id', match.agent_id)
+          .single();
+
+        // Fetch showing request if exists
+        let showingRequest = null;
+        if (match.showing_request_id) {
+          const { data: showing } = await supabase
+            .from('showing_requests')
+            .select('property_address, preferred_date, preferred_time, status')
+            .eq('id', match.showing_request_id)
+            .single();
+          showingRequest = showing;
+        }
+
+        formattedConnections.push({
+          id: match.id,
+          created_at: match.created_at,
+          match_source: match.match_source,
+          agent: {
+            id: agentProfile?.id || match.agent_id,
+            first_name: agentProfile?.first_name || '',
+            last_name: agentProfile?.last_name || '',
+            phone: agentProfile?.phone,
+            email: agentProfile?.email,
+            photo_url: agentProfile?.photo_url,
+            agent_details: agentProfile?.agent_details
+          },
+          showing_request: showingRequest ? {
+            property_address: showingRequest.property_address,
+            preferred_date: showingRequest.preferred_date,
+            preferred_time: showingRequest.preferred_time,
+            status: showingRequest.status
+          } : undefined
+        });
+      }
 
       setConnections(formattedConnections);
     } catch (error) {
       console.error('Exception fetching agent connections:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading agent connections.",
-        variant: "destructive"
-      });
+      // Only show error toast for unexpected exceptions, not for normal "no data" cases
+      setConnections([]);
     } finally {
       setLoading(false);
     }

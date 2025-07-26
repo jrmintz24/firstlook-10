@@ -92,13 +92,13 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   // Check if we're on mobile to optimize loading
   const isMobile = useIsMobile();
   
-  // Fetch property details for the showings (skip on mobile for faster loading)
+  // Disable property details fetching temporarily to fix crashes
   const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(
-    isMobile ? [] : showings
+    [] // Skip property details fetching entirely for now
   );
 
-  // Use showings with details if available, otherwise fall back to original showings
-  const enhancedShowings = isMobile ? showings : (showingsWithDetails.length > 0 ? showingsWithDetails : showings);
+  // Use original showings without property details for now
+  const enhancedShowings = showings;
 
   console.log('[ShowingListTab] Rendering:', {
     title,
@@ -110,14 +110,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
     showingsStatuses: showings.map(s => ({ id: s.id, status: s.status, address: s.property_address }))
   });
 
-  // Show loading state while fetching property details (only on desktop)
-  if (!isMobile && detailsLoading && showings.length > 0) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Skip loading state since we're not fetching property details
 
   if (enhancedShowings.length === 0) {
     return (
@@ -160,9 +153,9 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
             );
           }
 
-          // Use EnhancedTourCard for confirmed tours
+          // Use simplified card for confirmed tours (temporary fix to avoid IDX crashes)
           if (showing.status === 'confirmed' && userType === 'buyer') {
-            console.log(`[ShowingListTab] Rendering EnhancedTourCard for confirmed tour:`, {
+            console.log(`[ShowingListTab] Rendering simplified confirmed tour card:`, {
               id: showing.id,
               status: showing.status,
               address: showing.property_address,
@@ -177,19 +170,17 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
                 )}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <EnhancedTourCard
+                <OptimizedShowingCard
                   showing={showing}
                   onCancel={onCancelShowing}
                   onReschedule={onRescheduleShowing}
-                  onAddToCalendar={(showing) => {
-                    // TODO: Implement calendar integration
-                    console.log('Add to calendar:', showing);
-                  }}
-                  onGetDirections={(address) => {
-                    // Open in Google Maps
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
-                  }}
-                  index={index}
+                  onSendMessage={() => onSendMessage?.(showing.id)}
+                  onSignAgreement={() => onSignAgreement?.(showing)}
+                  userType={userType}
+                  currentUserId={currentUserId}
+                  buyerActions={buyerActions[showing.id]}
+                  agreements={agreements}
+                  onComplete={onComplete}
                 />
               </div>
             );

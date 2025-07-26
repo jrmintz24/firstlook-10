@@ -101,15 +101,7 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   // Use original showings without property details for now
   const enhancedShowings = showings;
 
-  console.log('[ShowingListTab] Rendering:', {
-    title,
-    showingsCount: showings.length,
-    enhancedShowingsCount: enhancedShowings.length,
-    detailsLoading,
-    userType,
-    isMobile,
-    showingsStatuses: showings.map(s => ({ id: s.id, status: s.status, address: s.property_address }))
-  });
+  // Removed console.log to prevent spam
 
   // Skip loading state since we're not fetching property details
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +27,27 @@ const UnifiedBuyerDashboard = () => {
     agreements
   } = useBuyerDashboard();
   const isMobile = useIsMobile();
+
+  // Memoize callback functions to prevent unnecessary re-renders
+  const handleRequestShowing = useCallback(() => {
+    // TODO: Implement
+  }, []);
+
+  const memoizedHandleCancel = useCallback((id: string) => {
+    handleCancelShowing(id);
+  }, [handleCancelShowing]);
+
+  const memoizedHandleReschedule = useCallback((id: string) => {
+    handleRescheduleShowing(id);
+  }, [handleRescheduleShowing]);
+
+  const memoizedHandleConfirm = useCallback((request: any) => {
+    handleConfirmShowing(request);
+  }, [handleConfirmShowing]);
+
+  const memoizedHandleAgreementSign = useCallback((request: any) => {
+    handleAgreementSign(request);
+  }, [handleAgreementSign]);
 
   if (loading) {
     return (
@@ -113,14 +134,14 @@ const UnifiedBuyerDashboard = () => {
               emptyTitle="No pending tour requests"
               emptyDescription="Start browsing properties to schedule your first tour!"
               emptyButtonText="Browse Properties"
-              onRequestShowing={() => {/* TODO: Implement */}}
-              onCancelShowing={handleCancelShowing}
-              onRescheduleShowing={handleRescheduleShowing}
-              onConfirmShowing={handleConfirmShowing}
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={memoizedHandleCancel}
+              onRescheduleShowing={memoizedHandleReschedule}
+              onConfirmShowing={memoizedHandleConfirm}
               userType="buyer"
               currentUserId={user?.id}
               agreements={agreements}
-              onSignAgreement={handleAgreementSign}
+              onSignAgreement={memoizedHandleAgreementSign}
               showActions={true}
             />
           );
@@ -333,14 +354,14 @@ const UnifiedBuyerDashboard = () => {
                     emptyTitle="No pending tour requests"
                     emptyDescription="Start browsing properties to schedule your first tour!"
                     emptyButtonText="Browse Properties"
-                    onRequestShowing={() => {/* TODO: Implement */}}
-                    onCancelShowing={handleCancelShowing}
-                    onRescheduleShowing={handleRescheduleShowing}
-                    onConfirmShowing={handleConfirmShowing}
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
+                    onConfirmShowing={memoizedHandleConfirm}
                     userType="buyer"
                     currentUserId={user?.id}
                     agreements={agreements}
-                    onSignAgreement={handleAgreementSign}
+                    onSignAgreement={memoizedHandleAgreementSign}
                     showActions={true}
                   />
                 </CardContent>
@@ -363,9 +384,9 @@ const UnifiedBuyerDashboard = () => {
                     emptyTitle="No upcoming tours"
                     emptyDescription="No upcoming tours scheduled."
                     emptyButtonText="Schedule Tour"
-                    onRequestShowing={() => {/* TODO: Implement */}}
-                    onCancelShowing={handleCancelShowing}
-                    onRescheduleShowing={handleRescheduleShowing}
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
                     userType="buyer"
                     currentUserId={user?.id}
                     agreements={agreements}
@@ -391,9 +412,9 @@ const UnifiedBuyerDashboard = () => {
                     emptyTitle="No completed tours"
                     emptyDescription="No completed tours yet. Your tour history will appear here."
                     emptyButtonText="Schedule Tour"
-                    onRequestShowing={() => {/* TODO: Implement */}}
-                    onCancelShowing={handleCancelShowing}
-                    onRescheduleShowing={handleRescheduleShowing}
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
                     userType="buyer"
                     currentUserId={user?.id}
                     showActions={false}

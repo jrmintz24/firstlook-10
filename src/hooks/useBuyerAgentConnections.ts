@@ -52,7 +52,7 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
           match_source,
           agent_id,
           showing_request_id,
-          profiles!buyer_agent_matches_agent_id_fkey (
+          agent_profile:profiles!agent_id (
             id,
             first_name,
             last_name,
@@ -87,13 +87,13 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
         created_at: match.created_at,
         match_source: match.match_source,
         agent: {
-          id: match.profiles?.id || match.agent_id,
-          first_name: match.profiles?.first_name || '',
-          last_name: match.profiles?.last_name || '',
-          phone: match.profiles?.phone,
-          email: match.profiles?.email,
-          photo_url: match.profiles?.photo_url,
-          agent_details: match.profiles?.agent_details
+          id: match.agent_profile?.id || match.agent_id,
+          first_name: match.agent_profile?.first_name || '',
+          last_name: match.agent_profile?.last_name || '',
+          phone: match.agent_profile?.phone,
+          email: match.agent_profile?.email,
+          photo_url: match.agent_profile?.photo_url,
+          agent_details: match.agent_profile?.agent_details
         },
         showing_request: match.showing_requests ? {
           property_address: match.showing_requests.property_address,

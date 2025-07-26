@@ -44,8 +44,13 @@ export const useEnhancedPropertyData = (address: string, mlsId?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('[useEnhancedPropertyData] Hook called with:', { address, mlsId });
+
   useEffect(() => {
-    if (!address) return;
+    if (!address) {
+      console.log('[useEnhancedPropertyData] No address provided, skipping fetch');
+      return;
+    }
     
     const fetchPropertyData = async () => {
       setLoading(true);
@@ -220,6 +225,7 @@ const cachePropertyData = async (address: string, data: ObjectivePropertyData) =
 
 // Fetch buyer insights from database
 const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
+  console.log('[fetchBuyerInsights] Fetching insights for address:', address);
   try {
     const { data, error } = await supabase
       .from('buyer_insights')
@@ -233,6 +239,8 @@ const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
       console.error('Error fetching buyer insights:', error);
       return [];
     }
+
+    console.log('[fetchBuyerInsights] Raw insights data:', data);
 
     return data?.map(insight => ({
       id: insight.id,
@@ -252,6 +260,7 @@ const fetchBuyerInsights = async (address: string): Promise<BuyerInsight[]> => {
 
 // Fetch property ratings from completed tours
 const fetchPropertyRatings = async (address: string): Promise<PropertyRatings | null> => {
+  console.log('[fetchPropertyRatings] Fetching ratings for address:', address);
   try {
     // Get all feedback for this property by joining showing_requests with buyer_feedback
     const { data, error } = await supabase
@@ -272,7 +281,10 @@ const fetchPropertyRatings = async (address: string): Promise<PropertyRatings | 
       return null;
     }
 
+    console.log('[fetchPropertyRatings] Raw ratings data:', data);
+
     if (!data || data.length === 0) {
+      console.log('[fetchPropertyRatings] No ratings found');
       return null;
     }
 

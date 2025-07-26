@@ -38,9 +38,12 @@ const EnhancedPropertyDisplay: React.FC<EnhancedPropertyDisplayProps> = ({
   showInsightForm = false,
   className
 }) => {
+  console.log('[EnhancedPropertyDisplay] Rendering with:', { address, mlsId });
   const { data, loading, error } = useEnhancedPropertyData(address, mlsId);
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  
+  console.log('[EnhancedPropertyDisplay] Data state:', { data, loading, error });
 
   if (loading) {
     return (

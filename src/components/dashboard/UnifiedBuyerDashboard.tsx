@@ -201,15 +201,40 @@ const UnifiedBuyerDashboard = () => {
             {tabs.map((tab, index) => {
               const Icon = tab.icon;
               return (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={index} 
+                  className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] border border-gray-100/60 bg-white/80 backdrop-blur-sm"
+                  onClick={() => setActiveTab(tab.id)}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${tab.color === 'orange' ? 'bg-orange-100' : tab.color === 'blue' ? 'bg-blue-100' : tab.color === 'green' ? 'bg-green-100' : 'bg-purple-100'}`}>
-                        <Icon className={`w-6 h-6 ${tab.color === 'orange' ? 'text-orange-600' : tab.color === 'blue' ? 'text-blue-600' : tab.color === 'green' ? 'text-green-600' : 'text-purple-600'}`} />
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm ${
+                        tab.color === 'orange' ? 'bg-gradient-to-br from-orange-100 to-amber-50 group-hover:from-orange-200 group-hover:to-amber-100' :
+                        tab.color === 'blue' ? 'bg-gradient-to-br from-blue-100 to-indigo-50 group-hover:from-blue-200 group-hover:to-indigo-100' :
+                        tab.color === 'green' ? 'bg-gradient-to-br from-green-100 to-emerald-50 group-hover:from-green-200 group-hover:to-emerald-100' :
+                        'bg-gradient-to-br from-purple-100 to-pink-50 group-hover:from-purple-200 group-hover:to-pink-100'
+                      }`}>
+                        <Icon className={`w-7 h-7 transition-all duration-300 group-hover:scale-110 ${
+                          tab.color === 'orange' ? 'text-orange-600 group-hover:text-orange-700' :
+                          tab.color === 'blue' ? 'text-blue-600 group-hover:text-blue-700' :
+                          tab.color === 'green' ? 'text-green-600 group-hover:text-green-700' :
+                          'text-purple-600 group-hover:text-purple-700'
+                        }`} />
                       </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">{tab.count}</div>
-                        <div className="text-sm text-gray-600">{tab.label}</div>
+                      <div className="flex-1">
+                        <div className="text-3xl font-bold text-gray-900 group-hover:text-gray-800 transition-colors duration-300 tracking-tight">{tab.count}</div>
+                        <div className="text-sm font-medium text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{tab.label}</div>
+                      </div>
+                      {/* Subtle arrow indicator */}
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 ${
+                        tab.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                        tab.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                        tab.color === 'green' ? 'bg-green-100 text-green-600' :
+                        'bg-purple-100 text-purple-600'
+                      }`}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
                     </div>
                   </CardContent>
@@ -222,8 +247,8 @@ const UnifiedBuyerDashboard = () => {
         {/* Main Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200 bg-white rounded-lg shadow-sm">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-2 bg-transparent">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100/80 overflow-hidden backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-3 bg-transparent gap-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -233,26 +258,56 @@ const UnifiedBuyerDashboard = () => {
                     key={tab.id}
                     value={tab.id}
                     className={`
-                      flex flex-col items-center p-4 space-y-2 rounded-lg transition-all duration-200
-                      data-[state=active]:shadow-sm border-2 border-transparent
-                      ${getTabColorClasses(tab.color, isActive)}
+                      group flex flex-col items-center p-4 space-y-2 rounded-xl transition-all duration-300 ease-out
+                      border-2 border-transparent cursor-pointer relative overflow-hidden
+                      hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]
+                      ${isActive 
+                        ? `${getTabColorClasses(tab.color, true)} shadow-md transform scale-[1.01]` 
+                        : 'bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200/60 text-gray-600 hover:text-gray-800'
+                      }
                     `}
                   >
-                    <div className="flex items-center space-x-2">
-                      <Icon className="h-5 w-5" />
-                      <span className="font-medium">{tab.label}</span>
+                    {/* Subtle gradient overlay for depth */}
+                    <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${
+                      tab.color === 'orange' ? 'from-orange-400 to-amber-500' :
+                      tab.color === 'blue' ? 'from-blue-400 to-indigo-500' :
+                      tab.color === 'green' ? 'from-green-400 to-emerald-500' :
+                      'from-purple-400 to-pink-500'
+                    }`} />
+                    
+                    <div className="flex items-center space-x-2 relative z-10">
+                      <Icon className={`h-5 w-5 transition-all duration-300 ${
+                        isActive ? 'scale-110' : 'group-hover:scale-105'
+                      }`} />
+                      <span className="font-semibold tracking-tight">{tab.label}</span>
                       {tab.count > 0 && (
                         <Badge 
                           variant="secondary" 
-                          className="text-xs px-2 py-0.5 min-w-[20px] h-5"
+                          className={`text-xs px-2.5 py-1 min-w-[24px] h-6 font-bold rounded-full transition-all duration-300 ${
+                            isActive 
+                              ? 'bg-white/90 text-gray-800 shadow-sm' 
+                              : 'bg-white/80 text-gray-700 group-hover:bg-white group-hover:shadow-sm'
+                          }`}
                         >
                           {tab.count}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-center opacity-75 hidden md:block">
+                    <p className={`text-xs text-center transition-all duration-300 hidden md:block leading-tight ${
+                      isActive ? 'opacity-90' : 'opacity-60 group-hover:opacity-75'
+                    }`}>
                       {tab.description}
                     </p>
+                    
+                    {/* Active indicator line */}
+                    {isActive && (
+                      <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-1 rounded-full transition-all duration-300 ${
+                        tab.color === 'orange' ? 'bg-orange-500' :
+                        tab.color === 'blue' ? 'bg-blue-500' :
+                        tab.color === 'green' ? 'bg-green-500' :
+                        'bg-purple-500'
+                      }`} />
+                    )}
                   </TabsTrigger>
                 );
               })}

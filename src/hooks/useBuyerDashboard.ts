@@ -220,20 +220,20 @@ export const useBuyerDashboard = () => {
     setSelectedShowing(showing);
   };
 
-  const handleAgreementSign = async (name: string) => {
-    if (!selectedShowing || !currentUser) {
-      console.error('No selected showing or user for agreement signing');
+  const handleAgreementSign = async (showing: ShowingRequest) => {
+    if (!showing || !currentUser) {
+      console.error('No showing or user for agreement signing');
       return;
     }
 
-    console.log('Signing agreement for showing:', selectedShowing.id, 'with name:', name);
+    console.log('Signing agreement for showing:', showing.id, 'for user:', currentUser.email);
 
     try {
       // First, try to find existing agreement
       const { data: existingAgreement, error: findError } = await supabase
         .from('tour_agreements')
         .select('*')
-        .eq('showing_request_id', selectedShowing.id)
+        .eq('showing_request_id', showing.id)
         .eq('buyer_id', currentUser.id)
         .maybeSingle();
 
@@ -263,7 +263,7 @@ export const useBuyerDashboard = () => {
         const { error: insertError } = await supabase
           .from('tour_agreements')
           .insert({
-            showing_request_id: selectedShowing.id,
+            showing_request_id: showing.id,
             buyer_id: currentUser.id,
             agreement_type: 'single_tour',
             signed: true,
@@ -285,7 +285,7 @@ export const useBuyerDashboard = () => {
           status: 'confirmed',
           status_updated_at: new Date().toISOString()
         })
-        .eq('id', selectedShowing.id);
+        .eq('id', showing.id);
 
       if (statusError) {
         console.error('Error updating showing status:', statusError);
@@ -295,16 +295,16 @@ export const useBuyerDashboard = () => {
       // Update local agreements state
       setAgreements(prev => ({
         ...prev,
-        [selectedShowing.id]: true
+        [showing.id]: true
       }));
 
       toast({
         title: "Agreement Signed",
-        description: "You have successfully signed the tour agreement.",
+        description: "You have successfully signed the tour agreement. Your tour status has been updated to confirmed.",
       });
 
-      // Clear selected showing
-      setSelectedShowing(null);
+      // Refresh the data to reflect changes
+      fetchShowingRequests();
     } catch (error: any) {
       console.error('Exception signing agreement:', error);
       toast({

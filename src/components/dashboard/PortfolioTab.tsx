@@ -26,9 +26,19 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
 
   // Handlers for property card actions
   const handleViewDetails = (favorite: any) => {
-    // Navigate to property details page using MLS ID
-    if (favorite.mls_id) {
-      navigate(`/listing/${favorite.mls_id}`);
+    // Navigate to property details page using available ID fields
+    const propertyId = favorite.idx_id || favorite.mls_id || favorite.idx_property?.id;
+    
+    console.log('Debug View Details:', { 
+      idx_id: favorite.idx_id, 
+      mls_id: favorite.mls_id, 
+      idx_property_id: favorite.idx_property?.id,
+      finalPropertyId: propertyId,
+      address: favorite.property_address
+    });
+    
+    if (propertyId) {
+      navigate(`/listing/${propertyId}`);
     } else if (favorite.property_address) {
       // Fallback: search for property by address
       navigate(`/listings?search=${encodeURIComponent(favorite.property_address)}`);
@@ -233,10 +243,10 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
           onClose={handleScheduleModalClose}
           onSuccess={handleScheduleSuccess}
           initialAddress={selectedProperty.property_address}
-          propertyId={selectedProperty.mls_id}
+          propertyId={selectedProperty.idx_id || selectedProperty.mls_id || selectedProperty.idx_property?.id}
           propertyDetails={{
             address: selectedProperty.property_address,
-            mlsId: selectedProperty.mls_id,
+            mlsId: selectedProperty.idx_id || selectedProperty.mls_id || selectedProperty.idx_property?.id,
             price: selectedProperty.idx_property?.price,
             beds: selectedProperty.idx_property?.beds,
             baths: selectedProperty.idx_property?.baths,

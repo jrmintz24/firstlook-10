@@ -55,14 +55,23 @@ const SimpleFavoritesDisplay = ({
   const handleViewProperty = (favorite: any) => {
     // Try multiple strategies to view property details
     const pageUrl = (favorite.idx_property as any)?.ihf_page_url;
-    const mlsId = favorite.mls_id;
+    const propertyId = favorite.idx_id || favorite.mls_id || favorite.idx_property?.id;
+    
+    console.log('Debug View Property:', { 
+      idx_id: favorite.idx_id, 
+      mls_id: favorite.mls_id, 
+      idx_property_id: favorite.idx_property?.id,
+      finalPropertyId: propertyId,
+      pageUrl: pageUrl,
+      address: favorite.property_address
+    });
     
     if (pageUrl) {
       // First preference: use ihf_page_url if available
       window.open(pageUrl, '_blank');
-    } else if (mlsId) {
+    } else if (propertyId) {
       // Second preference: navigate to our property page
-      window.location.href = `/listing/${mlsId}`;
+      window.location.href = `/listing/${propertyId}`;
     } else if (favorite.property_address) {
       // Fallback: search by address
       window.location.href = `/listings?search=${encodeURIComponent(favorite.property_address)}`;
@@ -202,10 +211,10 @@ const SimpleFavoritesDisplay = ({
           onClose={handleScheduleModalClose}
           onSuccess={handleScheduleSuccess}
           initialAddress={selectedProperty.property_address}
-          propertyId={selectedProperty.mls_id}
+          propertyId={selectedProperty.idx_id || selectedProperty.mls_id || selectedProperty.idx_property?.id}
           propertyDetails={{
             address: selectedProperty.property_address,
-            mlsId: selectedProperty.mls_id,
+            mlsId: selectedProperty.idx_id || selectedProperty.mls_id || selectedProperty.idx_property?.id,
             price: selectedProperty.idx_property?.price,
             beds: selectedProperty.idx_property?.beds,
             baths: selectedProperty.idx_property?.baths,

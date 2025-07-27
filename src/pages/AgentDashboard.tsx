@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, FileText, Users } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -22,7 +22,6 @@ import RescheduleModal from "@/components/dashboard/RescheduleModal";
 import MessagingInterface from "@/components/messaging/MessagingInterface";
 
 // New components
-import ProposalsTab from "@/components/dashboard/ProposalsTab";
 import MyClientsTab from "@/components/dashboard/MyClientsTab";
 
 const AgentDashboard = () => {
@@ -234,24 +233,6 @@ const AgentDashboard = () => {
           buttonText="Refresh"
           onButtonClick={fetchAgentData}
           icon={Users}
-        />
-      )
-    },
-    {
-      id: "proposals",
-      title: "Proposals",
-      icon: FileText,
-      count: 0, // We'll implement count later
-      color: "bg-purple-100 text-purple-700",
-      content: currentUser?.id ? (
-        <ProposalsTab agentId={currentUser.id} />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Proposals"
-          description="Please refresh the page to load your proposals."
-          buttonText="Refresh"
-          onButtonClick={fetchAgentData}
-          icon={FileText}
         />
       )
     },

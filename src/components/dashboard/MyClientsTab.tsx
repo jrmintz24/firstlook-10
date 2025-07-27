@@ -13,7 +13,9 @@ import {
   DollarSign,
   Home,
   Eye,
-  User
+  User,
+  FileText,
+  Clock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +32,9 @@ interface ClientData {
   offers_made: number;
   last_activity: string;
   recent_properties: string[];
+  proposals_count: number;
+  pending_proposals: number;
+  latest_proposal_status?: string;
 }
 
 interface MyClientsTabProps {
@@ -229,6 +234,40 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           offers = [];
         }
 
+        // Get proposals/offer intents for this client
+        let proposals = [];
+        let pendingProposals = 0;
+        let latestProposalStatus = undefined;
+        try {
+          const { data, error } = await supabase
+            .from('offer_intents')
+            .select('id, consultation_requested, consultation_scheduled_at, questionnaire_completed_at, agent_summary_generated_at')
+            .eq('buyer_id', clientId)
+            .eq('agent_id', agentId);
+          if (error) throw error;
+          proposals = data || [];
+          
+          // Count pending proposals (not completed)
+          pendingProposals = proposals.filter(p => !p.agent_summary_generated_at).length;
+          
+          // Get latest proposal status
+          if (proposals.length > 0) {
+            const latest = proposals[0]; // Most recent first from query
+            if (latest.agent_summary_generated_at) {
+              latestProposalStatus = 'ready';
+            } else if (latest.consultation_scheduled_at) {
+              latestProposalStatus = 'scheduled';
+            } else if (latest.consultation_requested) {
+              latestProposalStatus = 'requested';
+            } else {
+              latestProposalStatus = 'new';
+            }
+          }
+        } catch (proposalsError) {
+          console.warn('[MyClientsTab] Proposals error:', proposalsError);
+          proposals = [];
+        }
+
         // Get connection date
         const match = agentMatches?.find(m => m.buyer_id === clientId);
         const connectionDate = match?.created_at || tours?.[0]?.status_updated_at || new Date().toISOString();
@@ -249,7 +288,10 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           favorite_properties: favorites?.length || 0,
           offers_made: offers?.length || 0,
           last_activity: lastActivity || connectionDate,
-          recent_properties: (tours?.slice(-3).map(t => t.property_address) || [])
+          recent_properties: (tours?.slice(-3).map(t => t.property_address) || []),
+          proposals_count: proposals.length,
+          pending_proposals: pendingProposals,
+          latest_proposal_status: latestProposalStatus
         });
       }
 
@@ -286,6 +328,22 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
     toast({
       title: "Schedule Tour",
       description: `Opening tour scheduler for ${client.buyer_name}`,
+    });
+  };
+
+  const handleViewProposals = (client: ClientData) => {
+    // TODO: Implement proposal viewing modal/page
+    toast({
+      title: "View Proposals",
+      description: `Viewing ${client.proposals_count} proposals for ${client.buyer_name}`,
+    });
+  };
+
+  const handleScheduleConsultation = (client: ClientData) => {
+    // TODO: Implement consultation scheduling
+    toast({
+      title: "Schedule Consultation",
+      description: `Opening consultation scheduler for ${client.buyer_name}`,
     });
   };
 
@@ -352,7 +410,7 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
                   </div>
 
                   {/* Client Stats */}
-                  <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+                  <div className="grid grid-cols-4 gap-2 mb-3 text-center">
                     <div className="p-2 bg-blue-50 rounded">
                       <div className="text-sm font-medium text-blue-900">{client.total_tours}</div>
                       <div className="text-xs text-blue-600">Tours</div>
@@ -364,6 +422,15 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
                     <div className="p-2 bg-green-50 rounded">
                       <div className="text-sm font-medium text-green-900">{client.offers_made}</div>
                       <div className="text-xs text-green-600">Offers</div>
+                    </div>
+                    <div className="p-2 bg-purple-50 rounded relative">
+                      <div className="text-sm font-medium text-purple-900">{client.proposals_count}</div>
+                      <div className="text-xs text-purple-600">Proposals</div>
+                      {client.pending_proposals > 0 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white font-bold">{client.pending_proposals}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -382,26 +449,85 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
                     </div>
                   )}
 
+                  {/* Proposal Status Indicator */}
+                  {client.proposals_count > 0 && client.latest_proposal_status && (
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-3 h-3 text-purple-600" />
+                        <span className="text-xs font-medium text-gray-700">Latest Proposal:</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            client.latest_proposal_status === 'ready' ? 'border-green-200 bg-green-50 text-green-700' :
+                            client.latest_proposal_status === 'scheduled' ? 'border-blue-200 bg-blue-50 text-blue-700' :
+                            client.latest_proposal_status === 'requested' ? 'border-orange-200 bg-orange-50 text-orange-700' :
+                            'border-gray-200 bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          {client.latest_proposal_status}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex-1 text-xs h-7"
-                      onClick={() => handleMessageClient(client)}
-                    >
-                      <MessageCircle className="w-3 h-3 mr-1" />
-                      Message
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex-1 text-xs h-7"
-                      onClick={() => handleScheduleTour(client)}
-                    >
-                      <Calendar className="w-3 h-3 mr-1" />
-                      Tour
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 text-xs h-7"
+                        onClick={() => handleMessageClient(client)}
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1" />
+                        Message
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 text-xs h-7"
+                        onClick={() => handleScheduleTour(client)}
+                      >
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Tour
+                      </Button>
+                    </div>
+                    
+                    {/* Proposal Action Buttons */}
+                    {client.proposals_count > 0 ? (
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1 text-xs h-7 border-purple-200 text-purple-700 hover:bg-purple-50"
+                          onClick={() => handleViewProposals(client)}
+                        >
+                          <FileText className="w-3 h-3 mr-1" />
+                          View Proposals ({client.proposals_count})
+                        </Button>
+                        {client.pending_proposals > 0 && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1 text-xs h-7 border-orange-200 text-orange-700 hover:bg-orange-50"
+                            onClick={() => handleScheduleConsultation(client)}
+                          >
+                            <Clock className="w-3 h-3 mr-1" />
+                            Schedule
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full text-xs h-7 border-purple-200 text-purple-700 hover:bg-purple-50"
+                        onClick={() => handleScheduleConsultation(client)}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Start Proposal
+                      </Button>
+                    )}
                   </div>
 
                   {/* Contact Info */}

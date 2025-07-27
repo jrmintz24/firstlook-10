@@ -255,7 +255,7 @@ const PostShowingActionsPanel = ({
               
               {/* Other Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {actions.filter(action => action.available && action.id !== 'make_offer').map((action) => {
+                {actions.filter(action => action.available).map((action) => {
                 const isCompleted = action.completed;
                 const Icon = action.icon;
                 
@@ -268,12 +268,20 @@ const PostShowingActionsPanel = ({
                       className={`h-auto p-3 border transition-all w-full text-sm ${
                         isCompleted 
                           ? 'border-green-200 bg-green-50 hover:bg-green-100' 
+                          : action.id === 'make_offer'
+                          ? 'border-green-300 bg-green-50 hover:bg-green-100 hover:border-green-400'
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center gap-3 w-full">
                         <div className="relative flex-shrink-0">
-                          <Icon className={`h-4 w-4 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`} />
+                          <Icon className={`h-4 w-4 ${
+                            isCompleted 
+                              ? 'text-green-600' 
+                              : action.id === 'make_offer' 
+                              ? 'text-green-600' 
+                              : 'text-gray-600'
+                          }`} />
                           {isCompleted && (
                             <CheckCircle className="h-3 w-3 text-green-600 absolute -top-1 -right-1" />
                           )}

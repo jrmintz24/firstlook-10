@@ -96,6 +96,7 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       }
 
       console.log('[MyClientsTab] Agent matches result:', agentMatches);
+      console.log('[MyClientsTab] Agent matches detailed:', JSON.stringify(agentMatches, null, 2));
 
       // Also get frequent buyers (3+ tours with this agent) - just get user IDs first
       const { data: frequentBuyers, error: frequentError } = await supabase
@@ -115,18 +116,21 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
 
       console.log('[MyClientsTab] Buyer tour counts:', buyerTourCounts);
 
-      // Get frequent buyers (1+ tours for now to test) who aren't already matched
+      // Extract unique buyer IDs from agent matches
       const matchedBuyerIds = new Set(agentMatches?.map(m => m.buyer_id) || []);
+      console.log('[MyClientsTab] Matched buyer IDs from agent_referrals/buyer_agent_matches:', Array.from(matchedBuyerIds));
+
+      // Get frequent buyers (1+ tours for now to test) who aren't already matched
       const frequentBuyerIds = Object.entries(buyerTourCounts)
         .filter(([_, count]) => count >= 1) // Lowered threshold for testing
         .map(([buyerId]) => buyerId)
         .filter(buyerId => !matchedBuyerIds.has(buyerId));
 
-      console.log('[MyClientsTab] Frequent buyer IDs:', frequentBuyerIds);
+      console.log('[MyClientsTab] Additional frequent buyer IDs:', frequentBuyerIds);
 
       // Combine matched clients and frequent buyers
       const allClientIds = [
-        ...(agentMatches?.map(m => m.buyer_id) || []),
+        ...Array.from(matchedBuyerIds), // Convert Set to Array
         ...frequentBuyerIds
       ];
 

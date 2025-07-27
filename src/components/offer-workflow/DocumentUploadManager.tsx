@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +59,29 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [offerIntentId]);
+
+  const fetchDocuments = async () => {
+    try {
+      const { data: docData, error: docError } = await supabase
+        .from('offer_documents')
+        .select('*')
+        .eq('offer_intent_id', offerIntentId)
+        .order('created_at', { ascending: false });
+
+      if (docError) {
+        console.error('Error fetching documents:', docError);
+        return;
+      }
+
+      setDocuments(docData || []);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    }
+  };
 
   const documentTypes = [
     { value: 'pre_approval_letter', label: 'Pre-approval Letter', required: true },
@@ -191,6 +214,9 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
       if (onDocumentUploaded) {
         onDocumentUploaded(docData);
       }
+
+      // Refresh documents list to get latest state
+      await fetchDocuments();
 
       toast({
         title: "Document uploaded",

@@ -338,6 +338,7 @@ const OfferManagementDashboard = ({ buyerId, onCreateOffer }: OfferManagementDas
           isOpen={!!selectedOffer}
           onClose={() => setSelectedOffer(null)}
           onUpdate={fetchOffers}
+          buyerId={buyerId}
         />
       )}
     </div>

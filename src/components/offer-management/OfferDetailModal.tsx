@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, User, FileText, MessageCircle, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import OfferStatusTracker from '../offer-workflow/OfferStatusTracker';
 
 interface OfferIntent {
   id: string;
@@ -29,9 +30,10 @@ interface OfferDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;
+  buyerId: string;
 }
 
-const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate }: OfferDetailModalProps) => {
+const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDetailModalProps) => {
   const navigate = useNavigate();
 
   const getOfferStatus = () => {
@@ -112,34 +114,13 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate }: OfferDetailModal
             </CardContent>
           </Card>
 
-          {/* Progress Tracking */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Questionnaire Started</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">Complete</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Questionnaire Completed</span>
-                  <Badge variant={offer.questionnaire_completed_at ? "outline" : "secondary"} 
-                         className={offer.questionnaire_completed_at ? "text-green-600 border-green-200" : ""}>
-                    {offer.questionnaire_completed_at ? "Complete" : "Pending"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Agent Review</span>
-                  <Badge variant={offer.agent_summary_generated_at ? "outline" : "secondary"}
-                         className={offer.agent_summary_generated_at ? "text-green-600 border-green-200" : ""}>
-                    {offer.agent_summary_generated_at ? "Complete" : "Pending"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Offer Status Tracker */}
+          <OfferStatusTracker
+            offerIntentId={offer.id}
+            buyerId={buyerId}
+            agentId={offer.agent_id}
+            onStatusUpdate={onUpdate}
+          />
 
           {/* Quick Info */}
           {(offer.buyer_qualification || offer.financing_details) && (

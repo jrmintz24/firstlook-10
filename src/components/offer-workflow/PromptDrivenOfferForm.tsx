@@ -332,21 +332,32 @@ const PromptDrivenOfferForm = ({
 
     if (field.type === 'select') {
       return (
-        <div key={field.key} className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">{field.label}</label>
-          <div className="grid gap-2">
+        <div key={field.key} className="space-y-4">
+          <label className="block text-lg font-semibold text-gray-800 mb-2">{field.label}</label>
+          <div className="grid gap-3">
             {field.options.map((option: any) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => handleInputChange(field.key, option.value)}
-                className={`p-3 text-left rounded-xl border transition-all duration-200 ${
+                className={`group relative p-5 text-left rounded-2xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
                   value === option.value
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-500'
-                    : 'bg-white border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white border-violet-500 shadow-lg shadow-violet-500/30'
+                    : 'bg-white/80 border-gray-200 hover:border-violet-300 hover:bg-violet-50/80 hover:shadow-lg hover:shadow-violet-500/10'
                 }`}
               >
-                {option.label}
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-lg">{option.label}</span>
+                  <div className={`w-5 h-5 rounded-full border-2 transition-all duration-300 ${
+                    value === option.value
+                      ? 'border-white bg-white'
+                      : 'border-gray-400 group-hover:border-violet-500'
+                  }`}>
+                    {value === option.value && (
+                      <div className="w-full h-full rounded-full bg-violet-500 scale-75"></div>
+                    )}
+                  </div>
+                </div>
               </button>
             ))}
           </div>
@@ -356,29 +367,31 @@ const PromptDrivenOfferForm = ({
 
     if (field.type === 'textarea') {
       return (
-        <div key={field.key} className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">{field.label}</label>
-          <textarea
-            value={value || ''}
-            onChange={(e) => handleInputChange(field.key, e.target.value)}
-            placeholder={field.placeholder}
-            rows={3}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-          />
+        <div key={field.key} className="space-y-4">
+          <label className="block text-lg font-semibold text-gray-800">{field.label}</label>
+          <div className="relative">
+            <textarea
+              value={value || ''}
+              onChange={(e) => handleInputChange(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              rows={4}
+              className="w-full px-5 py-4 bg-white/80 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-0 focus:border-violet-500 resize-none text-gray-800 placeholder-gray-400 transition-all duration-300 hover:border-gray-300"
+            />
+          </div>
         </div>
       );
     }
 
     return (
-      <div key={field.key} className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">{field.label}</label>
+      <div key={field.key} className="space-y-4">
+        <label className="block text-lg font-semibold text-gray-800">{field.label}</label>
         <div className="relative">
           {field.prefix && (
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-violet-600 text-lg font-semibold">
               {field.prefix}
             </span>
           )}
-          <Input
+          <input
             type={field.type}
             value={value || ''}
             onChange={(e) => {
@@ -386,7 +399,7 @@ const PromptDrivenOfferForm = ({
               handleInputChange(field.key, val);
             }}
             placeholder={field.placeholder}
-            className={`w-full ${field.prefix ? 'pl-8' : ''} border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+            className={`w-full ${field.prefix ? 'pl-12' : 'pl-5'} pr-5 py-4 bg-white/80 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-0 focus:border-violet-500 text-gray-800 placeholder-gray-400 text-lg transition-all duration-300 hover:border-gray-300 hover:bg-white`}
           />
         </div>
       </div>
@@ -395,138 +408,200 @@ const PromptDrivenOfferForm = ({
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white/80 backdrop-blur-lg border-0 shadow-2xl">
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/50 to-rose-50 relative overflow-hidden flex items-center justify-center p-4">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-32 w-96 h-96 bg-gradient-to-br from-green-400/20 to-emerald-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-32 w-96 h-96 bg-gradient-to-tr from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-lg">
+          <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-2xl shadow-green-500/10 rounded-3xl overflow-hidden">
+            <div className="p-12 text-center">
+              <div className="w-24 h-24 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-green-500/30 animate-bounce">
+                <CheckCircle className="h-12 w-12 text-white" />
+              </div>
+              <h3 className="text-4xl font-black bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">
+                You're All Set! 🎉
+              </h3>
+              <div className="w-16 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto mb-6 rounded-full"></div>
+              <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+                Your consultation has been scheduled! Check your email for all the details.
+              </p>
+              <div className="bg-gradient-to-r from-gray-50 to-purple-50/50 border border-gray-200/50 rounded-2xl p-6">
+                <p className="text-gray-600 leading-relaxed">
+                  Our expert will help you create an amazing offer strategy for{' '}
+                  <span className="font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    {propertyAddress}
+                  </span>
+                </p>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">You're All Set! 🎉</h3>
-            <p className="text-gray-600 mb-4">
-              Your consultation has been scheduled! Check your email for all the details.
-            </p>
-            <p className="text-sm text-gray-500">
-              Our expert will help you create an amazing offer strategy for {propertyAddress}
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <span>Offer Consultation</span>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Let's Get You Ready! 🏠
-            </h1>
-            <p className="text-gray-600">
-              Preparing your consultation for <span className="font-medium">{propertyAddress}</span>
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/50 to-rose-50 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-32 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-32 w-96 h-96 bg-gradient-to-tr from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-indigo-400/10 to-purple-400/10 rounded-full blur-2xl animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
 
-          {/* Progress */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">
-                Step {currentStep + 1} of {formSteps.length}
-              </span>
-              <span className="text-sm text-gray-500">
-                {Math.round(((currentStep + 1) / formSteps.length) * 100)}% complete
-              </span>
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-3xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 text-white px-6 py-3 rounded-2xl text-sm font-semibold mb-6 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <span>Offer Consultation</span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent mb-4 tracking-tight">
+                Let's Get You Ready
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mb-6 rounded-full"></div>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Preparing your expert consultation for{' '}
+                <span className="font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  {propertyAddress}
+                </span>
+              </p>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentStep + 1) / formSteps.length) * 100}%` }}
-              />
-            </div>
-          </div>
 
-          {/* Main Form */}
-          <Card className="bg-white/80 backdrop-blur-lg border-0 shadow-xl">
-            <CardHeader className="text-center pb-4">
-              <h2 className="text-xl font-semibold text-gray-900">{currentStepData.title}</h2>
-              <p className="text-gray-600 text-sm">{currentStepData.subtitle}</p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {currentStepData.id === 'scheduling' ? (
-                <div className="space-y-4">
-                  <p className="text-center text-gray-600 mb-6">Choose a time that works best for you:</p>
-                  <div className="grid gap-3 max-h-96 overflow-y-auto">
-                    {availableSlots.slice(0, 12).map((slot, index) => {
-                      const formatDate = (date: Date) => date.toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      });
-                      const formatTime = (date: Date) => date.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      });
-
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => handleScheduleSlot(slot)}
-                          disabled={isSubmitting}
-                          className="w-full p-4 text-left bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl hover:from-purple-100 hover:to-pink-100 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 text-purple-600" />
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {formatDate(slot.datetime)}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                {formatTime(slot.datetime)}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+            {/* Progress */}
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-700 bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                    Step {currentStep + 1} of {formSteps.length}
+                  </span>
+                  <div className="hidden sm:flex items-center gap-2">
+                    {Array.from({ length: formSteps.length }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-3 h-3 rounded-full transition-all duration-500 ${
+                          index <= currentStep 
+                            ? 'bg-gradient-to-r from-violet-500 to-purple-500 shadow-lg shadow-purple-500/30 scale-110' 
+                            : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
+                <span className="text-sm font-medium text-gray-500 bg-white/50 backdrop-blur-sm px-3 py-1 rounded-full">
+                  {Math.round(((currentStep + 1) / formSteps.length) * 100)}% complete
+                </span>
+              </div>
+              <div className="relative w-full bg-gray-200/60 backdrop-blur-sm rounded-full h-3 shadow-inner">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-full transition-all duration-700 ease-out shadow-lg shadow-purple-500/30"
+                  style={{ width: `${((currentStep + 1) / formSteps.length) * 100}%` }}
+                >
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg shadow-purple-500/50 border-2 border-purple-500"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Form */}
+            <div className="bg-white/90 backdrop-blur-xl border border-white/20 shadow-2xl shadow-purple-500/10 rounded-3xl overflow-hidden">
+              <div className="relative">
+                {/* Gradient header */}
+                <div className="bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-pink-500/10 px-8 py-8 text-center border-b border-purple-100/50">
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                    {currentStepData.title}
+                  </h2>
+                  <p className="text-gray-600 text-lg leading-relaxed">{currentStepData.subtitle}</p>
+                </div>
+                
+                <div className="p-8 space-y-8">
+                {currentStepData.id === 'scheduling' ? (
+                  <div className="space-y-6">
+                    <div className="text-center mb-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/30">
+                        <Calendar className="h-8 w-8 text-white" />
+                      </div>
+                      <p className="text-xl text-gray-700 font-medium">Choose your perfect time</p>
+                      <p className="text-gray-500 mt-2">All times are in your local timezone</p>
+                    </div>
+                    <div className="grid gap-4 max-h-96 overflow-y-auto pr-2">
+                      {availableSlots.slice(0, 12).map((slot, index) => {
+                        const formatDate = (date: Date) => date.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+                        const formatTime = (date: Date) => date.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        });
+
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleScheduleSlot(slot)}
+                            disabled={isSubmitting}
+                            className="group w-full p-6 text-left bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/60 rounded-2xl hover:from-violet-50 hover:to-purple-50 hover:border-violet-300 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-gradient-to-r from-violet-100 to-purple-100 group-hover:from-violet-200 group-hover:to-purple-200 rounded-xl flex items-center justify-center transition-all duration-300">
+                                <Calendar className="h-6 w-6 text-violet-600 group-hover:text-violet-700" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-semibold text-gray-900 text-lg group-hover:text-violet-900 transition-colors">
+                                  {formatDate(slot.datetime)}
+                                </div>
+                                <div className="text-gray-600 text-base group-hover:text-violet-700 transition-colors">
+                                  {formatTime(slot.datetime)}
+                                </div>
+                              </div>
+                              <div className="w-6 h-6 border-2 border-gray-300 group-hover:border-violet-500 rounded-full group-hover:bg-violet-500 transition-all duration-300">
+                                <div className="w-full h-full rounded-full bg-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
               ) : (
                 <div className="space-y-6">
                   {currentStepData.fields.map(renderField)}
                 </div>
               )}
 
-              {/* Navigation */}
-              {currentStepData.id !== 'scheduling' && (
-                <div className="flex justify-between pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleBack}
-                    disabled={currentStep === 0}
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={!isStepValid()}
-                    className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  >
-                    Next
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                {/* Navigation */}
+                {currentStepData.id !== 'scheduling' && (
+                  <div className="flex justify-between pt-8 border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      disabled={currentStep === 0}
+                      className="flex items-center gap-3 px-6 py-3 bg-white/80 border-2 border-gray-200 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={!isStepValid()}
+                      className="flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 rounded-2xl font-semibold text-white shadow-lg shadow-violet-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-violet-500/40"
+                    >
+                      Next
+                      <ArrowRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

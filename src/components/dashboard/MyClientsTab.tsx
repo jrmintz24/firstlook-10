@@ -166,13 +166,31 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           console.warn('[MyClientsTab] Profile error for client', clientId, ':', profileError);
           console.warn('[MyClientsTab] Profile error details:', profileError.message, profileError.code);
           
-          // If profile doesn't exist or we don't have permission, create a basic client entry
-          profile = {
-            first_name: 'Client',
-            last_name: `#${clientId.substring(0, 8)}`,
-            email: null,
-            phone: null
-          };
+          // Try to get name from showing_requests as fallback
+          const { data: showingData } = await supabase
+            .from('showing_requests')
+            .select('user_first_name, user_last_name, user_email, user_phone')
+            .eq('user_id', clientId)
+            .eq('assigned_agent_id', agentId)
+            .limit(1)
+            .single();
+          
+          if (showingData?.user_first_name || showingData?.user_last_name) {
+            profile = {
+              first_name: showingData.user_first_name || 'Client',
+              last_name: showingData.user_last_name || '',
+              email: showingData.user_email || null,
+              phone: showingData.user_phone || null
+            };
+          } else {
+            // Final fallback - generate readable name from ID
+            profile = {
+              first_name: `Client ${clientId.substring(0, 8).toUpperCase()}`,
+              last_name: '',
+              email: null,
+              phone: null
+            };
+          }
         }
 
         // Get tour count

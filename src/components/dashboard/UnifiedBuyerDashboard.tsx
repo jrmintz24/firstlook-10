@@ -13,7 +13,7 @@ import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
 import SignAgreementModal from './SignAgreementModal';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
-import QuickOfferModal from '@/components/offer-workflow/QuickOfferModal';
+import EnhancedOfferModal from '@/components/offer-workflow/EnhancedOfferModal';
 
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -527,7 +527,7 @@ const UnifiedBuyerDashboard = () => {
         )}
 
         {/* Offer Modal */}
-        <QuickOfferModal
+        <EnhancedOfferModal
           isOpen={showOfferModal}
           onClose={() => setShowOfferModal(false)}
           propertyAddress={offerPropertyAddress}

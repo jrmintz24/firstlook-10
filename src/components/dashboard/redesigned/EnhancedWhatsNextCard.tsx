@@ -121,19 +121,24 @@ const EnhancedWhatsNextCard = ({
         </p>
       </div>
 
-      {/* Action Items */}
-      <div className="space-y-3 mb-6">
-        <div className="flex items-center gap-3">
-          <Circle className="w-5 h-5 text-gray-400" />
-          <span className="flex-1 text-gray-700">Ready to make an offer?</span>
-          <Button 
-            size="sm" 
-            onClick={() => handleActionClick('make_offer', onMakeOffer)} 
-            disabled={isLoading}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Get Started
-          </Button>
+      {/* Primary Action - Make Offer */}
+      <div className="mb-6">
+        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h4 className="font-semibold text-green-800 mb-1">Love what you saw?</h4>
+              <p className="text-sm text-green-700">Get expert help crafting a winning offer strategy</p>
+            </div>
+            <Button 
+              size="lg"
+              onClick={() => handleActionClick('make_offer', onMakeOffer)} 
+              disabled={isLoading}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-md"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Make an Offer
+            </Button>
+          </div>
         </div>
       </div>
 

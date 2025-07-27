@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
-import QuickOfferModal from "@/components/offer-workflow/QuickOfferModal";
+import EnhancedOfferModal from "@/components/offer-workflow/EnhancedOfferModal";
 
 const MyOffers = () => {
   const { user } = useAuth();
@@ -25,7 +25,7 @@ const MyOffers = () => {
           onCreateOffer={handleCreateOffer}
         />
         
-        <QuickOfferModal
+        <EnhancedOfferModal
           isOpen={showOfferModal}
           onClose={() => setShowOfferModal(false)}
           propertyAddress=""

@@ -9,7 +9,7 @@ import { usePostShowingActions } from "@/hooks/usePostShowingActions";
 // Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
-import QuickOfferModal from "../offer-workflow/QuickOfferModal";
+import EnhancedOfferModal from "../offer-workflow/EnhancedOfferModal";
 import { PostShowingWorkflowService } from '@/services/postShowingWorkflowService';
 
 interface PostShowingActionsPanelProps {
@@ -232,8 +232,30 @@ const PostShowingActionsPanel = ({
           {actionsLoading ? (
             <div className="text-center py-4 text-gray-500">Loading actions...</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {actions.filter(action => action.available).map((action) => {
+            <>
+              {/* Prominent Make Offer Section */}
+              {!actionStates.made_offer && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-green-800 mb-1">Ready to make an offer?</h4>
+                      <p className="text-sm text-green-700">Get expert consultation to craft a winning strategy</p>
+                    </div>
+                    <Button 
+                      onClick={handleMakeOffer}
+                      disabled={isSubmitting}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-md"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Make an Offer
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Other Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {actions.filter(action => action.available && action.id !== 'make_offer').map((action) => {
                 const isCompleted = action.completed;
                 const Icon = action.icon;
                 
@@ -287,7 +309,8 @@ const PostShowingActionsPanel = ({
                   </div>
                 );
               })}
-            </div>
+              </div>
+            </>
           )}
 
           {actionCount > 0 && (
@@ -323,7 +346,7 @@ const PostShowingActionsPanel = ({
         isSubmitting={isSubmitting}
       />
 
-      <QuickOfferModal
+      <EnhancedOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
         propertyAddress={propertyAddress}

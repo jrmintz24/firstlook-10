@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import ConversationalOfferIntake from '@/components/offer-workflow/ConversationalOfferIntake';
+import PromptDrivenOfferForm from '@/components/offer-workflow/PromptDrivenOfferForm';
 
 const OfferQuestionnaire = () => {
   const [searchParams] = useSearchParams();
@@ -32,7 +32,7 @@ const OfferQuestionnaire = () => {
     }
   }, [user, propertyAddress, agentId]);
 
-  const handleClose = () => {
+  const handleComplete = () => {
     navigate('/buyer-dashboard');
   };
 
@@ -58,15 +58,12 @@ const OfferQuestionnaire = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ConversationalOfferIntake
-        isOpen={true}
-        onClose={handleClose}
-        propertyAddress={propertyAddress}
-        buyerId={user.id}
-        agentId={agentId || undefined}
-      />
-    </div>
+    <PromptDrivenOfferForm
+      propertyAddress={propertyAddress}
+      buyerId={user.id}
+      agentId={agentId || undefined}
+      onComplete={handleComplete}
+    />
   );
 };
 

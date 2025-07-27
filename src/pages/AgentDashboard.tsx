@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, Users } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, MessageSquare, TrendingUp, Users, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgentDashboard } from "@/hooks/useAgentDashboard";
@@ -23,6 +23,7 @@ import MessagingInterface from "@/components/messaging/MessagingInterface";
 
 // New components
 import MyClientsTab from "@/components/dashboard/MyClientsTab";
+import AgentOfferManagement from "@/components/offer-management/AgentOfferManagement";
 
 const AgentDashboard = () => {
   const {
@@ -233,6 +234,26 @@ const AgentDashboard = () => {
           buttonText="Refresh"
           onButtonClick={fetchAgentData}
           icon={Users}
+        />
+      )
+    },
+    {
+      id: "offers",
+      title: "My Offers",
+      icon: FileText,
+      count: 0, // TODO: Implement offer count
+      color: "bg-purple-100 text-purple-700",
+      content: currentUser?.id ? (
+        <AgentOfferManagement 
+          agentId={currentUser.id}
+        />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Offers"
+          description="Please refresh the page to load your offers."
+          buttonText="Refresh"
+          onButtonClick={fetchAgentData}
+          icon={FileText}
         />
       )
     },

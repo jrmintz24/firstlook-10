@@ -40,7 +40,7 @@ const UnifiedBuyerDashboard = () => {
 
   // Memoize callback functions to prevent unnecessary re-renders
   const handleRequestShowing = useCallback(() => {
-    // TODO: Implement
+    setShowScheduleModal(true);
   }, []);
 
   const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
@@ -215,7 +215,7 @@ const UnifiedBuyerDashboard = () => {
               emptyTitle="No upcoming tours"
               emptyDescription="No upcoming tours scheduled."
               emptyButtonText="Schedule Tour"
-              onRequestShowing={() => {/* TODO: Implement */}}
+              onRequestShowing={handleRequestShowing}
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
               userType="buyer"
@@ -234,7 +234,7 @@ const UnifiedBuyerDashboard = () => {
               emptyTitle="No completed tours"
               emptyDescription="No completed tours yet. Your tour history will appear here."
               emptyButtonText="Schedule Tour"
-              onRequestShowing={() => {/* TODO: Implement */}}
+              onRequestShowing={handleRequestShowing}
               onCancelShowing={handleCancelShowing}
               onRescheduleShowing={handleRescheduleShowing}
               userType="buyer"
@@ -257,7 +257,7 @@ const UnifiedBuyerDashboard = () => {
         activeShowings={activeShowings || []}
         completedShowings={completedShowings || []}
         favorites={[]} // TODO: Implement favorites when available
-        onRequestTour={() => {/* TODO: Implement */}}
+        onRequestTour={handleRequestShowing}
         onTabChange={setActiveTab}
         activeTab={activeTab}
       >
@@ -515,13 +515,13 @@ const UnifiedBuyerDashboard = () => {
         />
 
         {/* Tour Scheduling Modal */}
-        {showScheduleModal && selectedProperty && (
+        {showScheduleModal && (
           <ModernTourSchedulingModal
             isOpen={showScheduleModal}
             onClose={handleScheduleModalClose}
             onSuccess={handleScheduleSuccess}
-            initialAddress={selectedProperty.property_address}
-            propertyId={selectedProperty.mls_id}
+            initialAddress={selectedProperty?.property_address || ''}
+            propertyId={selectedProperty?.mls_id || ''}
             skipNavigation={true}
           />
         )}

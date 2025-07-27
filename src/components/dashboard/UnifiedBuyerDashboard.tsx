@@ -13,6 +13,7 @@ import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
 import SignAgreementModal from './SignAgreementModal';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
+import SleekOfferModal from '@/components/offer-workflow/SleekOfferModal';
 
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -20,6 +21,8 @@ const UnifiedBuyerDashboard = () => {
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
   const { user } = useAuth();
   const { 
     pendingRequests,
@@ -59,6 +62,12 @@ const UnifiedBuyerDashboard = () => {
     setSelectedProperty(null);
     // Refresh data if needed
   };
+
+  const handleMakeOffer = useCallback((propertyAddress: string) => {
+    console.log(`Making offer for property: ${propertyAddress}`);
+    setOfferPropertyAddress(propertyAddress);
+    setShowOfferModal(true);
+  }, []);
 
   const memoizedHandleCancel = useCallback((id: string) => {
     handleCancelShowing(id);
@@ -235,7 +244,7 @@ const UnifiedBuyerDashboard = () => {
             />
           );
         case 'portfolio':
-          return <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} />;
+          return <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} onCreateOffer={() => handleMakeOffer('')} />;
         default:
           return <div>Tab content not found</div>;
       }
@@ -481,7 +490,7 @@ const UnifiedBuyerDashboard = () => {
             </TabsContent>
 
             <TabsContent value="portfolio" className="mt-0">
-              <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} />
+              <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} onCreateOffer={() => handleMakeOffer('')} />
             </TabsContent>
           </div>
         </Tabs>
@@ -516,6 +525,15 @@ const UnifiedBuyerDashboard = () => {
             skipNavigation={true}
           />
         )}
+
+        {/* Offer Modal */}
+        <SleekOfferModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          propertyAddress={offerPropertyAddress}
+          buyerId={user?.id || ''}
+          agentId="" // Will be assigned during consultation booking
+        />
       </div>
     </div>
   );

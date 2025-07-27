@@ -14,9 +14,10 @@ import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 interface PortfolioTabProps {
   buyerId?: string;
   onScheduleTour?: (propertyAddress: string, mlsId?: string) => void;
+  onCreateOffer?: () => void;
 }
 
-export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleTour }) => {
+export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleTour, onCreateOffer }) => {
   const [activeSection, setActiveSection] = useState('favorites');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
@@ -193,7 +194,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <OfferTabContent buyerId={buyerId || ''} />
+              <OfferTabContent buyerId={buyerId || ''} onCreateOffer={onCreateOffer} />
             </CardContent>
           </Card>
         </TabsContent>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import StreamlinedOfferPrep from '@/components/offer-workflow/StreamlinedOfferPrep';
+import ConversationalOfferIntake from '@/components/offer-workflow/ConversationalOfferIntake';
 
 const OfferQuestionnaire = () => {
   const [searchParams] = useSearchParams();
@@ -59,7 +59,7 @@ const OfferQuestionnaire = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <StreamlinedOfferPrep
+      <ConversationalOfferIntake
         isOpen={true}
         onClose={handleClose}
         propertyAddress={propertyAddress}

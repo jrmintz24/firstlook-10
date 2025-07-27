@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Heart, Calendar, MessageSquare } from 'lucide-react';
 import { useSimpleIDXIntegration } from '../hooks/useSimpleIDXIntegration';
 import { useAuth } from '../contexts/AuthContext';
-import EnhancedOfferModal from './offer-workflow/EnhancedOfferModal';
+import ImprovedOfferModal from './offer-workflow/ImprovedOfferModal';
 
 export default function SimplePropertyToolbar() {
   const { propertyData, isLoading, favoriteProperty, scheduleShowingForProperty } = useSimpleIDXIntegration();
@@ -93,8 +93,8 @@ export default function SimplePropertyToolbar() {
         </div>
       </div>
       
-      {/* Enhanced Offer Modal */}
-      <EnhancedOfferModal
+      {/* Improved Offer Modal */}
+      <ImprovedOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
         propertyAddress={propertyData?.address || ''}

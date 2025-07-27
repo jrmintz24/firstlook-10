@@ -4,7 +4,7 @@ import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout"
 import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
 import OptimizedShowingCard from "@/components/dashboard/OptimizedShowingCard";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
-import EnhancedOfferModal from "@/components/offer-workflow/EnhancedOfferModal";
+import ImprovedOfferModal from "@/components/offer-workflow/ImprovedOfferModal";
 
 // Create missing header component
 const RedesignedDashboardHeader = ({ userName, unreadCount, onOpenChat }: {
@@ -287,7 +287,7 @@ const RedesignedBuyerDashboard = () => {
         onSuccess={handleTourModalSuccess}
         skipNavigation={true}
       />
-      <EnhancedOfferModal
+      <ImprovedOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
         propertyAddress={offerPropertyAddress}

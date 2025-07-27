@@ -9,7 +9,7 @@ import { usePostShowingActions } from "@/hooks/usePostShowingActions";
 // Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
-import EnhancedOfferModal from "../offer-workflow/EnhancedOfferModal";
+import ImprovedOfferModal from "../offer-workflow/ImprovedOfferModal";
 import { PostShowingWorkflowService } from '@/services/postShowingWorkflowService';
 
 interface PostShowingActionsPanelProps {
@@ -354,7 +354,7 @@ const PostShowingActionsPanel = ({
         isSubmitting={isSubmitting}
       />
 
-      <EnhancedOfferModal
+      <ImprovedOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
         propertyAddress={propertyAddress}

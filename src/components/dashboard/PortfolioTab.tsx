@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 import { useBuyerFavorites } from '@/hooks/useBuyerFavorites';
 import { useBuyerAgentConnections } from '@/hooks/useBuyerAgentConnections';
 import OfferTabContent from './OfferTabContent';
@@ -11,12 +12,37 @@ import AgentConnectionCard from './AgentConnectionCard';
 
 interface PortfolioTabProps {
   buyerId?: string;
+  onScheduleTour?: (propertyAddress: string, mlsId?: string) => void;
 }
 
-export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
+export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleTour }) => {
   const [activeSection, setActiveSection] = useState('favorites');
+  const navigate = useNavigate();
   const { favorites, loading: favoritesLoading } = useBuyerFavorites(buyerId);
   const { connections, loading: connectionsLoading, handleContactAgent } = useBuyerAgentConnections(buyerId);
+
+  // Handlers for property card actions
+  const handleViewDetails = (favorite: any) => {
+    // Navigate to property details page using MLS ID
+    if (favorite.mls_id) {
+      navigate(`/property/${favorite.mls_id}`);
+    } else if (favorite.property_address) {
+      // Fallback: search for property by address
+      navigate(`/properties?search=${encodeURIComponent(favorite.property_address)}`);
+    }
+  };
+
+  const handleScheduleTourClick = (favorite: any) => {
+    // Use the passed onScheduleTour prop if available, otherwise fallback
+    if (onScheduleTour) {
+      onScheduleTour(favorite.property_address, favorite.mls_id);
+    } else {
+      // Fallback: navigate to schedule tour page
+      if (favorite.mls_id) {
+        navigate(`/schedule-tour?listing=${favorite.mls_id}`);
+      }
+    }
+  };
 
   const sections = [
     {
@@ -110,7 +136,12 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
               ) : favorites && favorites.length > 0 ? (
                 <div className="space-y-4">
                   {favorites.map((favorite) => (
-                    <FavoritePropertyCard key={favorite.id} favorite={favorite} />
+                    <FavoritePropertyCard 
+                      key={favorite.id} 
+                      favorite={favorite}
+                      onViewDetails={() => handleViewDetails(favorite)}
+                      onScheduleTour={() => handleScheduleTourClick(favorite)}
+                    />
                   ))}
                 </div>
               ) : (
@@ -191,7 +222,17 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId }) => {
 };
 
 // Favorite Property Card Component
-const FavoritePropertyCard: React.FC<{ favorite: any }> = ({ favorite }) => {
+interface FavoritePropertyCardProps {
+  favorite: any;
+  onViewDetails: () => void;
+  onScheduleTour: () => void;
+}
+
+const FavoritePropertyCard: React.FC<FavoritePropertyCardProps> = ({ 
+  favorite, 
+  onViewDetails, 
+  onScheduleTour 
+}) => {
   return (
     <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
       <div className="flex items-center space-x-4">
@@ -229,10 +270,10 @@ const FavoritePropertyCard: React.FC<{ favorite: any }> = ({ favorite }) => {
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={onViewDetails}>
           View Details
         </Button>
-        <Button variant="default" size="sm">
+        <Button variant="default" size="sm" onClick={onScheduleTour}>
           Schedule Tour
         </Button>
       </div>

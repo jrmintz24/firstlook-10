@@ -35,12 +35,25 @@ const SimpleFavoritesDisplay = ({
   };
 
   const handleScheduleTour = (mlsId: string) => {
-    window.location.href = `/schedule-tour?listing=${mlsId}`;
+    if (mlsId) {
+      window.location.href = `/schedule-tour?listing=${mlsId}`;
+    }
   };
 
-  const handleViewProperty = (pageUrl: string) => {
+  const handleViewProperty = (favorite: any) => {
+    // Try multiple strategies to view property details
+    const pageUrl = (favorite.idx_property as any)?.ihf_page_url;
+    const mlsId = favorite.mls_id;
+    
     if (pageUrl) {
+      // First preference: use ihf_page_url if available
       window.open(pageUrl, '_blank');
+    } else if (mlsId) {
+      // Second preference: navigate to our property page
+      window.location.href = `/property/${mlsId}`;
+    } else if (favorite.property_address) {
+      // Fallback: search by address
+      window.location.href = `/properties?search=${encodeURIComponent(favorite.property_address)}`;
     }
   };
 
@@ -120,17 +133,15 @@ const SimpleFavoritesDisplay = ({
                     </Button>
                   )}
                   
-                  {(favorite.idx_property as any)?.ihf_page_url && (
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleViewProperty((favorite.idx_property as any).ihf_page_url)}
-                      className="flex items-center gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      View Details
-                    </Button>
-                  )}
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleViewProperty(favorite)}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Details
+                  </Button>
                 </div>
               </div>
 

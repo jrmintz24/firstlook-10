@@ -37,6 +37,16 @@ const UnifiedBuyerDashboard = () => {
     // TODO: Implement
   }, []);
 
+  const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
+    // Navigate to schedule tour page with property info
+    if (mlsId) {
+      window.location.href = `/schedule-tour?listing=${mlsId}`;
+    } else {
+      // Fallback to property search
+      window.location.href = `/properties?search=${encodeURIComponent(propertyAddress)}`;
+    }
+  }, []);
+
   const memoizedHandleCancel = useCallback((id: string) => {
     handleCancelShowing(id);
   }, [handleCancelShowing]);
@@ -212,7 +222,7 @@ const UnifiedBuyerDashboard = () => {
             />
           );
         case 'portfolio':
-          return <PortfolioTab buyerId={user?.id} />;
+          return <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} />;
         default:
           return <div>Tab content not found</div>;
       }
@@ -458,7 +468,7 @@ const UnifiedBuyerDashboard = () => {
             </TabsContent>
 
             <TabsContent value="portfolio" className="mt-0">
-              <PortfolioTab buyerId={user?.id} />
+              <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} />
             </TabsContent>
           </div>
         </Tabs>

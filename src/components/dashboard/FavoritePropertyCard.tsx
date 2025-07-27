@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Edit3, Save, X, MapPin, Calendar, Home, Bed, Bath, Square } from "lucide-react";
+import { Heart, Edit3, Save, X, MapPin, Calendar, Home, Bed, Bath, Square, ExternalLink } from "lucide-react";
 
 interface FavoriteProperty {
   id: string;
@@ -34,9 +34,17 @@ interface FavoritePropertyCardProps {
   favorite: FavoriteProperty;
   onRemove: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
+  onScheduleTour?: (propertyAddress: string, mlsId?: string) => void;
+  onViewDetails?: (favorite: FavoriteProperty) => void;
 }
 
-const FavoritePropertyCard = ({ favorite, onRemove, onUpdateNotes }: FavoritePropertyCardProps) => {
+const FavoritePropertyCard = ({ 
+  favorite, 
+  onRemove, 
+  onUpdateNotes, 
+  onScheduleTour, 
+  onViewDetails 
+}: FavoritePropertyCardProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [noteText, setNoteText] = useState(favorite.notes || '');
 
@@ -177,6 +185,32 @@ const FavoritePropertyCard = ({ favorite, onRemove, onUpdateNotes }: FavoritePro
                   className="h-7 px-2 text-gray-500 hover:text-gray-700"
                 >
                   <Edit3 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mb-4">
+              {onViewDetails && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewDetails(favorite)}
+                  className="flex-1 h-8"
+                >
+                  <ExternalLink className="h-3 w-3 mr-2" />
+                  View Details
+                </Button>
+              )}
+              {onScheduleTour && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onScheduleTour(favorite.property_address, favorite.mls_id)}
+                  className="flex-1 h-8"
+                >
+                  <Calendar className="h-3 w-3 mr-2" />
+                  Schedule Tour
                 </Button>
               )}
             </div>

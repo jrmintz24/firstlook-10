@@ -173,18 +173,19 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
       });
 
       // Create offer intent with simplified data
-      console.log('Creating offer intent...');
+      console.log('*** UPDATED CODE *** Creating offer intent...');
+      console.log('Raw input values:', { buyerId, agentId, propertyAddress });
       
       // Prepare offer intent data - use buyerId as fallback for agent_id to satisfy NOT NULL constraint
       const offerIntentData = {
         buyer_id: buyerId,
         agent_id: agentId || buyerId, // Use buyerId as fallback since agent_id is required in schema
         property_address: propertyAddress,
-        offer_type: 'consultation_request',
-        consultation_requested: true
+        offer_type: 'consultation_request'
       };
       
-      console.log('Offer intent data:', offerIntentData);
+      console.log('Offer intent data being sent to database:', offerIntentData);
+      console.log('agent_id value specifically:', offerIntentData.agent_id);
       
       const { data: offerIntent, error: offerError } = await supabase
         .from('offer_intents')

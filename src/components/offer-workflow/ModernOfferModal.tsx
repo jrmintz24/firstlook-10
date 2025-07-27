@@ -216,8 +216,8 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
         buyer_id: buyerId,
         offer_intent_id: offerIntent.id,
         agent_id: agentId || buyerId, // Use buyerId as placeholder - will be updated when real agent is assigned
-        status: 'requested',
-        ...(scheduledAt && { scheduled_at: scheduledAt }),
+        status: 'scheduled', // Use 'scheduled' as it's a valid status for consultation_bookings
+        scheduled_at: scheduledAt || new Date().toISOString(), // Provide default if no specific time selected
         buyer_notes: JSON.stringify({
           urgency: formData.urgency,
           preferred_date: selectedDate,
@@ -285,6 +285,15 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
     } catch (error) {
       console.error('Error submitting consultation request:', error);
       console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      
+      // Log all error properties
+      if (error && typeof error === 'object') {
+        Object.keys(error).forEach(key => {
+          console.error(`Error.${key}:`, (error as any)[key]);
+        });
+      }
       
       // More detailed error handling
       let errorMessage = "Something went wrong. Please try again.";
@@ -293,6 +302,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
           errorMessage = error.message;
         } else if ('error' in error) {
           errorMessage = error.error;
+        } else if ('details' in error) {
+          errorMessage = (error as any).details;
+        } else if ('hint' in error) {
+          errorMessage = (error as any).hint;
         }
       }
       

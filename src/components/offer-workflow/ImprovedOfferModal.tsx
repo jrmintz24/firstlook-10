@@ -167,7 +167,8 @@ const ImprovedOfferModal: React.FC<ImprovedOfferModalProps> = ({
           buyer_id: buyerId,
           offer_intent_id: offerIntent.id,
           agent_id: agentId || buyerId, // Use buyerId as placeholder - will be updated when real agent is assigned
-          status: 'requested',
+          status: 'scheduled', // Use 'scheduled' as it's a valid status for consultation_bookings
+          scheduled_at: new Date().toISOString(), // Provide default scheduled time
           buyer_notes: JSON.stringify({
             urgency: formData.urgency,
             preferred_times: formData.preferredTimes,

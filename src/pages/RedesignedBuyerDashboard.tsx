@@ -4,6 +4,7 @@ import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout"
 import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
 import OptimizedShowingCard from "@/components/dashboard/OptimizedShowingCard";
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
+import SleekOfferModal from "@/components/offer-workflow/SleekOfferModal";
 
 // Create missing header component
 const RedesignedDashboardHeader = ({ userName, unreadCount, onOpenChat }: {
@@ -135,6 +136,8 @@ const RedesignedBuyerDashboard = () => {
 
   const [activeTab, setActiveTab] = useState("requested");
   const [showTourModal, setShowTourModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPropertyAddress, setOfferPropertyAddress] = useState('');
 
   const handleOpenChat = useCallback((defaultTab: 'property' | 'support', showingId?: string) => {
     console.log(`Opening chat with tab: ${defaultTab}, showing ID: ${showingId}`);
@@ -143,10 +146,8 @@ const RedesignedBuyerDashboard = () => {
 
   const handleMakeOffer = useCallback((propertyAddress: string) => {
     console.log(`Making offer for property: ${propertyAddress}`);
-    const queryParams = new URLSearchParams({
-      property: propertyAddress
-    });
-    window.location.href = `/offer-questionnaire?${queryParams.toString()}`;
+    setOfferPropertyAddress(propertyAddress);
+    setShowOfferModal(true);
   }, []);
 
   const handleRequestShowing = useCallback(() => {
@@ -285,6 +286,12 @@ const RedesignedBuyerDashboard = () => {
         onClose={() => setShowTourModal(false)}
         onSuccess={handleTourModalSuccess}
         skipNavigation={true}
+      />
+      <SleekOfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        propertyAddress={offerPropertyAddress}
+        buyerId={currentUser?.id || ''}
       />
     </>
   );

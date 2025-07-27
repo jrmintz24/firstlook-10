@@ -25,10 +25,10 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
   const handleViewDetails = (favorite: any) => {
     // Navigate to property details page using MLS ID
     if (favorite.mls_id) {
-      navigate(`/property/${favorite.mls_id}`);
+      navigate(`/listing/${favorite.mls_id}`);
     } else if (favorite.property_address) {
       // Fallback: search for property by address
-      navigate(`/properties?search=${encodeURIComponent(favorite.property_address)}`);
+      navigate(`/listings?search=${encodeURIComponent(favorite.property_address)}`);
     }
   };
 
@@ -208,7 +208,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
                   <p className="text-gray-600 mb-4">
                     When you request tours, you'll be matched with local agents who will appear here
                   </p>
-                  <Button variant="outline" onClick={() => window.location.href = '/properties'}>
+                  <Button variant="outline" onClick={() => window.location.href = '/listings'}>
                     Browse Properties
                   </Button>
                 </div>

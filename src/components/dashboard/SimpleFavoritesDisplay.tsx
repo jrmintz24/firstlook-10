@@ -50,10 +50,10 @@ const SimpleFavoritesDisplay = ({
       window.open(pageUrl, '_blank');
     } else if (mlsId) {
       // Second preference: navigate to our property page
-      window.location.href = `/property/${mlsId}`;
+      window.location.href = `/listing/${mlsId}`;
     } else if (favorite.property_address) {
       // Fallback: search by address
-      window.location.href = `/properties?search=${encodeURIComponent(favorite.property_address)}`;
+      window.location.href = `/listings?search=${encodeURIComponent(favorite.property_address)}`;
     }
   };
 

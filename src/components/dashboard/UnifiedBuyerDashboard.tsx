@@ -43,7 +43,7 @@ const UnifiedBuyerDashboard = () => {
       window.location.href = `/schedule-tour?listing=${mlsId}`;
     } else {
       // Fallback to property search
-      window.location.href = `/properties?search=${encodeURIComponent(propertyAddress)}`;
+      window.location.href = `/listings?search=${encodeURIComponent(propertyAddress)}`;
     }
   }, []);
 

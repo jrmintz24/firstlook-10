@@ -337,5 +337,8 @@ export const useOptimizedBuyerLogic = () => {
     handleCancelShowing,
     handleRescheduleShowing,
     handleRescheduleSuccess,
+    
+    // Data fetching
+    fetchData,
   };
 };

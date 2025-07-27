@@ -129,7 +129,8 @@ const RedesignedBuyerDashboard = () => {
     handleStatClick,
     handleCancelShowing,
     handleRescheduleShowing,
-    handleSignAgreementFromCard
+    handleSignAgreementFromCard,
+    fetchData
   } = useOptimizedBuyerLogic();
 
   const [activeTab, setActiveTab] = useState("requested");
@@ -154,8 +155,9 @@ const RedesignedBuyerDashboard = () => {
 
   const handleTourModalSuccess = useCallback(async () => {
     // Refresh data after successful tour request
-    window.location.reload();
-  }, []);
+    await fetchData();
+    setShowTourModal(false);
+  }, [fetchData]);
 
   const handleSignAgreementFixed = useCallback((showing: any) => {
     const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || 'User';

@@ -380,7 +380,7 @@ const OptimizedShowingCard = ({
                   onRequestShowing={onRequestShowing}
                   onDataRefresh={() => {
                     // Trigger a refresh of the dashboard data
-                    window.location.reload();
+                    onComplete?.();
                   }}
                 />
               </div>

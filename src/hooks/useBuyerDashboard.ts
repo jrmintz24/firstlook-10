@@ -34,6 +34,7 @@ export const useBuyerDashboard = () => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
   const [showingRequests, setShowingRequests] = useState<ShowingRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { getActionsForShowing, getActionCount } = usePostShowingActions();
@@ -92,7 +93,7 @@ export const useBuyerDashboard = () => {
       }
 
       // Fetch showing requests for this user
-      await fetchShowingRequests();
+      await fetchShowingRequests(true);
 
       // Fetch agreements
       const { data: agreementsData, error: agreementsError } = await supabase
@@ -119,10 +120,14 @@ export const useBuyerDashboard = () => {
     }
   };
 
-  const fetchShowingRequests = async () => {
+  const fetchShowingRequests = async (isInitialLoad = false) => {
     if (!currentUser) {
       console.log('useBuyerDashboard: No user for showing requests fetch');
       return;
+    }
+
+    if (!isInitialLoad) {
+      setIsRefreshing(true);
     }
 
     try {
@@ -147,6 +152,10 @@ export const useBuyerDashboard = () => {
     } catch (error) {
       console.error('useBuyerDashboard: Error fetching showing requests:', error);
       setShowingRequests([]);
+    } finally {
+      if (!isInitialLoad) {
+        setIsRefreshing(false);
+      }
     }
   };
 
@@ -323,6 +332,7 @@ export const useBuyerDashboard = () => {
     selectedShowing,
     agreements,
     loading,
+    isRefreshing,
     authLoading,
     user,
     session,

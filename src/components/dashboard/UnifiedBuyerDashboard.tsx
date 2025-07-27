@@ -29,6 +29,7 @@ const UnifiedBuyerDashboard = () => {
     activeShowings,
     completedShowings,
     loading,
+    isRefreshing,
     handleCancelShowing,
     handleRescheduleShowing,
     handleConfirmShowing,
@@ -109,7 +110,7 @@ const UnifiedBuyerDashboard = () => {
     }
   }, [selectedShowing, handleAgreementSign]);
 
-  if (loading) {
+  if (loading && !pendingRequests && !activeShowings && !completedShowings) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
@@ -272,12 +273,22 @@ const UnifiedBuyerDashboard = () => {
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.user_metadata?.first_name || 'there'}
-          </h1>
-          <p className="text-gray-600">
-            Track your home tour journey and manage your property interests
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user?.user_metadata?.first_name || 'there'}
+              </h1>
+              <p className="text-gray-600">
+                Track your home tour journey and manage your property interests
+              </p>
+            </div>
+            {isRefreshing && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                <span>Updating...</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Dashboard Stats */}

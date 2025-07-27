@@ -150,6 +150,7 @@ const ImprovedOfferModal: React.FC<ImprovedOfferModalProps> = ({
         .from('offer_intents')
         .insert({
           buyer_id: buyerId,
+          agent_id: agentId || buyerId, // Use buyerId as fallback since agent_id is required in schema
           property_address: propertyAddress,
           offer_type: 'consultation_request',
           consultation_requested: true
@@ -165,7 +166,7 @@ const ImprovedOfferModal: React.FC<ImprovedOfferModalProps> = ({
         .insert({
           buyer_id: buyerId,
           offer_intent_id: offerIntent.id,
-          agent_id: agentId || null,
+          agent_id: agentId || buyerId, // Use buyerId as placeholder - will be updated when real agent is assigned
           status: 'requested',
           buyer_notes: JSON.stringify({
             urgency: formData.urgency,

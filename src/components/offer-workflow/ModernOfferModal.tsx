@@ -174,14 +174,21 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
 
       // Create offer intent with simplified data
       console.log('Creating offer intent...');
+      
+      // Prepare offer intent data - use buyerId as fallback for agent_id to satisfy NOT NULL constraint
+      const offerIntentData = {
+        buyer_id: buyerId,
+        agent_id: agentId || buyerId, // Use buyerId as fallback since agent_id is required in schema
+        property_address: propertyAddress,
+        offer_type: 'consultation_request',
+        consultation_requested: true
+      };
+      
+      console.log('Offer intent data:', offerIntentData);
+      
       const { data: offerIntent, error: offerError } = await supabase
         .from('offer_intents')
-        .insert({
-          buyer_id: buyerId,
-          property_address: propertyAddress,
-          offer_type: 'consultation_request',
-          consultation_requested: true
-        })
+        .insert(offerIntentData)
         .select()
         .single();
 
@@ -208,7 +215,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
       const bookingData = {
         buyer_id: buyerId,
         offer_intent_id: offerIntent.id,
-        agent_id: agentId || null,
+        agent_id: agentId || buyerId, // Use buyerId as placeholder - will be updated when real agent is assigned
         status: 'requested',
         ...(scheduledAt && { scheduled_at: scheduledAt }),
         buyer_notes: JSON.stringify({
@@ -226,7 +233,8 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
           priority_concerns: formData.priorityConcerns,
           deal_breakers: formData.dealBreakers,
           winning_factors: formData.winningFactors,
-          property_address: propertyAddress
+          property_address: propertyAddress,
+          needs_agent_assignment: !agentId // Flag to indicate this consultation needs agent assignment
         })
       };
 

@@ -473,6 +473,109 @@ const PromptDrivenOfferForm = ({
               </p>
             </div>
 
+            {/* Explainer Section */}
+            <div className="max-w-4xl mx-auto mb-16">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* What This Is */}
+                <div className="bg-white/80 backdrop-blur-lg border border-white/20 shadow-xl shadow-purple-500/5 rounded-3xl p-8">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">What This Intake Does</h3>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    This quick form collects your key information so our expert can come to your consultation fully prepared with:
+                  </p>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Market analysis and comparable sales data
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Customized offer strategy recommendations
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Pre-filled contract templates ready to go
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Financing options and contingency advice
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Timeline */}
+                <div className="bg-white/80 backdrop-blur-lg border border-white/20 shadow-xl shadow-purple-500/5 rounded-3xl p-8">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-500/30">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">Your Offer Timeline</h3>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+                        <div className="w-px h-6 bg-gray-300"></div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Complete This Form</h4>
+                        <p className="text-sm text-gray-600">Takes 3-5 minutes</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+                        <div className="w-px h-6 bg-gray-300"></div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Expert Consultation</h4>
+                        <p className="text-sm text-gray-600">30-min strategy session</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">3</div>
+                        <div className="w-px h-6 bg-gray-300"></div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Submit Your Offer</h4>
+                        <p className="text-sm text-gray-600">Same day or next business day</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">4</div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Negotiate & Close</h4>
+                        <p className="text-sm text-gray-600">We handle the back-and-forth</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Call to Action */}
+              <div className="mt-12 text-center">
+                <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-6 max-w-2xl mx-auto">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Make a Winning Offer?</h3>
+                  <p className="text-gray-600 mb-4">
+                    Complete the form below to schedule your consultation. Our experts have helped buyers win in competitive markets across DC, Maryland, and Virginia.
+                  </p>
+                  <div className="flex justify-center items-center gap-2 text-sm text-violet-600 font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Average time to complete: 4 minutes
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Progress */}
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">

@@ -24,6 +24,7 @@ import MessagingInterface from "@/components/messaging/MessagingInterface";
 // New components
 import ProposalsTab from "@/components/dashboard/ProposalsTab";
 import MyClientsTab from "@/components/dashboard/MyClientsTab";
+import AgentClientDebugger from "@/components/debug/AgentClientDebugger";
 
 const AgentDashboard = () => {
   const {
@@ -226,7 +227,10 @@ const AgentDashboard = () => {
       count: 0, // Count will be implemented in the component
       color: "bg-indigo-100 text-indigo-700",
       content: currentUser?.id ? (
-        <MyClientsTab agentId={currentUser.id} />
+        <div className="space-y-6">
+          <AgentClientDebugger />
+          <MyClientsTab agentId={currentUser.id} />
+        </div>
       ) : (
         <EmptyStateCard
           title="Unable to Load Clients"

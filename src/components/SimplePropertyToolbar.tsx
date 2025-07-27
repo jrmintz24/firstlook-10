@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Heart, Calendar, MessageSquare } from 'lucide-react';
 import { useSimpleIDXIntegration } from '../hooks/useSimpleIDXIntegration';
 import { useAuth } from '../contexts/AuthContext';
+import QuickOfferModal from './offer-workflow/QuickOfferModal';
 
 export default function SimplePropertyToolbar() {
   const { propertyData, isLoading, favoriteProperty, scheduleShowingForProperty } = useSimpleIDXIntegration();
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   const handleFavorite = async () => {
     if (!propertyData || !user) return;
@@ -28,9 +30,7 @@ export default function SimplePropertyToolbar() {
 
   const handleMakeOffer = () => {
     if (!propertyData) return;
-    
-    const listingId = propertyData.mlsId;
-    window.location.href = `/make-offer?listing=${listingId}`;
+    setShowOfferModal(true);
   };
 
   // Don't render if no property data
@@ -92,6 +92,14 @@ export default function SimplePropertyToolbar() {
           </div>
         </div>
       </div>
+      
+      {/* Quick Offer Modal */}
+      <QuickOfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        propertyAddress={propertyData?.address || ''}
+        buyerId={user?.id || ''}
+      />
     </div>
   );
 }

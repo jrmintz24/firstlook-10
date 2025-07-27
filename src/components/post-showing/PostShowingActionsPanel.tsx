@@ -9,6 +9,7 @@ import { usePostShowingActions } from "@/hooks/usePostShowingActions";
 // Removed EnhancedOfferTypeDialog import - now going directly to offer questionnaire
 import AgentProfileModal from "./AgentProfileModal";
 import FavoritePropertyModal from "./FavoritePropertyModal";
+import QuickOfferModal from "../offer-workflow/QuickOfferModal";
 import { PostShowingWorkflowService } from '@/services/postShowingWorkflowService';
 
 interface PostShowingActionsPanelProps {
@@ -39,6 +40,7 @@ const PostShowingActionsPanel = ({
   // Removed showOfferDialog state - no longer using dialog
   const [showAgentProfile, setShowAgentProfile] = useState(false);
   const [showFavoriteModal, setShowFavoriteModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   const {
     isSubmitting,
@@ -143,18 +145,8 @@ const PostShowingActionsPanel = ({
     // Record the action first
     await handleActionComplete('made_offer');
     
-    // Skip the dialog and go directly to offer questionnaire
-    const params = new URLSearchParams({
-      property: propertyAddress
-    });
-    
-    // Add agent if one is provided
-    if (agentId) {
-      params.append('agent', agentId);
-    }
-    
-    // Navigate directly to offer questionnaire with scheduling
-    window.location.href = `/offer-questionnaire?${params.toString()}`;
+    // Open the quick offer modal instead of navigating
+    setShowOfferModal(true);
   };
 
   // Removed handleOfferDialogClose - no longer using dialog
@@ -329,6 +321,14 @@ const PostShowingActionsPanel = ({
         onSave={handleFavoriteProperty}
         propertyAddress={propertyAddress}
         isSubmitting={isSubmitting}
+      />
+
+      <QuickOfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        propertyAddress={propertyAddress}
+        buyerId={buyerId}
+        agentId={agentId}
       />
     </>
   );

@@ -1,15 +1,16 @@
 
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import OfferManagementDashboard from "@/components/offer-management/OfferManagementDashboard";
-import { useNavigate } from "react-router-dom";
+import QuickOfferModal from "@/components/offer-workflow/QuickOfferModal";
 
 const MyOffers = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   const handleCreateOffer = () => {
-    navigate('/offer-questionnaire');
+    setShowOfferModal(true);
   };
 
   if (!user) {
@@ -22,6 +23,13 @@ const MyOffers = () => {
         <OfferManagementDashboard 
           buyerId={user.id}
           onCreateOffer={handleCreateOffer}
+        />
+        
+        <QuickOfferModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          propertyAddress=""
+          buyerId={user.id}
         />
       </div>
     </div>

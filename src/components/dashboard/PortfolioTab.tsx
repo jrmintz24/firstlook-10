@@ -26,21 +26,27 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
 
   // Handlers for property card actions
   const handleViewDetails = (favorite: any) => {
-    // Navigate to property details page using available ID fields
-    const propertyId = favorite.idx_id || favorite.mls_id || favorite.idx_property?.id;
+    // Use the stored ihf_page_url if available, otherwise build URL from ID
+    const ihfPageUrl = favorite.idx_property?.ihf_page_url;
+    const propertyId = favorite.idx_property?.idx_id || favorite.idx_property?.mls_id || favorite.idx_id || favorite.mls_id;
     
     console.log('Debug View Details:', { 
+      ihf_page_url: ihfPageUrl,
+      idx_property: favorite.idx_property,
       idx_id: favorite.idx_id, 
       mls_id: favorite.mls_id, 
-      idx_property_id: favorite.idx_property?.id,
-      finalPropertyId: propertyId,
+      propertyId: propertyId,
       address: favorite.property_address
     });
     
-    if (propertyId) {
+    if (ihfPageUrl) {
+      // Best option: use the stored property page URL
+      window.location.href = ihfPageUrl;
+    } else if (propertyId) {
+      // Fallback: navigate to our listing page
       navigate(`/listing/${propertyId}`);
     } else if (favorite.property_address) {
-      // Fallback: search for property by address
+      // Last resort: search for property by address
       navigate(`/listings?search=${encodeURIComponent(favorite.property_address)}`);
     }
   };

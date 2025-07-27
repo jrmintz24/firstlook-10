@@ -53,27 +53,27 @@ const SimpleFavoritesDisplay = ({
   };
 
   const handleViewProperty = (favorite: any) => {
-    // Try multiple strategies to view property details
-    const pageUrl = (favorite.idx_property as any)?.ihf_page_url;
-    const propertyId = favorite.idx_id || favorite.mls_id || favorite.idx_property?.id;
+    // Use the stored ihf_page_url if available, otherwise build URL from ID
+    const ihfPageUrl = favorite.idx_property?.ihf_page_url;
+    const propertyId = favorite.idx_property?.idx_id || favorite.idx_property?.mls_id || favorite.idx_id || favorite.mls_id;
     
     console.log('Debug View Property:', { 
+      ihf_page_url: ihfPageUrl,
+      idx_property: favorite.idx_property,
       idx_id: favorite.idx_id, 
       mls_id: favorite.mls_id, 
-      idx_property_id: favorite.idx_property?.id,
-      finalPropertyId: propertyId,
-      pageUrl: pageUrl,
+      propertyId: propertyId,
       address: favorite.property_address
     });
     
-    if (pageUrl) {
-      // First preference: use ihf_page_url if available
-      window.open(pageUrl, '_blank');
+    if (ihfPageUrl) {
+      // Best option: use the stored property page URL (same window for consistency)
+      window.location.href = ihfPageUrl;
     } else if (propertyId) {
-      // Second preference: navigate to our property page
+      // Fallback: navigate to our listing page
       window.location.href = `/listing/${propertyId}`;
     } else if (favorite.property_address) {
-      // Fallback: search by address
+      // Last resort: search by address
       window.location.href = `/listings?search=${encodeURIComponent(favorite.property_address)}`;
     }
   };

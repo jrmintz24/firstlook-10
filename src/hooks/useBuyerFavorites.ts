@@ -61,7 +61,10 @@ export const useBuyerFavorites = (buyerId?: string) => {
             property_type,
             status,
             city,
-            state
+            state,
+            ihf_page_url,
+            mls_id,
+            idx_id
           )
         `)
         .eq('buyer_id', buyerId)

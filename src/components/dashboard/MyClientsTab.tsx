@@ -169,7 +169,7 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
           // If profile doesn't exist or we don't have permission, create a basic client entry
           profile = {
             first_name: 'Client',
-            last_name: clientId.substring(0, 8),
+            last_name: `#${clientId.substring(0, 8)}`,
             email: null,
             phone: null
           };

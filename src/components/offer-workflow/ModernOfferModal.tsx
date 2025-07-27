@@ -163,7 +163,17 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
     setIsSubmitting(true);
 
     try {
+      console.log('Starting form submission with data:', {
+        selectedDate,
+        selectedTime,
+        formData,
+        buyerId,
+        propertyAddress,
+        agentId
+      });
+
       // Create offer intent with simplified data
+      console.log('Creating offer intent...');
       const { data: offerIntent, error: offerError } = await supabase
         .from('offer_intents')
         .insert({
@@ -175,36 +185,64 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
         .select()
         .single();
 
-      if (offerError) throw offerError;
+      if (offerError) {
+        console.error('Offer intent creation failed:', offerError);
+        throw offerError;
+      }
+      
+      console.log('Offer intent created successfully:', offerIntent);
+
+      // Parse selected date and time to create a scheduled_at timestamp
+      let scheduledAt = null;
+      if (selectedDate && selectedTime) {
+        try {
+          const dateTime = new Date(`${selectedDate} ${selectedTime}`);
+          if (!isNaN(dateTime.getTime())) {
+            scheduledAt = dateTime.toISOString();
+          }
+        } catch (dateError) {
+          console.warn('Could not parse date/time:', dateError);
+        }
+      }
+
+      const bookingData = {
+        buyer_id: buyerId,
+        offer_intent_id: offerIntent.id,
+        agent_id: agentId || null,
+        status: 'requested',
+        ...(scheduledAt && { scheduled_at: scheduledAt }),
+        buyer_notes: JSON.stringify({
+          urgency: formData.urgency,
+          preferred_date: selectedDate,
+          preferred_time: selectedTime,
+          property_feedback: formData.propertyFeedback,
+          competition_concerns: formData.competitionConcerns,
+          market_knowledge: formData.marketKnowledge,
+          budget_confidence: formData.budgetConfidence,
+          max_comfortable_price: formData.maxComfortablePrice,
+          down_payment_ready: formData.downPaymentReady,
+          financing_secured: formData.financingSecured,
+          timeline: formData.timeline,
+          priority_concerns: formData.priorityConcerns,
+          deal_breakers: formData.dealBreakers,
+          winning_factors: formData.winningFactors,
+          property_address: propertyAddress
+        })
+      };
+
+      console.log('Creating consultation booking with data:', bookingData);
 
       // Create consultation booking with correct schema
       const { error: bookingError } = await supabase
         .from('consultation_bookings')
-        .insert({
-          buyer_id: buyerId,
-          offer_intent_id: offerIntent.id,
-          agent_id: agentId || null,
-          status: 'requested',
-          buyer_notes: JSON.stringify({
-            urgency: formData.urgency,
-            preferred_date: selectedDate,
-            preferred_time: selectedTime,
-            property_feedback: formData.propertyFeedback,
-            competition_concerns: formData.competitionConcerns,
-            market_knowledge: formData.marketKnowledge,
-            budget_confidence: formData.budgetConfidence,
-            max_comfortable_price: formData.maxComfortablePrice,
-            down_payment_ready: formData.downPaymentReady,
-            financing_secured: formData.financingSecured,
-            timeline: formData.timeline,
-            priority_concerns: formData.priorityConcerns,
-            deal_breakers: formData.dealBreakers,
-            winning_factors: formData.winningFactors,
-            property_address: propertyAddress
-          })
-        });
+        .insert(bookingData);
 
-      if (bookingError) throw bookingError;
+      if (bookingError) {
+        console.error('Consultation booking creation failed:', bookingError);
+        throw bookingError;
+      }
+      
+      console.log('Consultation booking created successfully');
 
       setIsSuccess(true);
       
@@ -238,9 +276,21 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
 
     } catch (error) {
       console.error('Error submitting consultation request:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      
+      // More detailed error handling
+      let errorMessage = "Something went wrong. Please try again.";
+      if (error && typeof error === 'object') {
+        if ('message' in error) {
+          errorMessage = error.message;
+        } else if ('error' in error) {
+          errorMessage = error.error;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

@@ -52,26 +52,47 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       setLoading(true);
       console.log('[MyClientsTab] Fetching clients for agent:', agentId);
 
-      // Get buyers who have hired this agent or have multiple tours with them
-      let agentMatches = null;
+      // Get buyers who have hired this agent - try buyer_agent_matches first, then agent_referrals
+      let agentMatches = [];
+      
+      // Try buyer_agent_matches table first
       try {
         const { data, error } = await supabase
           .from('buyer_agent_matches')
-          .select(`
-            buyer_id,
-            created_at,
-            status,
-            profiles!inner(first_name, last_name, email, phone)
-          `)
+          .select('buyer_id, created_at, status')
           .eq('agent_id', agentId)
           .eq('status', 'active');
         
         if (error) throw error;
-        agentMatches = data;
+        agentMatches = data?.map(match => ({
+          buyer_id: match.buyer_id,
+          created_at: match.created_at,
+          status: match.status
+        })) || [];
+        console.log('[MyClientsTab] Found agent matches in buyer_agent_matches:', agentMatches.length);
       } catch (matchesError) {
-        console.warn('[MyClientsTab] Agent matches error (table might not exist):', matchesError);
-        // Continue without agent matches if table doesn't exist
-        agentMatches = [];
+        console.warn('[MyClientsTab] buyer_agent_matches error, trying agent_referrals:', matchesError);
+        
+        // Fallback to agent_referrals table
+        try {
+          const { data, error } = await supabase
+            .from('agent_referrals')
+            .select('buyer_id, created_at, status')
+            .eq('agent_id', agentId)
+            .eq('referral_type', 'hire_agent')
+            .eq('status', 'active');
+          
+          if (error) throw error;
+          agentMatches = data?.map(referral => ({
+            buyer_id: referral.buyer_id,
+            created_at: referral.created_at,
+            status: referral.status
+          })) || [];
+          console.log('[MyClientsTab] Found agent matches in agent_referrals:', agentMatches.length);
+        } catch (referralError) {
+          console.warn('[MyClientsTab] agent_referrals also failed:', referralError);
+          agentMatches = [];
+        }
       }
 
       console.log('[MyClientsTab] Agent matches result:', agentMatches);

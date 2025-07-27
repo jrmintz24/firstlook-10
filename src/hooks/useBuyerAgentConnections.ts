@@ -40,22 +40,54 @@ export const useBuyerAgentConnections = (buyerId?: string) => {
 
     try {
       setLoading(true);
+      console.log('[useBuyerAgentConnections] Fetching connections for buyer:', buyerId);
       
-      // First, just fetch the basic buyer-agent matches
-      const { data: matches, error: matchesError } = await supabase
-        .from('buyer_agent_matches')
-        .select('id, created_at, match_source, agent_id, showing_request_id')
-        .eq('buyer_id', buyerId)
-        .order('created_at', { ascending: false });
+      // Try to fetch from buyer_agent_matches first
+      let matches = [];
+      try {
+        const { data, error: matchesError } = await supabase
+          .from('buyer_agent_matches')
+          .select('id, created_at, match_source, agent_id, showing_request_id')
+          .eq('buyer_id', buyerId)
+          .order('created_at', { ascending: false });
 
-      if (matchesError) {
-        console.error('Error fetching agent matches:', matchesError);
-        setConnections([]);
-        return;
+        if (matchesError) throw matchesError;
+        matches = data || [];
+        console.log('[useBuyerAgentConnections] Found matches in buyer_agent_matches:', matches.length);
+      } catch (matchesError) {
+        console.warn('[useBuyerAgentConnections] buyer_agent_matches error, trying agent_referrals:', matchesError);
+        
+        // Fallback to agent_referrals table
+        try {
+          const { data, error: referralError } = await supabase
+            .from('agent_referrals')
+            .select('id, created_at, agent_id, showing_request_id')
+            .eq('buyer_id', buyerId)
+            .eq('referral_type', 'hire_agent')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+
+          if (referralError) throw referralError;
+          
+          // Map agent_referrals to match buyer_agent_matches structure
+          matches = data?.map(referral => ({
+            id: referral.id,
+            created_at: referral.created_at,
+            match_source: 'hired_from_showing',
+            agent_id: referral.agent_id,
+            showing_request_id: referral.showing_request_id
+          })) || [];
+          console.log('[useBuyerAgentConnections] Found matches in agent_referrals:', matches.length);
+        } catch (referralError) {
+          console.error('[useBuyerAgentConnections] Both tables failed:', referralError);
+          setConnections([]);
+          return;
+        }
       }
 
       // If no matches found, that's fine - just show empty state
       if (!matches || matches.length === 0) {
+        console.log('[useBuyerAgentConnections] No agent connections found');
         setConnections([]);
         return;
       }

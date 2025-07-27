@@ -59,6 +59,23 @@ export const useEnhancedPostShowingActions = () => {
 
       if (referralError) throw referralError;
 
+      // Also create a buyer_agent_matches record for dashboard visibility
+      const { error: matchError } = await supabase
+        .from('buyer_agent_matches')
+        .insert({
+          buyer_id: data.buyerId,
+          agent_id: data.agentId,
+          showing_request_id: data.showingId,
+          match_source: 'hired_from_showing',
+          contact_revealed_at: new Date().toISOString(),
+          status: 'active'
+        });
+
+      if (matchError) {
+        console.warn('Could not create buyer_agent_matches record (table might not exist):', matchError);
+        // Don't throw error since agent_referrals was successful
+      }
+
       // Update the showing request to set buyer consent
       const { error: showingError } = await supabase
         .from('showing_requests')

@@ -9,6 +9,7 @@ import { useBuyerFavorites } from '@/hooks/useBuyerFavorites';
 import { useBuyerAgentConnections } from '@/hooks/useBuyerAgentConnections';
 import OfferTabContent from './OfferTabContent';
 import AgentConnectionCard from './AgentConnectionCard';
+import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 
 interface PortfolioTabProps {
   buyerId?: string;
@@ -17,6 +18,8 @@ interface PortfolioTabProps {
 
 export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleTour }) => {
   const [activeSection, setActiveSection] = useState('favorites');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const navigate = useNavigate();
   const { favorites, loading: favoritesLoading } = useBuyerFavorites(buyerId);
   const { connections, loading: connectionsLoading, handleContactAgent } = useBuyerAgentConnections(buyerId);
@@ -33,15 +36,20 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
   };
 
   const handleScheduleTourClick = (favorite: any) => {
-    // Use the passed onScheduleTour prop if available, otherwise fallback
-    if (onScheduleTour) {
-      onScheduleTour(favorite.property_address, favorite.mls_id);
-    } else {
-      // Fallback: navigate to schedule tour page
-      if (favorite.mls_id) {
-        navigate(`/schedule-tour?listing=${favorite.mls_id}`);
-      }
-    }
+    // Open the modal with the selected property
+    setSelectedProperty(favorite);
+    setShowScheduleModal(true);
+  };
+
+  const handleScheduleModalClose = () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+  };
+
+  const handleScheduleSuccess = async () => {
+    // Handle successful scheduling
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
   };
 
   const sections = [
@@ -217,6 +225,27 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Tour Scheduling Modal */}
+      {showScheduleModal && selectedProperty && (
+        <ModernTourSchedulingModal
+          isOpen={showScheduleModal}
+          onClose={handleScheduleModalClose}
+          onSuccess={handleScheduleSuccess}
+          initialAddress={selectedProperty.property_address}
+          propertyId={selectedProperty.mls_id}
+          propertyDetails={{
+            address: selectedProperty.property_address,
+            mlsId: selectedProperty.mls_id,
+            price: selectedProperty.idx_property?.price,
+            beds: selectedProperty.idx_property?.beds,
+            baths: selectedProperty.idx_property?.baths,
+            sqft: selectedProperty.idx_property?.sqft,
+            imageUrl: selectedProperty.idx_property?.images?.[0]?.url
+          }}
+          skipNavigation={true}
+        />
+      )}
     </div>
   );
 };

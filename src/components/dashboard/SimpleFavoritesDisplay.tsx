@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, ExternalLink, Trash2 } from "lucide-react";
 import { useBuyerFavorites } from '@/hooks/useBuyerFavorites';
+import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 
 interface SimpleFavoritesDisplayProps {
   buyerId: string;
@@ -20,6 +21,8 @@ const SimpleFavoritesDisplay = ({
 }: SimpleFavoritesDisplayProps) => {
   const { favorites, loading, removeFavorite } = useBuyerFavorites(buyerId);
   const [isRemoving, setIsRemoving] = useState<string | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   const handleRemove = async (favoriteId: string) => {
     if (!showRemoveButton) return;
@@ -34,10 +37,19 @@ const SimpleFavoritesDisplay = ({
     }
   };
 
-  const handleScheduleTour = (mlsId: string) => {
-    if (mlsId) {
-      window.location.href = `/schedule-tour?listing=${mlsId}`;
-    }
+  const handleScheduleTour = (favorite: any) => {
+    setSelectedProperty(favorite);
+    setShowScheduleModal(true);
+  };
+
+  const handleScheduleModalClose = () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+  };
+
+  const handleScheduleSuccess = async () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
   };
 
   const handleViewProperty = (favorite: any) => {
@@ -125,7 +137,7 @@ const SimpleFavoritesDisplay = ({
                   {showScheduleButton && (
                     <Button 
                       size="sm" 
-                      onClick={() => handleScheduleTour(favorite.mls_id)}
+                      onClick={() => handleScheduleTour(favorite)}
                       className="flex items-center gap-2"
                     >
                       <Calendar className="h-4 w-4" />
@@ -181,6 +193,27 @@ const SimpleFavoritesDisplay = ({
             </p>
           </CardContent>
         </Card>
+      )}
+      
+      {/* Tour Scheduling Modal */}
+      {showScheduleModal && selectedProperty && (
+        <ModernTourSchedulingModal
+          isOpen={showScheduleModal}
+          onClose={handleScheduleModalClose}
+          onSuccess={handleScheduleSuccess}
+          initialAddress={selectedProperty.property_address}
+          propertyId={selectedProperty.mls_id}
+          propertyDetails={{
+            address: selectedProperty.property_address,
+            mlsId: selectedProperty.mls_id,
+            price: selectedProperty.idx_property?.price,
+            beds: selectedProperty.idx_property?.beds,
+            baths: selectedProperty.idx_property?.baths,
+            sqft: selectedProperty.idx_property?.sqft,
+            imageUrl: selectedProperty.idx_property?.images?.[0]?.url
+          }}
+          skipNavigation={true}
+        />
       )}
     </div>
   );

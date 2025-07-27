@@ -12,11 +12,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
 import SignAgreementModal from './SignAgreementModal';
+import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 
 const UnifiedBuyerDashboard = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [agreementModalOpen, setAgreementModalOpen] = useState(false);
   const [selectedShowing, setSelectedShowing] = useState<any>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const { user } = useAuth();
   const { 
     pendingRequests,
@@ -38,14 +41,24 @@ const UnifiedBuyerDashboard = () => {
   }, []);
 
   const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
-    // Navigate to schedule tour page with property info
-    if (mlsId) {
-      window.location.href = `/schedule-tour?listing=${mlsId}`;
-    } else {
-      // Fallback to property search
-      window.location.href = `/listings?search=${encodeURIComponent(propertyAddress)}`;
-    }
+    // Open modal with property info
+    setSelectedProperty({
+      property_address: propertyAddress,
+      mls_id: mlsId
+    });
+    setShowScheduleModal(true);
   }, []);
+
+  const handleScheduleModalClose = () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+  };
+
+  const handleScheduleSuccess = async () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+    // Refresh data if needed
+  };
 
   const memoizedHandleCancel = useCallback((id: string) => {
     handleCancelShowing(id);
@@ -491,6 +504,18 @@ const UnifiedBuyerDashboard = () => {
             agentName: selectedShowing.assigned_agent_name
           } : undefined}
         />
+
+        {/* Tour Scheduling Modal */}
+        {showScheduleModal && selectedProperty && (
+          <ModernTourSchedulingModal
+            isOpen={showScheduleModal}
+            onClose={handleScheduleModalClose}
+            onSuccess={handleScheduleSuccess}
+            initialAddress={selectedProperty.property_address}
+            propertyId={selectedProperty.mls_id}
+            skipNavigation={true}
+          />
+        )}
       </div>
     </div>
   );

@@ -155,15 +155,24 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
         console.log('[MyClientsTab] Processing client:', clientId);
         
         // Get client profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('first_name, last_name, email, phone')
           .eq('id', clientId)
           .single();
 
+        let profile = profileData;
         if (profileError) {
           console.warn('[MyClientsTab] Profile error for client', clientId, ':', profileError);
-          continue;
+          console.warn('[MyClientsTab] Profile error details:', profileError.message, profileError.code);
+          
+          // If profile doesn't exist or we don't have permission, create a basic client entry
+          profile = {
+            first_name: 'Client',
+            last_name: clientId.substring(0, 8),
+            email: null,
+            phone: null
+          };
         }
 
         // Get tour count

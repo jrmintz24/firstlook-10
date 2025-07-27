@@ -67,8 +67,8 @@ export const useEnhancedPostShowingActions = () => {
           agent_id: data.agentId,
           showing_request_id: data.showingId,
           match_source: 'hired_from_showing',
-          contact_revealed_at: new Date().toISOString(),
-          status: 'active'
+          contact_revealed_at: new Date().toISOString()
+          // Note: buyer_agent_matches table doesn't have a status field
         });
 
       if (matchError) {

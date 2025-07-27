@@ -48,9 +48,15 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
   }, [agentId]);
 
   const fetchMyClients = async () => {
+    console.log('[MyClientsTab] Starting fetchMyClients for agent:', agentId);
+    if (!agentId) {
+      console.error('[MyClientsTab] No agentId provided!');
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
-      console.log('[MyClientsTab] Fetching clients for agent:', agentId);
 
       // Get buyers who have hired this agent - try buyer_agent_matches first, then agent_referrals
       let agentMatches = [];
@@ -59,15 +65,14 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       try {
         const { data, error } = await supabase
           .from('buyer_agent_matches')
-          .select('buyer_id, created_at, status')
-          .eq('agent_id', agentId)
-          .eq('status', 'active');
+          .select('buyer_id, created_at')
+          .eq('agent_id', agentId);
         
         if (error) throw error;
         agentMatches = data?.map(match => ({
           buyer_id: match.buyer_id,
           created_at: match.created_at,
-          status: match.status
+          status: 'active' // buyer_agent_matches doesn't have status field, assume active
         })) || [];
         console.log('[MyClientsTab] Found agent matches in buyer_agent_matches:', agentMatches.length);
       } catch (matchesError) {
@@ -225,7 +230,9 @@ const MyClientsTab: React.FC<MyClientsTabProps> = ({ agentId }) => {
       clientsData.sort((a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime());
 
       console.log('[MyClientsTab] Final clients data:', clientsData);
+      console.log('[MyClientsTab] Setting', clientsData.length, 'clients');
       setClients(clientsData);
+      console.log('[MyClientsTab] Clients set successfully');
 
     } catch (error) {
       console.error('Error fetching my clients:', error);

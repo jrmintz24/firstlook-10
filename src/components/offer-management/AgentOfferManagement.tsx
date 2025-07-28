@@ -202,20 +202,22 @@ const AgentOfferManagement = ({ agentId }: AgentOfferManagementProps) => {
                       }`} />
                       
                       <CardHeader className="pb-4 pt-5">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg font-bold leading-tight truncate text-gray-900 group-hover:text-blue-700 transition-colors">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <CardTitle className="text-base font-bold leading-snug text-gray-900 group-hover:text-blue-700 transition-colors">
                               {offer.property_address}
                             </CardTitle>
-                            <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
-                              {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                            </p>
                           </div>
-                          <div className="ml-3">
+                          <div className="flex-shrink-0">
                             <Badge className={`${getStatusColor(status)} border-0 shadow-sm font-semibold`}>
                               {getStatusText(status)}
                             </Badge>
                           </div>
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500 capitalize font-medium">
+                            {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                          </p>
                         </div>
                       </CardHeader>
                       
@@ -323,20 +325,22 @@ const AgentOfferManagement = ({ agentId }: AgentOfferManagementProps) => {
                       <div className="h-1 w-full rounded-t-lg bg-gradient-to-r from-green-400 to-green-600" />
                       
                       <CardHeader className="pb-4 pt-5">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg font-bold leading-tight truncate text-gray-900 group-hover:text-green-700 transition-colors">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <CardTitle className="text-base font-bold leading-snug text-gray-900 group-hover:text-green-700 transition-colors">
                               {offer.property_address}
                             </CardTitle>
-                            <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
-                              {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                            </p>
                           </div>
-                          <div className="ml-3">
+                          <div className="flex-shrink-0">
                             <Badge className="bg-green-100 text-green-800 border-0 shadow-sm font-semibold">
                               ✓ Completed
                             </Badge>
                           </div>
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500 capitalize font-medium">
+                            {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                          </p>
                         </div>
                       </CardHeader>
                       

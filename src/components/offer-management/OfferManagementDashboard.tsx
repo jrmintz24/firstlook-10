@@ -193,19 +193,23 @@ const OfferManagementDashboard = ({ buyerId, onCreateOffer }: OfferManagementDas
 
                 return (
                   <Card key={offer.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOffer(offer)}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg leading-tight truncate">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0 pr-3">
+                          <CardTitle className="text-base font-bold leading-snug text-gray-900">
                             {offer.property_address}
                           </CardTitle>
-                          <p className="text-sm text-gray-600 mt-1 capitalize">
-                            {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                          </p>
                         </div>
-                        <Badge className={`ml-2 ${getStatusColor(status)}`}>
-                          {getStatusText(status)}
-                        </Badge>
+                        <div className="flex-shrink-0">
+                          <Badge className={`${getStatusColor(status)} border-0 shadow-sm font-semibold`}>
+                            {getStatusText(status)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500 capitalize font-medium">
+                          {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                        </p>
                       </div>
                     </CardHeader>
                     
@@ -329,17 +333,17 @@ const OfferManagementDashboard = ({ buyerId, onCreateOffer }: OfferManagementDas
                           onClick={() => setSelectedOfferForDocs(offer)}
                         >
                           <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-medium text-gray-900 truncate">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0 pr-3">
+                                <h4 className="font-medium text-gray-900 leading-snug">
                                   {offer.property_address}
                                 </h4>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 mt-1">
                                   {offer.document_count || 0} documents uploaded
                                 </p>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Badge className={`${getStatusColor(getOfferStatus(offer))}`}>
+                              <div className="flex-shrink-0 flex items-center gap-2">
+                                <Badge className={`${getStatusColor(getOfferStatus(offer))} text-xs`}>
                                   {getStatusText(getOfferStatus(offer))}
                                 </Badge>
                                 <Upload className="w-4 h-4 text-blue-500" />

@@ -129,18 +129,22 @@ const OfferTabContent = ({ buyerId, onCreateOffer }: OfferTabContentProps) => {
             return (
               <Card key={offer.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOffer(offer)}>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 leading-tight truncate">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0 pr-3">
+                      <h4 className="font-medium text-gray-900 leading-snug">
                         {offer.property_address}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1 capitalize">
-                        {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                      </p>
                     </div>
-                    <Badge className={`ml-2 ${getStatusColor(status)}`}>
-                      {getStatusText(status)}
-                    </Badge>
+                    <div className="flex-shrink-0">
+                      <Badge className={`${getStatusColor(status)} border-0 shadow-sm font-semibold text-xs`}>
+                        {getStatusText(status)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-500 capitalize font-medium">
+                      {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                    </p>
                   </div>
                   
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">

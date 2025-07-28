@@ -35,9 +35,11 @@ interface OfferDetailModalProps {
   onClose: () => void;
   onUpdate: () => void;
   buyerId: string;
+  userType?: 'buyer' | 'agent';
+  currentUserId?: string;
 }
 
-const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDetailModalProps) => {
+const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType = 'buyer', currentUserId }: OfferDetailModalProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [consultationBooking, setConsultationBooking] = useState<any>(null);
@@ -171,7 +173,9 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDe
   const getOfferStatus = () => {
     if (offer.agent_summary_generated_at) return 'ready';
     if (offer.questionnaire_completed_at) return 'under_review';
-    if (offer.consultation_scheduled_at) return 'consultation_scheduled';
+    // Check if consultation is completed
+    if (consultationBooking?.status === 'completed') return 'consultation_completed';
+    if (offer.consultation_scheduled_at || consultationBooking?.status === 'scheduled') return 'consultation_scheduled';
     if (offer.consultation_requested) return 'consultation_requested';
     return 'in_progress';
   };
@@ -180,6 +184,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDe
     switch (status) {
       case 'ready': return 'bg-green-100 text-green-800';
       case 'under_review': return 'bg-blue-100 text-blue-800';
+      case 'consultation_completed': return 'bg-emerald-100 text-emerald-800';
       case 'consultation_scheduled': return 'bg-purple-100 text-purple-800';
       case 'consultation_requested': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -190,6 +195,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDe
     switch (status) {
       case 'ready': return 'Ready for Submission';
       case 'under_review': return 'Under Review';
+      case 'consultation_completed': return 'Consultation Completed';
       case 'consultation_scheduled': return 'Consultation Scheduled';
       case 'consultation_requested': return 'Consultation Requested';
       default: return 'In Progress';
@@ -433,20 +439,50 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDe
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {!offer.questionnaire_completed_at && (
-              <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Continue Questionnaire
-              </Button>
-            )}
-            
-            {offer.agent_id && (
-              <Button variant="outline" className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                Message Agent
-              </Button>
+            {/* Buyer Actions */}
+            {userType === 'buyer' && (
+              <>
+                {!offer.questionnaire_completed_at && (
+                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Continue Questionnaire
+                  </Button>
+                )}
+                
+                {offer.agent_id && (
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    Message Agent
+                  </Button>
+                )}
+              </>
             )}
 
+            {/* Agent Actions */}
+            {userType === 'agent' && (
+              <>
+                {status === 'consultation_completed' && !offer.questionnaire_completed_at && (
+                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Help Complete Questionnaire
+                  </Button>
+                )}
+                
+                {status === 'ready' && (
+                  <Button className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Submit Offer
+                  </Button>
+                )}
+                
+                <Button variant="outline" className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  Message Buyer
+                </Button>
+              </>
+            )}
+
+            {/* Common Actions */}
             {status === 'ready' && (
               <Button variant="outline" className="flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />

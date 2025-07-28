@@ -333,6 +333,8 @@ const AgentOfferManagement = ({ agentId }: AgentOfferManagementProps) => {
           onClose={() => setSelectedOffer(null)}
           onUpdate={fetchAgentOffers}
           buyerId={selectedOffer.buyer_id}
+          userType="agent"
+          currentUserId={agentId}
         />
       )}
     </div>

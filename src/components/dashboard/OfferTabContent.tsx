@@ -194,6 +194,9 @@ const OfferTabContent = ({ buyerId, onCreateOffer }: OfferTabContentProps) => {
           isOpen={!!selectedOffer}
           onClose={() => setSelectedOffer(null)}
           onUpdate={fetchOffers}
+          buyerId={buyerId}
+          userType="buyer"
+          currentUserId={buyerId}
         />
       )}
     </div>

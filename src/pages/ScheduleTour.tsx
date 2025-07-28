@@ -63,14 +63,15 @@ const ScheduleTour = () => {
             </p>
           </div>
 
-          <ModernTourSchedulingModal
-            isOpen={isModalOpen}
-            onClose={handleClose}
-            onSuccess={async () => handleSuccess()}
-            initialAddress={initialAddress}
-            propertyId={listingId}
-            
-          />
+          {isModalOpen && (
+            <ModernTourSchedulingModal
+              isOpen={isModalOpen}
+              onClose={handleClose}
+              onSuccess={async () => handleSuccess()}
+              initialAddress={initialAddress}
+              propertyId={listingId}
+            />
+          )}
         </div>
       </div>
     </div>

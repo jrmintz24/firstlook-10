@@ -211,15 +211,17 @@ export const PropertyToolbar: React.FC<PropertyToolbarProps> = ({ className = ''
         </div>
       </div>
 
-      {/* Modern Tour Scheduling Modal */}
-      <ModernTourSchedulingModal
-        isOpen={isScheduleOpen}
-        onClose={() => setIsScheduleOpen(false)}
-        onSuccess={handleScheduleSuccess}
-        initialAddress={propertyData?.address}
-        propertyId={propertyData?.listingId || queryId || listingId}
-        propertyDetails={extractedPropertyData}
-      />
+      {/* Modern Tour Scheduling Modal - Only render when needed */}
+      {isScheduleOpen && (
+        <ModernTourSchedulingModal
+          isOpen={isScheduleOpen}
+          onClose={() => setIsScheduleOpen(false)}
+          onSuccess={handleScheduleSuccess}
+          initialAddress={propertyData?.address}
+          propertyId={propertyData?.listingId || queryId || listingId}
+          propertyDetails={extractedPropertyData}
+        />
+      )}
 
       {/* Favorite Property Modal */}
       <FavoritePropertyModal

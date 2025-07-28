@@ -281,12 +281,14 @@ const RedesignedBuyerDashboard = () => {
         userId={currentUser?.id}
       />
 
-      <ModernTourSchedulingModal
-        isOpen={showTourModal}
-        onClose={() => setShowTourModal(false)}
-        onSuccess={handleTourModalSuccess}
-        skipNavigation={true}
-      />
+      {showTourModal && (
+        <ModernTourSchedulingModal
+          isOpen={showTourModal}
+          onClose={() => setShowTourModal(false)}
+          onSuccess={handleTourModalSuccess}
+          skipNavigation={true}
+        />
+      )}
       <ModernOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}

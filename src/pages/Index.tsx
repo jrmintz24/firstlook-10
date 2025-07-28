@@ -128,13 +128,15 @@ export default function Index() {
         />
       )}
 
-      {/* Modern Tour Scheduling Modal */}
-      <ModernTourSchedulingModal 
-        isOpen={showTourModal}
-        onClose={() => setShowTourModal(false)}
-        onSuccess={handleTourModalSuccess}
-        skipNavigation={false}
-      />
+      {/* Modern Tour Scheduling Modal - Only render when needed */}
+      {showTourModal && (
+        <ModernTourSchedulingModal 
+          isOpen={showTourModal}
+          onClose={() => setShowTourModal(false)}
+          onSuccess={handleTourModalSuccess}
+          skipNavigation={false}
+        />
+      )}
     </div>
   )
 }

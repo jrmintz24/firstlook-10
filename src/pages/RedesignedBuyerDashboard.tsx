@@ -3,6 +3,7 @@ import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ShowingListTab from '@/components/dashboard/ShowingListTab';
 import { PortfolioTab } from '@/components/dashboard/PortfolioTab';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,15 +11,22 @@ import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
 import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
+import SignAgreementModal from '@/components/dashboard/SignAgreementModal';
+import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
+import ModernOfferModal from "@/components/offer-workflow/ModernOfferModal";
 
 const RedesignedBuyerDashboard = () => {
   console.log('🔍 [DEBUG] RedesignedBuyerDashboard render count:', ++window.redesignedBuyerDashboardRenderCount || (window.redesignedBuyerDashboardRenderCount = 1));
   
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
   const isMobile = useIsMobile();
   
-  // TEST: Add useOptimizedBuyerLogic hook with handlers for ShowingListTab
+  // Get all data and handlers from optimized hook
   const {
     pendingRequests,
     activeShowings,
@@ -30,13 +38,17 @@ const RedesignedBuyerDashboard = () => {
     handleRescheduleShowing,
     handleConfirmShowingWithModal,
     handleSignAgreementFromCard,
-    handleSendMessage
+    handleSendMessage,
+    showAgreementModal,
+    setShowAgreementModal,
+    selectedShowing,
+    handleAgreementSignWithModal,
+    fetchData
   } = useOptimizedBuyerLogic();
 
   // Handler functions for ShowingListTab
   const handleRequestShowing = useCallback(() => {
-    console.log('Request showing clicked');
-    alert('Request showing - not implemented in test');
+    setShowScheduleModal(true);
   }, []);
 
   const memoizedHandleCancel = useCallback((id: string) => {
@@ -57,13 +69,30 @@ const RedesignedBuyerDashboard = () => {
   }, [handleSignAgreementFromCard, user]);
 
   const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
-    console.log(`Schedule tour for property: ${propertyAddress}, MLS: ${mlsId}`);
-    alert(`Schedule tour for ${propertyAddress} - modal not implemented in test`);
+    // Open modal with property info
+    setSelectedProperty({
+      property_address: propertyAddress,
+      mls_id: mlsId
+    });
+    setShowScheduleModal(true);
   }, []);
 
+  const handleScheduleModalClose = () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+  };
+
+  const handleScheduleSuccess = async () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+    // Refresh data after successful tour request
+    await fetchData();
+  };
+
   const handleMakeOffer = useCallback((propertyAddress: string) => {
-    console.log(`Make offer for property: ${propertyAddress}`);
-    alert(`Make offer for ${propertyAddress} - modal not implemented in test`);
+    console.log(`Making offer for property: ${propertyAddress}`);
+    setOfferPropertyAddress(propertyAddress);
+    setShowOfferModal(true);
   }, []);
 
   const tabs = [
@@ -183,18 +212,23 @@ const RedesignedBuyerDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Welcome back, {user?.user_metadata?.first_name || 'there'}! 🎉 WORKING!
-        </h1>
+        <div className="mb-6">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            Welcome back, {user?.user_metadata?.first_name || 'there'}! 
+          </h1>
+          <p className="text-lg text-gray-600">Your property tour dashboard</p>
+        </div>
         
-        {/* Debug Info */}
-        <div className="bg-green-50 border border-green-200 p-4 rounded-lg shadow mb-6">
-          <p className="text-green-800 mb-2">✅ Dashboard fully restored with infinite loop fixes!</p>
-          <div className="text-sm text-green-700">
-            Loading: {loading ? 'Yes' : 'No'} | 
-            Pending: {showingCounts?.pending || 0} | 
-            Active: {showingCounts?.active || 0} | 
-            Completed: {showingCounts?.completed || 0}
+        {/* Status Info - Enhanced */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 p-4 rounded-xl shadow-sm mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <p className="text-green-800 font-medium">Dashboard Active & Optimized</p>
+          </div>
+          <div className="text-sm text-gray-700 flex gap-4">
+            <span>Status: {loading ? '🔄 Loading' : '✅ Ready'}</span>
+            <span>Tours: <AnimatedNumber value={showingCounts?.pending || 0} className="font-semibold" /> pending</span>
+            <span>Scheduled: <AnimatedNumber value={showingCounts?.active || 0} className="font-semibold" /> active</span>
           </div>
         </div>
 
@@ -206,16 +240,31 @@ const RedesignedBuyerDashboard = () => {
               return (
                 <Card 
                   key={index} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-300 border-0 shadow-md"
                   onClick={() => setActiveTab(tab.id)}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-gray-600" />
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                        tab.color === 'orange' ? 'from-orange-400 to-orange-600' :
+                        tab.color === 'blue' ? 'from-blue-400 to-blue-600' :
+                        tab.color === 'green' ? 'from-green-400 to-green-600' :
+                        'from-purple-400 to-purple-600'
+                      } flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-2xl font-bold text-gray-900">{tab.count}</div>
+                        <AnimatedNumber 
+                          value={tab.count} 
+                          className="text-2xl font-bold text-gray-900"
+                          enableGlow={tab.count > 0}
+                          glowColor={
+                            tab.color === 'orange' ? 'rgba(251, 146, 60, 0.4)' :
+                            tab.color === 'blue' ? 'rgba(59, 130, 246, 0.4)' :
+                            tab.color === 'green' ? 'rgba(34, 197, 94, 0.4)' :
+                            'rgba(147, 51, 234, 0.4)'
+                          }
+                        />
                         <div className="text-sm text-gray-600">{tab.label}</div>
                       </div>
                     </div>
@@ -244,11 +293,11 @@ const RedesignedBuyerDashboard = () => {
           </TabsList>
 
           <TabsContent value="pending">
-            <Card>
-              <CardHeader>
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-orange-600" />
-                  Pending Tour Requests (FIXED!)
+                  Pending Tour Requests
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -274,11 +323,11 @@ const RedesignedBuyerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="upcoming">
-            <Card>
-              <CardHeader>
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-blue-600" />
-                  Upcoming Tours (FIXED!)
+                  Upcoming Tours
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -302,11 +351,11 @@ const RedesignedBuyerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="completed">
-            <Card>
-              <CardHeader>
+            <Card className="shadow-lg border-0">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  Completed Tours (FIXED!)
+                  Completed Tours
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -339,6 +388,44 @@ const RedesignedBuyerDashboard = () => {
 
         {/* Development Tool */}
         <CreateTestAgentConnection />
+        
+        {/* Modal Components with conditional rendering to prevent infinite loops */}
+        {showAgreementModal && (
+          <SignAgreementModal
+            isOpen={showAgreementModal}
+            onClose={() => setShowAgreementModal(false)}
+            showingId={selectedShowing?.id}
+            onSignSuccess={() => {
+              setShowAgreementModal(false);
+              fetchData();
+            }}
+          />
+        )}
+        
+        {showScheduleModal && (
+          <ModernTourSchedulingModal
+            isOpen={showScheduleModal}
+            onClose={handleScheduleModalClose}
+            selectedProperty={selectedProperty}
+            onSuccess={handleScheduleSuccess}
+          />
+        )}
+        
+        {showOfferModal && (
+          <ModernOfferModal
+            isOpen={showOfferModal}
+            onClose={() => {
+              setShowOfferModal(false);
+              setOfferPropertyAddress('');
+            }}
+            propertyAddress={offerPropertyAddress}
+            onSuccess={() => {
+              setShowOfferModal(false);
+              setOfferPropertyAddress('');
+              fetchData();
+            }}
+          />
+        )}
       </div>
     </div>
   );

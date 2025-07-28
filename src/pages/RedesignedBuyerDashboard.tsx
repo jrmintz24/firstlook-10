@@ -417,13 +417,10 @@ const RedesignedBuyerDashboard = () => {
             onClose={() => {
               setShowOfferModal(false);
               setOfferPropertyAddress('');
-            }}
-            propertyAddress={offerPropertyAddress}
-            onSuccess={() => {
-              setShowOfferModal(false);
-              setOfferPropertyAddress('');
               fetchData();
             }}
+            propertyAddress={offerPropertyAddress}
+            buyerId={user?.id || ''}
           />
         )}
       </div>

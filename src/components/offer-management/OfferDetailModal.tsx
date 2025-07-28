@@ -1,12 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, User, FileText, MessageCircle, ExternalLink } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar, User, FileText, MessageCircle, ExternalLink, Clock, Video, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import OfferStatusTracker from '../offer-workflow/OfferStatusTracker';
 
 interface OfferIntent {
@@ -35,6 +39,134 @@ interface OfferDetailModalProps {
 
 const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDetailModalProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [consultationBooking, setConsultationBooking] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  const [meetingLink, setMeetingLink] = useState('');
+  const [agentNotes, setAgentNotes] = useState('');
+
+  useEffect(() => {
+    if (offer.id && offer.consultation_scheduled_at) {
+      fetchConsultationBooking();
+    }
+  }, [offer.id, offer.consultation_scheduled_at]);
+
+  const fetchConsultationBooking = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('consultation_bookings')
+        .select('*')
+        .eq('offer_intent_id', offer.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching consultation booking:', error);
+        return;
+      }
+
+      if (data) {
+        setConsultationBooking(data);
+        setMeetingLink(data.meeting_link || '');
+        setAgentNotes(data.agent_notes || '');
+      }
+    } catch (error) {
+      console.error('Error fetching consultation booking:', error);
+    }
+  };
+
+  const scheduleConsultation = async () => {
+    if (!scheduleDate || !scheduleTime) {
+      toast({
+        title: "Error",
+        description: "Please select both date and time for the consultation.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
+      
+      const { data, error } = await supabase
+        .from('consultation_bookings')
+        .insert({
+          offer_intent_id: offer.id,
+          agent_id: offer.agent_id,
+          buyer_id: buyerId,
+          scheduled_at: scheduledDateTime.toISOString(),
+          duration_minutes: 30,
+          status: 'scheduled',
+          meeting_link: meetingLink,
+          agent_notes: agentNotes
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update offer intent with consultation scheduled timestamp
+      await supabase
+        .from('offer_intents')
+        .update({ consultation_scheduled_at: scheduledDateTime.toISOString() })
+        .eq('id', offer.id);
+
+      setConsultationBooking(data);
+      onUpdate();
+      
+      toast({
+        title: "Success",
+        description: "Consultation scheduled successfully!",
+      });
+    } catch (error) {
+      console.error('Error scheduling consultation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule consultation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateConsultation = async (status: string) => {
+    if (!consultationBooking) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('consultation_bookings')
+        .update({
+          status,
+          meeting_link: meetingLink,
+          agent_notes: agentNotes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', consultationBooking.id);
+
+      if (error) throw error;
+
+      await fetchConsultationBooking();
+      onUpdate();
+      
+      toast({
+        title: "Success",
+        description: `Consultation ${status} successfully!`,
+      });
+    } catch (error) {
+      console.error('Error updating consultation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update consultation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getOfferStatus = () => {
     if (offer.agent_summary_generated_at) return 'ready';
@@ -113,6 +245,156 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId }: OfferDe
               )}
             </CardContent>
           </Card>
+
+          {/* Consultation Management */}
+          {status === 'consultation_requested' && !consultationBooking && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  Schedule Consultation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  The buyer has requested a consultation. Please schedule a meeting to discuss their offer.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <Input
+                      type="date"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <Input
+                      type="time"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Link (Optional)</label>
+                  <Input
+                    value={meetingLink}
+                    onChange={(e) => setMeetingLink(e.target.value)}
+                    placeholder="https://zoom.us/j/..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <Textarea
+                    value={agentNotes}
+                    onChange={(e) => setAgentNotes(e.target.value)}
+                    placeholder="Add notes about this consultation..."
+                    rows={2}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={scheduleConsultation}
+                  disabled={loading || !scheduleDate || !scheduleTime}
+                  className="w-full"
+                >
+                  {loading ? 'Scheduling...' : 'Schedule Consultation'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Existing Consultation Details */}
+          {consultationBooking && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Video className="h-5 w-5 text-green-600" />
+                  Consultation Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <span>{new Date(consultationBooking.scheduled_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span>{new Date(consultationBooking.scheduled_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                  <Badge className={
+                    consultationBooking.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                    consultationBooking.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }>
+                    {consultationBooking.status}
+                  </Badge>
+                </div>
+                
+                {consultationBooking.status === 'scheduled' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Meeting Link</label>
+                      <Input
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        placeholder="https://zoom.us/j/..."
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Agent Notes</label>
+                      <Textarea
+                        value={agentNotes}
+                        onChange={(e) => setAgentNotes(e.target.value)}
+                        placeholder="Add notes about this consultation..."
+                        rows={2}
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => updateConsultation('scheduled')}
+                        disabled={loading}
+                        variant="outline"
+                      >
+                        Update Details
+                      </Button>
+                      <Button 
+                        onClick={() => updateConsultation('completed')}
+                        disabled={loading}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Mark Complete
+                      </Button>
+                      <Button 
+                        onClick={() => updateConsultation('cancelled')}
+                        disabled={loading}
+                        variant="destructive"
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </>
+                )}
+                
+                {consultationBooking.agent_notes && (
+                  <div className="p-3 bg-gray-50 rounded border">
+                    <div className="text-sm font-medium text-gray-700 mb-1">Agent Notes</div>
+                    <p className="text-sm text-gray-600">{consultationBooking.agent_notes}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Offer Status Tracker */}
           <OfferStatusTracker

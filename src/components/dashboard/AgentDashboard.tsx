@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3, FileText } from "lucide-react";
+import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3, FileText, MessageCircle, FolderOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
@@ -21,6 +21,10 @@ import AgentPostShowingInsights from "@/components/dashboard/AgentPostShowingIns
 import PostShowingAnalytics from "@/components/dashboard/PostShowingAnalytics";
 import AgentNotificationsPanel from "@/components/dashboard/AgentNotificationsPanel";
 import ProposalsTab from "@/components/dashboard/ProposalsTab";
+
+// Offer workflow components
+import AgentOfferManagement from "@/components/offer-management/AgentOfferManagement";
+import AgentConsultationManager from "@/components/offer-workflow/AgentConsultationManager";
 
 const AgentDashboard = () => {
   const {
@@ -176,6 +180,42 @@ const AgentDashboard = () => {
           userType="agent"
           onComplete={refresh}
           currentUserId={currentUser?.id}
+        />
+      )
+    },
+    {
+      id: "offers",
+      title: "My Offers",
+      icon: FolderOpen,
+      count: 0,
+      color: "bg-purple-100 text-purple-700",
+      content: currentUser?.id ? (
+        <AgentOfferManagement agentId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Offers"
+          description="Please refresh the page to load your offers."
+          buttonText="Refresh"
+          onButtonClick={refresh}
+          icon={FolderOpen}
+        />
+      )
+    },
+    {
+      id: "consultations",
+      title: "Consultations",
+      icon: MessageCircle,
+      count: 0,
+      color: "bg-indigo-100 text-indigo-700",
+      content: currentUser?.id ? (
+        <AgentConsultationManager agentId={currentUser.id} />
+      ) : (
+        <EmptyStateCard
+          title="Unable to Load Consultations"
+          description="Please refresh the page to load your consultations."
+          buttonText="Refresh"
+          onButtonClick={refresh}
+          icon={MessageCircle}
         />
       )
     },

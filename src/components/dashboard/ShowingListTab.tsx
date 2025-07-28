@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { LucideIcon } from "lucide-react";
 import AgentRequestCard from "./AgentRequestCard";
 import ShowingRequestCard from "./ShowingRequestCard";
@@ -95,9 +95,13 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   // Check if we're on mobile to optimize loading
   const isMobile = useIsMobile();
   
+  // CRITICAL FIX: Memoize empty array to prevent infinite re-renders
+  // The [] creates a new reference on every render, triggering useEffect in the hook
+  const emptyArray = useMemo(() => [], []);
+  
   // Disable property details fetching temporarily to fix crashes
   const { showingsWithDetails, loading: detailsLoading } = useShowingRequestPropertyDetails(
-    [] // Skip property details fetching entirely for now
+    emptyArray // Use memoized empty array to prevent dependency loop
   );
 
   // Use original showings without property details for now

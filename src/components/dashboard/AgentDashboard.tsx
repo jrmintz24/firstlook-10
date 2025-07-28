@@ -476,7 +476,7 @@ const AgentDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <UnifiedDashboardLayout
           title={`Welcome back, ${displayName}`}
-          subtitle="Manage your showing requests and connect with buyers"
+          subtitle="Manage your tours and connect with buyers • v2.0"
           userType="agent"
           displayName={displayName}
           tabs={dashboardTabs}

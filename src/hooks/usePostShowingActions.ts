@@ -199,7 +199,11 @@ export const usePostShowingActions = () => {
 
   // Get action states for a specific showing (using ref to avoid dependency issues)
   const actionStatesRef = useRef(actionStates);
-  actionStatesRef.current = actionStates;
+  
+  // Only update ref when actionStates actually changes to prevent infinite updates
+  if (actionStatesRef.current !== actionStates) {
+    actionStatesRef.current = actionStates;
+  }
   
   const getActionsForShowing = useCallback((showingId: string) => {
     return actionStatesRef.current[showingId] || {

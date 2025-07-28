@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { usePostShowingActions } from "./usePostShowingActions";
 
 interface Profile {
   id: string;
@@ -37,7 +36,6 @@ export const useBuyerDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { getActionsForShowing, getActionCount } = usePostShowingActions();
 
   const currentUser = user || session?.user;
 
@@ -45,7 +43,6 @@ export const useBuyerDashboard = () => {
   console.log('🔍 [DEBUG] Current user:', currentUser?.id, currentUser?.email);
   console.log('🔍 [DEBUG] Auth loading:', authLoading, 'Hook loading:', loading);
   console.log('🔍 [DEBUG] Showing requests count:', showingRequests?.length);
-  console.log('🔍 [DEBUG] usePostShowingActions functions:', typeof getActionsForShowing, typeof getActionCount);
 
   // Updated categorization - include awaiting_agreement in pendingRequests
   const pendingRequests = showingRequests.filter(req => 
@@ -311,27 +308,8 @@ export const useBuyerDashboard = () => {
     fetchShowingRequests(true);
   }, [user, session, authLoading, fetchUserData, fetchShowingRequests]);
 
-  // Create buyerActions object with stable function references
-  const buyerActions = useMemo(() => {
-    if (!showingRequests.length) return {};
-    
-    return showingRequests.reduce((acc, showing) => {
-      const actions = getActionsForShowing(showing.id);
-      const actionCount = getActionCount(showing.id);
-      
-      acc[showing.id] = {
-        favorited: actions.favorited,
-        madeOffer: actions.made_offer,
-        hiredAgent: actions.hired_agent,
-        scheduledMoreTours: actions.scheduled_more_tours,
-        actionCount,
-        latestAction: actions.actions[0]?.action_type || null,
-        actionTimestamp: actions.actions[0]?.created_at || null
-      };
-      
-      return acc;
-    }, {} as Record<string, any>);
-  }, [showingRequests]); // Only depend on showingRequests, not the functions
+  // Temporarily remove buyerActions to test if usePostShowingActions is causing infinite renders
+  const buyerActions = {};
 
   return {
     profile,

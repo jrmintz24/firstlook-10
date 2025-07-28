@@ -107,6 +107,9 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
   // Use original showings without property details for now
   const enhancedShowings = showings;
 
+  // CRITICAL FIX: Call hooks before any early returns to prevent conditional hook usage
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
+
   // Removed console.log to prevent spam
 
   // Skip loading state since we're not fetching property details
@@ -122,8 +125,6 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
       />
     );
   }
-
-  const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
 
   return (
     <div ref={ref} className="space-y-3 w-full">

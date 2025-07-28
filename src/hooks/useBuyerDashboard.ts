@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -308,8 +308,8 @@ export const useBuyerDashboard = () => {
     fetchShowingRequests(true);
   }, [user, session, authLoading, fetchUserData, fetchShowingRequests]);
 
-  // Temporarily remove buyerActions to test if usePostShowingActions is causing infinite renders
-  const buyerActions = {};
+  // Create stable empty buyerActions reference to prevent re-renders
+  const buyerActions = useMemo(() => ({}), []);
 
   return {
     profile,

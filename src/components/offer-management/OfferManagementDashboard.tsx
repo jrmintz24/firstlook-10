@@ -260,18 +260,32 @@ const OfferManagementDashboard = ({ buyerId, onCreateOffer }: OfferManagementDas
                         >
                           {nextAction}
                         </Button>
-                        {offer.agent_id && (
+                        <div className="flex items-center gap-1">
                           <Button 
                             variant="ghost" 
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Handle message agent
+                              setSelectedOfferForDocs(offer);
+                              setActiveTab('documents');
                             }}
+                            title="Upload Documents"
                           >
-                            <MessageCircle className="w-4 h-4" />
+                            <Upload className="w-4 h-4" />
                           </Button>
-                        )}
+                          {offer.agent_id && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Handle message agent
+                              }}
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -284,16 +298,61 @@ const OfferManagementDashboard = ({ buyerId, onCreateOffer }: OfferManagementDas
         {/* Documents Tab */}
         <TabsContent value="documents" className="space-y-6">
           {!selectedOfferForDocs ? (
-            <Card className="text-center py-12">
-              <CardContent>
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Select an Offer</h3>
-                <p className="text-gray-600 mb-4">
-                  Choose an offer from the Offers tab to manage its documents.
-                </p>
-                <Button onClick={() => setActiveTab('offers')}>View Offers</Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="w-5 h-5 text-blue-600" />
+                    Document Management
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Select an offer below to upload and manage documents
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {offers.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No offers available. Create an offer first.</p>
+                      {onCreateOffer && (
+                        <Button onClick={onCreateOffer} className="mt-4">
+                          Create Offer
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {offers.map((offer) => (
+                        <Card 
+                          key={offer.id} 
+                          className="cursor-pointer hover:shadow-md transition-shadow border-2 border-transparent hover:border-blue-200"
+                          onClick={() => setSelectedOfferForDocs(offer)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-900 truncate">
+                                  {offer.property_address}
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {offer.document_count || 0} documents uploaded
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={`${getStatusColor(getOfferStatus(offer))}`}>
+                                  {getStatusText(getOfferStatus(offer))}
+                                </Badge>
+                                <Upload className="w-4 h-4 text-blue-500" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Selected Offer Header */}

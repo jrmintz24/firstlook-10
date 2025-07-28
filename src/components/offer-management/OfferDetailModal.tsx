@@ -443,27 +443,28 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             </Card>
           )}
 
-          {/* Document Upload Section */}
-          {(status !== 'in_progress' || offer.consultation_requested || offer.consultation_scheduled_at) && (
-            <div ref={setDocumentsRef}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Upload className="h-5 w-5 text-blue-600" />
-                    Required Documents
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DocumentUploadManager
-                    offerIntentId={offer.id}
-                    buyerId={buyerId}
-                    agentId={offer.agent_id}
-                    onDocumentUploaded={onUpdate}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          {/* Document Upload Section - Always Available */}
+          <div ref={setDocumentsRef}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-blue-600" />
+                  Documents & Requirements
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Upload supporting documents for your offer. Required documents will be marked clearly.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <DocumentUploadManager
+                  offerIntentId={offer.id}
+                  buyerId={buyerId}
+                  agentId={offer.agent_id}
+                  onDocumentUploaded={onUpdate}
+                />
+              </CardContent>
+            </Card>
+          </div>
 
           <Separator />
 
@@ -513,13 +514,11 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
               </>
             )}
 
-            {/* Common Actions */}
-            {(status !== 'in_progress' || offer.consultation_requested || offer.consultation_scheduled_at) && (
-              <Button variant="outline" className="flex items-center gap-2" onClick={scrollToDocuments}>
-                <Upload className="w-4 h-4" />
-                Upload Documents
-              </Button>
-            )}
+            {/* Common Actions - Document Upload Always Available */}
+            <Button variant="outline" className="flex items-center gap-2" onClick={scrollToDocuments}>
+              <Upload className="w-4 h-4" />
+              Upload Documents
+            </Button>
             
             {status === 'ready' && (
               <Button variant="outline" className="flex items-center gap-2">

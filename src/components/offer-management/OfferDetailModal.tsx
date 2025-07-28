@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, User, FileText, MessageCircle, ExternalLink, Clock, Video, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, User, FileText, MessageCircle, ExternalLink, Clock, Video, CheckCircle, XCircle, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import OfferStatusTracker from '../offer-workflow/OfferStatusTracker';
+import DocumentUploadManager from '../offer-workflow/DocumentUploadManager';
 
 interface OfferIntent {
   id: string;
@@ -48,6 +49,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
   const [scheduleTime, setScheduleTime] = useState('');
   const [meetingLink, setMeetingLink] = useState('');
   const [agentNotes, setAgentNotes] = useState('');
+  const [documentsRef, setDocumentsRef] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (offer.id && offer.consultation_scheduled_at) {
@@ -205,6 +207,12 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
   const handleContinueQuestionnaire = () => {
     navigate(`/offer-questionnaire?property=${encodeURIComponent(offer.property_address)}&agent=${offer.agent_id || ''}`);
     onClose();
+  };
+
+  const scrollToDocuments = () => {
+    if (documentsRef) {
+      documentsRef.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const status = getOfferStatus();
@@ -435,6 +443,28 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             </Card>
           )}
 
+          {/* Document Upload Section */}
+          {(status === 'consultation_completed' || status === 'under_review' || status === 'ready') && (
+            <div ref={setDocumentsRef}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Upload className="h-5 w-5 text-blue-600" />
+                    Required Documents
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DocumentUploadManager
+                    offerIntentId={offer.id}
+                    buyerId={buyerId}
+                    agentId={offer.agent_id}
+                    onDocumentUploaded={onUpdate}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <Separator />
 
           {/* Actions */}
@@ -442,10 +472,23 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             {/* Buyer Actions */}
             {userType === 'buyer' && (
               <>
-                {!offer.questionnaire_completed_at && (
+                {/* Only show questionnaire button if not completed AND no consultation pending/scheduled */}
+                {!offer.questionnaire_completed_at && 
+                 !offer.consultation_requested && 
+                 !offer.consultation_scheduled_at &&
+                 consultationBooking?.status !== 'scheduled' && (
                   <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
                     Continue Questionnaire
+                  </Button>
+                )}
+                
+                {/* Show questionnaire button again after consultation is completed */}
+                {!offer.questionnaire_completed_at && 
+                 consultationBooking?.status === 'completed' && (
+                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Complete Questionnaire
                   </Button>
                 )}
                 
@@ -483,6 +526,13 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             )}
 
             {/* Common Actions */}
+            {(status === 'consultation_completed' || status === 'under_review') && (
+              <Button variant="outline" className="flex items-center gap-2" onClick={scrollToDocuments}>
+                <Upload className="w-4 h-4" />
+                Upload Documents
+              </Button>
+            )}
+            
             {status === 'ready' && (
               <Button variant="outline" className="flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />

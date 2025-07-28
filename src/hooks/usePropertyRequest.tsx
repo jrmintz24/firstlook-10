@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ export const usePropertyRequest = (
       setPendingShowingAddress(address);
     };
     loadPendingShowing();
-  }, []);
+  }, [getPendingShowingAddress, setPendingShowingAddress]);
 
   useEffect(() => {
     // Check for pending tour request from localStorage
@@ -148,7 +148,7 @@ export const usePropertyRequest = (
     setCurrentStep(prev => prev - 1);
   };
 
-  const handleContinueToSubscriptions = async (currentFormData?: PropertyRequestFormData) => {
+  const handleContinueToSubscriptions = useCallback(async (currentFormData?: PropertyRequestFormData) => {
     console.log('handleContinueToSubscriptions called');
     console.log('Current user:', user?.id);
     
@@ -204,7 +204,7 @@ export const usePropertyRequest = (
         variant: "destructive"
       });
     }
-  };
+  }, [user?.id, checkEligibility, submitShowingRequests, formData, onClose, skipNavigation, navigate, toast]);
 
   const resetForm = () => {
     console.log('Resetting form and modal state');

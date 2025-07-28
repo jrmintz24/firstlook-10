@@ -40,10 +40,19 @@ export const useBuyerDashboard = () => {
 
   const currentUser = user || session?.user;
 
-  console.log('🔍 [DEBUG] useBuyerDashboard render count:', ++window.buyerDashboardRenderCount || (window.buyerDashboardRenderCount = 1));
+  const renderCount = ++window.buyerDashboardRenderCount || (window.buyerDashboardRenderCount = 1);
+  console.log('🔍 [DEBUG] useBuyerDashboard render #' + renderCount);
   console.log('🔍 [DEBUG] Current user:', currentUser?.id, currentUser?.email);
   console.log('🔍 [DEBUG] Auth loading:', authLoading, 'Hook loading:', loading);
   console.log('🔍 [DEBUG] Showing requests count:', showingRequests?.length);
+  console.log('🔍 [DEBUG] isFetchingRef.current:', isFetchingRef.current);
+  console.log('🔍 [DEBUG] Dependencies - user:', !!user, 'session:', !!session, 'authLoading:', authLoading);
+  
+  // Track what triggers re-renders
+  if (renderCount > 5) {
+    console.warn('🚨 [WARNING] High render count detected!');
+    console.trace('Stack trace for high render count');
+  }
 
   // Updated categorization - include awaiting_agreement in pendingRequests
   const pendingRequests = showingRequests.filter(req => 

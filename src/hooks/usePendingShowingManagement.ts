@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ export const usePendingShowingManagement = () => {
   const { user } = useAuth();
   const { checkEligibility, resetFreeShowingEligibility } = useShowingEligibility();
 
-  const getPendingShowingAddress = async (): Promise<string> => {
+  const getPendingShowingAddress = useCallback(async (): Promise<string> => {
     if (!user) return '';
     
     try {
@@ -28,9 +28,9 @@ export const usePendingShowingManagement = () => {
     } catch (error) {
       return '';
     }
-  };
+  }, [user]);
 
-  const handleCancelPendingShowing = async () => {
+  const handleCancelPendingShowing = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -85,7 +85,7 @@ export const usePendingShowingManagement = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [user, toast, resetFreeShowingEligibility, checkEligibility]);
 
   return {
     pendingShowingAddress,

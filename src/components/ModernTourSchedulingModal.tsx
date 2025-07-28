@@ -329,7 +329,7 @@ const ModernTourSchedulingModal = ({
       // Continue with submission
       handleContinueToSubscriptions();
     }
-  }, [waitingForAuthCompletion, user?.id, handleContinueToSubscriptions]);
+  }, [waitingForAuthCompletion, user?.id]); // Remove handleContinueToSubscriptions from deps
 
   const canSubmit = propertyAddress.trim() && selectedDate && selectedTime;
 

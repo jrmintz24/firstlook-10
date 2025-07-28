@@ -1,148 +1,79 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from 'react';
+import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import ShowingListTab from '@/components/dashboard/ShowingListTab';
+import { PortfolioTab } from '@/components/dashboard/PortfolioTab';
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
-import ModernDashboardLayout from "@/components/dashboard/ModernDashboardLayout";
-import OptimizedDashboardSkeleton from "@/components/dashboard/OptimizedDashboardSkeleton";
-import OptimizedShowingCard from "@/components/dashboard/OptimizedShowingCard";
+import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
+import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
+import SignAgreementModal from '@/components/dashboard/SignAgreementModal';
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 import ModernOfferModal from "@/components/offer-workflow/ModernOfferModal";
 
-// Create missing header component
-const RedesignedDashboardHeader = ({ userName, unreadCount, onOpenChat }: {
-  userName: string;
-  unreadCount: number;
-  onOpenChat: (tab: 'property' | 'support', showingId?: string) => void;
-}) => (
-  <div className="bg-white shadow-sm border-b">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Welcome back, {userName}!</h1>
-        {unreadCount > 0 && (
-          <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-            {unreadCount} new messages
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-// Create missing stats component
-const StatsAndMessages = ({ stats, unreadCount, onOpenChat }: {
-  stats: Array<{ label: string; value: number; onClick: () => void }>;
-  unreadCount: number;
-  onOpenChat: () => void;
-}) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {stats.map((stat, index) => (
-      <div key={index} className="bg-white p-6 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50" onClick={stat.onClick}>
-        <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-        <div className="text-sm text-gray-600">{stat.label}</div>
-      </div>
-    ))}
-  </div>
-);
-
-// Create missing next tour component
-const NextTourCard = ({ showings, onViewDetails }: {
-  showings: any[];
-  onViewDetails: (id: string) => void;
-}) => (
-  <div className="bg-white p-6 rounded-lg border border-gray-200">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Tour</h3>
-    {showings.length > 0 ? (
-      <div className="space-y-2">
-        <div className="font-medium">{showings[0].property_address}</div>
-        <div className="text-sm text-gray-600">
-          {showings[0].preferred_date} at {showings[0].preferred_time}
-        </div>
-      </div>
-    ) : (
-      <div className="text-gray-600">No upcoming tours</div>
-    )}
-  </div>
-);
-
-// Create missing enhanced what's next component
-const EnhancedWhatsNextCard = ({ onRequestTour, onUpgrade, eligibility, isSubscribed }: {
-  onRequestTour: () => void;
-  onUpgrade: () => void;
-  eligibility: any;
-  isSubscribed: boolean;
-}) => (
-  <div className="bg-white p-6 rounded-lg border border-gray-200">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">What's Next?</h3>
-    <div className="space-y-3">
-      <button 
-        onClick={onRequestTour}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-      >
-        Request Another Tour
-      </button>
-      {!isSubscribed && (
-        <button 
-          onClick={onUpgrade}
-          className="w-full bg-gray-100 text-gray-900 py-2 px-4 rounded-lg hover:bg-gray-200"
-        >
-          Upgrade to Pro
-        </button>
-      )}
-    </div>
-  </div>
-);
-
-const RecentTours = ({ pendingRequests, activeShowings, completedShowings, onChatWithAgent, onReschedule, onMakeOffer, onConfirmShowing }: {
-  pendingRequests: any[];
-  activeShowings: any[];
-  completedShowings: any[];
-  onChatWithAgent: (id: string) => void;
-  onReschedule: (id: string) => void;
-  onMakeOffer: (address: string) => void;
-  onConfirmShowing: (showing: any) => void;
-}) => (
-  <div className="space-y-4">
-    <h2 className="text-xl font-semibold text-gray-900">Recent Tours</h2>
-    <div className="space-y-3">
-      {[...pendingRequests, ...activeShowings, ...completedShowings].slice(0, 5).map((showing) => (
-        <div key={showing.id} className="p-4 bg-gray-50 rounded-lg">
-          <div className="font-medium">{showing.property_address}</div>
-          <div className="text-sm text-gray-600 mt-1">Status: {showing.status}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
 const RedesignedBuyerDashboard = () => {
+  console.log('🔍 [DEBUG] RedesignedBuyerDashboard render count:', ++window.redesignedBuyerDashboardRenderCount || (window.redesignedBuyerDashboardRenderCount = 1));
+  
+  const [activeTab, setActiveTab] = useState('pending');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
+  const { user } = useAuth();
+  
   const {
-    profile,
-    showingCounts,
-    loading,
-    currentUser,
     pendingRequests,
     activeShowings,
     completedShowings,
+    loading,
+    showingCounts,
+    unreadCount,
+    agreements,
     eligibility,
     isSubscribed,
-    unreadCount,
-    handleUpgradeClick,
-    handleConfirmShowingWithModal,
-    handleSendMessage,
-    handleStatClick,
     handleCancelShowing,
     handleRescheduleShowing,
+    handleConfirmShowingWithModal,
     handleSignAgreementFromCard,
+    handleSendMessage,
+    handleUpgradeClick,
+    showAgreementModal,
+    setShowAgreementModal,
+    selectedShowing,
+    handleAgreementSignWithModal,
     fetchData
   } = useOptimizedBuyerLogic();
+  
+  const isMobile = useIsMobile();
 
-  const [activeTab, setActiveTab] = useState("requested");
-  const [showTourModal, setShowTourModal] = useState(false);
-  const [showOfferModal, setShowOfferModal] = useState(false);
-  const [offerPropertyAddress, setOfferPropertyAddress] = useState('');
-
-  const handleOpenChat = useCallback((defaultTab: 'property' | 'support', showingId?: string) => {
-    console.log(`Opening chat with tab: ${defaultTab}, showing ID: ${showingId}`);
-    alert('Chat feature not fully implemented yet.');
+  // Memoize callback functions to prevent unnecessary re-renders
+  const handleRequestShowing = useCallback(() => {
+    setShowScheduleModal(true);
   }, []);
+
+  const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
+    // Open modal with property info
+    setSelectedProperty({
+      property_address: propertyAddress,
+      mls_id: mlsId
+    });
+    setShowScheduleModal(true);
+  }, []);
+
+  const handleScheduleModalClose = () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+  };
+
+  const handleScheduleSuccess = async () => {
+    setShowScheduleModal(false);
+    setSelectedProperty(null);
+    // Refresh data if needed
+    await fetchData();
+  };
 
   const handleMakeOffer = useCallback((propertyAddress: string) => {
     console.log(`Making offer for property: ${propertyAddress}`);
@@ -150,152 +81,446 @@ const RedesignedBuyerDashboard = () => {
     setShowOfferModal(true);
   }, []);
 
-  const handleRequestShowing = useCallback(() => {
-    setShowTourModal(true);
-  }, []);
+  const memoizedHandleCancel = useCallback((id: string) => {
+    handleCancelShowing(id);
+  }, [handleCancelShowing]);
 
-  const handleTourModalSuccess = useCallback(async () => {
-    // Refresh data after successful tour request
-    await fetchData();
-    setShowTourModal(false);
-  }, [fetchData]);
+  const memoizedHandleReschedule = useCallback((id: string) => {
+    handleRescheduleShowing(id);
+  }, [handleRescheduleShowing]);
 
-  const handleSignAgreementFixed = useCallback((showing: any) => {
-    const displayName = profile?.first_name || currentUser?.user_metadata?.first_name || 'User';
+  const memoizedHandleConfirm = useCallback((request: any) => {
+    handleConfirmShowingWithModal(request);
+  }, [handleConfirmShowingWithModal]);
+
+  const memoizedHandleAgreementSign = useCallback((showing: any) => {
+    const displayName = user?.user_metadata?.first_name || 'User';
     handleSignAgreementFromCard(showing.id, displayName);
-  }, [handleSignAgreementFromCard, profile, currentUser]);
+  }, [handleSignAgreementFromCard, user]);
 
-  return (
-    <>
-      <ModernDashboardLayout
-        header={
-          <RedesignedDashboardHeader 
-            userName={profile?.first_name || "Buyer"}
-            unreadCount={unreadCount}
-            onOpenChat={handleOpenChat}
-          />
-        }
-        stats={
-          <StatsAndMessages 
-            stats={[
-              { label: "Requested", value: showingCounts.pending, onClick: () => handleStatClick("requested") },
-              { label: "Active Tours", value: showingCounts.active, onClick: () => handleStatClick("active") },
-              { label: "Completed", value: showingCounts.completed, onClick: () => handleStatClick("completed") }
-            ]}
-            unreadCount={unreadCount}
-            onOpenChat={() => handleOpenChat('support')}
-          />
-        }
-        mainContent={
-          loading ? (
-            <OptimizedDashboardSkeleton />
-          ) : (
-            <RecentTours
-              pendingRequests={pendingRequests}
-              activeShowings={activeShowings}
-              completedShowings={completedShowings}
-              onChatWithAgent={handleSendMessage}
-              onReschedule={handleRescheduleShowing}
-              onMakeOffer={handleMakeOffer}
-              onConfirmShowing={handleConfirmShowingWithModal}
-            />
-          )
-        }
-        sidebar={
-          <div className="space-y-6">
-            <NextTourCard 
-              showings={[...pendingRequests, ...activeShowings]}
-              onViewDetails={(id) => console.log('View details:', id)}
-            />
-            <EnhancedWhatsNextCard 
-              onRequestTour={handleRequestShowing}
-              onUpgrade={handleUpgradeClick}
-              eligibility={eligibility}
-              isSubscribed={isSubscribed}
-            />
+  if (loading && !pendingRequests && !activeShowings && !completedShowings) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+            <div className="h-96 bg-gray-200 rounded"></div>
           </div>
-        }
-        sections={{
-          requested: {
-            id: "requested",
-            title: "Requested",
-            count: showingCounts.pending,
-            content: (
-              <div className="space-y-4">
-                {pendingRequests.map((request) => (
-                  <OptimizedShowingCard
-                    key={request.id}
-                    showing={request}
-                    onConfirm={() => handleConfirmShowingWithModal(request)}
-                    onCancel={() => handleCancelShowing(request.id)}
-                    onReschedule={() => handleRescheduleShowing(request.id)}
-                    onSendMessage={() => handleSendMessage(request.id)}
-                    onSignAgreement={handleSignAgreementFixed}
-                  />
-                ))}
-              </div>
-            )
-          },
-          active: {
-            id: "active",
-            title: "Active Tours",
-            count: showingCounts.active,
-            content: (
-              <div className="space-y-4">
-                {activeShowings.map((showing) => (
-                  <OptimizedShowingCard
-                    key={showing.id}
-                    showing={showing}
-                    onReschedule={() => handleRescheduleShowing(showing.id)}
-                    onCancel={() => handleCancelShowing(showing.id)}
-                    onSendMessage={() => handleSendMessage(showing.id)}
-                    onSignAgreement={handleSignAgreementFixed}
-                  />
-                ))}
-              </div>
-            )
-          },
-          completed: {
-            id: "completed",
-            title: "Completed",
-            count: showingCounts.completed,
-            content: (
-              <div className="space-y-4">
-                {completedShowings.map((showing) => (
-                  <OptimizedShowingCard
-                    key={showing.id}
-                    showing={showing}
-                    onCancel={() => handleCancelShowing(showing.id)}
-                    onReschedule={() => handleRescheduleShowing(showing.id)}
-                    onSendMessage={() => handleSendMessage(showing.id)}
-                    onSignAgreement={handleSignAgreementFixed}
-                  />
-                ))}
-              </div>
-            )
-          }
-        }}
-        defaultSection="requested"
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        userId={currentUser?.id}
-      />
+        </div>
+      </div>
+    );
+  }
 
-      {showTourModal && (
-        <ModernTourSchedulingModal
-          isOpen={showTourModal}
-          onClose={() => setShowTourModal(false)}
-          onSuccess={handleTourModalSuccess}
-          skipNavigation={true}
+  const tabs = [
+    {
+      id: 'pending',
+      label: 'Pending',
+      icon: Clock,
+      description: 'Requested tours awaiting confirmation',
+      count: pendingRequests?.length || 0,
+      color: 'orange'
+    },
+    {
+      id: 'upcoming',
+      label: 'Upcoming',
+      icon: Calendar,
+      description: 'Scheduled tours',
+      count: activeShowings?.length || 0,
+      color: 'blue'
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      icon: CheckCircle,
+      description: 'Past tours and history',
+      count: completedShowings?.length || 0,
+      color: 'green'
+    },
+    {
+      id: 'portfolio',
+      label: 'Portfolio',
+      icon: FolderOpen,
+      description: 'Favorites, offers, and agent connections',
+      count: 0, // Will be updated when favorites/offers are implemented
+      color: 'purple'
+    }
+  ];
+
+  const getTabColorClasses = (color: string, isActive: boolean) => {
+    const colorMap = {
+      orange: isActive 
+        ? 'bg-orange-100 text-orange-700 border-orange-300' 
+        : 'text-orange-600 hover:bg-orange-50',
+      blue: isActive 
+        ? 'bg-blue-100 text-blue-700 border-blue-300' 
+        : 'text-blue-600 hover:bg-blue-50',
+      green: isActive 
+        ? 'bg-green-100 text-green-700 border-green-300' 
+        : 'text-green-600 hover:bg-green-50',
+      purple: isActive 
+        ? 'bg-purple-100 text-purple-700 border-purple-300' 
+        : 'text-purple-600 hover:bg-purple-50'
+    };
+    return colorMap[color as keyof typeof colorMap] || '';
+  };
+
+  // Render mobile version
+  if (isMobile) {
+    const renderMobileTabContent = () => {
+      switch (activeTab) {
+        case 'pending':
+          return (
+            <ShowingListTab 
+              title="Pending Tour Requests"
+              showings={pendingRequests || []}
+              emptyIcon={Clock}
+              emptyTitle="No pending tour requests"
+              emptyDescription="Start browsing properties to schedule your first tour!"
+              emptyButtonText="Browse Properties"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={memoizedHandleCancel}
+              onRescheduleShowing={memoizedHandleReschedule}
+              onConfirmShowing={memoizedHandleConfirm}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              onSignAgreement={memoizedHandleAgreementSign}
+              showActions={true}
+            />
+          );
+        case 'upcoming':
+          return (
+            <ShowingListTab 
+              title="Upcoming Tours"
+              showings={activeShowings || []}
+              emptyIcon={Calendar}
+              emptyTitle="No upcoming tours"
+              emptyDescription="No upcoming tours scheduled."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={handleCancelShowing}
+              onRescheduleShowing={handleRescheduleShowing}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              showActions={true}
+            />
+          );
+        case 'completed':
+          return (
+            <ShowingListTab 
+              title="Completed Tours"
+              showings={completedShowings || []}
+              emptyIcon={CheckCircle}
+              emptyTitle="No completed tours"
+              emptyDescription="No completed tours yet. Your tour history will appear here."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={handleCancelShowing}
+              onRescheduleShowing={handleRescheduleShowing}
+              userType="buyer"
+              currentUserId={user?.id}
+              showActions={false}
+            />
+          );
+        case 'portfolio':
+          return <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} onCreateOffer={() => handleMakeOffer('')} />;
+        default:
+          return <div>Tab content not found</div>;
+      }
+    };
+
+    return (
+      <MobileDashboardLayout
+        user={user}
+        pendingRequests={pendingRequests || []}
+        activeShowings={activeShowings || []}
+        completedShowings={completedShowings || []}
+        favorites={[]} // TODO: Implement favorites when available
+        onRequestTour={handleRequestShowing}
+        onTabChange={setActiveTab}
+        activeTab={activeTab}
+      >
+        {renderMobileTabContent()}
+      </MobileDashboardLayout>
+    );
+  }
+
+  // Desktop version
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user?.user_metadata?.first_name || 'there'}
+              </h1>
+              <p className="text-gray-600">
+                Track your home tour journey and manage your property interests
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Stats */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {tabs.map((tab, index) => {
+              const Icon = tab.icon;
+              return (
+                <Card 
+                  key={index} 
+                  className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] border border-gray-100/60 bg-white/80 backdrop-blur-sm"
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm ${
+                        tab.color === 'orange' ? 'bg-gradient-to-br from-orange-100 to-amber-50 group-hover:from-orange-200 group-hover:to-amber-100' :
+                        tab.color === 'blue' ? 'bg-gradient-to-br from-blue-100 to-indigo-50 group-hover:from-blue-200 group-hover:to-indigo-100' :
+                        tab.color === 'green' ? 'bg-gradient-to-br from-green-100 to-emerald-50 group-hover:from-green-200 group-hover:to-emerald-100' :
+                        'bg-gradient-to-br from-purple-100 to-pink-50 group-hover:from-purple-200 group-hover:to-pink-100'
+                      }`}>
+                        <Icon className={`w-7 h-7 transition-all duration-300 group-hover:scale-110 ${
+                          tab.color === 'orange' ? 'text-orange-600 group-hover:text-orange-700' :
+                          tab.color === 'blue' ? 'text-blue-600 group-hover:text-blue-700' :
+                          tab.color === 'green' ? 'text-green-600 group-hover:text-green-700' :
+                          'text-purple-600 group-hover:text-purple-700'
+                        }`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-3xl font-bold text-gray-900 group-hover:text-gray-800 transition-colors duration-300 tracking-tight">{tab.count}</div>
+                        <div className="text-sm font-medium text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{tab.label}</div>
+                      </div>
+                      {/* Subtle arrow indicator */}
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 ${
+                        tab.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                        tab.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                        tab.color === 'green' ? 'bg-green-100 text-green-600' :
+                        'bg-purple-100 text-purple-600'
+                      }`}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100/80 overflow-hidden backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-3 bg-transparent gap-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={`
+                      group flex flex-col items-center p-4 space-y-2 rounded-xl transition-all duration-300 ease-out
+                      border-2 border-transparent cursor-pointer relative overflow-hidden
+                      hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]
+                      ${isActive 
+                        ? `${getTabColorClasses(tab.color, true)} shadow-md transform scale-[1.01]` 
+                        : 'bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200/60 text-gray-600 hover:text-gray-800'
+                      }
+                    `}
+                  >
+                    {/* Subtle gradient overlay for depth */}
+                    <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${
+                      tab.color === 'orange' ? 'from-orange-400 to-amber-500' :
+                      tab.color === 'blue' ? 'from-blue-400 to-indigo-500' :
+                      tab.color === 'green' ? 'from-green-400 to-emerald-500' :
+                      'from-purple-400 to-pink-500'
+                    }`} />
+                    
+                    <div className="flex items-center space-x-2 relative z-10">
+                      <Icon className={`h-5 w-5 transition-all duration-300 ${
+                        isActive ? 'scale-110' : 'group-hover:scale-105'
+                      }`} />
+                      <span className="font-semibold tracking-tight">{tab.label}</span>
+                      {tab.count > 0 && (
+                        <Badge 
+                          variant="secondary" 
+                          className={`text-xs px-2.5 py-1 min-w-[24px] h-6 font-bold rounded-full transition-all duration-300 ${
+                            isActive 
+                              ? 'bg-white/90 text-gray-800 shadow-sm' 
+                              : 'bg-white/80 text-gray-700 group-hover:bg-white group-hover:shadow-sm'
+                          }`}
+                        >
+                          {tab.count}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className={`text-xs text-center transition-all duration-300 hidden md:block leading-tight ${
+                      isActive ? 'opacity-90' : 'opacity-60 group-hover:opacity-75'
+                    }`}>
+                      {tab.description}
+                    </p>
+                    
+                    {/* Active indicator line */}
+                    {isActive && (
+                      <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-1 rounded-full transition-all duration-300 ${
+                        tab.color === 'orange' ? 'bg-orange-500' :
+                        tab.color === 'blue' ? 'bg-blue-500' :
+                        tab.color === 'green' ? 'bg-green-500' :
+                        'bg-purple-500'
+                      }`} />
+                    )}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
+
+          {/* Tab Content */}
+          <div className="space-y-4">
+            <TabsContent value="pending" className="mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                    Pending Tour Requests
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ShowingListTab 
+                    title="Pending Tour Requests"
+                    showings={pendingRequests || []}
+                    emptyIcon={Clock}
+                    emptyTitle="No pending tour requests"
+                    emptyDescription="Start browsing properties to schedule your first tour!"
+                    emptyButtonText="Browse Properties"
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
+                    onConfirmShowing={memoizedHandleConfirm}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    agreements={agreements}
+                    onSignAgreement={memoizedHandleAgreementSign}
+                    showActions={true}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="upcoming" className="mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                    Upcoming Tours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ShowingListTab 
+                    title="Upcoming Tours"
+                    showings={activeShowings || []}
+                    emptyIcon={Calendar}
+                    emptyTitle="No upcoming tours"
+                    emptyDescription="No upcoming tours scheduled."
+                    emptyButtonText="Schedule Tour"
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    agreements={agreements}
+                    showActions={true}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="completed" className="mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    Completed Tours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ShowingListTab 
+                    title="Completed Tours"
+                    showings={completedShowings || []}
+                    emptyIcon={CheckCircle}
+                    emptyTitle="No completed tours"
+                    emptyDescription="No completed tours yet. Your tour history will appear here."
+                    emptyButtonText="Schedule Tour"
+                    onRequestShowing={handleRequestShowing}
+                    onCancelShowing={memoizedHandleCancel}
+                    onRescheduleShowing={memoizedHandleReschedule}
+                    userType="buyer"
+                    currentUserId={user?.id}
+                    showActions={false}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="portfolio" className="mt-0">
+              <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} onCreateOffer={() => handleMakeOffer('')} />
+            </TabsContent>
+          </div>
+        </Tabs>
+
+        {/* Development Tool */}
+        <CreateTestAgentConnection />
+
+        {/* Sign Agreement Modal */}
+        <SignAgreementModal
+          isOpen={showAgreementModal}
+          onClose={() => {
+            setShowAgreementModal(false);
+          }}
+          onSign={handleAgreementSignWithModal}
+          showingDetails={selectedShowing ? {
+            propertyAddress: selectedShowing.property_address,
+            date: selectedShowing.preferred_date,
+            time: selectedShowing.preferred_time,
+            agentName: selectedShowing.assigned_agent_name
+          } : undefined}
         />
-      )}
-      <ModernOfferModal
-        isOpen={showOfferModal}
-        onClose={() => setShowOfferModal(false)}
-        propertyAddress={offerPropertyAddress}
-        buyerId={currentUser?.id || ''}
-      />
-    </>
+
+        {/* Tour Scheduling Modal */}
+        {showScheduleModal && (
+          <ModernTourSchedulingModal
+            isOpen={showScheduleModal}
+            onClose={handleScheduleModalClose}
+            onSuccess={handleScheduleSuccess}
+            initialAddress={selectedProperty?.property_address || ''}
+            propertyId={selectedProperty?.mls_id || ''}
+            skipNavigation={true}
+          />
+        )}
+
+        {/* Offer Modal */}
+        <ModernOfferModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          propertyAddress={offerPropertyAddress}
+          buyerId={user?.id || ''}
+          agentId="" // Will be assigned during consultation booking
+        />
+      </div>
+    </div>
   );
 };
 

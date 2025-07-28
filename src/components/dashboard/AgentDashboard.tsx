@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, Clock, CheckCircle, TrendingUp, BarChart3, FileText, MessageCircle, FolderOpen } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentConfirmation } from "@/hooks/useAgentConfirmation";
 import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
@@ -133,7 +134,69 @@ const AgentDashboard = () => {
 
   const displayName = profile.first_name || 'Agent';
 
-  const dashboardTabs = [
+  // Create enhanced stats section
+  const enhancedStats = (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-2xl font-bold text-orange-600">{pendingRequests.length}</p>
+            </div>
+            <Clock className="h-8 w-8 text-orange-200" />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Scheduled</p>
+              <p className="text-2xl font-bold text-blue-600">{assignedRequests.length}</p>
+            </div>
+            <CalendarDays className="h-8 w-8 text-blue-200" />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">This Week</p>
+              <p className="text-2xl font-bold text-green-600">
+                {assignedRequests.filter(req => {
+                  if (!req.preferred_date) return false;
+                  const date = new Date(req.preferred_date);
+                  const now = new Date();
+                  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                  return date >= now && date <= weekFromNow;
+                }).length}
+              </p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-green-200" />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-2xl font-bold text-purple-600">{completedRequests.length}</p>
+            </div>
+            <CheckCircle className="h-8 w-8 text-purple-200" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Primary tabs for main workflow
+  const primaryTabs = [
     {
       id: "pending",
       title: "Pending",
@@ -141,209 +204,204 @@ const AgentDashboard = () => {
       count: pendingRequests.length,
       color: "bg-orange-100 text-orange-700",
       content: (
-        <ShowingListTab
-          title="Pending Requests"
-          showings={pendingRequests}
-          emptyIcon={Clock}
-          emptyTitle="No Pending Requests"
-          emptyDescription="All caught up! New showing requests will appear here."
-          emptyButtonText=""
-          onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          onConfirmShowing={handleConfirmShowing}
-          onReportIssue={handleReportIssue}
-          userType="agent"
-          onComplete={refresh}
-          currentUserId={currentUser?.id}
-        />
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <ShowingListTab
+              title=""
+              showings={pendingRequests}
+              emptyIcon={Clock}
+              emptyTitle="No Pending Requests"
+              emptyDescription="All caught up! New showing requests will appear here."
+              emptyButtonText=""
+              onRequestShowing={() => {}}
+              onCancelShowing={() => {}}
+              onRescheduleShowing={() => {}}
+              onConfirmShowing={handleConfirmShowing}
+              onReportIssue={handleReportIssue}
+              userType="agent"
+              onComplete={refresh}
+              currentUserId={currentUser?.id}
+            />
+          </CardContent>
+        </Card>
       )
     },
     {
       id: "assigned",
-      title: "Assigned",
+      title: "Scheduled",
       icon: CalendarDays,
       count: assignedRequests.length,
       color: "bg-blue-100 text-blue-700",
       content: (
-        <ShowingListTab
-          title="Assigned Showings"
-          showings={assignedRequests}
-          emptyIcon={CalendarDays}
-          emptyTitle="No Assigned Showings"
-          emptyDescription="Confirmed showings will appear here."
-          emptyButtonText=""
-          onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          onReportIssue={handleReportIssue}
-          userType="agent"
-          onComplete={refresh}
-          currentUserId={currentUser?.id}
-        />
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <ShowingListTab
+              title=""
+              showings={assignedRequests}
+              emptyIcon={CalendarDays}
+              emptyTitle="No Scheduled Showings"
+              emptyDescription="Confirmed showings will appear here."
+              emptyButtonText=""
+              onRequestShowing={() => {}}
+              onCancelShowing={() => {}}
+              onRescheduleShowing={() => {}}
+              onReportIssue={handleReportIssue}
+              userType="agent"
+              onComplete={refresh}
+              currentUserId={currentUser?.id}
+            />
+          </CardContent>
+        </Card>
       )
     },
     {
       id: "offers",
-      title: "My Offers",
+      title: "Offers",
       icon: FolderOpen,
       count: 0,
       color: "bg-purple-100 text-purple-700",
       content: currentUser?.id ? (
-        <AgentOfferManagement agentId={currentUser.id} />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Offers"
-          description="Please refresh the page to load your offers."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={FolderOpen}
-        />
-      )
-    },
-    {
-      id: "consultations",
-      title: "Consultations",
-      icon: MessageCircle,
-      count: 0,
-      color: "bg-indigo-100 text-indigo-700",
-      content: currentUser?.id ? (
-        <AgentConsultationManager agentId={currentUser.id} />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Consultations"
-          description="Please refresh the page to load your consultations."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={MessageCircle}
-        />
-      )
-    },
-    {
-      id: "proposals",
-      title: "Proposals",
-      icon: FileText,
-      count: 0,
-      color: "bg-purple-100 text-purple-700",
-      content: currentUser?.id ? (
-        <ProposalsTab agentId={currentUser.id} />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Proposals"
-          description="Please refresh the page to load your proposals."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={FileText}
-        />
-      )
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <AgentOfferManagement agentId={currentUser.id} />
+          </CardContent>
+        </Card>
+      ) : null
     },
     {
       id: "insights",
       title: "Insights",
       icon: TrendingUp,
-      count: 0,
-      color: "bg-purple-100 text-purple-700",
-      content: currentUser?.id ? (
-        <AgentPostShowingInsights 
-          agentId={currentUser.id}
-          timeframe="month"
-        />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Insights"
-          description="Please refresh the page to load your insights."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={TrendingUp}
-        />
-      )
-    },
-    {
-      id: "analytics",
-      title: "Analytics",
-      icon: BarChart3,
-      count: 0,
       color: "bg-green-100 text-green-700",
       content: currentUser?.id ? (
-        <PostShowingAnalytics 
-          agentId={currentUser.id}
-          timeframe="month"
-        />
-      ) : (
-        <EmptyStateCard
-          title="Unable to Load Analytics"
-          description="Please refresh the page to load your analytics."
-          buttonText="Refresh"
-          onButtonClick={refresh}
-          icon={BarChart3}
-        />
-      )
+        <div className="space-y-6">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <AgentPostShowingInsights 
+                agentId={currentUser.id}
+                timeframe="month"
+              />
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <PostShowingAnalytics 
+                agentId={currentUser.id}
+                timeframe="month"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      ) : null
+    }
+  ];
+
+  // Secondary tabs in collapsible section
+  const secondaryTabs = [
+    {
+      id: "consultations",
+      title: "Consultations",
+      icon: MessageCircle,
+      content: currentUser?.id ? (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <AgentConsultationManager agentId={currentUser.id} />
+          </CardContent>
+        </Card>
+      ) : null
     },
     {
-      id: "completed",
+      id: "proposals",
+      title: "Proposals", 
+      icon: FileText,
+      content: currentUser?.id ? (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <ProposalsTab agentId={currentUser.id} />
+          </CardContent>
+        </Card>
+      ) : null
+    },
+    {
+      id: "history",
       title: "History",
       icon: CheckCircle,
       count: completedRequests.length,
-      color: "bg-green-100 text-green-700",
+      color: "bg-gray-100 text-gray-700",
       content: (
-        <ShowingListTab
-          title="History"
-          showings={completedRequests}
-          emptyIcon={CheckCircle}
-          emptyTitle="No Completed Showings"
-          emptyDescription="Completed and cancelled showings will appear here."
-          emptyButtonText=""
-          onRequestShowing={() => {}}
-          onCancelShowing={() => {}}
-          onRescheduleShowing={() => {}}
-          showActions={false}
-          userType="agent"
-          onComplete={refresh}
-          currentUserId={currentUser?.id}
-        />
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <ShowingListTab
+              title=""
+              showings={completedRequests}
+              emptyIcon={CheckCircle}
+              emptyTitle="No History"
+              emptyDescription="Completed and cancelled showings will appear here."
+              emptyButtonText=""
+              onRequestShowing={() => {}}
+              onCancelShowing={() => {}}
+              onRescheduleShowing={() => {}}
+              showActions={false}
+              userType="agent"
+              onComplete={refresh}
+              currentUserId={currentUser?.id}
+            />
+          </CardContent>
+        </Card>
       )
     }
   ];
 
-  const sidebar = (
-    <div className="space-y-6">
-      {/* Connection Status */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-900">Connection Status</h3>
-        </div>
-        <UnifiedConnectionStatus 
-          status={connectionStatus}
-          onRetry={refresh}
-        />
-      </div>
+  // Combine tabs based on active tab
+  const dashboardTabs = activeTab && secondaryTabs.find(tab => tab.id === activeTab) 
+    ? [...primaryTabs, ...secondaryTabs]
+    : primaryTabs;
 
-      {/* Post-Showing Notifications */}
+  const sidebar = (
+    <div className="space-y-4">
+      {/* Connection Status - Simplified */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">System Status</h3>
+          <UnifiedConnectionStatus 
+            status={connectionStatus}
+            onRetry={refresh}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Post-Showing Notifications - Only show if there are notifications */}
       {currentUser?.id && (
-        <AgentNotificationsPanel agentId={currentUser.id} />
+        <div className="transition-all duration-300">
+          <AgentNotificationsPanel agentId={currentUser.id} />
+        </div>
       )}
 
-      {/* Upcoming Showings */}
-      <UpcomingSection
-        title="Upcoming"
-        showings={assignedRequests}
-        onViewAll={() => handleStatClick("assigned")}
-        maxItems={3}
-      />
+      {/* Upcoming Showings - Only show if there are upcoming items */}
+      {assignedRequests.length > 0 && (
+        <UpcomingSection
+          title="Upcoming Tours"
+          showings={assignedRequests}
+          onViewAll={() => handleStatClick("assigned")}
+          maxItems={2}
+        />
+      )}
 
-      {/* Recent Activity */}
-      <UpcomingSection
-        title="Recent Activity"
-        showings={completedRequests}
-        onViewAll={() => handleStatClick("completed")}
-        maxItems={3}
-      />
+      {/* Recent Activity - Only show if there are completed items */}
+      {completedRequests.length > 0 && (
+        <UpcomingSection
+          title="Recent Activity"
+          showings={completedRequests.slice(0, 2)}
+          onViewAll={() => handleStatClick("completed")}
+          maxItems={2}
+        />
+      )}
     </div>
   );
 
   return (
     <>
-      <div className="pt-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <UnifiedDashboardLayout
           title={`Welcome back, ${displayName}`}
           subtitle="Manage your showing requests and connect with buyers"
@@ -353,6 +411,7 @@ const AgentDashboard = () => {
           sidebar={sidebar}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          enhancedStats={enhancedStats}
         />
       </div>
 

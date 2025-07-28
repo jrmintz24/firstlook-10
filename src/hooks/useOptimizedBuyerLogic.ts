@@ -147,7 +147,9 @@ export const useOptimizedBuyerLogic = () => {
     fetchDataRef.current();
   }, []);
 
-  // Setup unified realtime subscriptions
+  // TEMPORARILY DISABLED: Setup unified realtime subscriptions (causing infinite loops)
+  // TODO: Fix realtime subscription dependency loops
+  /*
   useEffect(() => {
     if (!currentUser) return;
 
@@ -185,6 +187,7 @@ export const useOptimizedBuyerLogic = () => {
       unsubscribeAll();
     };
   }, [currentUser?.id, subscribe, unsubscribeAll, stableFetchData]);
+  */
 
   // Initial data fetch
   useEffect(() => {

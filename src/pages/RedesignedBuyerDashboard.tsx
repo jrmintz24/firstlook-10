@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import ShowingListTab from '@/components/dashboard/ShowingListTab';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
 
@@ -12,14 +13,43 @@ const RedesignedBuyerDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
   
-  // TEST: Add useOptimizedBuyerLogic hook
+  // TEST: Add useOptimizedBuyerLogic hook with handlers for ShowingListTab
   const {
     pendingRequests,
     activeShowings,
     completedShowings,
     loading,
-    showingCounts
+    showingCounts,
+    agreements,
+    handleCancelShowing,
+    handleRescheduleShowing,
+    handleConfirmShowingWithModal,
+    handleSignAgreementFromCard,
+    handleSendMessage
   } = useOptimizedBuyerLogic();
+
+  // Handler functions for ShowingListTab
+  const handleRequestShowing = useCallback(() => {
+    console.log('Request showing clicked');
+    alert('Request showing - not implemented in test');
+  }, []);
+
+  const memoizedHandleCancel = useCallback((id: string) => {
+    handleCancelShowing(id);
+  }, [handleCancelShowing]);
+
+  const memoizedHandleReschedule = useCallback((id: string) => {
+    handleRescheduleShowing(id);
+  }, [handleRescheduleShowing]);
+
+  const memoizedHandleConfirm = useCallback((request: any) => {
+    handleConfirmShowingWithModal(request);
+  }, [handleConfirmShowingWithModal]);
+
+  const memoizedHandleAgreementSign = useCallback((showing: any) => {
+    const displayName = user?.user_metadata?.first_name || 'User';
+    handleSignAgreementFromCard(showing.id, displayName);
+  }, [handleSignAgreementFromCard, user]);
 
   const tabs = [
     {
@@ -117,32 +147,85 @@ const RedesignedBuyerDashboard = () => {
 
           <TabsContent value="pending">
             <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Pending Tours</h3>
-                <p className="text-gray-600">Found {pendingRequests?.length || 0} pending requests</p>
-                {pendingRequests?.slice(0, 3).map((request, i) => (
-                  <div key={i} className="mt-2 p-2 bg-gray-50 rounded">
-                    Property: {request.property_address || 'N/A'}
-                  </div>
-                ))}
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-orange-600" />
+                  Pending Tour Requests (FIXED!)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ShowingListTab 
+                  title="Pending Tour Requests"
+                  showings={pendingRequests || []}
+                  emptyIcon={Clock}
+                  emptyTitle="No pending tour requests"
+                  emptyDescription="Start browsing properties to schedule your first tour!"
+                  emptyButtonText="Browse Properties"
+                  onRequestShowing={handleRequestShowing}
+                  onCancelShowing={memoizedHandleCancel}
+                  onRescheduleShowing={memoizedHandleReschedule}
+                  onConfirmShowing={memoizedHandleConfirm}
+                  userType="buyer"
+                  currentUserId={user?.id}
+                  agreements={agreements}
+                  onSignAgreement={memoizedHandleAgreementSign}
+                  showActions={true}
+                />
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="upcoming">
             <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Upcoming Tours</h3>
-                <p className="text-gray-600">Found {activeShowings?.length || 0} upcoming tours</p>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                  Upcoming Tours (FIXED!)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ShowingListTab 
+                  title="Upcoming Tours"
+                  showings={activeShowings || []}
+                  emptyIcon={Calendar}
+                  emptyTitle="No upcoming tours"
+                  emptyDescription="No upcoming tours scheduled."
+                  emptyButtonText="Schedule Tour"
+                  onRequestShowing={handleRequestShowing}
+                  onCancelShowing={memoizedHandleCancel}
+                  onRescheduleShowing={memoizedHandleReschedule}
+                  userType="buyer"
+                  currentUserId={user?.id}
+                  agreements={agreements}
+                  showActions={true}
+                />
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="completed">
             <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Completed Tours</h3>
-                <p className="text-gray-600">Found {completedShowings?.length || 0} completed tours</p>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Completed Tours (FIXED!)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ShowingListTab 
+                  title="Completed Tours"
+                  showings={completedShowings || []}
+                  emptyIcon={CheckCircle}
+                  emptyTitle="No completed tours"
+                  emptyDescription="No completed tours yet. Your tour history will appear here."
+                  emptyButtonText="Schedule Tour"
+                  onRequestShowing={handleRequestShowing}
+                  onCancelShowing={memoizedHandleCancel}
+                  onRescheduleShowing={memoizedHandleReschedule}
+                  userType="buyer"
+                  currentUserId={user?.id}
+                  showActions={false}
+                />
               </CardContent>
             </Card>
           </TabsContent>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Infinite Renders</title>
+</head>
+<body>
+    <h1>Debug Dashboard Infinite Renders</h1>
+    <p>Open browser console and navigate to buyer dashboard. This will help track render counts.</p>
+    
+    <script>
+        // Reset all counters
+        window.buyerDashboardRenderCount = 0;
+        window.unifiedBuyerDashboardRenderCount = 0;
+        window.postShowingActionsRenderCount = 0;
+        
+        console.log('🔄 Debug counters reset. Navigate to /buyer-dashboard now.');
+        
+        // Track renders every second
+        setInterval(() => {
+            if (window.buyerDashboardRenderCount > 0) {
+                console.log('📊 Render counts:');
+                console.log('  - useBuyerDashboard:', window.buyerDashboardRenderCount);
+                console.log('  - UnifiedBuyerDashboard:', window.unifiedBuyerDashboardRenderCount || 0);
+                console.log('  - usePostShowingActions:', window.postShowingActionsRenderCount || 0);
+                
+                if (window.buyerDashboardRenderCount > 10) {
+                    console.error('🚨 INFINITE RENDER DETECTED! Stopping tracking.');
+                    clearInterval(this);
+                }
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

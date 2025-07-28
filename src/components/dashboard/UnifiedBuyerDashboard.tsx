@@ -16,6 +16,8 @@ import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import ModernOfferModal from '@/components/offer-workflow/ModernOfferModal';
 
 const UnifiedBuyerDashboard = () => {
+  console.log('🔍 [DEBUG] UnifiedBuyerDashboard render count:', ++window.unifiedBuyerDashboardRenderCount || (window.unifiedBuyerDashboardRenderCount = 1));
+  
   const [activeTab, setActiveTab] = useState('pending');
   const [agreementModalOpen, setAgreementModalOpen] = useState(false);
   const [selectedShowing, setSelectedShowing] = useState<any>(null);

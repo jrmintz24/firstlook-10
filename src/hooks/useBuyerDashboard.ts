@@ -41,8 +41,11 @@ export const useBuyerDashboard = () => {
 
   const currentUser = user || session?.user;
 
-  console.log('useBuyerDashboard: Current user:', currentUser?.id, currentUser?.email);
-  console.log('useBuyerDashboard: Auth loading:', authLoading, 'Hook loading:', loading);
+  console.log('🔍 [DEBUG] useBuyerDashboard render count:', ++window.buyerDashboardRenderCount || (window.buyerDashboardRenderCount = 1));
+  console.log('🔍 [DEBUG] Current user:', currentUser?.id, currentUser?.email);
+  console.log('🔍 [DEBUG] Auth loading:', authLoading, 'Hook loading:', loading);
+  console.log('🔍 [DEBUG] Showing requests count:', showingRequests?.length);
+  console.log('🔍 [DEBUG] usePostShowingActions functions:', typeof getActionsForShowing, typeof getActionCount);
 
   // Updated categorization - include awaiting_agreement in pendingRequests
   const pendingRequests = showingRequests.filter(req => 

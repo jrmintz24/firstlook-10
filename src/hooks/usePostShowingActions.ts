@@ -25,6 +25,10 @@ export const usePostShowingActions = () => {
   const [actionStates, setActionStates] = useState<ActionStates>({});
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  
+  console.log('🔍 [DEBUG] usePostShowingActions render count:', ++window.postShowingActionsRenderCount || (window.postShowingActionsRenderCount = 1));
+  console.log('🔍 [DEBUG] usePostShowingActions user:', user?.id);
+  console.log('🔍 [DEBUG] usePostShowingActions actionStates keys:', Object.keys(actionStates));
 
   // Fetch all action states for the current user
   const fetchActionStates = useCallback(async () => {

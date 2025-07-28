@@ -26,7 +26,8 @@ const initialFormData: PropertyRequestFormData = {
 export const usePropertyRequest = (
   onClose?: () => void, 
   onDataRefresh?: () => Promise<void>,
-  skipNavigation?: boolean
+  skipNavigation?: boolean,
+  isModalOpen: boolean = true  // Add parameter to control hook execution
 ) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PropertyRequestFormData>(initialFormData);
@@ -47,12 +48,54 @@ export const usePropertyRequest = (
     handleCancelPendingShowing 
   } = usePendingShowingManagement();
 
+  // Reset counter on each page load to track per-page renders
+  if (!window.location.href.includes(window.lastTrackedURL)) {
+    window.usePropertyRequestRenderCount = 0;
+    window.lastTrackedURL = window.location.href;
+  }
+  
   const renderCount = ++window.usePropertyRequestRenderCount || (window.usePropertyRequestRenderCount = 1);
-  console.log('🔍 [DEBUG] usePropertyRequest render #' + renderCount, 'modalFlow:', modalFlow);
+  console.log('🔍 [DEBUG] usePropertyRequest render #' + renderCount, 'modalFlow:', modalFlow, 'URL:', window.location.pathname, 'isModalOpen:', isModalOpen);
+  
+  // Early return if modal is not open - prevents all hook execution
+  if (!isModalOpen) {
+    console.log('🔍 [DEBUG] usePropertyRequest: Modal not open, returning minimal state');
+    return {
+      step: 1,
+      showAuthModal: false,
+      setShowAuthModal: () => {},
+      showFreeShowingLimitModal: false,
+      setShowFreeShowingLimitModal: () => {},
+      eligibility: null,
+      currentStep: 1,
+      formData: initialFormData,
+      setFormData: () => {},
+      showQuickSignIn: false,
+      setShowQuickSignIn: () => {},
+      pendingShowingAddress: '',
+      isSubmitting: false,
+      modalFlow: 'closed',
+      setModalFlow: () => {},
+      handleInputChange: () => {},
+      handleNext: () => {},
+      handleBack: () => {},
+      handleContinueToSubscriptions: async () => {},
+      handleAddProperty: () => {},
+      handleRemoveProperty: () => {},
+      handleCancelPendingShowing: async () => {},
+      handleAddIDXProperty: () => {},
+      resetForm: () => {}
+    };
+  }
   
   if (renderCount > 10) {
-    console.error('🚨 [ERROR] usePropertyRequest infinite loop detected!');
+    console.error('🚨 [ERROR] usePropertyRequest infinite loop detected on:', window.location.pathname);
     console.trace('Stack trace for usePropertyRequest infinite loop');
+    
+    // Force break the loop by throwing an error in development
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error('INFINITE LOOP DETECTED: usePropertyRequest exceeded 10 renders. Check component rendering logic.');
+    }
   }
 
   useEffect(() => {

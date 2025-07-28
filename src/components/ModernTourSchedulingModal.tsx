@@ -142,7 +142,7 @@ const ModernTourSchedulingModal = ({
     handleCancelPendingShowing,
     pendingShowingAddress,
     resetForm
-  } = usePropertyRequest(onClose, onSuccess, skipNavigation);
+  } = usePropertyRequest(onClose, onSuccess, skipNavigation, isOpen);
 
   // Sync modal flow with isOpen prop - ensure modal flow resets when opened fresh
   useEffect(() => {

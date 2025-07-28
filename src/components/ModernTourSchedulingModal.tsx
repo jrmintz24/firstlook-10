@@ -366,7 +366,13 @@ const ModernTourSchedulingModal = ({
   // Check if we should show any modal (for debugging)
   const showAnyModal = isOpen && (modalFlow === 'scheduling' || modalFlow === 'auth' || modalFlow === 'limit');
 
-  console.log('Modal render:', { isOpen, modalFlow, showSchedulingModal, showAnyModal });
+  const modalRenderCount = ++window.modalRenderCount || (window.modalRenderCount = 1);
+  console.log('🔍 [DEBUG] Modal render #' + modalRenderCount + ':', { isOpen, modalFlow, showSchedulingModal, showAnyModal });
+  
+  if (modalRenderCount > 10) {
+    console.error('🚨 [ERROR] Modal infinite loop detected!');
+    console.trace('Stack trace for Modal infinite loop');
+  }
 
   // Mobile rendering with custom overlay
   if (isMobile) {

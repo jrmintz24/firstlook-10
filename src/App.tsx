@@ -82,6 +82,14 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/test" element={<TestAuth />} />
+                <Route path="/debug-dashboard" element={
+                  <ProtectedRoute requiredUserType="buyer">
+                    <div className="p-8">
+                      <h1 className="text-2xl mb-4">Debug Dashboard</h1>
+                      <p>This is a simple test dashboard without complex hooks.</p>
+                    </div>
+                  </ProtectedRoute>
+                } />
                 <Route path="/auth" element={<Auth />} />
 
                 {/* IDX Pages - Public Routes */}

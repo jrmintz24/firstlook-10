@@ -530,8 +530,8 @@ const UnifiedBuyerDashboard = () => {
           } : undefined}
         />
 
-        {/* Tour Scheduling Modal */}
-        {showScheduleModal && (
+        {/* Tour Scheduling Modal - TEMPORARILY DISABLED FOR DEBUGGING */}
+        {false && showScheduleModal && (
           <ModernTourSchedulingModal
             isOpen={showScheduleModal}
             onClose={handleScheduleModalClose}

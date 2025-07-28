@@ -47,7 +47,13 @@ export const usePropertyRequest = (
     handleCancelPendingShowing 
   } = usePendingShowingManagement();
 
-  console.log('usePropertyRequest - Current modalFlow:', modalFlow);
+  const renderCount = ++window.usePropertyRequestRenderCount || (window.usePropertyRequestRenderCount = 1);
+  console.log('🔍 [DEBUG] usePropertyRequest render #' + renderCount, 'modalFlow:', modalFlow);
+  
+  if (renderCount > 10) {
+    console.error('🚨 [ERROR] usePropertyRequest infinite loop detected!');
+    console.trace('Stack trace for usePropertyRequest infinite loop');
+  }
 
   useEffect(() => {
     const loadPendingShowing = async () => {

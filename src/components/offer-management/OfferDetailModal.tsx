@@ -444,7 +444,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
           )}
 
           {/* Document Upload Section */}
-          {(status === 'consultation_completed' || status === 'under_review' || status === 'ready') && (
+          {(status !== 'in_progress' || offer.consultation_requested || offer.consultation_scheduled_at) && (
             <div ref={setDocumentsRef}>
               <Card>
                 <CardHeader>
@@ -472,23 +472,11 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             {/* Buyer Actions */}
             {userType === 'buyer' && (
               <>
-                {/* Only show questionnaire button if not completed AND no consultation pending/scheduled */}
-                {!offer.questionnaire_completed_at && 
-                 !offer.consultation_requested && 
-                 !offer.consultation_scheduled_at &&
-                 consultationBooking?.status !== 'scheduled' && (
+                {/* Show questionnaire button if not completed */}
+                {!offer.questionnaire_completed_at && (
                   <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    Continue Questionnaire
-                  </Button>
-                )}
-                
-                {/* Show questionnaire button again after consultation is completed */}
-                {!offer.questionnaire_completed_at && 
-                 consultationBooking?.status === 'completed' && (
-                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Complete Questionnaire
+                    {consultationBooking?.status === 'completed' ? 'Complete Questionnaire' : 'Continue Questionnaire'}
                   </Button>
                 )}
                 
@@ -526,7 +514,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
             )}
 
             {/* Common Actions */}
-            {(status === 'consultation_completed' || status === 'under_review') && (
+            {(status !== 'in_progress' || offer.consultation_requested || offer.consultation_scheduled_at) && (
               <Button variant="outline" className="flex items-center gap-2" onClick={scrollToDocuments}>
                 <Upload className="w-4 h-4" />
                 Upload Documents

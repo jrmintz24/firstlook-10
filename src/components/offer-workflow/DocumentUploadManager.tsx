@@ -341,12 +341,12 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Document Upload
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="w-4 h-4" />
+            Upload New Document
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -430,16 +430,15 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
 
       {/* Uploaded Documents */}
       {documents.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <h3 className="text-sm font-medium text-gray-900">
               Uploaded Documents ({documents.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {documents.map((doc) => (
+            </h3>
+          </div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <FileText className="w-8 h-8 text-gray-400" />
@@ -509,9 +508,8 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
                   </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

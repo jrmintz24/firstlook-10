@@ -219,8 +219,8 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
               <DialogTitle className="text-xl">{offer.property_address}</DialogTitle>
@@ -234,7 +234,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           {/* Basic Info */}
           <Card>
             <CardHeader>
@@ -444,7 +444,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
           )}
 
           {/* Document Upload Section - Always Available */}
-          <div ref={setDocumentsRef}>
+          <div ref={setDocumentsRef} className="min-h-0">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -455,7 +455,7 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
                   Upload supporting documents for your offer. Required documents will be marked clearly.
                 </p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="max-h-96 overflow-y-auto">
                 <DocumentUploadManager
                   offerIntentId={offer.id}
                   buyerId={buyerId}

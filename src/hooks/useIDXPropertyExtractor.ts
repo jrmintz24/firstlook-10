@@ -40,6 +40,18 @@ export const useIDXPropertyExtractor = () => {
     console.log('[useIDXPropertyExtractor] Hook initialized');
     console.log('[useIDXPropertyExtractor] Current URL:', window.location.href);
     
+    // Early return if not on a property page
+    const pathname = window.location.pathname;
+    const isPropertyPage = pathname.includes('/listing') || pathname.includes('/property');
+    const isDashboard = pathname.includes('/dashboard') || pathname === '/';
+    
+    if (!isPropertyPage || isDashboard) {
+      console.log('[useIDXPropertyExtractor] Not on property page or on dashboard, skipping extraction');
+      setIsLoading(false);
+      setError('Not on property page');
+      return;
+    }
+    
     // First check for globally injected iHomeFinder data
     const checkGlobalData = () => {
       if (window.ihfPropertyData) {

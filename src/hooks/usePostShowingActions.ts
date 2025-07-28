@@ -193,25 +193,27 @@ export const usePostShowingActions = () => {
     }
   }, [user?.id]);
 
-  // Get action states for a specific showing
+  // Get action states for a specific showing (stable reference)
   const getActionsForShowing = useCallback((showingId: string) => {
-    return actionStates[showingId] || {
+    const currentActionStates = actionStates;
+    return currentActionStates[showingId] || {
       favorited: false,
       made_offer: false,
       hired_agent: false,
       scheduled_more_tours: false,
       actions: []
     };
-  }, [actionStates]);
+  }, []); // Empty dependency array to create stable reference
 
   // Check if a specific action was taken
   const hasAction = useCallback((showingId: string, actionType: PostShowingAction['action_type']) => {
     return actionStates[showingId]?.[actionType] || false;
   }, [actionStates]);
 
-  // Get count of actions taken for a showing
+  // Get count of actions taken for a showing (stable reference)
   const getActionCount = useCallback((showingId: string) => {
-    const actions = actionStates[showingId];
+    const currentActionStates = actionStates;
+    const actions = currentActionStates[showingId];
     if (!actions) return 0;
     
     return [
@@ -220,7 +222,7 @@ export const usePostShowingActions = () => {
       actions.hired_agent,
       actions.scheduled_more_tours
     ].filter(Boolean).length;
-  }, [actionStates]);
+  }, []); // Empty dependency array to create stable reference
 
   // Initialize on mount
   useEffect(() => {

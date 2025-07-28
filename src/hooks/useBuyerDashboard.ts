@@ -309,8 +309,10 @@ export const useBuyerDashboard = () => {
     fetchUserData();
   }, [user, session, authLoading, navigate]);
 
-  // Create buyerActions object for showing action states (memoized to prevent infinite re-renders)
+  // Create buyerActions object with stable function references
   const buyerActions = useMemo(() => {
+    if (!showingRequests.length) return {};
+    
     return showingRequests.reduce((acc, showing) => {
       const actions = getActionsForShowing(showing.id);
       const actionCount = getActionCount(showing.id);
@@ -327,7 +329,7 @@ export const useBuyerDashboard = () => {
       
       return acc;
     }, {} as Record<string, any>);
-  }, [showingRequests, getActionsForShowing, getActionCount]);
+  }, [showingRequests]); // Only depend on showingRequests, not the functions
 
   return {
     profile,

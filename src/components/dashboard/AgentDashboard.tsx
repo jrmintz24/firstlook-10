@@ -133,12 +133,6 @@ const AgentDashboard = () => {
   // Create enhanced stats section with 3 balanced cards
   const enhancedStats = (
     <>
-      {/* Version indicator for debugging */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg mb-4 text-center">
-        <p className="font-semibold">🚀 Agent Dashboard v2.0 - New Layout Active</p>
-        <p className="text-xs opacity-90">Deployed: {new Date().toLocaleString()}</p>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 group">
         <CardContent className="p-5">

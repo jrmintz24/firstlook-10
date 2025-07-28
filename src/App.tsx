@@ -118,17 +118,17 @@ function App() {
                   path="/buyer-dashboard"
                   element={
                     <ProtectedRoute requiredUserType="buyer">
-                      <BuyerDashboard />
+                      <RedesignedBuyerDashboard />
                     </ProtectedRoute>
                   }
                 />
                 
-                {/* New Redesigned Buyer Dashboard */}
+                {/* Old Legacy Buyer Dashboard (moved to v1) */}
                 <Route
-                  path="/buyer-dashboard-v2"
+                  path="/buyer-dashboard-v1"
                   element={
                     <ProtectedRoute requiredUserType="buyer">
-                      <RedesignedBuyerDashboard />
+                      <BuyerDashboard />
                     </ProtectedRoute>
                   }
                 />

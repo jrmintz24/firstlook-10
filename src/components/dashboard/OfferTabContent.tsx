@@ -23,9 +23,10 @@ interface OfferIntent {
 interface OfferTabContentProps {
   buyerId: string;
   onCreateOffer?: () => void;
+  onUpdate?: () => void;
 }
 
-const OfferTabContent = ({ buyerId, onCreateOffer }: OfferTabContentProps) => {
+const OfferTabContent = ({ buyerId, onCreateOffer, onUpdate }: OfferTabContentProps) => {
   const [offers, setOffers] = useState<OfferIntent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<OfferIntent | null>(null);
@@ -45,6 +46,11 @@ const OfferTabContent = ({ buyerId, onCreateOffer }: OfferTabContentProps) => {
 
       if (error) throw error;
       setOffers(data || []);
+      
+      // Call onUpdate callback to refresh parent component counts
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('Error fetching offers:', error);
       toast({

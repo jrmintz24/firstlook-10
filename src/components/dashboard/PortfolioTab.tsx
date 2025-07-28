@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, FileText, Users, ChevronRight, Star, Calendar, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { useBuyerAgentConnections } from '@/hooks/useBuyerAgentConnections';
 import OfferTabContent from './OfferTabContent';
 import AgentConnectionCard from './AgentConnectionCard';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PortfolioTabProps {
   buyerId?: string;
@@ -21,9 +22,35 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
   const [activeSection, setActiveSection] = useState('favorites');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [offersCount, setOffersCount] = useState(0);
   const navigate = useNavigate();
   const { favorites, loading: favoritesLoading } = useBuyerFavorites(buyerId);
   const { connections, loading: connectionsLoading, handleContactAgent } = useBuyerAgentConnections(buyerId);
+
+  // Fetch offers count
+  const fetchOffersCount = useCallback(async () => {
+    if (!buyerId) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('offer_intents')
+        .select('*', { count: 'exact', head: true })
+        .eq('buyer_id', buyerId);
+
+      if (error) {
+        console.error('Error fetching offers count:', error);
+        return;
+      }
+
+      setOffersCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching offers count:', error);
+    }
+  }, [buyerId]);
+
+  useEffect(() => {
+    fetchOffersCount();
+  }, [fetchOffersCount]);
 
   // Handlers for property card actions
   const handleViewDetails = (favorite: any) => {
@@ -82,7 +109,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
       id: 'offers',
       label: 'Offers',
       icon: FileText,
-      count: 0, // Will be populated by OfferTabContent
+      count: offersCount,
       color: 'text-blue-600 bg-blue-50 border-blue-200',
       description: 'Active offer intents'
     },
@@ -194,7 +221,11 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ buyerId, onScheduleT
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <OfferTabContent buyerId={buyerId || ''} onCreateOffer={onCreateOffer} />
+              <OfferTabContent 
+                buyerId={buyerId || ''} 
+                onCreateOffer={onCreateOffer}
+                onUpdate={fetchOffersCount}
+              />
             </CardContent>
           </Card>
         </TabsContent>

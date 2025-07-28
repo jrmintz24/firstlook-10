@@ -159,38 +159,34 @@ const ShowingListTab: React.FC<ShowingListTabProps> = ({
               <div
                 key={showing.id}
                 className={cn(
-                  "transition-all duration-500 space-y-3",
+                  "transition-all duration-500",
                   isVisible && "animate-fade-in"
                 )}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Basic tour info card */}
-                <OptimizedShowingCard
-                  showing={showing}
-                  onCancel={onCancelShowing}
-                  onReschedule={onRescheduleShowing}
-                  onSendMessage={() => onSendMessage?.(showing.id)}
-                  onSignAgreement={() => onSignAgreement?.(showing)}
-                  userType={userType}
-                  currentUserId={currentUserId}
-                  buyerActions={buyerActions?.[showing.id]}
-                  agreements={agreements}
-                  onComplete={onComplete}
-                />
-                
-                {/* iHomefinder property widget */}
-                {showing.idx_id || showing.mls_id ? (
-                  <IHomefinderWidget
-                    address={showing.property_address}
-                    mlsId={showing.idx_id || showing.mls_id}
-                    height={350}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-gray-500 border rounded-lg bg-gray-50">
-                    <p className="text-sm">Property details will be available with MLS ID</p>
-                    <p className="text-xs mt-1">{showing.property_address}</p>
-                  </div>
-                )}
+                <DynamicShadowCard
+                  shadowIntensity={0.1}
+                  shadowColor="rgba(0, 0, 0, 0.08)"
+                >
+                  <FloatingCard
+                    intensity="subtle"
+                    duration={5000}
+                    delay={index * 200}
+                  >
+                    <OptimizedShowingCard
+                      showing={showing}
+                      onCancel={onCancelShowing}
+                      onReschedule={onRescheduleShowing}
+                      onSendMessage={() => onSendMessage?.(showing.id)}
+                      onSignAgreement={() => onSignAgreement?.(showing)}
+                      userType={userType}
+                      currentUserId={currentUserId}
+                      buyerActions={buyerActions?.[showing.id]}
+                      agreements={agreements}
+                      onComplete={onComplete}
+                    />
+                  </FloatingCard>
+                </DynamicShadowCard>
               </div>
             );
           }

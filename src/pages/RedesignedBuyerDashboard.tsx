@@ -4,14 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ShowingListTab from '@/components/dashboard/ShowingListTab';
+import { PortfolioTab } from '@/components/dashboard/PortfolioTab';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOptimizedBuyerLogic } from "@/hooks/useOptimizedBuyerLogic";
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileDashboardLayout from '@/components/mobile/MobileDashboardLayout';
+import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnection';
 
 const RedesignedBuyerDashboard = () => {
   console.log('🔍 [DEBUG] RedesignedBuyerDashboard render count:', ++window.redesignedBuyerDashboardRenderCount || (window.redesignedBuyerDashboardRenderCount = 1));
   
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
+  const isMobile = useIsMobile();
   
   // TEST: Add useOptimizedBuyerLogic hook with handlers for ShowingListTab
   const {
@@ -51,6 +56,16 @@ const RedesignedBuyerDashboard = () => {
     handleSignAgreementFromCard(showing.id, displayName);
   }, [handleSignAgreementFromCard, user]);
 
+  const handleScheduleTour = useCallback((propertyAddress: string, mlsId?: string) => {
+    console.log(`Schedule tour for property: ${propertyAddress}, MLS: ${mlsId}`);
+    alert(`Schedule tour for ${propertyAddress} - modal not implemented in test`);
+  }, []);
+
+  const handleMakeOffer = useCallback((propertyAddress: string) => {
+    console.log(`Make offer for property: ${propertyAddress}`);
+    alert(`Make offer for ${propertyAddress} - modal not implemented in test`);
+  }, []);
+
   const tabs = [
     {
       id: 'pending',
@@ -82,17 +97,100 @@ const RedesignedBuyerDashboard = () => {
     }
   ];
 
+  // Mobile layout rendering
+  if (isMobile) {
+    const renderMobileTabContent = () => {
+      switch (activeTab) {
+        case 'pending':
+          return (
+            <ShowingListTab 
+              title="Pending Tour Requests"
+              showings={pendingRequests || []}
+              emptyIcon={Clock}
+              emptyTitle="No pending tour requests"
+              emptyDescription="Start browsing properties to schedule your first tour!"
+              emptyButtonText="Browse Properties"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={memoizedHandleCancel}
+              onRescheduleShowing={memoizedHandleReschedule}
+              onConfirmShowing={memoizedHandleConfirm}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              onSignAgreement={memoizedHandleAgreementSign}
+              showActions={true}
+            />
+          );
+        case 'upcoming':
+          return (
+            <ShowingListTab 
+              title="Upcoming Tours"
+              showings={activeShowings || []}
+              emptyIcon={Calendar}
+              emptyTitle="No upcoming tours"
+              emptyDescription="No upcoming tours scheduled."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={memoizedHandleCancel}
+              onRescheduleShowing={memoizedHandleReschedule}
+              userType="buyer"
+              currentUserId={user?.id}
+              agreements={agreements}
+              showActions={true}
+            />
+          );
+        case 'completed':
+          return (
+            <ShowingListTab 
+              title="Completed Tours"
+              showings={completedShowings || []}
+              emptyIcon={CheckCircle}
+              emptyTitle="No completed tours"
+              emptyDescription="No completed tours yet. Your tour history will appear here."
+              emptyButtonText="Schedule Tour"
+              onRequestShowing={handleRequestShowing}
+              onCancelShowing={memoizedHandleCancel}
+              onRescheduleShowing={memoizedHandleReschedule}
+              userType="buyer"
+              currentUserId={user?.id}
+              showActions={false}
+            />
+          );
+        case 'portfolio':
+          return <PortfolioTab buyerId={user?.id} onScheduleTour={handleScheduleTour} onCreateOffer={() => handleMakeOffer('')} />;
+        default:
+          return <div>Tab content not found</div>;
+      }
+    };
+
+    return (
+      <MobileDashboardLayout
+        user={user}
+        pendingRequests={pendingRequests || []}
+        activeShowings={activeShowings || []}
+        completedShowings={completedShowings || []}
+        favorites={[]} // TODO: Implement favorites when available
+        onRequestTour={handleRequestShowing}
+        onTabChange={setActiveTab}
+        activeTab={activeTab}
+      >
+        {renderMobileTabContent()}
+      </MobileDashboardLayout>
+    );
+  }
+
+  // Desktop layout
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Welcome back, {user?.user_metadata?.first_name || 'there'}!
+          Welcome back, {user?.user_metadata?.first_name || 'there'}! 🎉 WORKING!
         </h1>
         
         {/* Debug Info */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <p className="text-gray-600 mb-2">DEBUG: Dashboard with basic UI components</p>
-          <div className="text-sm text-gray-500">
+        <div className="bg-green-50 border border-green-200 p-4 rounded-lg shadow mb-6">
+          <p className="text-green-800 mb-2">✅ Dashboard fully restored with infinite loop fixes!</p>
+          <div className="text-sm text-green-700">
             Loading: {loading ? 'Yes' : 'No'} | 
             Pending: {showingCounts?.pending || 0} | 
             Active: {showingCounts?.active || 0} | 
@@ -231,14 +329,16 @@ const RedesignedBuyerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="portfolio">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Portfolio</h3>
-                <p className="text-gray-600">Portfolio features coming soon...</p>
-              </CardContent>
-            </Card>
+            <PortfolioTab 
+              buyerId={user?.id} 
+              onScheduleTour={handleScheduleTour} 
+              onCreateOffer={() => handleMakeOffer('')} 
+            />
           </TabsContent>
         </Tabs>
+
+        {/* Development Tool */}
+        <CreateTestAgentConnection />
       </div>
     </div>
   );

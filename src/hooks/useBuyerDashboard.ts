@@ -161,7 +161,7 @@ export const useBuyerDashboard = () => {
     }
   }, [currentUser]);
 
-  const handleCancelShowing = async (id: string) => {
+  const handleCancelShowing = useCallback(async (id: string) => {
     console.log('Cancelling showing:', id);
     
     try {
@@ -186,20 +186,20 @@ export const useBuyerDashboard = () => {
     } catch (error) {
       console.error('Exception cancelling showing:', error);
     }
-  };
+  }, [fetchShowingRequests]);
 
-  const handleRescheduleShowing = async (id: string) => {
+  const handleRescheduleShowing = useCallback(async (id: string) => {
     console.log('Rescheduling showing:', id);
     // Implement reschedule logic here
     console.log('Rescheduling functionality will be available soon');
-  };
+  }, []);
 
-  const handleConfirmShowing = (showing: ShowingRequest) => {
+  const handleConfirmShowing = useCallback((showing: ShowingRequest) => {
     console.log('Confirming showing:', showing);
     setSelectedShowing(showing);
-  };
+  }, []);
 
-  const handleAgreementSign = async (showing: ShowingRequest) => {
+  const handleAgreementSign = useCallback(async (showing: ShowingRequest) => {
     if (!showing || !currentUser) {
       console.error('No showing or user for agreement signing');
       return;
@@ -290,7 +290,7 @@ export const useBuyerDashboard = () => {
       console.error('Exception signing agreement:', error);
       throw error; // Re-throw so the caller can handle it
     }
-  };
+  }, [currentUser, fetchShowingRequests]);
 
   useEffect(() => {
     console.log('useBuyerDashboard: useEffect triggered, authLoading:', authLoading, 'user:', !!currentUser);

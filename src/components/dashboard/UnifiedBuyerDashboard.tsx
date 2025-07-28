@@ -26,6 +26,7 @@ const UnifiedBuyerDashboard = () => {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
   const { user } = useAuth();
+  const buyerDashboardResult = useBuyerDashboard();
   const { 
     pendingRequests,
     activeShowings,
@@ -38,7 +39,9 @@ const UnifiedBuyerDashboard = () => {
     handleAgreementSign,
     agreements,
     buyerActions = {}
-  } = useBuyerDashboard();
+  } = buyerDashboardResult;
+  
+  console.log('🔍 [DEBUG] UnifiedBuyerDashboard buyerActions reference changed:', typeof buyerActions, Object.keys(buyerActions));
   const isMobile = useIsMobile();
 
   // Memoize callback functions to prevent unnecessary re-renders

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -309,23 +309,25 @@ export const useBuyerDashboard = () => {
     fetchUserData();
   }, [user, session, authLoading, navigate]);
 
-  // Create buyerActions object for showing action states
-  const buyerActions = showingRequests.reduce((acc, showing) => {
-    const actions = getActionsForShowing(showing.id);
-    const actionCount = getActionCount(showing.id);
-    
-    acc[showing.id] = {
-      favorited: actions.favorited,
-      madeOffer: actions.made_offer,
-      hiredAgent: actions.hired_agent,
-      scheduledMoreTours: actions.scheduled_more_tours,
-      actionCount,
-      latestAction: actions.actions[0]?.action_type || null,
-      actionTimestamp: actions.actions[0]?.created_at || null
-    };
-    
-    return acc;
-  }, {} as Record<string, any>);
+  // Create buyerActions object for showing action states (memoized to prevent infinite re-renders)
+  const buyerActions = useMemo(() => {
+    return showingRequests.reduce((acc, showing) => {
+      const actions = getActionsForShowing(showing.id);
+      const actionCount = getActionCount(showing.id);
+      
+      acc[showing.id] = {
+        favorited: actions.favorited,
+        madeOffer: actions.made_offer,
+        hiredAgent: actions.hired_agent,
+        scheduledMoreTours: actions.scheduled_more_tours,
+        actionCount,
+        latestAction: actions.actions[0]?.action_type || null,
+        actionTimestamp: actions.actions[0]?.created_at || null
+      };
+      
+      return acc;
+    }, {} as Record<string, any>);
+  }, [showingRequests, getActionsForShowing, getActionCount]);
 
   return {
     profile,

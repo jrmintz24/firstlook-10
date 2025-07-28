@@ -301,16 +301,15 @@ export const useBuyerDashboard = () => {
     }
     
     if (!user && !session) {
-      console.log('useBuyerDashboard: No user or session, redirecting to home');
+      console.log('useBuyerDashboard: No user or session, stopping execution (ProtectedRoute handles auth)');
       setLoading(false);
-      navigate('/');
       return;
     }
 
     console.log('useBuyerDashboard: User available, fetching user data');
     fetchUserData();
     fetchShowingRequests(true);
-  }, [user, session, authLoading, navigate, fetchUserData, fetchShowingRequests]);
+  }, [user, session, authLoading, fetchUserData, fetchShowingRequests]);
 
   // Create buyerActions object with stable function references
   const buyerActions = useMemo(() => {

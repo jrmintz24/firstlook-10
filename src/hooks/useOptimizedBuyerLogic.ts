@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,9 @@ export const useOptimizedBuyerLogic = () => {
   const { eligibility, checkEligibility } = useShowingEligibility();
   
   const currentUser = user || session?.user;
+  
+  // Use ref to prevent fetchData dependency loop
+  const isFetchingRef = useRef(false);
 
   // Memoized showing counts for performance
   const showingCounts = useMemo(() => ({
@@ -49,9 +52,11 @@ export const useOptimizedBuyerLogic = () => {
     return subscriptionStatus?.subscribed === true;
   }, [subscriptionStatus]);
 
-  // Unified data fetching function
+  // Unified data fetching function - stabilized with ref to prevent infinite loops
   const fetchData = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser || isFetchingRef.current) return;
+    
+    isFetchingRef.current = true;
 
     try {
       console.log('Fetching buyer dashboard data for user:', currentUser.id);
@@ -113,8 +118,10 @@ export const useOptimizedBuyerLogic = () => {
         setUnreadCount(messagesResult.data.length);
       }
 
-      // Check eligibility after fetching data
-      await checkEligibility();
+      // Check eligibility after fetching data (using ref to avoid dependency loop)
+      if (checkEligibility) {
+        await checkEligibility();
+      }
 
     } catch (error) {
       console.error('Error fetching buyer dashboard data:', error);
@@ -127,8 +134,18 @@ export const useOptimizedBuyerLogic = () => {
       setLoading(false);
       setDetailLoading(false);
       setIsInitialLoad(false);
+      isFetchingRef.current = false;
     }
-  }, [currentUser, toast, checkEligibility]);
+  }, [currentUser?.id, toast]);
+
+  // Create stable reference for fetchData to avoid dependency loop
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
+
+  // Stable wrapper for fetchData that doesn't cause dependency loops
+  const stableFetchData = useCallback(() => {
+    fetchDataRef.current();
+  }, []);
 
   // Setup unified realtime subscriptions
   useEffect(() => {
@@ -141,7 +158,7 @@ export const useOptimizedBuyerLogic = () => {
       channelName: `buyer_showing_requests_${currentUser.id}`,
       table: 'showing_requests',
       filter: `user_id=eq.${currentUser.id}`,
-      onDataChange: fetchData,
+      onDataChange: stableFetchData,
       enabled: true,
     });
 
@@ -150,7 +167,7 @@ export const useOptimizedBuyerLogic = () => {
       channelName: `buyer_agreements_${currentUser.id}`,
       table: 'tour_agreements',
       filter: `buyer_id=eq.${currentUser.id}`,
-      onDataChange: fetchData,
+      onDataChange: stableFetchData,
       enabled: true,
     });
 
@@ -159,7 +176,7 @@ export const useOptimizedBuyerLogic = () => {
       channelName: `buyer_messages_${currentUser.id}`,
       table: 'messages',
       filter: `receiver_id=eq.${currentUser.id}`,
-      onDataChange: fetchData,
+      onDataChange: stableFetchData,
       enabled: true,
     });
 
@@ -167,7 +184,7 @@ export const useOptimizedBuyerLogic = () => {
       console.log('Cleaning up unified realtime subscriptions');
       unsubscribeAll();
     };
-  }, [currentUser, subscribe, unsubscribeAll, fetchData]);
+  }, [currentUser?.id, subscribe, unsubscribeAll, stableFetchData]);
 
   // Initial data fetch
   useEffect(() => {
@@ -178,7 +195,7 @@ export const useOptimizedBuyerLogic = () => {
     }
 
     fetchData();
-  }, [currentUser, authLoading, fetchData]);
+  }, [currentUser?.id, authLoading]);
 
   // Handler functions
   const handleRequestShowing = useCallback(() => {
@@ -197,8 +214,8 @@ export const useOptimizedBuyerLogic = () => {
   const handleSubscriptionComplete = useCallback(() => {
     setShowSubscribeModal(false);
     // Refresh data to update eligibility and subscription status
-    fetchData();
-  }, [fetchData]);
+    stableFetchData();
+  }, [stableFetchData]);
 
   const handleConfirmShowingWithModal = useCallback((showing: any) => {
     setSelectedShowing(showing);
@@ -232,7 +249,7 @@ export const useOptimizedBuyerLogic = () => {
 
       setShowAgreementModal(false);
       setSelectedShowing(null);
-      fetchData();
+      stableFetchData();
     } catch (error) {
       console.error('Error signing agreement:', error);
       toast({
@@ -241,7 +258,7 @@ export const useOptimizedBuyerLogic = () => {
         variant: "destructive"
       });
     }
-  }, [selectedShowing, currentUser, toast, fetchData]);
+  }, [selectedShowing, currentUser, toast, stableFetchData]);
 
   const handleSignAgreementFromCard = useCallback((showingId: string, buyerName: string) => {
     const showing = [...pendingRequests, ...activeShowings].find(s => s.id === showingId);
@@ -274,7 +291,7 @@ export const useOptimizedBuyerLogic = () => {
         description: "Your showing request has been cancelled.",
       });
       
-      fetchData();
+      stableFetchData();
     } catch (error) {
       toast({
         title: "Error",
@@ -282,7 +299,7 @@ export const useOptimizedBuyerLogic = () => {
         variant: "destructive"
       });
     }
-  }, [toast, fetchData]);
+  }, [toast, stableFetchData]);
 
   const handleRescheduleShowing = useCallback((showing: any) => {
     setSelectedShowing(showing);
@@ -292,8 +309,8 @@ export const useOptimizedBuyerLogic = () => {
   const handleRescheduleSuccess = useCallback(() => {
     setShowRescheduleModal(false);
     setSelectedShowing(null);
-    fetchData();
-  }, [fetchData]);
+    stableFetchData();
+  }, [stableFetchData]);
 
   return {
     // State

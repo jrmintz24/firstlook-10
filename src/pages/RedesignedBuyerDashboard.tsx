@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnectio
 import SignAgreementModal from '@/components/dashboard/SignAgreementModal';
 import ModernTourSchedulingModal from "@/components/ModernTourSchedulingModal";
 import ModernOfferModal from "@/components/offer-workflow/ModernOfferModal";
+import { supabase } from '@/integrations/supabase/client';
 
 const RedesignedBuyerDashboard = () => {
   console.log('🔍 [DEBUG] RedesignedBuyerDashboard render count:', ++window.redesignedBuyerDashboardRenderCount || (window.redesignedBuyerDashboardRenderCount = 1));
@@ -24,6 +25,7 @@ const RedesignedBuyerDashboard = () => {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
+  const [offersCount, setOffersCount] = useState(0);
   const isMobile = useIsMobile();
   
   // Get all data and handlers from optimized hook
@@ -45,6 +47,31 @@ const RedesignedBuyerDashboard = () => {
     handleAgreementSignWithModal,
     fetchData
   } = useOptimizedBuyerLogic();
+
+  // Fetch offers count
+  const fetchOffersCount = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('offer_intents')
+        .select('*', { count: 'exact', head: true })
+        .eq('buyer_id', user.id);
+
+      if (error) {
+        console.error('Error fetching offers count:', error);
+        return;
+      }
+
+      setOffersCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching offers count:', error);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchOffersCount();
+  }, [fetchOffersCount]);
 
   // Handler functions for ShowingListTab
   const handleRequestShowing = useCallback(() => {
@@ -121,7 +148,7 @@ const RedesignedBuyerDashboard = () => {
       id: 'portfolio',
       label: 'Portfolio',
       icon: FolderOpen,
-      count: 0,
+      count: offersCount,
       color: 'purple'
     }
   ];
@@ -418,6 +445,7 @@ const RedesignedBuyerDashboard = () => {
               setShowOfferModal(false);
               setOfferPropertyAddress('');
               fetchData();
+              fetchOffersCount(); // Refresh offers count
             }}
             propertyAddress={offerPropertyAddress}
             buyerId={user?.id || ''}

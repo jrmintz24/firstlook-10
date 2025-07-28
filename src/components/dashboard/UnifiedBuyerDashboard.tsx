@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Clock, Calendar, CheckCircle, FolderOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import CreateTestAgentConnection from '@/components/dev/CreateTestAgentConnectio
 import SignAgreementModal from './SignAgreementModal';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import ModernOfferModal from '@/components/offer-workflow/ModernOfferModal';
+import { supabase } from '@/integrations/supabase/client';
 
 const UnifiedBuyerDashboard = () => {
   console.log('🔍 [DEBUG] UnifiedBuyerDashboard render count:', ++window.unifiedBuyerDashboardRenderCount || (window.unifiedBuyerDashboardRenderCount = 1));
@@ -25,6 +26,7 @@ const UnifiedBuyerDashboard = () => {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
+  const [offersCount, setOffersCount] = useState(0);
   const { user } = useAuth();
   const buyerDashboardResult = useBuyerDashboard();
   const { 
@@ -43,6 +45,31 @@ const UnifiedBuyerDashboard = () => {
   
   console.log('🔍 [DEBUG] UnifiedBuyerDashboard buyerActions reference changed:', typeof buyerActions, Object.keys(buyerActions));
   const isMobile = useIsMobile();
+
+  // Fetch offers count
+  const fetchOffersCount = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('offer_intents')
+        .select('*', { count: 'exact', head: true })
+        .eq('buyer_id', user.id);
+
+      if (error) {
+        console.error('Error fetching offers count:', error);
+        return;
+      }
+
+      setOffersCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching offers count:', error);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchOffersCount();
+  }, [fetchOffersCount]);
 
   // Memoize callback functions to prevent unnecessary re-renders
   const handleRequestShowing = useCallback(() => {
@@ -164,7 +191,7 @@ const UnifiedBuyerDashboard = () => {
       label: 'Portfolio',
       icon: FolderOpen,
       description: 'Favorites, offers, and agent connections',
-      count: 0, // Will be updated when favorites/offers are implemented
+      count: offersCount,
       color: 'purple'
     }
   ];
@@ -545,7 +572,11 @@ const UnifiedBuyerDashboard = () => {
         {/* Offer Modal */}
         <ModernOfferModal
           isOpen={showOfferModal}
-          onClose={() => setShowOfferModal(false)}
+          onClose={() => {
+            setShowOfferModal(false);
+            setOfferPropertyAddress('');
+            fetchOffersCount(); // Refresh offers count after modal closes
+          }}
           propertyAddress={offerPropertyAddress}
           buyerId={user?.id || ''}
           agentId="" // Will be assigned during consultation booking

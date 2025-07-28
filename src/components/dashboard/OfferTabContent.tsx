@@ -7,6 +7,7 @@ import { FileText, Calendar, User, MessageCircle, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import OfferDetailModal from '@/components/offer-management/OfferDetailModal';
+import OfferCardTimeline from '@/components/offer-workflow/OfferCardTimeline';
 
 interface OfferIntent {
   id: string;
@@ -190,6 +191,29 @@ const OfferTabContent = ({ buyerId, onCreateOffer, onUpdate }: OfferTabContentPr
                       </Button>
                     )}
                   </div>
+
+                  {/* Interactive Timeline */}
+                  <OfferCardTimeline
+                    offerIntentId={offer.id}
+                    consultationRequested={offer.consultation_requested}
+                    agentId={offer.agent_id}
+                    consultationScheduledAt={offer.consultation_scheduled_at}
+                    questionnaireCompletedAt={offer.questionnaire_completed_at}
+                    agentSummaryGeneratedAt={offer.agent_summary_generated_at}
+                    onAction={(action, data) => {
+                      if (action === 'request_consultation') {
+                        setSelectedOffer(offer);
+                      } else if (action === 'view_document' && data) {
+                        // Handle document viewing
+                        console.log('View document:', data);
+                      } else if (action === 'upload_document') {
+                        setSelectedOffer(offer);
+                      } else if (action === 'contact_agent') {
+                        // Handle agent contact
+                        console.log('Contact agent:', data);
+                      }
+                    }}
+                  />
                 </CardContent>
               </Card>
             );

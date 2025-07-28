@@ -7,7 +7,6 @@ import { useUnifiedDashboardData } from "@/hooks/useUnifiedDashboardData";
 
 // Unified components
 import UnifiedDashboardLayout from "@/components/dashboard/shared/UnifiedDashboardLayout";
-import UpcomingSection from "@/components/dashboard/shared/UpcomingSection";
 import UnifiedConnectionStatus from "@/components/dashboard/UnifiedConnectionStatus";
 
 // Existing components
@@ -48,9 +47,6 @@ const AgentDashboard = () => {
   const [showReportIssueModal, setShowReportIssueModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("pending");
-
-  console.log('AgentDashboard - Current user:', currentUser?.id);
-  console.log('AgentDashboard - Loading states:', { loading, authLoading });
 
   const handleConfirmShowing = (request: any) => {
     setSelectedRequest(request);
@@ -134,39 +130,30 @@ const AgentDashboard = () => {
 
   const displayName = profile.first_name || 'Agent';
 
-  // Create enhanced stats section
+  // Create enhanced stats section with 3 balanced cards
   const enhancedStats = (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 group">
+        <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-orange-600">{pendingRequests.length}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Needs Attention</p>
+              <p className="text-3xl font-bold text-orange-600">{pendingRequests.length}</p>
+              <p className="text-xs text-gray-500 mt-1">Pending requests</p>
             </div>
-            <Clock className="h-8 w-8 text-orange-200" />
+            <div className="rounded-full bg-orange-100 p-3 group-hover:scale-110 transition-transform">
+              <Clock className="h-6 w-6 text-orange-600" />
+            </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
+      <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 group">
+        <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Scheduled</p>
-              <p className="text-2xl font-bold text-blue-600">{assignedRequests.length}</p>
-            </div>
-            <CalendarDays className="h-8 w-8 text-blue-200" />
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">This Week</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-sm font-medium text-gray-600 mb-1">This Week</p>
+              <p className="text-3xl font-bold text-blue-600">
                 {assignedRequests.filter(req => {
                   if (!req.preferred_date) return false;
                   const date = new Date(req.preferred_date);
@@ -175,20 +162,28 @@ const AgentDashboard = () => {
                   return date >= now && date <= weekFromNow;
                 }).length}
               </p>
+              <p className="text-xs text-gray-500 mt-1">Scheduled tours</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-green-200" />
+            <div className="rounded-full bg-blue-100 p-3 group-hover:scale-110 transition-transform">
+              <CalendarDays className="h-6 w-6 text-blue-600" />
+            </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
+      <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 group">
+        <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-purple-600">{completedRequests.length}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Active</p>
+              <p className="text-3xl font-bold text-green-600">
+                {pendingRequests.length + assignedRequests.length}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Tours in progress</p>
             </div>
-            <CheckCircle className="h-8 w-8 text-purple-200" />
+            <div className="rounded-full bg-green-100 p-3 group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -357,12 +352,34 @@ const AgentDashboard = () => {
     ? [...primaryTabs, ...secondaryTabs]
     : primaryTabs;
 
+  // Combine upcoming and recent into a single activity timeline
+  const activityItems = [
+    ...assignedRequests.map(req => ({
+      ...req,
+      type: 'upcoming' as const,
+      sortDate: new Date(req.preferred_date || req.created_at)
+    })),
+    ...completedRequests.slice(0, 3).map(req => ({
+      ...req,
+      type: 'recent' as const,
+      sortDate: new Date(req.status_updated_at || req.created_at)
+    }))
+  ].sort((a, b) => {
+    // Show upcoming first, then recent
+    if (a.type !== b.type) {
+      return a.type === 'upcoming' ? -1 : 1;
+    }
+    // Within each type, sort by date
+    return a.type === 'upcoming' 
+      ? a.sortDate.getTime() - b.sortDate.getTime()
+      : b.sortDate.getTime() - a.sortDate.getTime();
+  }).slice(0, 5);
+
   const sidebar = (
     <div className="space-y-4">
-      {/* Connection Status - Simplified */}
+      {/* Connection Status - Minimal */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">System Status</h3>
           <UnifiedConnectionStatus 
             status={connectionStatus}
             onRetry={refresh}
@@ -377,24 +394,79 @@ const AgentDashboard = () => {
         </div>
       )}
 
-      {/* Upcoming Showings - Only show if there are upcoming items */}
-      {assignedRequests.length > 0 && (
-        <UpcomingSection
-          title="Upcoming Tours"
-          showings={assignedRequests}
-          onViewAll={() => handleStatClick("assigned")}
-          maxItems={2}
-        />
-      )}
-
-      {/* Recent Activity - Only show if there are completed items */}
-      {completedRequests.length > 0 && (
-        <UpcomingSection
-          title="Recent Activity"
-          showings={completedRequests.slice(0, 2)}
-          onViewAll={() => handleStatClick("completed")}
-          maxItems={2}
-        />
+      {/* Combined Activity Feed */}
+      {activityItems.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Activity Timeline</h3>
+              <button
+                onClick={() => setActiveTab(activityItems[0].type === 'upcoming' ? 'assigned' : 'history')}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                View all
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {activityItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={`relative pl-6 ${index !== activityItems.length - 1 ? 'pb-3' : ''}`}
+                >
+                  {/* Timeline line */}
+                  {index !== activityItems.length - 1 && (
+                    <div className="absolute left-2 top-6 w-0.5 h-full bg-gray-200" />
+                  )}
+                  
+                  {/* Timeline dot */}
+                  <div className={`absolute left-0.5 top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${
+                    item.type === 'upcoming' 
+                      ? 'bg-blue-500' 
+                      : 'bg-gray-400'
+                  }`} />
+                  
+                  {/* Content */}
+                  <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {item.property_address}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {item.type === 'upcoming' ? (
+                            <>
+                              <CalendarDays className="inline w-3 h-3 mr-1" />
+                              {new Date(item.preferred_date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="inline w-3 h-3 mr-1" />
+                              Completed {new Date(item.status_updated_at || item.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      {item.type === 'upcoming' && (
+                        <span className="flex-shrink-0 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          Upcoming
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

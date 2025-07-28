@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +36,7 @@ export const useBuyerDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const isFetchingRef = useRef(false);
 
   const currentUser = user || session?.user;
 
@@ -290,10 +291,10 @@ export const useBuyerDashboard = () => {
   }, [currentUser, fetchShowingRequests]);
 
   useEffect(() => {
-    console.log('useBuyerDashboard: useEffect triggered, authLoading:', authLoading, 'user:', !!currentUser);
+    console.log('useBuyerDashboard: useEffect triggered, authLoading:', authLoading, 'user:', !!currentUser, 'isFetching:', isFetchingRef.current);
     
-    if (authLoading) {
-      console.log('useBuyerDashboard: Auth still loading...');
+    if (authLoading || isFetchingRef.current) {
+      console.log('useBuyerDashboard: Auth loading or already fetching, skipping...');
       return;
     }
     
@@ -303,9 +304,16 @@ export const useBuyerDashboard = () => {
       return;
     }
 
-    console.log('useBuyerDashboard: User available, fetching user data');
-    fetchUserData();
-    fetchShowingRequests(true);
+    console.log('useBuyerDashboard: User available, starting fetch process');
+    isFetchingRef.current = true;
+    
+    Promise.all([
+      fetchUserData(),
+      fetchShowingRequests(true)
+    ]).finally(() => {
+      isFetchingRef.current = false;
+      console.log('useBuyerDashboard: Fetch process completed, isFetching reset to false');
+    });
   }, [user, session, authLoading, fetchUserData, fetchShowingRequests]);
 
   // Create stable empty buyerActions reference to prevent re-renders

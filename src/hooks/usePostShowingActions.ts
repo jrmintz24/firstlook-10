@@ -25,6 +25,7 @@ export const usePostShowingActions = () => {
   const [actionStates, setActionStates] = useState<ActionStates>({});
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const hasFetchedRef = useRef(false);
   
   console.log('🔍 [DEBUG] usePostShowingActions render count:', ++window.postShowingActionsRenderCount || (window.postShowingActionsRenderCount = 1));
   console.log('🔍 [DEBUG] usePostShowingActions user:', user?.id);
@@ -235,8 +236,12 @@ export const usePostShowingActions = () => {
 
   // Initialize on mount
   useEffect(() => {
-    fetchActionStates();
-  }, [fetchActionStates]);
+    if (!hasFetchedRef.current && user?.id) {
+      console.log('🔍 [DEBUG] usePostShowingActions: First fetch for user:', user.id);
+      hasFetchedRef.current = true;
+      fetchActionStates();
+    }
+  }, [fetchActionStates, user?.id]);
 
   return {
     actionStates,

@@ -178,79 +178,114 @@ const AgentOfferManagement = ({ agentId }: AgentOfferManagementProps) => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeOffers.map((offer) => {
+              {activeOffers.map((offer, index) => {
                 const status = getOfferStatus(offer);
                 const nextAction = getNextAction(offer);
 
                 return (
-                  <Card key={offer.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOffer(offer)}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg leading-tight truncate">
-                            {offer.property_address}
-                          </CardTitle>
-                          <p className="text-sm text-gray-600 mt-1 capitalize">
-                            {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                          </p>
-                        </div>
-                        <Badge className={`ml-2 ${getStatusColor(status)}`}>
-                          {getStatusText(status)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(offer.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          <span>Client Request</span>
-                        </div>
-                      </div>
-
-                      {/* Document Status */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {offer.document_count || 0} document{(offer.document_count || 0) !== 1 ? 's' : ''}
-                          </span>
-                          {(offer.required_documents_count || 0) > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              {offer.required_documents_count} required
+                  <div
+                    key={offer.id}
+                    className="group relative animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <Card 
+                      className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group-hover:scale-[1.02] bg-gradient-to-br from-white via-white to-gray-50/50"
+                      onClick={() => setSelectedOffer(offer)}
+                    >
+                      {/* Status indicator bar */}
+                      <div className={`h-1 w-full rounded-t-lg ${
+                        status === 'ready' ? 'bg-gradient-to-r from-green-400 to-green-600' :
+                        status === 'under_review' ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+                        status === 'consultation_scheduled' ? 'bg-gradient-to-r from-purple-400 to-purple-600' :
+                        status === 'consultation_requested' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                        'bg-gradient-to-r from-gray-400 to-gray-600'
+                      }`} />
+                      
+                      <CardHeader className="pb-4 pt-5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg font-bold leading-tight truncate text-gray-900 group-hover:text-blue-700 transition-colors">
+                              {offer.property_address}
+                            </CardTitle>
+                            <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
+                              {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                            </p>
+                          </div>
+                          <div className="ml-3">
+                            <Badge className={`${getStatusColor(status)} border-0 shadow-sm font-semibold`}>
+                              {getStatusText(status)}
                             </Badge>
-                          )}
+                          </div>
                         </div>
-                      </div>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-5 pb-6">
+                        {/* Info row with enhanced styling */}
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <div className="p-1.5 rounded-full bg-blue-50">
+                              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                            </div>
+                            <span className="font-medium">{new Date(offer.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <div className="p-1.5 rounded-full bg-purple-50">
+                              <User className="w-3.5 h-3.5 text-purple-600" />
+                            </div>
+                            <span className="font-medium">Client</span>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedOffer(offer);
-                          }}
-                        >
-                          {nextAction}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle message client
-                          }}
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        {/* Document Status with enhanced styling */}
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 rounded-full bg-orange-50">
+                                <FileText className="w-3.5 h-3.5 text-orange-600" />
+                              </div>
+                              <span className="text-sm font-medium text-gray-700">
+                                {offer.document_count || 0} document{(offer.document_count || 0) !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            {(offer.required_documents_count || 0) > 0 && (
+                              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 border-orange-200">
+                                {offer.required_documents_count} required
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Action buttons with enhanced styling */}
+                        <div className="flex items-center justify-between pt-2">
+                          <Button 
+                            className={`font-semibold shadow-sm transition-all duration-200 ${
+                              status === 'ready' ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white' :
+                              status === 'under_review' ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white' :
+                              'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 border border-gray-300'
+                            }`}
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOffer(offer);
+                            }}
+                          >
+                            {nextAction}
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-full p-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle message client
+                            }}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
@@ -271,53 +306,73 @@ const AgentOfferManagement = ({ agentId }: AgentOfferManagementProps) => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedOffers.map((offer) => {
+              {completedOffers.map((offer, index) => {
                 const status = getOfferStatus(offer);
 
                 return (
-                  <Card key={offer.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedOffer(offer)}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg leading-tight truncate">
-                            {offer.property_address}
-                          </CardTitle>
-                          <p className="text-sm text-gray-600 mt-1 capitalize">
-                            {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
-                          </p>
+                  <div
+                    key={offer.id}
+                    className="group relative animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <Card 
+                      className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group-hover:scale-[1.02] bg-gradient-to-br from-white via-white to-green-50/30"
+                      onClick={() => setSelectedOffer(offer)}
+                    >
+                      {/* Completed status indicator bar */}
+                      <div className="h-1 w-full rounded-t-lg bg-gradient-to-r from-green-400 to-green-600" />
+                      
+                      <CardHeader className="pb-4 pt-5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg font-bold leading-tight truncate text-gray-900 group-hover:text-green-700 transition-colors">
+                              {offer.property_address}
+                            </CardTitle>
+                            <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
+                              {offer.offer_type?.replace('_', ' ') || 'Standard Offer'}
+                            </p>
+                          </div>
+                          <div className="ml-3">
+                            <Badge className="bg-green-100 text-green-800 border-0 shadow-sm font-semibold">
+                              ✓ Completed
+                            </Badge>
+                          </div>
                         </div>
-                        <Badge className={`ml-2 ${getStatusColor(status)}`}>
-                          {getStatusText(status)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(offer.created_at).toLocaleDateString()}</span>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-5 pb-6">
+                        {/* Info row with enhanced styling */}
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <div className="p-1.5 rounded-full bg-blue-50">
+                              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                            </div>
+                            <span className="font-medium">{new Date(offer.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-600">
+                            <div className="p-1.5 rounded-full bg-green-50">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                            </div>
+                            <span className="font-medium">Finalized</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Completed</span>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedOffer(offer);
-                          }}
-                        >
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        {/* Action button with enhanced styling */}
+                        <div className="pt-2">
+                          <Button 
+                            className="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 border border-gray-300 font-semibold shadow-sm transition-all duration-200"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOffer(offer);
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>

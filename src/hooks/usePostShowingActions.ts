@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -197,27 +197,28 @@ export const usePostShowingActions = () => {
     }
   }, [user?.id]);
 
-  // Get action states for a specific showing (stable reference)
+  // Get action states for a specific showing (using ref to avoid dependency issues)
+  const actionStatesRef = useRef(actionStates);
+  actionStatesRef.current = actionStates;
+  
   const getActionsForShowing = useCallback((showingId: string) => {
-    const currentActionStates = actionStates;
-    return currentActionStates[showingId] || {
+    return actionStatesRef.current[showingId] || {
       favorited: false,
       made_offer: false,
       hired_agent: false,
       scheduled_more_tours: false,
       actions: []
     };
-  }, []); // Empty dependency array to create stable reference
+  }, []); // Empty dependency array with ref access
 
   // Check if a specific action was taken
   const hasAction = useCallback((showingId: string, actionType: PostShowingAction['action_type']) => {
     return actionStates[showingId]?.[actionType] || false;
   }, [actionStates]);
 
-  // Get count of actions taken for a showing (stable reference)
+  // Get count of actions taken for a showing (using ref to avoid dependency issues)
   const getActionCount = useCallback((showingId: string) => {
-    const currentActionStates = actionStates;
-    const actions = currentActionStates[showingId];
+    const actions = actionStatesRef.current[showingId];
     if (!actions) return 0;
     
     return [
@@ -226,7 +227,7 @@ export const usePostShowingActions = () => {
       actions.hired_agent,
       actions.scheduled_more_tours
     ].filter(Boolean).length;
-  }, []); // Empty dependency array to create stable reference
+  }, []); // Empty dependency array with ref access
 
   // Initialize on mount
   useEffect(() => {

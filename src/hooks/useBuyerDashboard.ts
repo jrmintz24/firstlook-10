@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +66,7 @@ export const useBuyerDashboard = () => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!currentUser) {
       console.log('useBuyerDashboard: No user found, stopping fetch');
       setLoading(false);
@@ -92,8 +92,7 @@ export const useBuyerDashboard = () => {
         console.log('useBuyerDashboard: Profile set:', profileData);
       }
 
-      // Fetch showing requests for this user
-      await fetchShowingRequests(true);
+      // Note: fetchShowingRequests is called separately in useEffect to avoid circular dependency
 
       // Fetch agreements
       const { data: agreementsData, error: agreementsError } = await supabase
@@ -118,9 +117,9 @@ export const useBuyerDashboard = () => {
       console.log('useBuyerDashboard: Setting loading to false');
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
-  const fetchShowingRequests = async (isInitialLoad = false) => {
+  const fetchShowingRequests = useCallback(async (isInitialLoad = false) => {
     if (!currentUser) {
       console.log('useBuyerDashboard: No user for showing requests fetch');
       return;
@@ -157,7 +156,7 @@ export const useBuyerDashboard = () => {
         setIsRefreshing(false);
       }
     }
-  };
+  }, [currentUser]);
 
   const handleCancelShowing = async (id: string) => {
     console.log('Cancelling showing:', id);
@@ -307,7 +306,8 @@ export const useBuyerDashboard = () => {
 
     console.log('useBuyerDashboard: User available, fetching user data');
     fetchUserData();
-  }, [user, session, authLoading, navigate]);
+    fetchShowingRequests(true);
+  }, [user, session, authLoading, navigate, fetchUserData, fetchShowingRequests]);
 
   // Create buyerActions object with stable function references
   const buyerActions = useMemo(() => {

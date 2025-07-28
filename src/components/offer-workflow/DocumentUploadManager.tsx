@@ -263,6 +263,54 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
     }
   };
 
+  const viewDocument = async (storagePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(storagePath, 3600); // 1 hour expiry
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('View error:', error);
+      toast({
+        title: "View failed",
+        description: "Failed to view document. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadDocument = async (storagePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(storagePath, 3600); // 1 hour expiry
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = data.signedUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download document. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const deleteDocument = async (documentId: string, storagePath: string) => {
     try {
       // Delete from storage
@@ -432,10 +480,20 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
                     
                     {/* Actions */}
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => {}}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => viewDocument(doc.storage_path)}
+                        title="View document"
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => {}}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => downloadDocument(doc.storage_path, doc.file_name)}
+                        title="Download document"
+                      >
                         <Download className="w-4 h-4" />
                       </Button>
                       <Button 
@@ -443,6 +501,7 @@ const DocumentUploadManager: React.FC<DocumentUploadManagerProps> = ({
                         size="sm" 
                         onClick={() => deleteDocument(doc.id, doc.storage_path)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete document"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

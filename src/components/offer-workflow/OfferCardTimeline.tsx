@@ -100,30 +100,31 @@ const OfferCardTimeline: React.FC<OfferCardTimelineProps> = ({
       });
     }
 
-    // Step 3: Document Collection
+    // Step 3: Document Sharing (available after agent assignment)
     if (agentId) {
       steps.push({
         id: 'document_collection',
-        title: 'Document Collection',
+        title: 'Document Sharing',
         icon: FileText,
-        status: documents.length > 0 ? 'completed' : 'active',
-        timestamp: documents.length > 0 ? `${documents.length} documents` : undefined
+        status: documents.length > 0 ? 'active' : 'pending',
+        timestamp: documents.length > 0 ? `${documents.length} documents` : 'Ready to share'
       });
     }
 
     // Step 4: Consultation Meeting
     if (agentId) {
+      const consultationCompleted = consultationData?.status === 'completed';
       steps.push({
         id: 'consultation_meeting',
         title: 'Consultation Meeting',
         icon: MessageSquare,
-        status: consultationScheduledAt ? 'completed' : 'pending',
+        status: consultationCompleted ? 'completed' : consultationScheduledAt ? 'active' : 'pending',
         timestamp: consultationScheduledAt ? format(new Date(consultationScheduledAt), 'MMM d, h:mm a') : undefined
       });
     }
 
-    // Step 5: Offer Preparation
-    if (questionnaireCompletedAt) {
+    // Step 5: Offer Preparation (available after consultation is completed)
+    if (consultationData?.status === 'completed') {
       steps.push({
         id: 'offer_preparation',
         title: 'Offer Preparation',
@@ -220,6 +221,13 @@ const OfferCardTimeline: React.FC<OfferCardTimelineProps> = ({
     }
   }, [expandedStep, consultationData, consultationScheduledAt, agentData, agentId, documents.length, fetchConsultationData, fetchAgentData, fetchDocuments]);
 
+  // Also fetch consultation data to check if it's completed
+  useEffect(() => {
+    if (consultationScheduledAt && !consultationData) {
+      fetchConsultationData();
+    }
+  }, [consultationScheduledAt, consultationData, fetchConsultationData]);
+
   const toggleStep = (stepId: string) => {
     setExpandedStep(expandedStep === stepId ? null : stepId);
   };
@@ -310,6 +318,9 @@ const OfferCardTimeline: React.FC<OfferCardTimelineProps> = ({
       case 'document_collection':
         return (
           <div className="p-3 bg-gray-50 rounded-md space-y-2">
+            <p className="text-sm text-gray-600 mb-2">
+              Share documents with your agent for offer preparation and due diligence.
+            </p>
             {documents.length > 0 ? (
               <>
                 <div className="grid grid-cols-2 gap-2">
@@ -339,15 +350,12 @@ const OfferCardTimeline: React.FC<OfferCardTimelineProps> = ({
                     className="text-xs w-full"
                   >
                     <Upload className="w-3 h-3 mr-1" />
-                    Upload Document
+                    Share More Documents
                   </Button>
                 )}
               </>
             ) : (
               <>
-                <p className="text-sm text-gray-600">
-                  No documents uploaded yet. Upload required documents to proceed.
-                </p>
                 {onAction && (
                   <Button 
                     size="sm" 
@@ -356,7 +364,7 @@ const OfferCardTimeline: React.FC<OfferCardTimelineProps> = ({
                     className="text-xs w-full"
                   >
                     <Upload className="w-3 h-3 mr-1" />
-                    Start Upload
+                    Share Documents
                   </Button>
                 )}
               </>

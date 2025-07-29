@@ -46,7 +46,9 @@ const ConsultationActions: React.FC<ConsultationActionsProps> = ({
 
   const isCompleted = consultation.status === 'completed';
   const isPast = new Date(consultation.scheduled_at) < new Date();
-  const canComplete = userType === 'agent' && !isCompleted && isPast;
+  const isUpcoming = !isPast;
+  // Agent can complete consultation any time (before or after scheduled time)
+  const canComplete = userType === 'agent' && !isCompleted && consultation.status !== 'cancelled';
   const canReschedule = !isCompleted && !consultation.issue_reported;
 
   const handleCompleteConsultation = async () => {

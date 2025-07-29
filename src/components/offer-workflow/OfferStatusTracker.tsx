@@ -134,22 +134,22 @@ const OfferStatusTracker: React.FC<OfferStatusTrackerProps> = ({
         dependencies: ['consultation_request']
       },
       {
-        id: 'document_collection',
-        title: 'Document Collection',
-        description: 'Required documents are uploaded and verified',
-        icon: FileText,
-        status: hasRequiredDocs ? 'completed' : hasDocuments ? 'in_progress' : 'pending',
-        estimatedTime: '2-3 days',
+        id: 'consultation_meeting',
+        title: 'Consultation Meeting',
+        description: 'Strategy meeting with your agent',
+        icon: MessageSquare,
+        status: consultationCompleted ? 'completed' : hasConsultation ? 'in_progress' : 'pending',
+        estimatedTime: '30-60 minutes',
         dependencies: ['agent_assignment']
       },
       {
-        id: 'consultation_completed',
-        title: 'Consultation Meeting',
-        description: 'Strategy meeting with your agent completed',
-        icon: MessageSquare,
-        status: consultationCompleted ? 'completed' : (agentAssigned && hasDocuments) ? 'in_progress' : 'pending',
-        estimatedTime: '30-60 minutes',
-        dependencies: ['agent_assignment', 'document_collection']
+        id: 'document_sharing',
+        title: 'Document Sharing',
+        description: 'Share documents with your agent for offer preparation',
+        icon: FileText,
+        status: hasDocuments ? 'in_progress' : 'pending',
+        estimatedTime: 'Ongoing',
+        dependencies: ['agent_assignment']
       },
       {
         id: 'offer_preparation',
@@ -158,7 +158,7 @@ const OfferStatusTracker: React.FC<OfferStatusTrackerProps> = ({
         icon: TrendingUp,
         status: consultationCompleted ? 'in_progress' : 'pending',
         estimatedTime: '1-2 hours',
-        dependencies: ['consultation_completed']
+        dependencies: ['consultation_meeting']
       },
       {
         id: 'offer_submission',

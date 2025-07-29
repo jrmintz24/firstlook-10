@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import OfferStatusTracker from '../offer-workflow/OfferStatusTracker';
 import DocumentUploadManager from '../offer-workflow/DocumentUploadManager';
+import ConsultationActions from '../offer-workflow/ConsultationActions';
 
 interface OfferIntent {
   id: string;
@@ -326,88 +327,14 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
 
           {/* Existing Consultation Details */}
           {consultationBooking && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Video className="h-5 w-5 text-green-600" />
-                  Consultation Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span>{new Date(consultationBooking.scheduled_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span>{new Date(consultationBooking.scheduled_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                  </div>
-                  <Badge className={
-                    consultationBooking.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                    consultationBooking.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  }>
-                    {consultationBooking.status}
-                  </Badge>
-                </div>
-                
-                {consultationBooking.status === 'scheduled' && (
-                  <>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Meeting Link</label>
-                      <Input
-                        value={meetingLink}
-                        onChange={(e) => setMeetingLink(e.target.value)}
-                        placeholder="https://zoom.us/j/..."
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Agent Notes</label>
-                      <Textarea
-                        value={agentNotes}
-                        onChange={(e) => setAgentNotes(e.target.value)}
-                        placeholder="Add notes about this consultation..."
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => updateConsultation('scheduled')}
-                        disabled={loading}
-                        variant="outline"
-                      >
-                        Update Details
-                      </Button>
-                      <Button 
-                        onClick={() => updateConsultation('completed')}
-                        disabled={loading}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Mark Complete
-                      </Button>
-                      <Button 
-                        onClick={() => updateConsultation('cancelled')}
-                        disabled={loading}
-                        variant="destructive"
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </>
-                )}
-                
-                {consultationBooking.agent_notes && (
-                  <div className="p-3 bg-gray-50 rounded border">
-                    <div className="text-sm font-medium text-gray-700 mb-1">Agent Notes</div>
-                    <p className="text-sm text-gray-600">{consultationBooking.agent_notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ConsultationActions
+              consultation={consultationBooking}
+              userType={userType}
+              onUpdate={() => {
+                fetchConsultationBooking();
+                onUpdate();
+              }}
+            />
           )}
 
           {/* Offer Status Tracker */}

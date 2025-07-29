@@ -15,6 +15,7 @@ import SignAgreementModal from './SignAgreementModal';
 import ModernTourSchedulingModal from '@/components/ModernTourSchedulingModal';
 import ModernOfferModal from '@/components/offer-workflow/ModernOfferModal';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const UnifiedBuyerDashboard = () => {
   console.log('🔍 [DEBUG] UnifiedBuyerDashboard render count:', ++window.unifiedBuyerDashboardRenderCount || (window.unifiedBuyerDashboardRenderCount = 1));
@@ -28,6 +29,7 @@ const UnifiedBuyerDashboard = () => {
   const [offerPropertyAddress, setOfferPropertyAddress] = useState<string>('');
   const [offersCount, setOffersCount] = useState(0);
   const { user } = useAuth();
+  const { toast } = useToast();
   const buyerDashboardResult = useBuyerDashboard();
   const { 
     pendingRequests,
@@ -122,6 +124,11 @@ const UnifiedBuyerDashboard = () => {
   const handleActualAgreementSign = useCallback(async (name: string) => {
     if (!selectedShowing) {
       console.error('No selected showing for agreement signing');
+      toast({
+        title: "Error",
+        description: "No tour selected. Please try again.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -130,17 +137,27 @@ const UnifiedBuyerDashboard = () => {
       await handleAgreementSign(selectedShowing);
       console.log('Agreement signing completed successfully');
       
+      // Show success toast
+      toast({
+        title: "Tour Confirmed!",
+        description: "Your tour has been confirmed. You'll receive a confirmation email shortly.",
+      });
+      
       // Close modal and clear state
       setAgreementModalOpen(false);
       setSelectedShowing(null);
     } catch (error) {
       console.error('Error in handleActualAgreementSign:', error);
-      // Close modal even on error to prevent dashboard from being stuck
-      setAgreementModalOpen(false);
-      setSelectedShowing(null);
-      // The error toast will be shown by handleAgreementSign
+      // Don't close modal on error, let user retry
+      toast({
+        title: "Error",
+        description: "Failed to confirm tour. Please try again.",
+        variant: "destructive"
+      });
+      // Re-throw to let modal handle the error state
+      throw error;
     }
-  }, [selectedShowing, handleAgreementSign]);
+  }, [selectedShowing, handleAgreementSign, toast]);
 
   if (loading && !pendingRequests && !activeShowings && !completedShowings) {
     return (

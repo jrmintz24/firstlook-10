@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Calendar, Clock, MapPin, User, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ShowingDetails {
   propertyAddress: string;
@@ -27,14 +28,28 @@ const SignAgreementModal = ({ isOpen, onClose, onSign, showingDetails }: SignAgr
   const [agree, setAgree] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const { toast } = useToast();
 
   const handleSign = async () => {
+    if (!name.trim() || !agree) {
+      return;
+    }
+
     setSaving(true);
-    await onSign(name);
-    setSaving(false);
-    setName('');
-    setAgree(false);
-    onClose();
+    try {
+      await onSign(name);
+      // Success - modal will be closed by parent component
+      setName('');
+      setAgree(false);
+    } catch (error) {
+      console.error('Error signing agreement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to confirm tour. Please try again.",
+        variant: "destructive"
+      });
+      setSaving(false);
+    }
   };
 
   const handleAgreeChange = (checked: boolean | "indeterminate") => {

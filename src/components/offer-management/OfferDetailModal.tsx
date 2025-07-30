@@ -8,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, User, FileText, MessageCircle, ExternalLink, Clock, Video, CheckCircle, XCircle, Upload } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import OfferStatusTracker from '../offer-workflow/OfferStatusTracker';
@@ -42,7 +41,6 @@ interface OfferDetailModalProps {
 }
 
 const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType = 'buyer', currentUserId }: OfferDetailModalProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [consultationBooking, setConsultationBooking] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -205,10 +203,6 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
     }
   };
 
-  const handleContinueQuestionnaire = () => {
-    navigate(`/offer-questionnaire?property=${encodeURIComponent(offer.property_address)}&agent=${offer.agent_id || ''}`);
-    onClose();
-  };
 
   const scrollToDocuments = () => {
     if (documentsRef) {
@@ -398,34 +392,16 @@ const OfferDetailModal = ({ offer, isOpen, onClose, onUpdate, buyerId, userType 
           {/* Actions */}
           <div className="flex items-center gap-3">
             {/* Buyer Actions */}
-            {userType === 'buyer' && (
-              <>
-                {/* Show questionnaire button if not completed */}
-                {!offer.questionnaire_completed_at && (
-                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    {consultationBooking?.status === 'completed' ? 'Complete Questionnaire' : 'Continue Questionnaire'}
-                  </Button>
-                )}
-                
-                {offer.agent_id && (
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    Message Agent
-                  </Button>
-                )}
-              </>
+            {userType === 'buyer' && offer.agent_id && (
+              <Button variant="outline" className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Message Agent
+              </Button>
             )}
 
             {/* Agent Actions */}
             {userType === 'agent' && (
               <>
-                {status === 'consultation_completed' && !offer.questionnaire_completed_at && (
-                  <Button onClick={handleContinueQuestionnaire} className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Help Complete Questionnaire
-                  </Button>
-                )}
                 
                 {status === 'ready' && (
                   <Button className="flex items-center gap-2">

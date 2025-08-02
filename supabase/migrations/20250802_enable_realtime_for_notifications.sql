@@ -14,8 +14,13 @@ ALTER PUBLICATION supabase_realtime ADD TABLE property_favorites;
 ALTER PUBLICATION supabase_realtime ADD TABLE buyer_agent_matches;
 
 -- Ensure RLS policies exist for agents to view these tables
+-- Drop existing policies if they exist and recreate them
+DROP POLICY IF EXISTS "Agents can view post_showing_actions for their showings" ON post_showing_actions;
+DROP POLICY IF EXISTS "Agents can view property_favorites for their showings" ON property_favorites;
+DROP POLICY IF EXISTS "Agents can view their buyer_agent_matches" ON buyer_agent_matches;
+
 -- Policy for agents to view post_showing_actions for their showings
-CREATE POLICY IF NOT EXISTS "Agents can view post_showing_actions for their showings"
+CREATE POLICY "Agents can view post_showing_actions for their showings"
 ON post_showing_actions
 FOR SELECT
 USING (
@@ -27,7 +32,7 @@ USING (
 );
 
 -- Policy for agents to view property_favorites for their showings
-CREATE POLICY IF NOT EXISTS "Agents can view property_favorites for their showings"
+CREATE POLICY "Agents can view property_favorites for their showings"
 ON property_favorites
 FOR SELECT
 USING (
@@ -39,7 +44,7 @@ USING (
 );
 
 -- Policy for agents to view buyer_agent_matches where they are the agent
-CREATE POLICY IF NOT EXISTS "Agents can view their buyer_agent_matches"
+CREATE POLICY "Agents can view their buyer_agent_matches"
 ON buyer_agent_matches
 FOR SELECT
 USING (agent_id = auth.uid());

@@ -31,7 +31,8 @@ export const useAgentPostShowingNotifications = (agentId: string) => {
           id,
           property_address,
           status_updated_at,
-          profiles!inner(first_name, last_name)
+          user_id,
+          profiles:user_id(first_name, last_name)
         `)
         .eq('assigned_agent_id', agentId)
         .eq('status', 'completed')

@@ -289,10 +289,10 @@ export const useAgentDashboard = () => {
 
   // Set up reliable real-time subscription for showing requests
   const { cleanup: cleanupSubscription } = useReliableSubscription({
-    channelName: `agent_showing_requests_${profile?.id}`,
+    channelName: `agent_showing_requests_${user?.id || session?.user?.id || 'unknown'}`,
     table: 'showing_requests',
     onDataChange: fetchAgentData,
-    enabled: !!profile?.id
+    enabled: !!(user?.id || session?.user?.id)
   });
 
   useEffect(() => {

@@ -1,17 +1,49 @@
 -- Enable realtime for tables used in agent notifications
 -- This fixes the channel subscription errors for agent dashboard
 
--- Enable realtime for showing_requests table
-ALTER PUBLICATION supabase_realtime ADD TABLE showing_requests;
+-- First, check which tables are already in the publication and only add missing ones
+DO $$
+BEGIN
+  -- Enable realtime for showing_requests table if not already enabled
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'showing_requests'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE showing_requests;
+  END IF;
 
--- Enable realtime for post_showing_actions table
-ALTER PUBLICATION supabase_realtime ADD TABLE post_showing_actions;
+  -- Enable realtime for post_showing_actions table if not already enabled
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'post_showing_actions'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE post_showing_actions;
+  END IF;
 
--- Enable realtime for property_favorites table
-ALTER PUBLICATION supabase_realtime ADD TABLE property_favorites;
+  -- Enable realtime for property_favorites table if not already enabled
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'property_favorites'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE property_favorites;
+  END IF;
 
--- Enable realtime for buyer_agent_matches table
-ALTER PUBLICATION supabase_realtime ADD TABLE buyer_agent_matches;
+  -- Enable realtime for buyer_agent_matches table if not already enabled
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'buyer_agent_matches'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE buyer_agent_matches;
+  END IF;
+END $$;
 
 -- Ensure RLS policies exist for agents to view these tables
 -- Drop existing policies if they exist and recreate them

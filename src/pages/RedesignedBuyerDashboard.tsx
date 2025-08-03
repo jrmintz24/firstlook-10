@@ -421,11 +421,13 @@ const RedesignedBuyerDashboard = () => {
           <SignAgreementModal
             isOpen={showAgreementModal}
             onClose={() => setShowAgreementModal(false)}
-            showingId={selectedShowing?.id}
-            onSignSuccess={() => {
-              setShowAgreementModal(false);
-              fetchData();
-            }}
+            onSign={handleAgreementSignWithModal}
+            showingDetails={selectedShowing ? {
+              propertyAddress: selectedShowing.property_address,
+              date: selectedShowing.preferred_date,
+              time: selectedShowing.preferred_time,
+              agentName: selectedShowing.assigned_agent_name
+            } : undefined}
           />
         )}
         

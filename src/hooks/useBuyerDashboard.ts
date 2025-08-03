@@ -206,13 +206,13 @@ export const useBuyerDashboard = () => {
     setSelectedShowing(showing);
   }, []);
 
-  const handleAgreementSign = useCallback(async (showing: ShowingRequest) => {
+  const handleAgreementSign = useCallback(async (showing: ShowingRequest, name?: string) => {
     if (!showing || !currentUser) {
       console.error('No showing or user for agreement signing');
       return;
     }
 
-    console.log('Signing agreement for showing:', showing.id, 'for user:', currentUser.email);
+    console.log('Signing agreement for showing:', showing.id, 'for user:', currentUser.email, 'with name:', name);
 
     try {
       // First, try to find existing agreement

@@ -134,7 +134,7 @@ const UnifiedBuyerDashboard = () => {
 
     try {
       console.log('Starting agreement signing process for:', selectedShowing.id);
-      await handleAgreementSign(selectedShowing);
+      await handleAgreementSign(selectedShowing, name);
       console.log('Agreement signing completed successfully');
       
       // Show success toast

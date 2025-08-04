@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, User, MessageCircle, CheckCircle2, Home, DollarSign, Heart, Star, Target, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Calendar, Clock, User, MessageCircle, CheckCircle2, Home, DollarSign, Heart, Star, Target, AlertTriangle, ChevronRight, ArrowLeft, Info, HelpCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,7 +28,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
   buyerId,
   agentId
 }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1); // Start with welcome screen
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationMessage, setCelebrationMessage] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -60,25 +64,33 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
       id: 'scheduling',
       title: 'Schedule Consultation',
       icon: Calendar,
-      description: 'When can we connect?'
+      description: 'When can we connect?',
+      contextBanner: 'We\'ll schedule a consultation to discuss your offer strategy. This usually takes 30-45 minutes and helps us craft a competitive offer.',
+      celebration: '🎯 Great! Let\'s talk about this property next.'
     },
     {
       id: 'property',
       title: 'Property Thoughts',
       icon: Home,
-      description: 'Your honest reaction'
+      description: 'Your honest reaction',
+      contextBanner: 'Your honest feedback helps us understand what you love and any concerns, so we can address them in your offer.',
+      celebration: '💭 Perfect! Now let\'s review your financial position.'
     },
     {
       id: 'financial',
       title: 'Financial Position',
       icon: DollarSign,
-      description: 'Your buying power'
+      description: 'Your buying power',
+      contextBanner: 'Understanding your budget and financing helps us determine the strongest offer amount and terms you\'re comfortable with.',
+      celebration: '💪 Excellent! Finally, let\'s define your offer strategy.'
     },
     {
       id: 'strategy',
       title: 'Offer Goals',
       icon: Target,
-      description: 'What matters most'
+      description: 'What matters most',
+      contextBanner: 'These final questions help us prioritize what matters most to you, so we can balance price, certainty, and timing in your offer.',
+      celebration: '🏆 All set! We have everything we need to create your winning offer.'
     }
   ];
 
@@ -133,13 +145,37 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
   ];
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (showWelcome) {
+      setShowWelcome(false);
+      setCurrentStep(0);
+    } else if (currentStep < steps.length - 1) {
+      // Show celebration for completed step
+      const currentStepData = steps[currentStep];
+      if (currentStepData?.celebration) {
+        setCelebrationMessage(currentStepData.celebration);
+        setShowCelebration(true);
+        
+        // Hide celebration after 2 seconds and move to next step
+        setTimeout(() => {
+          setShowCelebration(false);
+          setCurrentStep(currentStep + 1);
+        }, 2000);
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
+  const handleWelcomeStart = () => {
+    setShowWelcome(false);
+    setCurrentStep(0);
+  };
+
   const handlePrev = () => {
-    if (currentStep > 0) {
+    if (currentStep === 0) {
+      setShowWelcome(true);
+      setCurrentStep(-1);
+    } else if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -264,7 +300,8 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
       setTimeout(() => {
         onClose();
         setIsSuccess(false);
-        setCurrentStep(0);
+        setCurrentStep(-1);
+        setShowWelcome(true);
         setSelectedDate('');
         setSelectedTime('');
         setFormData({
@@ -350,8 +387,117 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
     );
   }
 
+  // Welcome screen
+  if (showWelcome) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-2xl bg-white border-0 shadow-2xl">
+          <div className="text-center py-8">
+            <div className="relative mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+                <Target className="w-10 h-10 text-white" />
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <Star className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            
+            <h2 className="text-3xl font-bold text-black mb-4">
+              Let's craft a winning offer for
+            </h2>
+            <p className="text-xl text-gray-700 font-medium mb-8">
+              {propertyAddress}
+            </p>
+            
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 text-left">
+              <h3 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-600" />
+                Here's what we'll cover:
+              </h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Calendar className="w-3 h-3 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Schedule consultation</span> - Find a time that works for you
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Home className="w-3 h-3 text-green-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Property feedback</span> - Share your honest thoughts and concerns
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <DollarSign className="w-3 h-3 text-orange-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Financial position</span> - Understand your buying power
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Target className="w-3 h-3 text-purple-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Offer strategy</span> - Define what matters most to you
+                  </div>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-4 mb-8">
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">Takes about 5-7 minutes to complete</span>
+              </div>
+            </div>
+            
+            <Button 
+              onClick={handleWelcomeStart}
+              className="w-full bg-black hover:bg-gray-800 text-white border-0 h-12 font-medium text-lg"
+            >
+              Let's Get Started
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Celebration overlay
+  if (showCelebration) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md bg-white border-0 shadow-2xl">
+          <div className="text-center py-10">
+            <div className="relative mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <CheckCircle2 className="w-10 h-10 text-white" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+                <Star className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-black mb-4">
+              {celebrationMessage}
+            </h3>
+            <div className="flex justify-center">
+              <div className="w-8 h-1 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full animate-pulse" />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   const currentStepData = steps[currentStep];
-  const StepIcon = currentStepData.icon;
+  const StepIcon = currentStepData?.icon;
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
@@ -409,7 +555,19 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8 py-6">
+        <form onSubmit={handleSubmit} className="space-y-6 py-6">
+          {/* Contextual Banner */}
+          {currentStepData?.contextBanner && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-blue-800 text-sm leading-relaxed">
+                  {currentStepData.contextBanner}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Step 1: Consultation Scheduling */}
           {currentStep === 0 && (
             <div className="space-y-8">
@@ -500,7 +658,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   id="propertyFeedback"
                   value={formData.propertyFeedback}
                   onChange={(e) => setFormData(prev => ({ ...prev, propertyFeedback: e.target.value }))}
-                  placeholder="I love the kitchen but concerned about the small backyard. The location is perfect for our commute..."
+                  placeholder="Example: 'I love the updated kitchen and master suite, but I'm concerned about the small backyard for our dog. The location is perfect for our commute to downtown, and the neighborhood feels safe. The price seems fair compared to similar homes we've seen.'"
                   rows={4}
                   className="resize-none border-gray-200 focus:border-black focus:ring-black"
                   required
@@ -581,7 +739,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   id="maxPrice"
                   value={formData.maxComfortablePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, maxComfortablePrice: e.target.value }))}
-                  placeholder="$650,000 (or 'I'm not sure')"
+                  placeholder="$650,000 (or 'I'm not sure yet - let's discuss' or 'Up to $700k for the right property')"
                   className="border-gray-200 focus:border-black focus:ring-black h-12"
                 />
               </div>
@@ -593,8 +751,18 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, downPaymentReady: !!checked }))}
                   className="border-gray-300"
                 />
-                <Label htmlFor="downPaymentReady" className="text-black font-medium cursor-pointer">
+                <Label htmlFor="downPaymentReady" className="text-black font-medium cursor-pointer flex items-center gap-2">
                   My down payment funds are ready and available
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">This means your down payment money is in accessible accounts (checking, savings, or money market) and ready to transfer when needed.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Label>
               </div>
 
@@ -606,15 +774,27 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   className="space-y-3"
                 >
                   {[
-                    { value: 'pre_approved', label: 'Pre-approved with a specific lender' },
-                    { value: 'pre_qualified', label: 'Pre-qualified but not fully approved yet' },
+                    { value: 'pre_approved', label: 'Pre-approved with a specific lender', tooltip: 'A lender has verified your income, assets, and credit and committed to a specific loan amount.' },
+                    { value: 'pre_qualified', label: 'Pre-qualified but not fully approved yet', tooltip: 'Based on basic info you provided, a lender estimated what you might qualify for, but hasn\'t verified everything yet.' },
                     { value: 'cash', label: 'Cash buyer - no financing needed' },
                     { value: 'need_help', label: 'Haven\'t started the financing process yet' }
                   ].map((option) => (
                     <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                       <RadioGroupItem value={option.value} id={option.value} className="border-gray-300" />
-                      <label htmlFor={option.value} className="text-black font-medium flex-1 cursor-pointer">
+                      <label htmlFor={option.value} className="text-black font-medium flex-1 cursor-pointer flex items-center gap-2">
                         {option.label}
+                        {option.tooltip && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">{option.tooltip}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </label>
                     </div>
                   ))}
@@ -655,7 +835,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                     { id: 'price', label: 'Getting the best possible price' },
                     { id: 'certainty', label: 'Certainty that my offer will be accepted' },
                     { id: 'timeline', label: 'Closing quickly' },
-                    { id: 'contingencies', label: 'Protecting myself with contingencies' },
+                    { id: 'contingencies', label: 'Protecting myself with contingencies', tooltip: 'Contingencies are conditions in your offer that let you back out if certain things aren\'t met (like inspection issues, financing problems, or appraisal coming in low).' },
                     { id: 'inspection', label: 'Having time for thorough inspection' },
                     { id: 'financing', label: 'Flexible financing terms' }
                   ].map((concern) => (
@@ -666,8 +846,20 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                         onCheckedChange={(checked) => handleConcernToggle(concern.id)}
                         className="border-gray-300"
                       />
-                      <Label htmlFor={concern.id} className="text-black font-medium cursor-pointer">
+                      <Label htmlFor={concern.id} className="text-black font-medium cursor-pointer flex items-center gap-2">
                         {concern.label}
+                        {concern.tooltip && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">{concern.tooltip}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </Label>
                     </div>
                   ))}
@@ -682,7 +874,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   id="dealBreakers"
                   value={formData.dealBreakers}
                   onChange={(e) => setFormData(prev => ({ ...prev, dealBreakers: e.target.value }))}
-                  placeholder="Won't waive inspection, must close before school starts, need seller to cover repairs..."
+                  placeholder="Example: 'Must keep inspection contingency - won't waive. Need to close before August 15th when school starts. Seller must handle any major repairs over $2,000. Won't compete in bidding wars above asking price.'"
                   rows={3}
                   className="resize-none border-gray-200 focus:border-black focus:ring-black"
                 />
@@ -696,7 +888,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   id="winningFactors"
                   value={formData.winningFactors}
                   onChange={(e) => setFormData(prev => ({ ...prev, winningFactors: e.target.value }))}
-                  placeholder="Strong financing, flexible closing date, personal letter, cash down payment..."
+                  placeholder="Example: 'Pre-approved with 20% down payment ready. Flexible on closing date (30-60 days). Writing a personal letter about why we love the home. Local buyers, no contingent sale. Can close quickly if needed.'"
                   rows={3}
                   className="resize-none border-gray-200 focus:border-black focus:ring-black"
                 />

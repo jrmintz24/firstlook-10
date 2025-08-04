@@ -229,16 +229,50 @@ export const useOptimizedBuyerLogic = () => {
     if (!selectedShowing || !currentUser) return;
 
     try {
-      const { error } = await supabase
+      // First check if agreement already exists
+      const { data: existingAgreement, error: checkError } = await supabase
         .from('tour_agreements')
-        .upsert({
-          showing_request_id: selectedShowing.id,
-          buyer_id: currentUser.id,
-          signed: true,
-          signed_at: new Date().toISOString(),
-        });
+        .select('*')
+        .eq('showing_request_id', selectedShowing.id)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (checkError) {
+        console.error('Error checking existing agreement:', checkError);
+        throw checkError;
+      }
+
+      let error;
+      if (existingAgreement) {
+        // Update existing agreement
+        const { error: updateError } = await supabase
+          .from('tour_agreements')
+          .update({
+            signed: true,
+            signed_at: new Date().toISOString()
+          })
+          .eq('id', existingAgreement.id);
+        error = updateError;
+      } else {
+        // Create new agreement
+        const { error: insertError } = await supabase
+          .from('tour_agreements')
+          .insert({
+            showing_request_id: selectedShowing.id,
+            buyer_id: currentUser.id,
+            agreement_type: 'single_tour',
+            signed: true,
+            signed_at: new Date().toISOString(),
+            email_token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+        error = insertError;
+      }
+
+      if (error) {
+        console.error('Detailed error signing agreement:', error);
+        throw error;
+      }
 
       await supabase
         .from('showing_requests')

@@ -390,7 +390,8 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
   // Welcome screen
   if (showWelcome) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <TooltipProvider>
+        <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-2xl bg-white border-0 shadow-2xl">
           <div className="text-center py-8">
             <div className="relative mb-8">
@@ -467,13 +468,15 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+      </TooltipProvider>
     );
   }
 
   // Celebration overlay
   if (showCelebration) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <TooltipProvider>
+        <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-md bg-white border-0 shadow-2xl">
           <div className="text-center py-10">
             <div className="relative mb-8">
@@ -493,6 +496,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+      </TooltipProvider>
     );
   }
 
@@ -501,9 +505,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl">
-        <DialogHeader className="space-y-6 border-b border-gray-100 pb-6">
+    <TooltipProvider>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-xl">
+          <DialogHeader className="space-y-6 border-b border-gray-50 pb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
@@ -558,10 +563,12 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6 py-6">
           {/* Contextual Banner */}
           {currentStepData?.contextBanner && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 mb-6">
               <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-blue-800 text-sm leading-relaxed">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Info className="w-4 h-4 text-blue-600" />
+                </div>
+                <p className="text-blue-900 text-sm leading-relaxed font-medium">
                   {currentStepData.contextBanner}
                 </p>
               </div>
@@ -585,10 +592,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   ].map((option) => {
                     const Icon = option.icon;
                     return (
-                      <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                      <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-100 rounded-2xl hover:border-gray-200 hover:bg-gray-50 transition-all duration-200">
                         <RadioGroupItem value={option.value} id={option.value} className="border-gray-300" />
                         <Icon className={`w-5 h-5 ${option.color}`} />
-                        <label htmlFor={option.value} className="text-black font-medium flex-1 cursor-pointer">
+                        <label htmlFor={option.value} className="text-gray-900 font-medium flex-1 cursor-pointer">
                           {option.label}
                         </label>
                       </div>
@@ -606,10 +613,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                       key={day.date}
                       type="button"
                       onClick={() => handleDateSelection(day.date)}
-                      className={`p-4 border rounded-xl text-center transition-all hover:border-gray-400 ${
+                      className={`p-4 border rounded-2xl text-center transition-all duration-200 hover:border-gray-300 ${
                         selectedDate === day.date
-                          ? 'bg-black text-white border-black'
-                          : 'border-gray-200 text-black hover:bg-gray-50'
+                          ? 'bg-black text-white border-black shadow-lg'
+                          : 'border-gray-100 text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                       }`}
                     >
                       <div className="text-xs text-gray-500 mb-1">
@@ -632,10 +639,10 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                         key={slot.value}
                         type="button"
                         onClick={() => setSelectedTime(slot.value)}
-                        className={`p-3 border rounded-lg text-center transition-all hover:border-gray-400 ${
+                        className={`p-3 border rounded-xl text-center transition-all duration-200 hover:border-gray-300 ${
                           selectedTime === slot.value
-                            ? 'bg-black text-white border-black'
-                            : 'border-gray-200 text-black hover:bg-gray-50'
+                            ? 'bg-black text-white border-black shadow-md'
+                            : 'border-gray-100 text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                         }`}
                       >
                         <div className="text-sm font-medium">{slot.label}</div>
@@ -660,7 +667,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, propertyFeedback: e.target.value }))}
                   placeholder="Example: 'I love the updated kitchen and master suite, but I'm concerned about the small backyard for our dog. The location is perfect for our commute to downtown, and the neighborhood feels safe. The price seems fair compared to similar homes we've seen.'"
                   rows={4}
-                  className="resize-none border-gray-200 focus:border-black focus:ring-black"
+                  className="resize-none border-gray-100 focus:border-blue-400 focus:ring-blue-100 rounded-xl transition-colors"
                   required
                 />
               </div>
@@ -678,9 +685,9 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                     { value: 'low', label: 'Not much competition expected', color: 'text-green-500' },
                     { value: 'unsure', label: 'I have no idea - please advise!', color: 'text-gray-500' }
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                    <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-100 rounded-2xl hover:border-gray-200 hover:bg-gray-50 transition-all duration-200">
                       <RadioGroupItem value={option.value} id={option.value} className="border-gray-300" />
-                      <label htmlFor={option.value} className="text-black font-medium flex-1 cursor-pointer">
+                      <label htmlFor={option.value} className="text-gray-900 font-medium flex-1 cursor-pointer">
                         {option.label}
                       </label>
                       <div className={`w-3 h-3 rounded-full ${option.color.replace('text-', 'bg-')}`} />
@@ -692,7 +699,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
               <div>
                 <Label className="text-base font-medium text-black mb-4 block">Your market knowledge</Label>
                 <Select value={formData.marketKnowledge} onValueChange={(value) => setFormData(prev => ({ ...prev, marketKnowledge: value }))}>
-                  <SelectTrigger className="border-gray-200 focus:border-black focus:ring-black h-12">
+                  <SelectTrigger className="border-gray-100 focus:border-blue-400 focus:ring-blue-100 h-12 rounded-xl transition-colors">
                     <SelectValue placeholder="How familiar are you with this area?" />
                   </SelectTrigger>
                   <SelectContent>
@@ -740,29 +747,27 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   value={formData.maxComfortablePrice}
                   onChange={(e) => setFormData(prev => ({ ...prev, maxComfortablePrice: e.target.value }))}
                   placeholder="$650,000 (or 'I'm not sure yet - let's discuss' or 'Up to $700k for the right property')"
-                  className="border-gray-200 focus:border-black focus:ring-black h-12"
+                  className="border-gray-100 focus:border-blue-400 focus:ring-blue-100 h-12 rounded-xl transition-colors"
                 />
               </div>
 
-              <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl">
+              <div className="flex items-center space-x-3 p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors">
                 <Checkbox
                   id="downPaymentReady"
                   checked={formData.downPaymentReady}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, downPaymentReady: !!checked }))}
                   className="border-gray-300"
                 />
-                <Label htmlFor="downPaymentReady" className="text-black font-medium cursor-pointer flex items-center gap-2">
+                <Label htmlFor="downPaymentReady" className="text-gray-900 font-medium cursor-pointer flex items-center gap-2">
                   My down payment funds are ready and available
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">This means your down payment money is in accessible accounts (checking, savings, or money market) and ready to transfer when needed.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-500 transition-colors cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>This means your down payment money is in accessible accounts (checking, savings, or money market) and ready to transfer when needed.</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </Label>
               </div>
 
@@ -781,19 +786,17 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   ].map((option) => (
                     <div key={option.value} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                       <RadioGroupItem value={option.value} id={option.value} className="border-gray-300" />
-                      <label htmlFor={option.value} className="text-black font-medium flex-1 cursor-pointer flex items-center gap-2">
+                      <label htmlFor={option.value} className="text-gray-900 font-medium flex-1 cursor-pointer flex items-center gap-2">
                         {option.label}
                         {option.tooltip && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">{option.tooltip}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-500 transition-colors cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{option.tooltip}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </label>
                     </div>
@@ -839,26 +842,24 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                     { id: 'inspection', label: 'Having time for thorough inspection' },
                     { id: 'financing', label: 'Flexible financing terms' }
                   ].map((concern) => (
-                    <div key={concern.id} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                    <div key={concern.id} className="flex items-center space-x-3 p-4 border border-gray-100 rounded-2xl hover:border-gray-200 hover:bg-gray-50 transition-all duration-200">
                       <Checkbox
                         id={concern.id}
                         checked={formData.priorityConcerns.includes(concern.id)}
                         onCheckedChange={(checked) => handleConcernToggle(concern.id)}
                         className="border-gray-300"
                       />
-                      <Label htmlFor={concern.id} className="text-black font-medium cursor-pointer flex items-center gap-2">
+                      <Label htmlFor={concern.id} className="text-gray-900 font-medium cursor-pointer flex items-center gap-2">
                         {concern.label}
                         {concern.tooltip && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">{concern.tooltip}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-500 transition-colors cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{concern.tooltip}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </Label>
                     </div>
@@ -876,7 +877,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, dealBreakers: e.target.value }))}
                   placeholder="Example: 'Must keep inspection contingency - won't waive. Need to close before August 15th when school starts. Seller must handle any major repairs over $2,000. Won't compete in bidding wars above asking price.'"
                   rows={3}
-                  className="resize-none border-gray-200 focus:border-black focus:ring-black"
+                  className="resize-none border-gray-100 focus:border-blue-400 focus:ring-blue-100 rounded-xl transition-colors"
                 />
               </div>
 
@@ -890,7 +891,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, winningFactors: e.target.value }))}
                   placeholder="Example: 'Pre-approved with 20% down payment ready. Flexible on closing date (30-60 days). Writing a personal letter about why we love the home. Local buyers, no contingent sale. Can close quickly if needed.'"
                   rows={3}
-                  className="resize-none border-gray-200 focus:border-black focus:ring-black"
+                  className="resize-none border-gray-100 focus:border-blue-400 focus:ring-blue-100 rounded-xl transition-colors"
                 />
               </div>
             </div>
@@ -952,6 +953,7 @@ const ModernOfferModal: React.FC<ModernOfferModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+    </TooltipProvider>
   );
 };
 
